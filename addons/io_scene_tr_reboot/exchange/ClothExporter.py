@@ -169,11 +169,24 @@ class ClothExporter:
     def apply_cloth_strip_properties(self, tr_cloth_strip: ClothStrip, bl_cloth_strip_obj: bpy.types.Object) -> None:
         cloth_strip_properties = ObjectProperties.get_instance(bl_cloth_strip_obj).cloth
         tr_cloth_strip.gravity_factor = cloth_strip_properties.gravity_factor
+        tr_cloth_strip.buoyancy_factor = cloth_strip_properties.buoyancy_factor
         tr_cloth_strip.wind_factor = cloth_strip_properties.wind_factor
         tr_cloth_strip.pose_follow_factor = cloth_strip_properties.stiffness
         tr_cloth_strip.rigidity = cloth_strip_properties.rigidity
         tr_cloth_strip.mass_bounceback_factor = cloth_strip_properties.bounceback_factor
         tr_cloth_strip.drag = cloth_strip_properties.dampening
+
+        tr_cloth_strip.transform_type = cloth_strip_properties.transform_type
+        tr_cloth_strip.max_velocity_iterations = cloth_strip_properties.max_velocity_iterations
+        tr_cloth_strip.max_position_iterations = cloth_strip_properties.max_position_iterations
+        tr_cloth_strip.relaxation_iterations = cloth_strip_properties.relaxation_iterations
+        tr_cloth_strip.sub_step_count = cloth_strip_properties.sub_step_count
+        tr_cloth_strip.fixed_to_free_slop = cloth_strip_properties.fixed_to_free_slop
+        tr_cloth_strip.free_to_free_slop = cloth_strip_properties.free_to_free_slop
+        tr_cloth_strip.free_to_free_slop_z = cloth_strip_properties.free_to_free_slop_z
+        tr_cloth_strip.mass_scale = cloth_strip_properties.mass_scale
+        tr_cloth_strip.time_delta_scale = cloth_strip_properties.time_delta_scale
+        tr_cloth_strip.blend_to_bind_time = cloth_strip_properties.blend_to_bind_time
 
     def add_cloth_strip_masses(
         self,

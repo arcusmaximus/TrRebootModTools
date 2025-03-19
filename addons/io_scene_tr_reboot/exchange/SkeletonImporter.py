@@ -6,6 +6,7 @@ from io_scene_tr_reboot.BlenderNaming import BlenderNaming
 from io_scene_tr_reboot.properties.BoneProperties import BoneProperties
 from io_scene_tr_reboot.properties.ObjectProperties import ObjectSkeletonProperties
 from io_scene_tr_reboot.tr.Collection import Collection
+from io_scene_tr_reboot.tr.ResourceKey import ResourceKey
 from io_scene_tr_reboot.tr.Skeleton import ISkeleton
 from io_scene_tr_reboot.util.Enumerable import Enumerable
 from io_scene_tr_reboot.util.SlotsBase import SlotsBase
@@ -16,31 +17,34 @@ class SkeletonImporter(SlotsBase):
     def __init__(self, scale_factor: float) -> None:
         self.scale_factor = scale_factor
 
-    def import_from_collection(self, tr_collection: Collection) -> bpy.types.Object | None:
+    def import_from_collection(self, tr_collection: Collection) -> dict[ResourceKey, bpy.types.Object]:
         if bpy.context.object is not None:
             bpy.ops.object.mode_set(mode = "OBJECT")
 
-        tr_skeleton = tr_collection.get_skeleton()
-        if tr_skeleton is None or len(tr_skeleton.bones) == 0:
-            return None
+        bl_armature_objs: dict[ResourceKey, bpy.types.Object] = {}
+        for skeleton_resource in Enumerable(tr_collection.get_model_instances()).select(lambda i: i.skeleton_resource).of_type(ResourceKey).distinct():
+            tr_skeleton = tr_collection.get_skeleton(skeleton_resource)
+            if tr_skeleton is None or len(tr_skeleton.bones) == 0:
+                continue
 
-        armature_name = BlenderNaming.make_local_armature_name(tr_collection.name, tr_skeleton.id)
+            armature_name = BlenderNaming.make_local_armature_name(tr_collection.name, tr_skeleton.id)
 
-        bl_armature = bpy.data.armatures.new(armature_name)
-        bl_armature.display_type = "STICK"
+            bl_armature = bpy.data.armatures.new(armature_name)
+            bl_armature.display_type = "STICK"
 
-        bl_armature_obj = BlenderHelper.create_object(bl_armature)
-        bl_armature_obj.show_in_front = True
+            bl_armature_obj = BlenderHelper.create_object(bl_armature)
+            bl_armature_obj.show_in_front = True
 
-        with BlenderHelper.enter_edit_mode():
-            self.create_bones(bl_armature, tr_skeleton)
+            with BlenderHelper.enter_edit_mode():
+                self.create_bones(bl_armature, tr_skeleton)
 
-        self.assign_cloth_bones_to_group(bl_armature_obj, tr_skeleton)
-        self.assign_counterparts(bl_armature_obj, tr_skeleton)
-        self.assign_constraints(bl_armature_obj, tr_skeleton)
-        ObjectSkeletonProperties.set_global_blend_shape_ids(bl_armature_obj, tr_skeleton.global_blend_shape_ids)
+            self.assign_cloth_bones_to_group(bl_armature_obj, tr_skeleton)
+            self.assign_counterparts(bl_armature_obj, tr_skeleton)
+            self.assign_constraints(bl_armature_obj, tr_skeleton)
+            ObjectSkeletonProperties.set_global_blend_shape_ids(bl_armature_obj, tr_skeleton.global_blend_shape_ids)
+            bl_armature_objs[skeleton_resource] = bl_armature_obj
 
-        return bl_armature_obj
+        return bl_armature_objs
 
     def create_bones(self, bl_armature: bpy.types.Armature, tr_skeleton: ISkeleton) -> None:
         bone_child_indices: list[list[int]] = []

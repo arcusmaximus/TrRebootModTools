@@ -1,0 +1,46 @@
+#define TR_VERSION 10
+#include "../../trcommon.bt"
+
+typedef union
+{
+    short byUserDefinedIndex;
+    ushort byBoneIndex;
+    short byBoneID;
+    ushort byMarkerIndex;
+    ushort byMarkerID;
+} ModelBoneOrMarkerReference__ModelBoneOrMarkerRefData;
+
+typedef struct
+{
+    ubyte refType;
+    FSkip(1);
+    ModelBoneOrMarkerReference__ModelBoneOrMarkerRefData refData;
+} ModelBoneOrMarkerReference <optimize=false>;
+
+typedef struct
+{
+    byte drawDebug;
+    byte drawVelDebug;
+    ModelBoneOrMarkerReference attachMarker;
+    FSkip(2);
+    float springFreq;
+    float springDamp;
+    float targetVelocitySmoothing;
+    float maxDist;
+} BoneSpringsComponent__SpringTune <optimize=false>;
+
+typedef struct
+{
+    Ref springsListRef;
+    unsigned int numSprings;
+    if (CanSeekTo(springsListRef))
+    {
+        SeekToRef(springsListRef);
+        BoneSpringsComponent__SpringTune springsList[numSprings];
+        ReturnFromRef();
+    }
+    float warpDist;
+} BoneSpringsComponent <optimize=false>;
+
+RefDefinitions refDefinitions;
+BoneSpringsComponent root <open=true>;

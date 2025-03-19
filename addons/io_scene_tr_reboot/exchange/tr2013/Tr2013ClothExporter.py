@@ -1,5 +1,7 @@
 import bpy
 import os
+
+from bpy.types import Object
 from io_scene_tr_reboot.BlenderNaming import BlenderNaming
 from io_scene_tr_reboot.exchange.ClothExporter import ClothExporter
 from io_scene_tr_reboot.properties.SceneProperties import SceneProperties
@@ -8,23 +10,44 @@ from io_scene_tr_reboot.tr.Enumerations import CdcGame, ResourceType
 from io_scene_tr_reboot.tr.ResourceBuilder import ResourceBuilder
 from io_scene_tr_reboot.tr.ResourceKey import ResourceKey
 from io_scene_tr_reboot.tr.ResourceReader import ResourceReader
+from io_scene_tr_reboot.tr.tr2013.Tr2013Cloth import Tr2013Cloth
 from io_scene_tr_reboot.tr.tr2013.Tr2013Collection import Tr2013ObjectHeader
 from io_scene_tr_reboot.tr.tr2013.Tr2013ModelReferences import Tr2013ModelReferences
 from io_scene_tr_reboot.util.Enumerable import Enumerable
 
 class Tr2013ClothExporter(ClothExporter):
+    handled_model_data_ids: set[int]
+
     def __init__(self, scale_factor: float) -> None:
         super().__init__(scale_factor, CdcGame.TR2013)
+        self.handled_model_data_ids = set()
+
+    def export_cloths(self, folder_path: str, bl_armature_obj: Object, bl_local_armature_objs: dict[int, Object]) -> None:
+        super().export_cloths(folder_path, bl_armature_obj, bl_local_armature_objs)
+        for bl_obj in Enumerable(bl_armature_obj.children):
+            model_data_id = self.get_model_data_id(bl_obj)
+            if model_data_id is None or model_data_id in self.handled_model_data_ids:
+                continue
+
+            empty_cloth = Tr2013Cloth(model_data_id, 0)
+            definition_builder = ResourceBuilder(ResourceKey(ResourceType.MODEL, model_data_id), CdcGame.TR2013)
+            empty_cloth.write_definition(definition_builder)
+            self.write_cloth_definition_file(folder_path, bl_armature_obj, definition_builder)
 
     def write_cloth_definition_file(self, folder_path: str, bl_armature_obj: bpy.types.Object, definition_builder: ResourceBuilder) -> None:
-        for bl_mesh_obj in Enumerable(bl_armature_obj.children).where(lambda o: isinstance(o.data, bpy.types.Mesh)):
-            model_id_set = BlenderNaming.parse_model_name(bl_mesh_obj.name)
-            model_data_resource = ResourceKey(ResourceType.MODEL, model_id_set.model_data_id)
+        for bl_obj in Enumerable(bl_armature_obj.children):
+            model_data_id = self.get_model_data_id(bl_obj)
+            if model_data_id is None or model_data_id in self.handled_model_data_ids:
+                continue
+
+            self.handled_model_data_ids.add(model_data_id)
+
+            model_data_resource = ResourceKey(ResourceType.MODEL, model_data_id)
             model_data_file_path = os.path.join(folder_path, f"{model_data_resource.id}.tr9modeldata")
             if not os.path.isfile(model_data_file_path):
                 continue
 
-            model_refs = Tr2013ModelReferences(model_id_set.model_data_id)
+            model_refs = Tr2013ModelReferences(model_data_id)
             with open(model_data_file_path, "rb") as model_data_file:
                 model_data_reader = ResourceReader(model_data_resource, model_data_file.read(), True, CdcGame.TR2013)
 
@@ -43,7 +66,13 @@ class Tr2013ClothExporter(ClothExporter):
             with open(model_data_file_path, "wb") as model_data_file:
                 model_data_file.write(model_data_builder.build())
 
-            break
+    def get_model_data_id(self, bl_obj: bpy.types.Object) -> int | None:
+        if isinstance(bl_obj.data, bpy.types.Mesh):
+            return BlenderNaming.parse_model_name(bl_obj.name).model_data_id
+        elif isinstance(bl_obj.data, bpy.types.Curves):
+            return BlenderNaming.parse_hair_name(bl_obj.name).hair_data_id
+        else:
+            return None
 
     def write_cloth_tune_file(self, folder_path: str, bl_armature_obj: bpy.types.Object, tune_builder: ResourceBuilder) -> None:
         object_id = Enumerable(bl_armature_obj.children).where(lambda o: isinstance(o.data, bpy.types.Mesh)) \

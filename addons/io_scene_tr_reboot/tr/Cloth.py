@@ -49,11 +49,24 @@ class ClothStrip(SlotsBase):
     collisions: list[Collision]
 
     gravity_factor: float
+    buoyancy_factor: float
     wind_factor: float
     pose_follow_factor: float
     rigidity: float
     mass_bounceback_factor: float
     drag: float
+
+    transform_type: int
+    max_velocity_iterations: int
+    max_position_iterations: int
+    relaxation_iterations: int
+    sub_step_count: int
+    fixed_to_free_slop: float
+    free_to_free_slop: float
+    free_to_free_slop_z: float
+    mass_scale: float
+    time_delta_scale: float
+    blend_to_bind_time: float
 
     def __init__(self, id: int, parent_bone_local_id: int) -> None:
         self.id = id
@@ -63,14 +76,30 @@ class ClothStrip(SlotsBase):
         self.collisions = []
 
         self.gravity_factor = 1
+        self.buoyancy_factor = 0.5
         self.wind_factor = 1
         self.pose_follow_factor = 0
         self.rigidity = 0
         self.mass_bounceback_factor = 0
         self.drag = 0
 
+        self.transform_type = 1
+        self.max_velocity_iterations = 3
+        self.max_position_iterations = 2
+        self.relaxation_iterations = 5
+        self.sub_step_count = 2
+        self.fixed_to_free_slop = 0
+        self.free_to_free_slop = 0
+        self.free_to_free_slop_z = 100
+        self.mass_scale = 200
+        self.time_delta_scale = 1
+        self.blend_to_bind_time = 8
+
 class ClothFeatureSupport(NamedTuple):
+    strip_buoyancy_factor: bool
     strip_pose_follow_factor: bool
+    strip_free_to_free_slop_z: bool
+    strip_blend_to_bind_time: float
     mass_specific_bounceback_factor: bool
     spring_specific_stretchiness: bool
 
@@ -150,7 +179,7 @@ class IClothTuneConfig(Protocol):
 
 class IClothTuneStripGroup(Protocol):
     gravity_factor: float
-    buoyancy: float
+    buoyancy_factor: float
     drag: float
     max_velocity_update_iterations: int
     max_position_update_iterations: int
@@ -161,13 +190,13 @@ class IClothTuneStripGroup(Protocol):
     max_mass_bounceback_factor: float
     pose_follow_factor: float
     transform_type: int
-    spring_stretchiness_default_percentage: int
-    spring_stretchiness_lower_percentage: int
-    spring_stretchiness_upper_percentage: int
+    fixed_to_free_slop: int
+    free_to_free_slop: int
+    free_to_free_slop_z: int
     rigidity_percentage: int
-    acceleration_divider: float
-    time_delta_multiplier: float
-    reference_time_delta_multiplier: float
+    mass_scale: float
+    time_delta_scale: float
+    blend_to_bind_time: float
     num_strip_ids: int
     strip_ids_ref: ResourceReference | None
     num_collision_group_indices: int

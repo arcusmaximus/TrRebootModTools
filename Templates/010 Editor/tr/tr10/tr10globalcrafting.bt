@@ -192,6 +192,7 @@ typedef struct
     short itemName;
     short itemDesc;
     ImagePath imagePath;
+    FSkip(4);
 } BrokenPartsData <optimize=false, read=iconType>;
 
 typedef struct

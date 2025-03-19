@@ -30,6 +30,10 @@ class BlenderClothStripIdSet(NamedTuple):
     component_id: int
     strip_id: int
 
+class BlenderHairIdSet(NamedTuple):
+    model_id: int | None
+    hair_data_id: int
+
 class BlenderNaming:
     local_collection_name: ClassVar[str] = "Split meshes for export"
 
@@ -258,11 +262,27 @@ class BlenderNaming:
 
     @staticmethod
     def parse_material_name(name: str) -> int:
-        match = re.search(r"_(\d+)(?:\.\d+)?$", name)
-        if match is None:
+        material_id = BlenderNaming.try_parse_material_name(name)
+        if material_id is None:
             raise Exception(f"{name} is not a valid material name.")
 
+        return material_id
+
+    @staticmethod
+    def try_parse_material_name(name: str) -> int | None:
+        match = re.search(r"_(\d+)(?:\.\d+)?$", name)
+        if match is None:
+            return None
+
         return int(match.group(1))
+
+    @staticmethod
+    def make_grease_pencil_material_name(id: int) -> str:
+        return f"gp_material_{id}"
+
+    @staticmethod
+    def parse_grease_pencil_material_name(name: str) -> int:
+        return BlenderNaming.parse_material_name(name)
 
     @staticmethod
     def make_action_name(id: int, model_data_id: int | None, mesh_idx: int | None) -> str:
@@ -327,6 +347,26 @@ class BlenderNaming:
             raise Exception(f"{name} is not a valid collision name")
 
         return CollisionKey(CollisionType[match.group(1).upper()], int(match.group(2), base = 16))
+
+    @staticmethod
+    def make_hair_name(collection_name: str, model_id: int | None, hair_data_id: int) -> str:
+        return BlenderNaming.make_collection_item_name(collection_name, f"hair_{model_id}_{hair_data_id}" if model_id is not None else f"hair_{hair_data_id}")
+
+    @staticmethod
+    def try_parse_hair_name(name: str) -> BlenderHairIdSet | None:
+        match = re.fullmatch(r"\w+_hair(?:_(\d+))?_(\d+)(?:\.\d+)?", name)
+        if match is None:
+            return None
+
+        return BlenderHairIdSet(int(match.group(1)) if match.group(1) else None, int(match.group(2)))
+
+    @staticmethod
+    def parse_hair_name(name: str) -> BlenderHairIdSet:
+        ids = BlenderNaming.try_parse_hair_name(name)
+        if ids is None:
+            raise Exception(f"{name} is not a valid hair name")
+
+        return ids
 
     @staticmethod
     def make_collection_item_name(collection_name: str, suffix: str) -> str:

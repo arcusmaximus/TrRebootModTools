@@ -22,15 +22,38 @@ class Tr2013SkeletonExporter(SkeletonExporter):
         if not isinstance(tr_skeleton, Tr2013Skeleton):
             raise Exception()
 
-        for bl_mesh_obj in Enumerable(bl_armature_obj.children).where(lambda o: isinstance(o.data, bpy.types.Mesh)):
-            model_id_set = BlenderNaming.parse_model_name(bl_mesh_obj.name)
-            model_resource = ResourceKey(ResourceType.DTP, model_id_set.model_id)
-            model_data_resource = ResourceKey(ResourceType.MODEL, model_id_set.model_data_id)
+        handled_model_ids: set[int] = set()
 
-            model_bytes = SceneProperties.get_file(model_id_set.model_id)
-            model_data_path = os.path.join(folder_path, f"{model_data_resource.id}.tr9modeldata")
+        for bl_obj in Enumerable(bl_armature_obj.children):
+            model_id: int
+            model_data_id: int
+
+            if isinstance(bl_obj.data, bpy.types.Mesh):
+                model_id_set = BlenderNaming.parse_model_name(bl_obj.name)
+                model_id = model_id_set.model_id
+                model_data_id = model_id_set.model_data_id
+            elif isinstance(bl_obj.data, bpy.types.Curves):
+                hair_id_set = BlenderNaming.parse_hair_name(bl_obj.name)
+                if hair_id_set.model_id is None:
+                    continue
+
+                model_id = hair_id_set.model_id
+                model_data_id = hair_id_set.hair_data_id
+            else:
+                continue
+
+            if model_id in handled_model_ids:
+                continue
+
+            handled_model_ids.add(model_id)
+
+            model_bytes = SceneProperties.get_file(model_id)
+            model_data_path = os.path.join(folder_path, f"{model_data_id}.tr9modeldata")
             if model_bytes is None or not os.path.isfile(model_data_path):
                 continue
+
+            model_resource = ResourceKey(ResourceType.DTP, model_id)
+            model_data_resource = ResourceKey(ResourceType.MODEL, model_data_id)
 
             with open(model_data_path, "rb") as model_data_file:
                 model_data_reader = ResourceReader(model_data_resource, model_data_file.read(), True, CdcGame.TR2013)
@@ -42,10 +65,10 @@ class Tr2013SkeletonExporter(SkeletonExporter):
             model_data_builder = ResourceBuilder(model_data_resource, CdcGame.TR2013)
             model_data_builder.write_reader(model_data_reader)
 
-            model.bones_ref = ResourceReference(ResourceType.MODEL, model_id_set.model_data_id, model_data_builder.position)
+            model.bones_ref = ResourceReference(ResourceType.MODEL, model_data_id, model_data_builder.position)
             tr_skeleton.write_bones(model_data_builder)
 
-            model.bone_id_map_ref = ResourceReference(ResourceType.MODEL, model_id_set.model_data_id, model_data_builder.position)
+            model.bone_id_map_ref = ResourceReference(ResourceType.MODEL, model_data_id, model_data_builder.position)
             tr_skeleton.write_id_mappings(model_data_builder)
 
             model_path = os.path.join(folder_path, Collection.make_resource_file_name(model_resource, CdcGame.TR2013))
@@ -54,5 +77,3 @@ class Tr2013SkeletonExporter(SkeletonExporter):
 
             with open(model_data_path, "wb") as model_data_file:
                 model_data_file.write(model_data_builder.build())
-
-            break

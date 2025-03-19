@@ -55,6 +55,9 @@ class RegenerateClothBonesOperator(BlenderOperatorBase[BlenderPropertyGroup]):
         def is_in_local_collection(bl_obj: bpy.types.Object) -> bool:
             return Enumerable(bl_obj.users_collection).any(lambda c: c.name == BlenderNaming.local_collection_name)
 
+        if context.scene is None:
+            return {}
+
         return Enumerable(context.scene.objects).where(lambda o: isinstance(o.data, bpy.types.Armature) and is_in_local_collection(o)) \
                                                 .to_dict(lambda o: BlenderNaming.parse_local_armature_name(o.name))
 
@@ -178,7 +181,7 @@ class RegenerateClothBonesOperator(BlenderOperatorBase[BlenderPropertyGroup]):
 
             for bl_cloth_strip_obj in bl_cloth_strip_objs:
                 cloth_strip_properties = ObjectProperties.get_instance(bl_cloth_strip_obj).cloth
-                bl_parent_bone = bl_armature.edit_bones[cloth_strip_properties.parent_bone_name]
+                bl_parent_bone = bl_armature.edit_bones.get(cloth_strip_properties.parent_bone_name)
 
                 for bl_vertex in cast(bpy.types.Mesh, bl_cloth_strip_obj.data).vertices:
                     bl_edit_bone: bpy.types.EditBone | None = None

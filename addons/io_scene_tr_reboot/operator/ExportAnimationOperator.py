@@ -23,7 +23,7 @@ class ExportShadowAnimationOperator(ExportOperatorBase[_Properties]):
     filename_ext = ".tr11anim"
 
     def invoke(self, context: bpy.types.Context | None, event: bpy.types.Event) -> set[OperatorReturnItems]:
-        if context is None:
+        if context is None or context.window_manager is None:
             return { "CANCELLED" }
 
         with OperatorContext.begin(self):
@@ -36,7 +36,7 @@ class ExportShadowAnimationOperator(ExportOperatorBase[_Properties]):
                 folder_path: str
                 if self.properties.filepath:
                     folder_path = os.path.split(self.properties.filepath)[0]
-                elif context.blend_data.filepath:
+                elif context.blend_data is not None and context.blend_data.filepath:
                     folder_path = os.path.split(context.blend_data.filepath)[0]
                 else:
                     folder_path = ""
@@ -70,6 +70,9 @@ class ExportShadowAnimationOperator(ExportOperatorBase[_Properties]):
 
         if bl_selected_obj and bl_selected_obj.parent and isinstance(bl_selected_obj.parent.data, bpy.types.Armature):
             return bl_selected_obj.parent
+
+        if context.scene is None:
+            return None
 
         bl_armature_objs = Enumerable(context.scene.objects).where(lambda o: isinstance(o.data, bpy.types.Armature) and not self.is_in_local_collection(o)).to_list()
         if len(bl_armature_objs) == 0:

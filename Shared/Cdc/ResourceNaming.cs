@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -66,7 +67,7 @@ namespace TrRebootTools.Shared.Cdc
             string extension = Path.GetExtension(filePath);
             foreach (KeyValuePair<(ResourceType, ResourceSubType), string[]> mapping in Mappings)
             {
-                if (mapping.Value.Contains(extension))
+                if (mapping.Value.Contains(extension, StringComparer.InvariantCultureIgnoreCase))
                     return mapping.Key;
             }
             return (ResourceType.Unknown, 0);

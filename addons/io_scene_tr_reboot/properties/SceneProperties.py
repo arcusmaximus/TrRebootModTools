@@ -28,16 +28,25 @@ class SceneProperties(BlenderAttachedPropertyGroup[bpy.types.Scene]):
 
     @staticmethod
     def get_game() -> CdcGame:
+        if bpy.context.scene is None:
+            return CdcGame.SOTTR
+
         props = SceneProperties.get_instance(bpy.context.scene)
         return CdcGame[props.game]
 
     @staticmethod
     def set_game(game: CdcGame) -> None:
+        if bpy.context.scene is None:
+            return
+
         props = SceneProperties.get_instance(bpy.context.scene)
         props.game = game.name
 
     @staticmethod
     def get_file(id: int) -> bytes | None:
+        if bpy.context.scene is None:
+            return None
+
         props = SceneProperties.get_instance(bpy.context.scene)
         file = Enumerable(props.files).first_or_none(lambda f: f.id == id)
         if file is None:
@@ -47,6 +56,9 @@ class SceneProperties(BlenderAttachedPropertyGroup[bpy.types.Scene]):
 
     @staticmethod
     def set_file(id: int, data: memoryview | bytes) -> None:
+        if bpy.context.scene is None:
+            return
+
         props = SceneProperties.get_instance(bpy.context.scene)
         file = Enumerable(props.files).first_or_none(lambda f: f.id == id)
         if file is None:

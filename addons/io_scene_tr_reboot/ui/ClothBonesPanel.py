@@ -12,11 +12,11 @@ class ClothBonesPanel(bpy.types.Panel):
     bl_idname = "TR_PT_ClothBonesPanel"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
-    bl_category = "Tomb Raider Cloth"
-    bl_label = "Bones"
+    bl_category = "Tomb Raider"
+    bl_label = "Cloth Bones"
 
     def draw(self, context: bpy.types.Context | None) -> None:
-        if context is None:
+        if context is None or context.scene is None or self.layout is None:
             return
 
         bl_row = self.layout.row()

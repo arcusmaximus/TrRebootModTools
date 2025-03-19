@@ -84,13 +84,15 @@ class Tr2013ModelBase(Model[TModelReferences, TModelDataHeader, TMesh, TMeshPart
         model_data_header_pos = writer.position
         self.refs.model_data_resource = ResourceReference(ResourceType.MODEL, self.refs.model_data_resource.id, model_data_header_pos)
         self.header.signature = int.from_bytes(b"Mesh", "little")
-        self.header.num_bone_mappings = Enumerable(self.meshes).select_many(lambda m: m.bone_indices).max(default_value = -1) + 1
+        if self.header.num_bones == 0:
+            self.header.num_bones = Enumerable(self.meshes).select_many(lambda m: m.bone_indices).max(default_value = -1) + 1
+
         self.header.num_blend_shapes = len(self.meshes[0].blend_shapes)
         self.header.num_meshes = len(self.meshes)
         self.header.num_mesh_parts = Enumerable(self.meshes).sum(lambda m: len(m.parts))
         self.header.num_indexes = Enumerable(self.meshes).select_many(lambda m: m.parts).sum(lambda p: len(p.indices))
 
-        if self.header.num_bone_mappings > 0:
+        if self.header.num_bones > 0:
             self.header.model_type = 1
 
         if self.header.num_lod_levels != 0 or \
@@ -99,8 +101,8 @@ class Tr2013ModelBase(Model[TModelReferences, TModelDataHeader, TMesh, TMeshPart
 
         writer.write_struct(cast(CStruct, self.header))
 
-        self.header.bone_mappings_offset = writer.position - model_data_header_pos
-        writer.write_int32_list(range(self.header.num_bone_mappings))
+        self.header.local_bone_ids_offset = writer.position - model_data_header_pos
+        writer.write_int32_list(range(self.header.num_bones))
         writer.align(0x20)
 
         self.header.mesh_headers_offset = writer.position - model_data_header_pos
@@ -126,7 +128,7 @@ class Tr2013ModelBase(Model[TModelReferences, TModelDataHeader, TMesh, TMeshPart
         for mesh in self.meshes:
             for mesh_part in mesh.parts:
                 mesh_part.first_index_idx = cumulative_index_count
-                mesh_part.num_triangles = len(mesh_part.indices) // 3
+                mesh_part.num_triangles = len(mesh_part.indices) // (2 if mesh_part.is_hair else 3)
                 writer.write_uint16_list(mesh_part.indices)
 
                 cumulative_index_count += len(mesh_part.indices)

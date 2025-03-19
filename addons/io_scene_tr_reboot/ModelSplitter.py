@@ -52,6 +52,9 @@ class ModelSplitter(SlotsBase):
         local_skeleton_ids = BlenderNaming.parse_global_armature_name(bl_global_armature_obj.name)
         local_armatures: dict[int, _LocalArmature] = {}
 
+        if self.bl_context.scene is None:
+            return local_armatures
+
         for bl_armature_obj in Enumerable(self.bl_context.scene.objects).where(lambda o: isinstance(o.data, bpy.types.Armature)):
             local_skeleton_id = BlenderNaming.try_parse_local_armature_name(bl_armature_obj.name)
             if local_skeleton_id is None or local_skeleton_id not in local_skeleton_ids:
@@ -99,6 +102,9 @@ class ModelSplitter(SlotsBase):
         return local_skeleton_ids_by_global_bone_id
 
     def delete_local_meshes(self, local_armatures: dict[int, _LocalArmature]) -> None:
+        if self.bl_context.scene is None:
+            return
+
         local_armature_names = Enumerable(local_armatures.values()).select(lambda a: a.name).to_list()
         local_mesh_names = Enumerable(self.bl_context.scene.objects)        \
                                 .where(lambda o: o.parent is not None and o.parent.data is not None and o.parent.data.name in local_armature_names and isinstance(o.data, bpy.types.Mesh))  \
@@ -230,6 +236,9 @@ class ModelSplitter(SlotsBase):
         return int(name[len(ModelSplitter.local_skeleton_vertex_group_prefix):])
 
     def sync_cloth_bones_to_local_armatures(self, bl_global_armature_obj: bpy.types.Object, bl_local_armature_objs: dict[int, bpy.types.Object]) -> None:
+        if self.bl_context.view_layer is None:
+            return
+
         bl_local_collection = self.bl_context.view_layer.layer_collection.children.get(BlenderNaming.local_collection_name)
         if bl_local_collection is None:
             return

@@ -28,7 +28,7 @@ class ShadowModel(Model[ShadowModelReferences, ShadowModelDataHeader, ShadowMesh
             raise NotImplementedError()
 
         reader.skip(self.header.num_lod_levels * 0x40)
-        reader.skip(self.header.num_bone_mappings * 4)
+        reader.skip(self.header.num_bones * 4)
         reader.align(0x20)
 
         for _ in range(self.header.num_meshes):
@@ -63,13 +63,13 @@ class ShadowModel(Model[ShadowModelReferences, ShadowModelDataHeader, ShadowMesh
 
     def write(self, writer: ResourceBuilder) -> None:
         self.header.signature = int.from_bytes(b"Mesh", "little")
-        self.header.num_bone_mappings = Enumerable(self.meshes).select_many(lambda m: m.bone_indices).max(default_value = -1) + 1
+        self.header.num_bones = Enumerable(self.meshes).select_many(lambda m: m.bone_indices).max(default_value = -1) + 1
         self.header.num_blend_shapes = len(self.meshes[0].blend_shapes)
         self.header.num_meshes = len(self.meshes)
         self.header.num_mesh_parts = Enumerable(self.meshes).sum(lambda m: len(m.parts))
         self.header.num_indexes = Enumerable(self.meshes).select_many(lambda m: m.parts).sum(lambda p: len(p.indices))
 
-        if self.header.num_bone_mappings > 0:
+        if self.header.num_bones > 0:
             self.header.model_type = 1
 
         writer.write_struct(self.header)
@@ -79,7 +79,7 @@ class ShadowModel(Model[ShadowModelReferences, ShadowModelDataHeader, ShadowMesh
            self.header.pre_tesselation_info_offset != 0xFFFFFFFF:
             raise NotImplementedError()
 
-        writer.write_int32_list(range(self.header.num_bone_mappings))
+        writer.write_int32_list(range(self.header.num_bones))
         writer.align(0x20)
 
         for mesh in self.meshes:

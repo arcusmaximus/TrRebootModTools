@@ -1,0 +1,25 @@
+#define TR_VERSION 10
+
+enum <int> PadShockLoopMode
+{
+    padShockLoopMode_none = 0,
+    padShockLoopMode_normal = 1,
+    padShockLoopMode_numModes = 2,
+    padShockLoopMode_makeDword = 2147483647
+};
+
+typedef struct
+{
+    unsigned int id;
+    int version;
+    char name[64];
+    int numChannels;
+    PadShockLoopMode loopMode;
+    float startLoopTime;
+    float endLoopTime;
+    float globalScale;
+    float globalOffset;
+} PadShockFileHeader <optimize=false>;
+
+FSeek(1800);
+PadShockFileHeader root <open=true>;

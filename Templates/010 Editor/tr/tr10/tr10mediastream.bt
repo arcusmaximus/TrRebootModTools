@@ -1,0 +1,716 @@
+#define TR_VERSION 10
+#include "../trcommon.bt"
+
+typedef struct
+{
+} SoundTypes <optimize=false>;
+
+typedef struct
+{
+    float volume;
+    float pitch;
+    float reverb;
+    float lowPass;
+    float highPass;
+    float rolloffScale;
+    float rolloffScaleReverb;
+    ubyte bPause : 1;
+    ubyte bMute : 1;
+    ubyte bSolo : 1;
+    ubyte bMuteVolume : 1;
+    ubyte bSoloVolume : 1;
+    ubyte bMeter : 1;
+    ubyte bDrawingMeters : 1;
+    ubyte bDebugShow : 1;
+    ubyte bIsMusic : 1;
+    ubyte bNoSubtitle : 1;
+    ubyte bCuePause : 1;
+    ubyte bPadSpeaker : 1;
+    byte _Bitfieldpadding15 : 4;
+} SoundGroup__Controls <optimize=false>;
+
+typedef struct
+{
+    SoundGroup__Controls _Parent;
+} SoundTypes__Controls <optimize=false>;
+
+typedef struct
+{
+    float distanceOuter;
+    float distanceInner;
+    float cullRadiusOffset;
+    float levelOfWide3D;
+    float outer2Dblend;
+    float levelOfLFE;
+    float centerSpeakerFill;
+    float angleInner;
+    float angleOuter;
+    float angleOuterVolume;
+    float emitterWidth;
+    float frontPan;
+    float LtoL;
+    float LtoR;
+    float LtoC;
+    float LtoLFE;
+    float LtoSL;
+    float LtoSR;
+    float LtoSBL;
+    float LtoSBR;
+    float RtoL;
+    float RtoR;
+    float RtoC;
+    float RtoLFE;
+    float RtoSL;
+    float RtoSR;
+    float RtoSBL;
+    float RtoSBR;
+    float directionalAttenScalar;
+    float nearDistFilterLevel;
+    float farDistFilterLevel;
+    float farDistFilterLPF;
+    float dopplerScalar;
+    unsigned int group;
+    ubyte playbackType;
+    ubyte distVolCurve;
+    ubyte nopath;
+    char forwardAxis;
+    byte bNegateForward;
+} Controls3d <optimize=false>;
+
+typedef struct
+{
+    Controls3d _Parent;
+} SoundTypes__Controls3d <optimize=false>;
+
+typedef struct
+{
+    ushort handle;
+} HandleOwner <optimize=false>;
+
+typedef struct
+{
+    ushort refCount;
+    HandleOwner handle;
+} RCObject <optimize=false>;
+
+typedef union
+{
+    float m128F32[4];
+    uquad m128U64[2];
+    char m128I8[16];
+    short m128I16[8];
+    int m128I32[4];
+    quad m128I64[2];
+    ubyte m128U8[16];
+    ushort m128U16[8];
+    unsigned int m128U32[4];
+} __m128;
+
+typedef struct
+{
+    __m128 vec128;
+} Vector <optimize=false>;
+
+typedef struct
+{
+    Ref nextRef;
+    if (CanSeekTo(nextRef))
+    {
+        SeekToRef(nextRef);
+        SoundOwner next;
+        ReturnFromRef();
+    }
+} ListNodeSingle_SoundOwner_ <optimize=false>;
+
+typedef struct
+{
+    Ref nextRef;
+    if (CanSeekTo(nextRef))
+    {
+        SeekToRef(nextRef);
+        SoundEffectOwnerBase next;
+        ReturnFromRef();
+    }
+    Ref prevRef;
+    if (CanSeekTo(prevRef))
+    {
+        SeekToRef(prevRef);
+        SoundEffectOwnerBase prev;
+        ReturnFromRef();
+    }
+} ListNodeDouble_SoundEffectOwnerBase_ <optimize=false>;
+
+typedef struct
+{
+    ListNodeDouble_SoundEffectOwnerBase_ listNode;
+} SoundEffectOwnerBase <optimize=false>;
+
+typedef struct
+{
+    float rmsSquares[16];
+    int rmsSquareCounts[16];
+    unsigned int rmsCounter;
+} SoundEffectOwner__DSPDataRMS <optimize=false>;
+
+typedef struct
+{
+    Ref headRef;
+    if (CanSeekTo(headRef))
+    {
+        SeekToRef(headRef);
+        SoundEffectOwnerBase head;
+        ReturnFromRef();
+    }
+    Ref tailRef;
+    if (CanSeekTo(tailRef))
+    {
+        SeekToRef(tailRef);
+        SoundEffectOwnerBase tail;
+        ReturnFromRef();
+    }
+    unsigned int count;
+} ListEmbeddedDouble_SoundEffectOwnerBase_0_ <optimize=false>;
+
+typedef struct
+{
+} FMOD__DSP <optimize=false>;
+
+typedef struct
+{
+    float dummy;
+} SoundEffect__None <optimize=false>;
+
+typedef struct
+{
+    byte fl : 1;
+    byte fr : 1;
+    byte c : 1;
+    byte lfe : 1;
+    byte sl : 1;
+    byte sr : 1;
+    byte rl : 1;
+    byte rr : 1;
+} SoundEffect__ChannelProcessMask <optimize=false>;
+
+typedef struct
+{
+    float lpfCutOffFrequency;
+    float hpfCutOffFrequency;
+    byte bBypassed;
+    SoundEffect__ChannelProcessMask channelProcessMask;
+} SoundEffect__VoiceFilter <optimize=false>;
+
+typedef struct
+{
+    float fThreshold;
+    float fOutputGain;
+    float fReleaseTimeMin;
+    float fReleaseTimeMax;
+    float fRmsRiseFilterCutoff;
+    float fRmsFallFilterCutoff;
+    byte bBypassed;
+} SoundEffect__PeakLimiter <optimize=false>;
+
+typedef struct
+{
+    float cutOffFrequency;
+} SoundEffect__LowPassCheap <optimize=false>;
+
+typedef struct
+{
+    float cutOffFrequency;
+} SoundEffect__HighPassCheap <optimize=false>;
+
+typedef struct
+{
+    float cutOffFrequency;
+    float resonanceQ;
+} SoundEffect__LowPass <optimize=false>;
+
+typedef struct
+{
+    float cutOffFrequency;
+    float resonanceQ;
+} SoundEffect__HighPass <optimize=false>;
+
+typedef struct
+{
+    float centerFrequency;
+    float bandwidth;
+    float gain;
+} SoundEffect__EQ <optimize=false>;
+
+typedef struct
+{
+    float fadeTime;
+    float threshold;
+    float maxAmplification;
+} SoundEffect__Normalize <optimize=false>;
+
+typedef struct
+{
+    float threshold;
+    float attack;
+    float release;
+    float gainMakeup;
+} SoundEffect__Compressor <optimize=false>;
+
+typedef struct
+{
+    float intensity;
+} SoundEffect__Distortion <optimize=false>;
+
+typedef struct
+{
+    float pitch;
+    unsigned int fFTSize;
+} SoundEffect__PitchShift <optimize=false>;
+
+typedef struct
+{
+    float dryLevel;
+    float room;
+    float roomHF;
+    float decayTime;
+    float decayHFRatio;
+    float reflectionsLevel;
+    float reflectionsDelay;
+    float reverbLevel;
+    float reverbDelay;
+    float diffusion;
+    float density;
+    float hFReference;
+    float roomLF;
+    float lFReference;
+} SoundEffect__Reverb_I3DL2 <optimize=false>;
+
+typedef struct
+{
+    float delay;
+    float decay;
+    float dryMix;
+    float wetMix;
+} SoundEffect__Echo <optimize=false>;
+
+typedef struct
+{
+    float depth;
+    float rate;
+    float dryMix;
+    float wetMix;
+} SoundEffect__Flange <optimize=false>;
+
+typedef struct
+{
+    float delayTime;
+    float rate;
+    float depth;
+    float dryMix;
+    float wetMix1;
+    float wetMix2;
+    float wetMix3;
+} SoundEffect__Chorus <optimize=false>;
+
+typedef union
+{
+    SoundEffect__None uNone;
+    SoundEffect__VoiceFilter uVoiceFilter;
+    SoundEffect__PeakLimiter uPeakLimiter;
+    SoundEffect__LowPassCheap uLowPassCheap;
+    SoundEffect__HighPassCheap uHighPassCheap;
+    SoundEffect__LowPass uLowPass;
+    SoundEffect__HighPass uHighPass;
+    SoundEffect__EQ uEQ;
+    SoundEffect__Normalize uNormalize;
+    SoundEffect__Compressor uCompressor;
+    SoundEffect__Distortion uDistortion;
+    SoundEffect__PitchShift uPitchShift;
+    SoundEffect__Reverb_I3DL2 uReverbI3DL2;
+    SoundEffect__Echo uEcho;
+    SoundEffect__Flange uFlange;
+    SoundEffect__Chorus uChorus;
+} SoundEffect__UnionEffectType;
+
+enum <int> SoundEffect__SoundEffectType
+{
+    SoundEffectType_None = 0,
+    SoundEffectType_VoiceFilter = 1,
+    SoundEffectType_PeakLimiter = 2,
+    SoundEffectType_LowPassCheap = 3,
+    SoundEffectType_HighPassCheap = 4,
+    SoundEffectType_LowPass = 5,
+    SoundEffectType_HighPass = 6,
+    SoundEffectType_EQ = 7,
+    SoundEffectType_Normalize = 8,
+    SoundEffectType_Compressor = 9,
+    SoundEffectType_Distortion = 10,
+    SoundEffectType_PitchShift = 11,
+    SoundEffectType_Reverb_I3DL2 = 12,
+    SoundEffectType_Echo = 13,
+    SoundEffectType_Flange = 14,
+    SoundEffectType_Chorus = 15
+};
+
+typedef struct
+{
+    Ref dspRef;
+    if (CanSeekTo(dspRef))
+    {
+        SeekToRef(dspRef);
+        FMOD__DSP dsp;
+        ReturnFromRef();
+    }
+    Ref dTPRef;
+    if (CanSeekTo(dTPRef))
+    {
+        SeekToRef(dTPRef);
+        SoundEffect__UnionEffectType dTP;
+        ReturnFromRef();
+    }
+    SoundEffect__SoundEffectType effectType;
+} SoundEffectOwner__EffectEntry <optimize=false>;
+
+typedef struct
+{
+    SoundEffectOwner__EffectEntry data[8];
+} FixedArrayStatic_SoundEffectOwner__EffectEntry_8_ <optimize=false>;
+
+typedef struct
+{
+    FixedArrayStatic_SoundEffectOwner__EffectEntry_8_ _Parent;
+    unsigned int size;
+} FixedArray_SoundEffectOwner__EffectEntry_8_ <optimize=false>;
+
+typedef struct
+{
+} FMOD__ChannelGroup <optimize=false>;
+
+typedef struct
+{
+    Ref flinkRef;
+    if (CanSeekTo(flinkRef))
+    {
+        SeekToRef(flinkRef);
+        _LIST_ENTRY flink;
+        ReturnFromRef();
+    }
+    Ref blinkRef;
+    if (CanSeekTo(blinkRef))
+    {
+        SeekToRef(blinkRef);
+        _LIST_ENTRY blink;
+        ReturnFromRef();
+    }
+} _LIST_ENTRY <optimize=false>;
+
+typedef struct
+{
+    ushort type;
+    ushort creatorBackTraceIndex;
+    FSkip(4);
+    Ref criticalSectionRef;
+    if (CanSeekTo(criticalSectionRef))
+    {
+        SeekToRef(criticalSectionRef);
+        _RTL_CRITICAL_SECTION criticalSection;
+        ReturnFromRef();
+    }
+    _LIST_ENTRY processLocksList;
+    unsigned int entryCount;
+    unsigned int contentionCount;
+    unsigned int flags;
+    ushort creatorBackTraceIndexHigh;
+    ushort spareWORD;
+} _RTL_CRITICAL_SECTION_DEBUG <optimize=false>;
+
+typedef struct
+{
+    Ref debugInfoRef;
+    if (CanSeekTo(debugInfoRef))
+    {
+        SeekToRef(debugInfoRef);
+        _RTL_CRITICAL_SECTION_DEBUG debugInfo;
+        ReturnFromRef();
+    }
+    int lockCount;
+    int recursionCount;
+    Ref owningThreadRef;
+    if (CanSeekTo(owningThreadRef))
+    {
+        SeekToRef(owningThreadRef);
+        byte owningThread;
+        ReturnFromRef();
+    }
+    Ref lockSemaphoreRef;
+    if (CanSeekTo(lockSemaphoreRef))
+    {
+        SeekToRef(lockSemaphoreRef);
+        byte lockSemaphore;
+        ReturnFromRef();
+    }
+    uquad spinCount;
+} _RTL_CRITICAL_SECTION <optimize=false>;
+
+typedef struct
+{
+    _RTL_CRITICAL_SECTION cs;
+} Mutex <optimize=false>;
+
+typedef struct
+{
+    SoundEffectOwner__DSPDataRMS data[8];
+} FixedArrayStatic_SoundEffectOwner__DSPDataRMS_8_ <optimize=false>;
+
+typedef struct
+{
+    float fStickyDB[8];
+    float fFatBarDropDB[8];
+    float fTopNotchDropDB[8];
+} SoundEffectOwner__DSPDataPeak <optimize=false>;
+
+typedef struct
+{
+    float fStickyDB;
+    float fDropDB;
+} SoundEffectOwner__DSPDataLimiter <optimize=false>;
+
+typedef struct
+{
+    SoundEffectOwnerBase _Parent;
+    SoundEffectOwner__DSPDataRMS dSPDataRMSMono;
+    FSkip(4);
+    ListEmbeddedDouble_SoundEffectOwnerBase_0_ childList;
+    FSkip(4);
+    FixedArray_SoundEffectOwner__EffectEntry_8_ effectArray;
+    FSkip(4);
+    Ref pendingParentRef;
+    if (CanSeekTo(pendingParentRef))
+    {
+        SeekToRef(pendingParentRef);
+        SoundEffectOwner pendingParent;
+        ReturnFromRef();
+    }
+    Ref parentRef;
+    if (CanSeekTo(parentRef))
+    {
+        SeekToRef(parentRef);
+        SoundEffectOwner parent;
+        ReturnFromRef();
+    }
+    Ref fModChannelGroupRef;
+    if (CanSeekTo(fModChannelGroupRef))
+    {
+        SeekToRef(fModChannelGroupRef);
+        FMOD__ChannelGroup fModChannelGroup;
+        ReturnFromRef();
+    }
+    Ref headDspUnitRef;
+    if (CanSeekTo(headDspUnitRef))
+    {
+        SeekToRef(headDspUnitRef);
+        FMOD__DSP headDspUnit;
+        ReturnFromRef();
+    }
+    Ref dspModuleRMSRef;
+    if (CanSeekTo(dspModuleRMSRef))
+    {
+        SeekToRef(dspModuleRMSRef);
+        FMOD__DSP dspModuleRMS;
+        ReturnFromRef();
+    }
+    Mutex mutexMeterWrite;
+    FixedArrayStatic_SoundEffectOwner__DSPDataRMS_8_ dSPDataRMSMeters;
+    SoundEffectOwner__DSPDataPeak dSPDataPeakMeters;
+    SoundEffectOwner__DSPDataLimiter dSPDataLimiterMeters;
+    int groupID;
+    unsigned int moduleRefCountRMS;
+    unsigned int moduleRefCountMeterRMS;
+    unsigned int moduleRefCountMeterPeak;
+    unsigned int peakLimiterInstCount;
+    unsigned int effectCount;
+    FSkip(4);
+    Ref debugNameRef;
+    if (CanSeekTo(debugNameRef))
+    {
+        SeekToRef(debugNameRef);
+        string debugName;
+        ReturnFromRef();
+    }
+    byte bIsMusicGroup;
+} SoundEffectOwner <optimize=false>;
+
+typedef struct
+{
+    float time;
+} SoundPlex__Silence <optimize=false>;
+
+typedef struct
+{
+    ushort type;
+    byte clickPlay;
+    FSkip(5);
+    Ref dataRef;
+    if (CanSeekTo(dataRef))
+    {
+        SeekToRef(dataRef);
+        SoundPlex__Silence data;
+        ReturnFromRef();
+    }
+    unsigned int ownerID;
+} SoundPlex <optimize=false>;
+
+typedef struct
+{
+    float data[17];
+} FixedArrayStatic_float_17_ <optimize=false>;
+
+typedef struct
+{
+    int data[3];
+} FixedArrayStatic_int_3_ <optimize=false>;
+
+typedef struct
+{
+    FixedArrayStatic_float_17_ reaction;
+    FixedArrayStatic_int_3_ selection;
+    byte oneshot;
+} SoundInputs <optimize=false>;
+
+typedef struct
+{
+    unsigned int window[32];
+    unsigned int sum;
+    unsigned int comp;
+    unsigned int index;
+} RectangularMovingAverage_unsigned int_5_ <optimize=false>;
+
+typedef struct
+{
+    RCObject _Parent;
+    FSkip(-12);
+    SoundTypes _Parent2;
+    SoundTypes__Controls3d controls3d;
+    FSkip(3);
+    Matrix transform;
+    Vector3 vLastPosition;
+    Vector3 vVelocity;
+    uquad clockSampleStart;
+    FSkip(4);
+    ListNodeSingle_SoundOwner_ plexCreateListNode;
+    SoundEffectOwner soundEffectOwner;
+    FSkip(7);
+    Ref dtpDataRef;
+    if (CanSeekTo(dtpDataRef))
+    {
+        SeekToRef(dtpDataRef);
+        SoundPlex dtpData;
+        ReturnFromRef();
+    }
+    SoundTypes__Controls controls;
+    FSkip(3);
+    SoundInputs soundInputs;
+    FSkip(3);
+    unsigned int dtpRootOwnerID;
+    float fPlaybackDelay;
+    unsigned int moduleRefCountRMS;
+    unsigned int totalChildCount;
+    unsigned int cpuTimeCur;
+    unsigned int cpuTimePeak;
+    RectangularMovingAverage_unsigned int_5_ cpuTimeAvg;
+    int bDebugDisplayedYet : 1;
+    int iDebugDisplayRow : 31;
+    int markerID;
+    char markerChar;
+    ubyte bucketIndex;
+    ubyte myIndex;
+    ubyte plexIndex;
+    char releaseBehavior;
+    byte bHasUpdatedVelocity : 4;
+    byte bScriptType : 1;
+    byte bMarkerHit : 1;
+    byte bEnabledPos : 1;
+    byte bEnabledOrient : 1;
+    byte bUnassignableToGroup : 4;
+    byte bPlexCreateFailed : 4;
+} SoundOwner <optimize=false>;
+
+typedef struct
+{
+    ubyte playingstate : 4;
+    ubyte starving : 1;
+} SoundPlex__State <optimize=false>;
+
+typedef struct
+{
+    SoundTypes _Parent;
+    Ref controlsRef;
+    if (CanSeekTo(controlsRef))
+    {
+        SeekToRef(controlsRef);
+        SoundTypes__Controls controls;
+        ReturnFromRef();
+    }
+    Ref controls3dRef;
+    if (CanSeekTo(controls3dRef))
+    {
+        SeekToRef(controls3dRef);
+        SoundTypes__Controls3d controls3d;
+        ReturnFromRef();
+    }
+    Ref ownerRef;
+    if (CanSeekTo(ownerRef))
+    {
+        SeekToRef(ownerRef);
+        SoundOwner owner;
+        ReturnFromRef();
+    }
+    Ref bussParentRef;
+    if (CanSeekTo(bussParentRef))
+    {
+        SeekToRef(bussParentRef);
+        SoundEffectOwner bussParent;
+        ReturnFromRef();
+    }
+    unsigned int dtpOwnerID;
+    FSkip(4);
+    Ref debugPlexParentRef;
+    if (CanSeekTo(debugPlexParentRef))
+    {
+        SeekToRef(debugPlexParentRef);
+        SoundPlex debugPlexParent;
+        ReturnFromRef();
+    }
+    float fParentSetVolume;
+    float fResolvedParentSetVolume;
+    ubyte bucketIndex;
+    ubyte myIndex;
+    ubyte ownerIndex;
+    ubyte parentPlexIndex;
+    ubyte nextSiblingPlexIndex;
+    ubyte prevSiblingPlexIndex;
+    ubyte headChildIndex;
+    ubyte childCount;
+    ubyte type;
+    SoundPlex__State state;
+    byte bResourceDumped : 1;
+    byte bScriptType : 1;
+    byte bPreparedToPlay : 1;
+    byte bWasTimeInChild : 1;
+} SoundPlex <optimize=false>;
+
+typedef struct
+{
+    ubyte mSubtitleMode;
+    FSkip(7);
+    Ref plexParentRef;
+    if (CanSeekTo(plexParentRef))
+    {
+        SeekToRef(plexParentRef);
+        SoundPlex plexParent;
+        ReturnFromRef();
+    }
+    byte bHasExternalSubtitleFile;
+} MediaStream <optimize=false>;
+
+RefDefinitions refDefinitions;
+MediaStream root <open=true>;

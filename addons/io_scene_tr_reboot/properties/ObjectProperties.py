@@ -23,11 +23,24 @@ def search_bones(self: BlenderPropertyGroup, context: bpy.types.Context, edit_te
 class ObjectClothProperties(BlenderPropertyGroup):
     parent_bone_name: Annotated[str, Prop("Parent", search = search_bones)]
     gravity_factor: Annotated[float, Prop("Gravity Factor", min = -2, max = 2, default = 1)]
-    wind_factor: Annotated[float, Prop("Wind Factor", min = 0, max = 1, subtype = "FACTOR")]
+    buoyancy_factor: Annotated[float, Prop("Buoyancy", min = 0, max = 1, default = 0.5, subtype = "FACTOR")]
+    dampening: Annotated[float, Prop("Drag", min = 0, max = 1, default = 0.2, subtype = "FACTOR")]
+    wind_factor: Annotated[float, Prop("Wind Factor", min = 0, subtype = "FACTOR")]
     stiffness: Annotated[float, Prop("Pose Follow Factor", min = 0, max = 1, subtype = "FACTOR")]
     rigidity: Annotated[float, Prop("Rigidity", min = 0, max = 1, default = 0.6, subtype = "FACTOR")]
     bounceback_factor: Annotated[float, Prop("Bounceback Strength", min = 0, max = 1, subtype = "FACTOR")]
-    dampening: Annotated[float, Prop("Drag", min = 0, max = 1, default = 0.2, subtype = "FACTOR")]
+
+    transform_type: Annotated[int, Prop("Transform Type", min = 0, max = 2, default = 1)]
+    max_velocity_iterations: Annotated[int, Prop("Max Velocity Iterations", min = 0, default = 3)]
+    max_position_iterations: Annotated[int, Prop("Max Position Iteration", min = 0, default = 2)]
+    relaxation_iterations: Annotated[int, Prop("Relaxation Iterations", min = 0, default = 5)]
+    sub_step_count: Annotated[int, Prop("Sub Step Count", min = 0, default = 2)]
+    fixed_to_free_slop: Annotated[float, Prop("Fixed to Free Slop", min = 0, max = 1, default = 0, subtype = "FACTOR")]
+    free_to_free_slop: Annotated[float, Prop("Free to Free Slop", min = 0, max = 1, default = 0, subtype = "FACTOR")]
+    free_to_free_slop_z: Annotated[float, Prop("Free to Free Slop Z", min = 0, max = 1, default = 0, subtype = "FACTOR")]
+    mass_scale: Annotated[float, Prop("Mass Scale", min = 0, default = 20)]
+    time_delta_scale: Annotated[float, Prop("Time Delta Scale", min = 0, default = 1)]
+    blend_to_bind_time: Annotated[float, Prop("Blend to Bind Time", min = 0, default = 8)]
 
 class ObjectCollisionProperties(BlenderPropertyGroup):
     data: Annotated[str, Prop("Data")]

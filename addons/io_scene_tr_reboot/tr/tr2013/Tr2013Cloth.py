@@ -115,11 +115,11 @@ class _ClothTuneStripGroup(CStruct32, IClothTuneStripGroup if TYPE_CHECKING else
     wind_on_constraints: CInt
     max_mass_bounceback_factor: CFloat
     transform_type: CInt
-    spring_stretchiness_default_percentage: CInt
-    spring_stretchiness_lower_percentage: CInt
+    fixed_to_free_slop: CInt
+    free_to_free_slop: CInt
     rigidity_percentage: CInt
-    acceleration_divider: CFloat
-    time_delta_multiplier: CFloat
+    mass_scale: CFloat
+    time_delta_scale: CFloat
     num_strip_ids: CInt
     strip_ids_ref: ResourceReference | None
     num_collision_group_indices: CInt
@@ -137,11 +137,11 @@ class _ClothTuneStripGroup(CStruct32, IClothTuneStripGroup if TYPE_CHECKING else
     def gravity_factor(self, value: float) -> None:     # type: ignore
         self.gravity = value * 9.8
 
-    buoyancy: float
+    buoyancy_factor: float
     pose_follow_factor: float
-    spring_stretchiness_upper_percentage: int
-    reference_time_delta_multiplier: float
-    _ignored_fields_ = ("buoyancy", "pose_follow_factor", "spring_stretchiness_upper_percentage", "reference_time_delta_multiplier")
+    free_to_free_slop_z: int
+    blend_to_bind_time: float
+    _ignored_fields_ = ("buoyancy_factor", "pose_follow_factor", "free_to_free_slop_z", "blend_to_bind_time")
 
 assert(sizeof(_ClothTuneStripGroup) == 0x5C)
 
@@ -153,7 +153,10 @@ assert(sizeof(_ClothTuneCollisionGroup) == 8)
 
 class Tr2013Cloth(Cloth):
     supports = ClothFeatureSupport(
+        strip_buoyancy_factor = False,
         strip_pose_follow_factor = False,
+        strip_free_to_free_slop_z = False,
+        strip_blend_to_bind_time = False,
         mass_specific_bounceback_factor = False,
         spring_specific_stretchiness = False
     )
@@ -247,18 +250,31 @@ class Tr2013Cloth(Cloth):
                     continue
 
                 strip.gravity_factor = dtp_strip_group.gravity_factor
+                strip.buoyancy_factor = dtp_strip_group.buoyancy_factor
                 strip.wind_factor = dtp_strip_group.wind_factor
                 strip.pose_follow_factor = dtp_strip_group.pose_follow_factor
                 strip.rigidity = dtp_strip_group.rigidity_percentage / 100
                 strip.mass_bounceback_factor = dtp_strip_group.max_mass_bounceback_factor
                 strip.drag = dtp_strip_group.drag
 
+                strip.transform_type = dtp_strip_group.transform_type
+                strip.max_velocity_iterations = dtp_strip_group.max_velocity_update_iterations
+                strip.max_position_iterations = dtp_strip_group.max_position_update_iterations
+                strip.relaxation_iterations = dtp_strip_group.relaxation_iterations
+                strip.sub_step_count = dtp_strip_group.sub_step_count
+                strip.fixed_to_free_slop = dtp_strip_group.fixed_to_free_slop / 100
+                strip.free_to_free_slop = dtp_strip_group.free_to_free_slop / 100
+                strip.free_to_free_slop_z = dtp_strip_group.free_to_free_slop_z / 100
+                strip.mass_scale = dtp_strip_group.mass_scale
+                strip.time_delta_scale = dtp_strip_group.time_delta_scale
+                strip.blend_to_bind_time = dtp_strip_group.blend_to_bind_time
+
                 for mass in strip.masses:
                     mass.bounceback_factor *= dtp_strip_group.max_mass_bounceback_factor
 
                 for spring in strip.springs:
-                    spring.stretchiness = dtp_strip_group.spring_stretchiness_lower_percentage / 100 + spring.stretchiness * \
-                                          (dtp_strip_group.spring_stretchiness_upper_percentage - dtp_strip_group.spring_stretchiness_lower_percentage) / 100
+                    spring.stretchiness = dtp_strip_group.free_to_free_slop / 100 + spring.stretchiness * \
+                                          (dtp_strip_group.free_to_free_slop_z - dtp_strip_group.free_to_free_slop) / 100
 
                 strip.collisions = strip_group_collisions
 
@@ -302,7 +318,7 @@ class Tr2013Cloth(Cloth):
                 dtp_mass.spring_vector_array_ref = writer.make_internal_ref()
                 dtp_mass.rank = mass_idx
                 dtp_mass.mass = int(mass.mass * 255)
-                dtp_mass.bounce_back_factor = int(mass.bounceback_factor / strip.mass_bounceback_factor * 255) if strip.mass_bounceback_factor > 0 else 0
+                dtp_mass.bounce_back_factor = int(mass.bounceback_factor * 255)
                 writer.write_struct(cast(CStruct, dtp_mass))
 
                 dtp_masses.append(dtp_mass)
@@ -370,23 +386,23 @@ class Tr2013Cloth(Cloth):
         for strip in self.strips:
             dtp_strip_group = self.create_tune_strip_group()
             dtp_strip_group.gravity_factor = strip.gravity_factor
-            dtp_strip_group.buoyancy = 0.5
+            dtp_strip_group.buoyancy_factor = strip.buoyancy_factor
             dtp_strip_group.drag = strip.drag
-            dtp_strip_group.max_velocity_update_iterations = 3
-            dtp_strip_group.max_position_update_iterations = 2
-            dtp_strip_group.relaxation_iterations = 5
-            dtp_strip_group.sub_step_count = 2
+            dtp_strip_group.max_velocity_update_iterations = strip.max_velocity_iterations
+            dtp_strip_group.max_position_update_iterations = strip.max_position_iterations
+            dtp_strip_group.relaxation_iterations = strip.relaxation_iterations
+            dtp_strip_group.sub_step_count = strip.sub_step_count
             dtp_strip_group.wind_factor = strip.wind_factor
-            dtp_strip_group.max_mass_bounceback_factor = strip.mass_bounceback_factor
+            dtp_strip_group.max_mass_bounceback_factor = 1 if self.supports.mass_specific_bounceback_factor else strip.mass_bounceback_factor
             dtp_strip_group.pose_follow_factor = strip.pose_follow_factor
-            dtp_strip_group.transform_type = 1
-            dtp_strip_group.spring_stretchiness_default_percentage = 0
-            dtp_strip_group.spring_stretchiness_lower_percentage = 0
-            dtp_strip_group.spring_stretchiness_upper_percentage = 100
+            dtp_strip_group.transform_type = strip.transform_type
+            dtp_strip_group.fixed_to_free_slop = int(strip.fixed_to_free_slop * 100)
+            dtp_strip_group.free_to_free_slop = int(strip.free_to_free_slop * 100)
+            dtp_strip_group.free_to_free_slop_z = int(strip.free_to_free_slop_z * 100)
             dtp_strip_group.rigidity_percentage = int(strip.rigidity * 100)
-            dtp_strip_group.acceleration_divider = 20
-            dtp_strip_group.time_delta_multiplier = 1.0
-            dtp_strip_group.reference_time_delta_multiplier = 8.0
+            dtp_strip_group.mass_scale = strip.mass_scale
+            dtp_strip_group.time_delta_scale = strip.time_delta_scale
+            dtp_strip_group.blend_to_bind_time = strip.blend_to_bind_time
             dtp_strip_group.strip_ids_ref = writer.make_internal_ref()
             dtp_strip_group.num_strip_ids = 1
             dtp_strip_group.collision_group_indices_ref = writer.make_internal_ref()
@@ -465,8 +481,10 @@ class Tr2013Cloth(Cloth):
     def read_tune_strip_groups(self, reader: ResourceReader, count: int) -> Sequence[IClothTuneStripGroup]:
         dtp_strip_groups = reader.read_struct_list(_ClothTuneStripGroup, count)
         for dtp_strip_group in dtp_strip_groups:
+            dtp_strip_group.buoyancy_factor = 0.5
             dtp_strip_group.pose_follow_factor = 0.0
-            dtp_strip_group.spring_stretchiness_upper_percentage = 100
+            dtp_strip_group.free_to_free_slop_z = 0
+            dtp_strip_group.blend_to_bind_time = 10
 
         return dtp_strip_groups
 

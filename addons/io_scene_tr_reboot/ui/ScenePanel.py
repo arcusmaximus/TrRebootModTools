@@ -13,7 +13,7 @@ class ScenePanel(bpy.types.Panel):
         return context is not None
 
     def draw(self, context: bpy.types.Context | None) -> None:
-        if context is None:
+        if context is None or context.scene is None or self.layout is None:
             return
 
         props = SceneProperties.get_instance(context.scene)

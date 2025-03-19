@@ -93,7 +93,7 @@ assert(sizeof(_ClothTuneConfig) == 0x10)
 
 class _ClothTuneStripGroup(CStruct64, IClothTuneStripGroup if TYPE_CHECKING else object):
     gravity_factor: CFloat
-    buoyancy: CFloat
+    buoyancy_factor: CFloat
     drag: CFloat
     max_velocity_update_iterations: CInt
     max_position_update_iterations: CInt
@@ -104,13 +104,13 @@ class _ClothTuneStripGroup(CStruct64, IClothTuneStripGroup if TYPE_CHECKING else
     max_mass_bounceback_factor: CFloat
     pose_follow_factor: CFloat
     transform_type: CInt
-    spring_stretchiness_default_percentage: CInt
-    spring_stretchiness_lower_percentage: CInt
-    spring_stretchiness_upper_percentage: CInt
+    fixed_to_free_slop: CInt
+    free_to_free_slop: CInt
+    free_to_free_slop_z: CInt
     rigidity_percentage: CInt
-    acceleration_divider: CFloat
-    time_delta_multiplier: CFloat
-    reference_time_delta_multiplier: CFloat
+    mass_scale: CFloat
+    time_delta_scale: CFloat
+    blend_to_bind_time: CFloat
     collide_with_dynamic_hair: CInt
     collision_friction: CFloat
     collide_with_camera: CInt
@@ -148,7 +148,10 @@ assert(sizeof(_ClothTuneCollisionKey) == 0x30)
 
 class ShadowCloth(RiseCloth):
     supports = ClothFeatureSupport(
+        strip_buoyancy_factor = True,
         strip_pose_follow_factor = True,
+        strip_free_to_free_slop_z = True,
+        strip_blend_to_bind_time = True,
         mass_specific_bounceback_factor = True,
         spring_specific_stretchiness = True
     )

@@ -15,6 +15,9 @@ class BlenderHelper:
 
     @staticmethod
     def select_object(bl_obj: bpy.types.Object) -> None:
+        if bpy.context.view_layer is None:
+            return
+
         bpy.ops.object.select_all(action = "DESELECT")
         bl_obj.hide_set(False)
         bl_obj.select_set(True)
@@ -51,6 +54,9 @@ class BlenderHelper:
 
     @staticmethod
     def __add_object_to_scene(bl_obj: bpy.types.Object) -> None:
+        if bpy.context.scene is None or bpy.context.view_layer is None:
+            return
+
         bpy.context.scene.collection.objects.link(bl_obj)
 
         bpy.ops.object.select_all(action = "DESELECT")
@@ -59,6 +65,9 @@ class BlenderHelper:
 
     @staticmethod
     def join_objects(bl_target_obj: bpy.types.Object, bl_source_objs: Iterable[bpy.types.Object]) -> None:
+        if bpy.context.view_layer is None:
+            return
+
         bpy.ops.object.select_all(action = "DESELECT")
         for bl_source_obj in bl_source_objs:
             bl_source_obj.select_set(True)
@@ -115,7 +124,7 @@ class BlenderHelper:
             for bl_bone_collection in bl_armature.collections:
                 if bl_bone_collection.bones.get(bl_bone.name):
                     return BlenderBoneGroup(bl_bone_collection.name, str(bl_bone.color.palette))
-        else:
+        elif bl_armature_obj.pose is not None:
             bl_bone_group = getattr(bl_armature_obj.pose.bones[bl_bone.name], "bone_group")
             if bl_bone_group is not None:
                 return BlenderBoneGroup(bl_bone_group.name, bl_bone_group.color_set)
@@ -128,9 +137,11 @@ class BlenderHelper:
             bl_armature = cast(bpy.types.Armature, bl_armature_obj.data)
             bl_bone_collection = bl_armature.collections.get(group_name)
             return bl_bone_collection is not None and bl_bone_collection.bones.get(bl_bone.name) is not None
-        else:
+        elif bl_armature_obj.pose is not None:
             bl_bone_group = getattr(bl_armature_obj.pose.bones[bl_bone.name], "bone_group")
             return bl_bone_group is not None and getattr(bl_bone_group, "name") == group_name
+        else:
+            return False
 
     @staticmethod
     def move_bone_to_group(bl_armature_obj: bpy.types.Object, bl_bone: bpy.types.Bone, group_name: str | None, palette: str | None) -> None:
@@ -147,7 +158,7 @@ class BlenderHelper:
                 bl_bone_collection.assign(bl_bone)
 
             bl_bone.color.palette = cast(Any, palette or "DEFAULT")
-        else:
+        elif bl_armature_obj.pose is not None:
             bl_bone_group: Any = None
             if group_name is not None:
                 bl_bone_groups = getattr(bl_armature_obj.pose, "bone_groups")
@@ -160,11 +171,14 @@ class BlenderHelper:
     def remove_bone_from_group(bl_armature_obj: bpy.types.Object, bl_bone: bpy.types.Bone) -> None:
         if BlenderHelper.is_blender_40:
             bl_bone.collections.clear()
-        else:
+        elif bl_armature_obj.pose is not None:
             setattr(bl_armature_obj.pose.bones[bl_bone.name], "bone_group", None)
 
     @staticmethod
     def reset_pose(bl_armature_obj: bpy.types.Object) -> None:
+        if bl_armature_obj.pose is None:
+            return
+
         for bl_bone in bl_armature_obj.pose.bones:
             bl_bone.matrix_basis.identity()
 
@@ -212,6 +226,9 @@ class BlenderHelper:
 
     @staticmethod
     def view_all() -> None:
+        if bpy.context.screen is None:
+            return
+
         for bl_area in Enumerable(bpy.context.screen.areas).where(lambda a: a.type == "VIEW_3D"):
             bl_region = Enumerable(bl_area.regions).first_or_none(lambda r: r.type == "WINDOW")
             if bl_region is None:
@@ -247,7 +264,7 @@ class BlenderModelExportContext(SlotsBase):
                 bl_modifier.show_viewport = False
 
         bl_mesh = cast(bpy.types.Mesh, bl_obj.data)
-        if cast(bpy.types.Key | None, bl_mesh.shape_keys) is None:
+        if bl_mesh.shape_keys is None:
             self.shape_key_values = []
         else:
             self.shape_key_values = Enumerable(bl_mesh.shape_keys.key_blocks).select(lambda s: s.value).to_list()
@@ -265,7 +282,8 @@ class BlenderModelExportContext(SlotsBase):
 
         bpy.ops.object.select_all(action = "DESELECT")
         bl_obj.select_set(True)
-        bpy.context.view_layer.objects.active = bl_obj
+        if bpy.context.view_layer is not None:
+            bpy.context.view_layer.objects.active = bl_obj
 
     def __enter__(self) -> None:
         pass
@@ -275,7 +293,7 @@ class BlenderModelExportContext(SlotsBase):
             self.bl_obj.modifiers[i].show_viewport = enabled
 
         bl_mesh = cast(bpy.types.Mesh, self.bl_obj.data)
-        if cast(bpy.types.Key | None, bl_mesh.shape_keys) is not None:
+        if bl_mesh.shape_keys is not None:
             for i, value in enumerate(self.shape_key_values):
                 bl_mesh.shape_keys.key_blocks[i].value = value
 

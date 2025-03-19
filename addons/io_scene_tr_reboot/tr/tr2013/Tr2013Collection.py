@@ -4,12 +4,14 @@ from io_scene_tr_reboot.tr.Cloth import Cloth
 from io_scene_tr_reboot.tr.Collection import Collection
 from io_scene_tr_reboot.tr.Collision import Collision
 from io_scene_tr_reboot.tr.Enumerations import CdcGame
+from io_scene_tr_reboot.tr.Hair import Hair
 from io_scene_tr_reboot.tr.Material import Material
 from io_scene_tr_reboot.tr.Model import IModel
 from io_scene_tr_reboot.tr.ResourceKey import ResourceKey
 from io_scene_tr_reboot.tr.ResourceReference import ResourceReference
 from io_scene_tr_reboot.tr.Skeleton import ISkeleton
 from io_scene_tr_reboot.tr.tr2013.Tr2013Cloth import Tr2013Cloth
+from io_scene_tr_reboot.tr.tr2013.Tr2013Hair import Tr2013Hair
 from io_scene_tr_reboot.tr.tr2013.Tr2013LegacyModel import Tr2013LegacyModel
 from io_scene_tr_reboot.tr.tr2013.Tr2013Material import Tr2013Material
 from io_scene_tr_reboot.tr.tr2013.Tr2013Model import Tr2013Model
@@ -31,6 +33,7 @@ class Tr2013Collection(Collection):
 
     __model_refs: list[ResourceReference]
     __cloth_tune_ref: ResourceReference | None
+    __skeletons: dict[ResourceKey, Tr2013Skeleton]
     __models: dict[ResourceKey, Tr2013Model]
 
     def __init__(self, object_ref_file_path: str) -> None:
@@ -50,10 +53,19 @@ class Tr2013Collection(Collection):
             self.__model_refs = []
 
         self.__cloth_tune_ref = object_header.cloth_tune_ref_1
+        self.__skeletons = {}
         self.__models = {}
 
     def get_model_instances(self) -> list[Collection.ModelInstance]:
-        return Enumerable(self.__model_refs).select(lambda r: Collection.ModelInstance(r, Matrix())).to_list()
+        instances: list[Collection.ModelInstance] = []
+        for model_ref in self.__model_refs:
+            model = self.get_model(model_ref)
+            if model is None or self.is_hair_model(model):
+                continue
+
+            instances.append(Collection.ModelInstance(model_ref, model_ref, Matrix()))
+
+        return instances
 
     def get_model(self, resource: ResourceKey) -> IModel | None:
         if resource.__class__ != ResourceKey:
@@ -79,23 +91,25 @@ class Tr2013Collection(Collection):
     def _create_material(self) -> Material:
         return Tr2013Material()
 
-    def get_skeleton(self) -> ISkeleton | None:
-        for legacy_model_ref in self.__model_refs:
-            legacy_model = self.get_legacy_model(legacy_model_ref)
-            if legacy_model is None or legacy_model.bones_ref is None or legacy_model.bone_id_map_ref is None:
-                continue
-
-            bones_reader = self.get_resource_reader(legacy_model.bones_ref, True)
-            id_mappings_reader = self.get_resource_reader(legacy_model.bone_id_map_ref, True)
-            if bones_reader is None or id_mappings_reader is None:
-                continue
-
-            skeleton = Tr2013Skeleton(legacy_model.bones_ref.id)
-            skeleton.read_bones(bones_reader)
-            skeleton.read_id_mappings(id_mappings_reader)
+    def get_skeleton(self, resource: ResourceKey) -> ISkeleton | None:
+        skeleton = self.__skeletons.get(resource)
+        if skeleton is not None:
             return skeleton
 
-        return None
+        legacy_model = self.get_legacy_model(resource)
+        if legacy_model is None or legacy_model.bones_ref is None or legacy_model.bone_id_map_ref is None:
+            return None
+
+        bones_reader = self.get_resource_reader(legacy_model.bones_ref, True)
+        id_mappings_reader = self.get_resource_reader(legacy_model.bone_id_map_ref, True)
+        if bones_reader is None or id_mappings_reader is None:
+            return None
+
+        skeleton = Tr2013Skeleton(legacy_model.bones_ref.id)
+        skeleton.read_bones(bones_reader)
+        skeleton.read_id_mappings(id_mappings_reader)
+        self.__skeletons[resource] = skeleton
+        return skeleton
 
     def get_collisions(self) -> list[Collision]:
         return []
@@ -114,9 +128,12 @@ class Tr2013Collection(Collection):
         return self.__cloth_tune_ref
 
     def get_cloth(self) -> Cloth | None:
+        if len(self.__model_refs) != 1:
+            return None
+
         cloth_definition_ref = self.cloth_definition_ref
         cloth_tune_ref = self.cloth_tune_ref
-        skeleton = self.get_skeleton()
+        skeleton = self.get_skeleton(self.__model_refs[0])
         if cloth_definition_ref is None or skeleton is None:
             return None
 
@@ -135,9 +152,21 @@ class Tr2013Collection(Collection):
         cloth.read(definition_reader, tune_reader, global_bone_ids, [])
         return cloth
 
+    def get_hair(self) -> Hair | None:
+        model = Enumerable(self.__model_refs).select(self.get_model).of_type(Tr2013Model).first_or_none(self.is_hair_model)
+        if model is None or model.refs.model_data_resource is None:
+            return None
+
+        hair = Tr2013Hair(model.id, model.refs.model_data_resource.id)
+        hair.from_model(model)
+        return hair
+
     def get_legacy_model(self, resource: ResourceKey) -> Tr2013LegacyModel | None:
         reader = self.get_resource_reader(resource, False)
         if reader is None:
             return None
 
         return Tr2013LegacyModel(reader.data)
+
+    def is_hair_model(self, model: IModel) -> bool:
+        return Enumerable(model.meshes).select_many(lambda m: m.parts).any(lambda p: p.is_hair)

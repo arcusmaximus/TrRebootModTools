@@ -20,7 +20,7 @@ class MeshPanel(bpy.types.Panel):
         return bl_obj is not None and isinstance(bl_obj.data, bpy.types.Mesh) and BlenderNaming.try_parse_mesh_name(bl_obj.name) is not None
 
     def draw(self, context: bpy.types.Context | None) -> None:
-        if context is None:
+        if context is None or self.layout is None:
             return
 
         bl_obj = context.object

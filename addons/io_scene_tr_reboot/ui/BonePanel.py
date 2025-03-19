@@ -18,11 +18,10 @@ class BonePanel(bpy.types.Panel):
         if not bl_bone:
             return False
 
-        bone_id_set = BlenderNaming.try_parse_bone_name(bl_bone.name)
-        return bone_id_set is not None and bone_id_set.global_id is not None
+        return BlenderNaming.try_parse_bone_name(bl_bone.name) is not None
 
     def draw(self, context: bpy.types.Context | None) -> None:
-        if context is None:
+        if context is None or self.layout is None:
             return
 
         bl_bone = context.bone

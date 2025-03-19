@@ -6,6 +6,7 @@ from io_scene_tr_reboot.tr.Cloth import Cloth
 from io_scene_tr_reboot.tr.Collection import Collection
 from io_scene_tr_reboot.tr.Collision import Collision, CollisionType
 from io_scene_tr_reboot.tr.Enumerations import CdcGame
+from io_scene_tr_reboot.tr.Hair import Hair
 from io_scene_tr_reboot.tr.Mesh import IMesh
 from io_scene_tr_reboot.tr.MeshPart import IMeshPart
 from io_scene_tr_reboot.tr.Model import IModel
@@ -34,3 +35,5 @@ class IFactory(Protocol):
     def create_collision(self, type: CollisionType, hash: int) -> Collision: ...
 
     def deserialize_collision(self, data: str) -> Collision: ...
+
+    def create_hair(self, model_id: int | None, hair_data_id: int) -> Hair: ...

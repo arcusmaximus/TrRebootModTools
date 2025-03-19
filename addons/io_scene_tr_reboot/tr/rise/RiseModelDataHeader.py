@@ -22,12 +22,12 @@ class RiseModelDataHeader(CStruct64, IModelDataHeader if TYPE_CHECKING else obje
     bone_usage_map:             CArray[CInt, Literal[8]]        # type: ignore
     mesh_parts_offet:           CLong
     mesh_headers_offset:        CLong
-    bone_mappings_offset:       CLong
+    local_bone_ids_offset:      CLong
     lod_levels_offset:          CLong
     index_data_offset:          CLong
     num_mesh_parts:             CShort
     num_meshes:                 CShort
-    num_bone_mappings:          CShort
+    num_bones:                  CShort
     num_lod_levels:             CShort
     pre_tesselation_info_offset:    CLong
     name_offset:                CLong

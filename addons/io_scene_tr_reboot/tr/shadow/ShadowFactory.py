@@ -6,6 +6,7 @@ from io_scene_tr_reboot.tr.Cloth import Cloth
 from io_scene_tr_reboot.tr.Collection import Collection
 from io_scene_tr_reboot.tr.Collision import Collision, CollisionType
 from io_scene_tr_reboot.tr.Enumerations import CdcGame
+from io_scene_tr_reboot.tr.Hair import Hair
 from io_scene_tr_reboot.tr.IFactory import IFactory
 from io_scene_tr_reboot.tr.Mesh import IMesh
 from io_scene_tr_reboot.tr.MeshPart import IMeshPart
@@ -58,3 +59,6 @@ class ShadowFactory(IFactory):
 
     def deserialize_collision(self, data: str) -> Collision:
         return ShadowCollision.deserialize(data)
+
+    def create_hair(self, model_id: int | None, hair_data_id: int) -> Hair:
+        raise NotImplementedError()

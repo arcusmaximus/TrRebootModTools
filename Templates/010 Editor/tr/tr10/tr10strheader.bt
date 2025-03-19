@@ -1,0 +1,39 @@
+#define TR_VERSION 10
+#include "../trcommon.bt"
+
+enum <byte> STRHEADER__ChannelType
+{
+    ChannelMono = 0,
+    ChannelLeft = 1,
+    ChannelRight = 2
+};
+
+typedef struct
+{
+    int hertz;
+    int startLoop;
+    int endLoop;
+    int channelCount;
+    int reverbVol;
+    int startSizeToLoad;
+    int partialLoop;
+    int loopAreaSize;
+    int hasCinematic;
+    int hasSubtitles;
+    int faceFxSize;
+    int loopStartFileOffset;
+    int loopStartBundleOffset;
+    int maxEEBytesPerRead;
+    float mediaLength;
+    float volLeft[12];
+    float volRight[12];
+    unsigned int loopStartSamplesToSkip[12];
+    unsigned int spliceMarkersCount;
+    unsigned int spliceMarkersSampleOffset[1024];
+    short spliceMarkersIdentifier[1024];
+    char spliceMarkersChars[1024];
+    STRHEADER__ChannelType channelType[12];
+} STRHEADER <optimize=false>;
+
+RefDefinitions refDefinitions;
+STRHEADER root <open=true>;

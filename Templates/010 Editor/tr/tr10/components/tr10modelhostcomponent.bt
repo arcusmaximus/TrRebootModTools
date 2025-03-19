@@ -1,0 +1,70 @@
+#define TR_VERSION 10
+#include "../../trcommon.bt"
+
+typedef struct
+{
+    Ref originalMaterialRef;
+    Ref overrideMaterialRef;
+} ModelHostComponent__MaterialSwapData <optimize=false>;
+
+typedef struct
+{
+    Ref materialDataSwapEntriesRef;
+    unsigned int numMaterialDataSwapEntries;
+    if (CanSeekTo(materialDataSwapEntriesRef))
+    {
+        SeekToRef(materialDataSwapEntriesRef);
+        ModelHostComponent__MaterialSwapData materialDataSwapEntries[numMaterialDataSwapEntries];
+        ReturnFromRef();
+    }
+    unsigned int materialSetType;
+    Ref debugNameRef;
+    if (CanSeekTo(debugNameRef))
+    {
+        SeekToRef(debugNameRef);
+        string debugName;
+        ReturnFromRef();
+    }
+} ModelHostComponent__MaterialSwapDataTable <optimize=false>;
+
+typedef struct
+{
+    Ref debugNameRef;
+    if (CanSeekTo(debugNameRef))
+    {
+        SeekToRef(debugNameRef);
+        string debugName;
+        ReturnFromRef();
+    }
+    Ref meshRef;
+    unsigned int modelSlotType;
+    byte restrictToZone;
+    FSkip(3);
+    unsigned int zoneRef;
+    byte derivedZones;
+    FSkip(3);
+    Ref materialSwapListRef;
+    unsigned int numMaterialSwaps;
+    if (CanSeekTo(materialSwapListRef))
+    {
+        SeekToRef(materialSwapListRef);
+        ModelHostComponent__MaterialSwapDataTable materialSwapList[numMaterialSwaps];
+        ReturnFromRef();
+    }
+    FSkip(4);
+} ModelHostComponent__HostedModel <optimize=false>;
+
+typedef struct
+{
+    Ref hostedModelsRef;
+    unsigned int numHostedModels;
+    if (CanSeekTo(hostedModelsRef))
+    {
+        SeekToRef(hostedModelsRef);
+        ModelHostComponent__HostedModel hostedModels[numHostedModels];
+        ReturnFromRef();
+    }
+} ModelHostComponent <optimize=false>;
+
+RefDefinitions refDefinitions;
+ModelHostComponent root <open=true>;

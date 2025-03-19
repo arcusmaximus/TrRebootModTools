@@ -1,3 +1,4 @@
+from array import array
 import bpy
 from typing import Callable, Iterable, TypeVar, cast
 from mathutils import Vector
@@ -12,6 +13,7 @@ from io_scene_tr_reboot.tr.Hashes import Hashes
 from io_scene_tr_reboot.tr.Mesh import IMesh
 from io_scene_tr_reboot.tr.MeshPart import IMeshPart
 from io_scene_tr_reboot.tr.Model import IModel
+from io_scene_tr_reboot.tr.ResourceKey import ResourceKey
 from io_scene_tr_reboot.tr.Skeleton import ISkeleton
 from io_scene_tr_reboot.tr.Vertex import Vertex
 from io_scene_tr_reboot.util.Enumerable import Enumerable
@@ -31,15 +33,12 @@ class ModelImporter(SlotsBase):
         self.import_lods = import_lods
         self.split_into_parts = split_into_parts
 
-    def import_from_collection(self, tr_collection: Collection, bl_armature_obj: bpy.types.Object | None) -> list[bpy.types.Object]:
+    def import_from_collection(self, tr_collection: Collection, bl_armature_objs: dict[ResourceKey, bpy.types.Object]) -> list[bpy.types.Object]:
         if bpy.context.object is not None:
             bpy.ops.object.mode_set(mode = "OBJECT")
 
         self.import_materials(tr_collection)
-        tr_skeleton = tr_collection.get_skeleton()
-        bl_objs_by_model = self.import_model_instances(tr_collection, tr_skeleton)
-        if bl_armature_obj is not None:
-            self.parent_objects_to_armature(Enumerable(bl_objs_by_model.values()).select_many(lambda o: o), bl_armature_obj)
+        bl_objs_by_model = self.import_model_instances(tr_collection, bl_armature_objs)
 
         self.store_collection_files(tr_collection)
         return Enumerable(bl_objs_by_model.values()).select_many(lambda m: m).to_list()
@@ -48,12 +47,13 @@ class ModelImporter(SlotsBase):
         for material_resource in tr_collection.get_resources(ResourceType.MATERIAL):
             self.material_importer.import_material(tr_collection, material_resource)
 
-    def import_model_instances(self, tr_collection: Collection, tr_skeleton: ISkeleton | None) -> dict[int, list[bpy.types.Object]]:
+    def import_model_instances(self, tr_collection: Collection, bl_armature_objs: dict[ResourceKey, bpy.types.Object]) -> dict[int, list[bpy.types.Object]]:
         bl_objs_by_model: dict[int, list[bpy.types.Object]] = {}
         bl_meshes_by_model: dict[int, list[bpy.types.Mesh]] = {}
 
         for tr_instance in tr_collection.get_model_instances():
-            tr_model = tr_collection.get_model(tr_instance.resource)
+            tr_skeleton = tr_collection.get_skeleton(tr_instance.skeleton_resource) if tr_instance.skeleton_resource is not None else None
+            tr_model = tr_collection.get_model(tr_instance.model_resource)
             if tr_model is None:
                 continue
 
@@ -71,6 +71,9 @@ class ModelImporter(SlotsBase):
                 transform = tr_instance.transform.copy()
                 transform.translation = transform.translation * self.scale_factor
                 bl_obj.matrix_world = bl_obj.matrix_world @ transform
+
+            if tr_instance.skeleton_resource is not None:
+                self.parent_objects_to_armature(bl_instance_objs, bl_armature_objs[tr_instance.skeleton_resource])
 
         return bl_objs_by_model
 
@@ -95,18 +98,22 @@ class ModelImporter(SlotsBase):
         for i, tr_mesh in enumerate(tr_model.meshes):
             bl_mesh_name = BlenderNaming.make_mesh_name(tr_collection.name, tr_collection.id, tr_model.id, tr_model.refs.model_data_resource and tr_model.refs.model_data_resource.id or 0, i)
             bl_obj = self.import_mesh(tr_collection, tr_model, tr_mesh, tr_skeleton, bl_mesh_name)
-            bl_mesh_objs.append(bl_obj)
+            if bl_obj is not None:
+                bl_mesh_objs.append(bl_obj)
 
         return bl_mesh_objs
 
-    def import_mesh(self, tr_collection: Collection, tr_model: IModel, tr_mesh: IMesh, tr_skeleton: ISkeleton | None, name: str) -> bpy.types.Object:
+    def import_mesh(self, tr_collection: Collection, tr_model: IModel, tr_mesh: IMesh, tr_skeleton: ISkeleton | None, name: str) -> bpy.types.Object | None:
         has_blend_shapes = Enumerable(tr_mesh.blend_shapes).any(lambda b: b is not None)
 
         (bl_obj, bl_mesh) = self.create_mesh(tr_model, tr_mesh, name)
+        if bl_obj is None or bl_mesh is None:
+            return None
+
         self.create_color_maps(bl_mesh, tr_mesh)
         self.create_uv_maps(bl_mesh, tr_mesh)
         self.apply_materials(bl_mesh, tr_collection, tr_model, tr_mesh)
-        self.create_vertex_groups(bl_obj, tr_mesh, tr_skeleton)
+        self.create_vertex_groups(bl_obj, bl_mesh, tr_mesh, tr_skeleton)
         self.create_shape_keys(bl_obj, tr_mesh, tr_skeleton)
 
         bpy.ops.object.shade_smooth()
@@ -118,15 +125,18 @@ class ModelImporter(SlotsBase):
 
         return bl_obj
 
-    def create_mesh(self, tr_model: IModel, tr_mesh: IMesh, name: str) -> tuple[bpy.types.Object, bpy.types.Mesh]:
+    def create_mesh(self, tr_model: IModel, tr_mesh: IMesh, name: str) -> tuple[bpy.types.Object | None, bpy.types.Mesh | None]:
         vertices: list[Vector] = [self.get_vertex_position(vertex) for vertex in tr_mesh.vertices]
         faces: list[tuple[int, ...]] = []
         for tr_mesh_part in tr_mesh.parts:
             for i in range(0, len(tr_mesh_part.indices), 3):
                 faces.append((tr_mesh_part.indices[i], tr_mesh_part.indices[i + 1], tr_mesh_part.indices[i + 2]))
 
+        if len(faces) == 0:
+            return (None, None)
+
         bl_mesh: bpy.types.Mesh = bpy.data.meshes.new(name)
-        bl_mesh.from_pydata(vertices, [], faces)
+        bl_mesh.from_pydata(vertices, [], faces, False)
         bl_mesh.update()
 
         bl_obj = BlenderHelper.create_object(bl_mesh)
@@ -230,8 +240,8 @@ class ModelImporter(SlotsBase):
 
             polygon_idx_base += num_polygons
 
-    def create_vertex_groups(self, bl_obj: bpy.types.Object, tr_mesh: IMesh, tr_skeleton: ISkeleton | None) -> None:
-        if tr_skeleton is None or not tr_mesh.vertex_format.has_attribute(Hashes.skin_indices):
+    def create_vertex_groups(self, bl_obj: bpy.types.Object, bl_mesh: bpy.types.Mesh, tr_mesh: IMesh, tr_skeleton: ISkeleton | None) -> None:
+        if not tr_mesh.vertex_format.has_attribute(Hashes.skin_indices):
             return
 
         has_8_weights_per_vertex = self.get_consistent_flag(tr_mesh.parts, lambda p: p.has_8_weights_per_vertex, "has_8_weights_per_vertex")
@@ -246,10 +256,9 @@ class ModelImporter(SlotsBase):
             bone_index_mask = 0x3FF
             bone_index_shift = 16
 
-        bl_vertex_groups: list[bpy.types.VertexGroup] = []
-        for model_bone_index in tr_mesh.bone_indices:
-            vertex_group_name = BlenderNaming.make_bone_name(None, tr_skeleton.bones[model_bone_index].global_id, model_bone_index)
-            bl_vertex_groups.append(bl_obj.vertex_groups.new(name = vertex_group_name))
+        vertex_groups: list[array[float]] = []
+        for local_bone_id in tr_mesh.bone_indices:
+            vertex_groups.append(array("f", [0]) * len(tr_mesh.vertices))
 
         for vertex_idx, vertex in enumerate(tr_mesh.vertices):
             bone_indices = vertex.attributes[Hashes.skin_indices]
@@ -259,7 +268,19 @@ class ModelImporter(SlotsBase):
                     mesh_bone_index = (int(bone_indices[i]) >> (j * bone_index_shift)) & bone_index_mask
                     weight = ((int(weights[i]) >> (j * 8)) & 0xFF) / 255.0 if weights is not None else 1.0
                     if weight > 0:
-                        bl_vertex_groups[mesh_bone_index].add([vertex_idx], weight, "ADD")
+                        vertex_groups[mesh_bone_index][vertex_idx] = weight
+
+        for mesh_bone_index, weights in enumerate(vertex_groups):
+            local_bone_id = tr_mesh.bone_indices[mesh_bone_index]
+            global_bone_id = tr_skeleton.bones[local_bone_id].global_id if tr_skeleton is not None else None
+            vertex_group_name = BlenderNaming.make_bone_name(None, global_bone_id, local_bone_id)
+            if bl_obj.vertex_groups.get(vertex_group_name) is not None:
+                continue
+
+            bl_attr = cast(bpy.types.FloatAttribute, bl_mesh.attributes.new(vertex_group_name, "FLOAT", "POINT"))
+            bl_attr.data.foreach_set("value", weights)
+            bl_mesh.attributes.active = bl_attr
+            bpy.ops.geometry.attribute_convert(mode = "VERTEX_GROUP", domain = "POINT", data_type = "FLOAT")
 
     def create_shape_keys(self, bl_obj: bpy.types.Object, tr_mesh: IMesh, tr_skeleton: ISkeleton | None) -> None:
         if not Enumerable(tr_mesh.blend_shapes).any(lambda b: b is not None):
@@ -297,7 +318,7 @@ class ModelImporter(SlotsBase):
 
             while True:
                 BlenderHelper.set_bone_visible(bl_armature, bl_bone, True)
-                bl_bone = cast(bpy.types.Bone | None, bl_bone.parent)
+                bl_bone = bl_bone.parent
                 if bl_bone is None or bl_bone.name in used_bone_names:
                     break
 

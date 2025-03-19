@@ -38,11 +38,11 @@ typedef struct
     float maxMassBounceBackStrength;
     float poseFollowFactor;
     int transformType <comment="0, 1, or 2">;
-    int springStretchinessDefaultPercentage;
-    int springStretchinessLowerPercentage;
-    int springStretchinessUpperPercentage;
+    int fixedToFreeSlopPercentage;
+    int freeToFreeSlopPercentage;
+    int freeToFreeSlopZPercentage;
     int rigidityPercentage;
-    float accelerationDivider;
+    float massScale;
     float timeDeltaScale;
     float blendToBindTime;
     FSkip(0x58 - 0x4C);

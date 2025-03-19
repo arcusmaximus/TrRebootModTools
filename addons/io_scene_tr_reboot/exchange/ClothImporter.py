@@ -61,11 +61,24 @@ class ClothImporter(SlotsBase):
         cloth_strip_properties.parent_bone_name = Enumerable(bl_armature.bones).select(lambda b: b.name) \
                                                                                .first(lambda b: BlenderNaming.parse_bone_name(b).local_id == tr_cloth_strip.parent_bone_local_id)
         cloth_strip_properties.gravity_factor = tr_cloth_strip.gravity_factor
+        cloth_strip_properties.buoyancy_factor = tr_cloth_strip.buoyancy_factor
         cloth_strip_properties.wind_factor = tr_cloth_strip.wind_factor
         cloth_strip_properties.stiffness = tr_cloth_strip.pose_follow_factor
         cloth_strip_properties.rigidity = tr_cloth_strip.rigidity
         cloth_strip_properties.bounceback_factor = tr_cloth_strip.mass_bounceback_factor
         cloth_strip_properties.dampening = tr_cloth_strip.drag
+
+        cloth_strip_properties.transform_type = tr_cloth_strip.transform_type
+        cloth_strip_properties.max_velocity_iterations = tr_cloth_strip.max_velocity_iterations
+        cloth_strip_properties.max_position_iterations = tr_cloth_strip.max_position_iterations
+        cloth_strip_properties.relaxation_iterations = tr_cloth_strip.relaxation_iterations
+        cloth_strip_properties.sub_step_count = tr_cloth_strip.sub_step_count
+        cloth_strip_properties.fixed_to_free_slop = tr_cloth_strip.fixed_to_free_slop
+        cloth_strip_properties.free_to_free_slop = tr_cloth_strip.free_to_free_slop
+        cloth_strip_properties.free_to_free_slop_z = tr_cloth_strip.free_to_free_slop_z
+        cloth_strip_properties.mass_scale = tr_cloth_strip.mass_scale
+        cloth_strip_properties.time_delta_scale = tr_cloth_strip.time_delta_scale
+        cloth_strip_properties.blend_to_bind_time = tr_cloth_strip.blend_to_bind_time
 
         for i, tr_cloth_mass in enumerate(tr_cloth_strip.masses):
             bl_vertex_group = bl_obj.vertex_groups.new(name = BlenderNaming.make_bone_name(None, None, tr_cloth_mass.local_bone_id))

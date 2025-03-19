@@ -20,12 +20,12 @@ class Tr2013ModelDataHeader(CStruct32, IModelDataHeader if TYPE_CHECKING else ob
     bone_usage_map:                 CArray[CInt, Literal[8]]        # type: ignore
     mesh_parts_offet:               CInt
     mesh_headers_offset:            CInt
-    bone_mappings_offset:           CInt
+    local_bone_ids_offset:          CInt
     lod_levels_offset:              CInt
     index_data_offset:              CInt
     num_mesh_parts:                 CShort
     num_meshes:                     CShort
-    num_bone_mappings:              CShort
+    num_bones:                      CShort
     num_lod_levels:                 CShort
     pre_tesselation_info_offset:    CUInt
     name_offset:                    CInt

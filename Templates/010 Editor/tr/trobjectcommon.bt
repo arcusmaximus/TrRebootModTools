@@ -230,6 +230,127 @@ typedef struct
 
 typedef struct
 {
+    Vector3 pos;
+    Quaternion quat;
+    FSkip(4);
+    uint segment;
+    uint16 index;
+    uint16 indexInMarkerList;
+} ZoneHMarker;
+
+typedef struct
+{
+    uint16 mass;
+    uint8 buoyancyFactor;
+    uint8 waterCurrentFactor;
+    char explosionFactor;
+    char weaponhitFactor;
+    int8 calculateMassFromDensity : 1;
+    int8 __bitfieldpadding5 : 7;
+    FSkip(1);
+    float massDensity;
+} PhysCollideGameData;
+
+typedef struct
+{
+    uint iHitMaterialType;
+    int16 damage;
+    char subType;
+    char noAttach;
+    char nojumpcollision;
+    char noWeaponHit;
+    char ropeArrowAttach;
+    char ropeArrowSwing;
+    char toughRopePull;
+    char noProjectileHit;
+    char noChuckableHit;
+    char markupArrowAttach;
+    char noParticleHit;
+    FSkip(3);
+} GameplayGameData;
+
+typedef struct
+{
+    Vector3 position;
+    int16 flags;
+    uint8 collisionclass;
+    uint8 uniqueid;
+    uint8 indexInSphereList;
+    FSkip(7);
+    uint16 radius;
+    uint radiusSquared;
+    FSkip(2);
+    PhysCollideGameData physCollide;
+    GameplayGameData gameplay;
+} ZoneHSphere;
+
+typedef struct
+{
+    Vector3 pos;
+    Quaternion quat;
+    Vector3 width;
+    int16 flags;
+    uint8 collisionclass;
+    uint8 uniqueid;
+    uint8 indexInBoxList;
+    FSkip(7);
+    PhysCollideGameData physCollide;
+    GameplayGameData gameplay;
+} ZoneHBox;
+
+typedef struct
+{
+    Vector3 pos;
+    Quaternion quat;
+    int16 flags;
+    uint8 collisionclass;
+    uint8 uniqueid;
+    uint8 indexInCapsuleList;
+    FSkip(7);
+    float radius;
+    float length;
+    PhysCollideGameData physCollide;
+    GameplayGameData gameplay;
+} ZoneHCapsule;
+
+typedef struct
+{
+    Vector3 pos;
+    Quaternion quat;
+    Vector3 centerOfMass;
+    float intertiaPad1[4];
+    float intertiaPad2[4];
+    float intertiaPad3;
+    int16 flags;
+    uint8 collisionclass;
+    uint8 uniqueid;
+    uint8 indexInBoxList;
+    PhysCollideGameData physCollide;
+    GameplayGameData gameplay;
+} ZoneHGeom;
+
+typedef union
+{
+    ZoneHMarker hmarker;
+} HPrimUnion;
+
+typedef struct
+{
+    FSkip(8);
+    uint8 hpFlags;
+    char enabledByDefault;
+    uint8 type;
+    char enabledLastFrame;
+    uint8 segment;
+    FSkip(3);
+    Ref dataRef;
+    SeekToRef(dataRef);
+    HPrimUnion data;
+    ReturnFromRef();
+} ZoneHPrim;
+
+typedef struct
+{
     TypeNameHash type <read=EnumToString(this)>;
     FSkip(4);
     Ref reference;
@@ -265,6 +386,12 @@ typedef struct
         {
             SeekToRef(propertiesRef);
             MeshRef meshRef;
+            ReturnFromRef();
+        }
+        if (parentof(this).type == COLLISIONMARKER)
+        {
+            SeekToRef(propertiesRef);
+            ZoneHPrim data;
             ReturnFromRef();
         }
     }

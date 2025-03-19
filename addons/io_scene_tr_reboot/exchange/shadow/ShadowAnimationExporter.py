@@ -31,6 +31,9 @@ class ShadowAnimationExporter(SlotsBase):
         self.bl_context = bpy.context
 
     def export_animation(self, file_path: str, bl_armature_obj: bpy.types.Object) -> None:
+        if self.bl_context.scene is None:
+            return
+
         if self.bl_context.object is not None:
             bpy.ops.object.mode_set(mode = "OBJECT")
 
@@ -176,6 +179,9 @@ class ShadowAnimationExporter(SlotsBase):
         return bl_mesh_fcurves
 
     def apply_bone_fix_constraints(self, bl_armature_obj: bpy.types.Object, constraints: Sequence[_BoneConstraintParams]) -> None:
+        if bl_armature_obj.pose is None:
+            return
+
         bl_bones: dict[int, bpy.types.PoseBone] = {}
         for bl_bone in bl_armature_obj.pose.bones:
             global_bone_id = BlenderNaming.parse_bone_name(bl_bone.name).global_id
@@ -234,6 +240,9 @@ class ShadowAnimationExporter(SlotsBase):
                 bl_transforms_constraint.owner_space = "POSE"
 
     def bake_bone_constraints(self, bl_armature_obj: bpy.types.Object) -> None:
+        if self.bl_context.scene is None or bl_armature_obj.pose is None:
+            return
+
         BlenderHelper.select_object(bl_armature_obj)
         bpy.ops.object.mode_set(mode = "POSE")
 

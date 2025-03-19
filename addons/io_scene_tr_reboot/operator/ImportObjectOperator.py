@@ -10,8 +10,10 @@ from io_scene_tr_reboot.SkeletonMerger import SkeletonMerger
 from io_scene_tr_reboot.TemporarySkeletonMerger import TemporaryModelMerger
 from io_scene_tr_reboot.exchange.ClothImporter import ClothImporter
 from io_scene_tr_reboot.exchange.CollisionImporter import CollisionImporter
+from io_scene_tr_reboot.exchange.HairImporter import HairImporter
 from io_scene_tr_reboot.exchange.ModelImporter import ModelImporter
 from io_scene_tr_reboot.exchange.SkeletonImporter import SkeletonImporter
+from io_scene_tr_reboot.exchange.tr2013.Tr2013HairImporter import Tr2013HairImporter
 from io_scene_tr_reboot.exchange.tr2013.Tr2013ModelImporter import Tr2013ModelImporter
 from io_scene_tr_reboot.operator.BlenderOperatorBase import ImportOperatorBase, ImportOperatorProperties
 from io_scene_tr_reboot.operator.OperatorCommon import OperatorCommon
@@ -39,6 +41,9 @@ class ImportObjectOperator(ImportOperatorBase[_Properties]):
     filename_ext = ".tr9objectref;.tr10objectref;.tr11objectref"
 
     def draw(self, context: Context) -> None:
+        if self.layout is None:
+            return
+
         self.layout.prop(self.properties, "import_lods")
         self.layout.prop(self.properties, "split_into_parts")
         self.layout.prop(self.properties, "merge_with_existing_skeletons")
@@ -59,7 +64,7 @@ class ImportObjectOperator(ImportOperatorBase[_Properties]):
             tr_collection = Factories.get(game).open_collection(self.properties.filepath)
 
             skeleton_importer = self.create_skeleton_importer(OperatorCommon.scale_factor, game)
-            bl_armature_obj = skeleton_importer.import_from_collection(tr_collection)
+            bl_armature_objs = skeleton_importer.import_from_collection(tr_collection)
 
             model_importer = self.create_model_importer(
                 OperatorCommon.scale_factor,
@@ -67,14 +72,18 @@ class ImportObjectOperator(ImportOperatorBase[_Properties]):
                 self.properties.split_into_parts,
                 game
             )
-            model_importer.import_from_collection(tr_collection, bl_armature_obj)
+            model_importer.import_from_collection(tr_collection, bl_armature_objs)
 
+            bl_armature_obj = Enumerable(bl_armature_objs.values()).first() if len(bl_armature_objs) == 1 else None
             if bl_armature_obj is not None:
                 collision_importer = self.create_collision_importer(OperatorCommon.scale_factor, game)
                 collision_importer.import_from_collection(tr_collection, bl_armature_obj)
 
                 cloth_importer = self.create_cloth_importer(OperatorCommon.scale_factor, game)
                 cloth_importer.import_from_collection(tr_collection, bl_armature_obj)
+
+            hair_importer = self.create_hair_importer(OperatorCommon.scale_factor, game)
+            hair_importer.import_from_collection(tr_collection, bl_armature_obj)
 
             if game == CdcGame.SOTTR and self.properties.merge_with_existing_skeletons and bl_armature_obj is not None:
                 self.merge(context)
@@ -83,6 +92,9 @@ class ImportObjectOperator(ImportOperatorBase[_Properties]):
             return { "FINISHED" }
 
     def merge(self, context: bpy.types.Context) -> None:
+        if context.scene is None:
+            return
+
         bl_armature_objs = Enumerable(context.scene.objects).where(lambda o: isinstance(o.data, bpy.types.Armature)).to_list()
         bl_global_armature_obj = Enumerable(bl_armature_objs).first_or_none(lambda o: BlenderNaming.is_global_armature_name(o.name))
         if bl_global_armature_obj is None and len(bl_armature_objs) == 1:
@@ -120,3 +132,10 @@ class ImportObjectOperator(ImportOperatorBase[_Properties]):
 
     def create_cloth_importer(self, scale_factor: float, game: CdcGame) -> ClothImporter:
         return ClothImporter(scale_factor)
+
+    def create_hair_importer(self, scale_factor: float, game: CdcGame) -> HairImporter:
+        match game:
+            case CdcGame.TR2013:
+                return Tr2013HairImporter(scale_factor)
+            case _:
+                return HairImporter(scale_factor)

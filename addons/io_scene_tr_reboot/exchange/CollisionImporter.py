@@ -61,7 +61,9 @@ class CollisionImporter(SlotsBase):
         bl_collision_obj.name = BlenderNaming.make_collision_name(tr_collection.name, tr_collision.type, tr_collision.hash)
         cast(bpy.types.Mesh, bl_collision_obj.data).name = bl_collision_obj.name
         bl_collision_obj.hide_set(True)
-        BlenderHelper.move_object_to_collection(bl_collision_obj, self.bl_context.scene.collection)
+        if self.bl_context.scene:
+            BlenderHelper.move_object_to_collection(bl_collision_obj, self.bl_context.scene.collection)
+
         ObjectProperties.get_instance(bl_collision_obj).collision.data = tr_collision.serialize()
 
         if tr_collision.transform is not None:

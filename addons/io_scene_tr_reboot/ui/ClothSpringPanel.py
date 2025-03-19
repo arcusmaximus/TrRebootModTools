@@ -8,8 +8,8 @@ class ClothSpringPanel(bpy.types.Panel):
     bl_idname = "TR_PT_ClothSpringPanel"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
-    bl_category = "Tomb Raider Cloth"
-    bl_label = "Springs"
+    bl_category = "Tomb Raider"
+    bl_label = "Cloth Springs"
 
     @classmethod
     def poll(cls, context: bpy.types.Context | None) -> bool:
@@ -23,7 +23,7 @@ class ClothSpringPanel(bpy.types.Panel):
         return BlenderNaming.try_parse_cloth_strip_name(context.edit_object.name) is not None
 
     def draw(self, context: bpy.types.Context | None) -> None:
-        if context is None:
+        if context is None or context.scene is None or self.layout is None:
             return
 
         properties = ToolSettingProperties.get_instance(context.scene)

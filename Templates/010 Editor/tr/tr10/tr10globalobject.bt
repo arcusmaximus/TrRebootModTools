@@ -1,0 +1,4673 @@
+#define TR_VERSION 10
+#include "../trcommon.bt"
+
+typedef struct
+{
+    ushort numPlayerObjects;
+    FSkip(6);
+    Ref playerObjectListRef;
+    if (CanSeekTo(playerObjectListRef))
+    {
+        SeekToRef(playerObjectListRef);
+        ushort playerObjectList[numPlayerObjects];
+        ReturnFromRef();
+    }
+} PlayerObjects <optimize=false>;
+
+typedef struct
+{
+    Ref inputConfig1Ref;
+    if (CanSeekTo(inputConfig1Ref))
+    {
+        SeekToRef(inputConfig1Ref);
+        byte inputConfig1;
+        ReturnFromRef();
+    }
+    Ref inputConfig2Ref;
+    if (CanSeekTo(inputConfig2Ref))
+    {
+        SeekToRef(inputConfig2Ref);
+        byte inputConfig2;
+        ReturnFromRef();
+    }
+    Ref inputConfig3Ref;
+    if (CanSeekTo(inputConfig3Ref))
+    {
+        SeekToRef(inputConfig3Ref);
+        byte inputConfig3;
+        ReturnFromRef();
+    }
+    Ref inputConfig4Ref;
+    if (CanSeekTo(inputConfig4Ref))
+    {
+        SeekToRef(inputConfig4Ref);
+        byte inputConfig4;
+        ReturnFromRef();
+    }
+} InputConfigs <optimize=false>;
+
+typedef struct
+{
+    float targetLoZRadius;
+    float targetHiZRadius;
+    float maxTargetXYRadius;
+} GlobalMarkupTuneData <optimize=false>;
+
+typedef struct
+{
+    GlobalMarkupTuneData wallVPole;
+    GlobalMarkupTuneData vPole;
+    GlobalMarkupTuneData pillar;
+    GlobalMarkupTuneData rope;
+    GlobalMarkupTuneData cover;
+    GlobalMarkupTuneData perch;
+    GlobalMarkupTuneData railSlide;
+    GlobalMarkupTuneData ladder;
+    GlobalMarkupTuneData pipeHorizontal;
+    GlobalMarkupTuneData pipeVertical;
+    GlobalMarkupTuneData hPole;
+    GlobalMarkupTuneData zipline;
+    GlobalMarkupTuneData ledge;
+    GlobalMarkupTuneData water;
+    GlobalMarkupTuneData jumpLanding;
+    GlobalMarkupTuneData vehicleJumpTarget;
+} GlobalMarkupTuneDataTable <optimize=false>;
+
+typedef struct
+{
+    ushort id;
+} Symbol <optimize=false>;
+
+typedef struct
+{
+    float vPoleAllowableAngularOffsetFromVertical;
+    float hPoleAllowableAngularOffsetFromHorizontal;
+} GlobalInfo__GameMarkUpData <optimize=false>;
+
+typedef struct
+{
+    short loadFailed;
+    short loading;
+    short saveFailed;
+    short saving;
+    short disabled;
+    short deleteSavegame;
+    short deleteFailed;
+    short deleteSave;
+    short deleteSuccessful;
+    short loadLoseProgress;
+    short saveNoSpace;
+    short saveNoAutoSpace;
+    short saveNoUserSpace;
+    short saveOverwrite;
+    short saveNoAutosaveOverwrite;
+    short saveSuccessful;
+    short saveNewStatus;
+    short saveOverwriteStatus;
+    short signinActive;
+    short signinChanged;
+    short signinInactive;
+    short storagedeviceNone;
+    short storagedeviceUnavailable;
+    short profileStoragedeviceUnavailable;
+    short profileData;
+    short bloodTies;
+    short coldDarkness;
+    short autosaveSlot;
+    short backupSlot;
+    short corruptSave;
+    short saveDifferentuser;
+    short gameTitle;
+    short autosaveDescription;
+    short autosaveWarning;
+    short loadingAutosave;
+    short autosaveQuery;
+    short autosaveRetryQuery;
+    short disableAutosaveQuery;
+    short creatingAutosave;
+    short notEnoughSpace;
+    short treasureHunt;
+    short autosaveRetryCreateQuery;
+    short winSavegameName;
+    short texFilterPoint;
+    short texFilterBilinear;
+    short texFilterTrilinear;
+    short texFilter_1xAnisotropic;
+    short texFilter_2xAnisotropic;
+    short texFilter_4xAnisotropic;
+    short texFilter_8xAnisotropic;
+    short texFilter_16xAnisotropic;
+    short oFF;
+    short deleting;
+    short yes;
+    short no;
+    short oK;
+    short cancel;
+    short exitToStore;
+    short discReadError;
+    short trophiesInstalling;
+    short trophiesReInstalling;
+    short trophiesChecking;
+    short trophiesUpdating;
+    short chatRestricted;
+    short inviteErrorNotsignedin;
+    short inviteErrorNotexist;
+    short inviteErrorUnknownerror;
+    short autoSaveFailed;
+    short autoSaveRetrying;
+    short autoSaveRetrySucceeded;
+    short warningSaveCorrupted;
+    short buyNow;
+    short skip;
+} MenuItems <optimize=false>;
+
+typedef struct
+{
+    Ref playerObjectsRef;
+    if (CanSeekTo(playerObjectsRef))
+    {
+        SeekToRef(playerObjectsRef);
+        PlayerObjects playerObjects;
+        ReturnFromRef();
+    }
+    float automaticInstanceRemovalFloor;
+    FSkip(4);
+    Ref inputconfigsRef;
+    if (CanSeekTo(inputconfigsRef))
+    {
+        SeekToRef(inputconfigsRef);
+        InputConfigs inputconfigs;
+        ReturnFromRef();
+    }
+    GlobalMarkupTuneDataTable markupTuneData;
+    unsigned int objectScriptTypeID;
+    unsigned int unitScriptTypeID;
+    unsigned int gameGlobalsScriptTypeID;
+    unsigned int uberObjectScriptTypeID;
+    Symbol gamePackageSymbol;
+    Symbol unitScriptSymbol;
+    Symbol instanceScriptSymbol;
+    Symbol instanceRefScriptSymbol;
+    Symbol gameBaseScriptSymbol;
+    ushort globalUnitIDHack;
+    Symbol checkpointBaseScriptSymbol;
+    Symbol enemyBaseScriptSymbol;
+    Symbol generatorBaseScriptSymbol;
+    Symbol profileScreenScriptSymbol;
+    GlobalInfo__GameMarkUpData gameMarkUpData;
+    unsigned int stickResponseTableID;
+    unsigned int cheatCodesDTPID;
+    Symbol npcbaseBaseScriptSymbol;
+    Symbol squadBaseScriptSymbol;
+    Symbol spawnManagerBaseScriptSymbol;
+    FSkip(2);
+    unsigned int battleConductorID;
+    Ref menuItemsRef;
+    if (CanSeekTo(menuItemsRef))
+    {
+        SeekToRef(menuItemsRef);
+        MenuItems menuItems;
+        ReturnFromRef();
+    }
+    float percentCompleteRatio;
+    Symbol aiPackageSymbol;
+    Symbol goapAiScriptSymbol;
+} GlobalInfo <optimize=false>;
+
+typedef struct
+{
+    ushort redCurve[256];
+    ushort greenCurve[256];
+    ushort blueCurve[256];
+} RenderGlobal__GammaCurve <optimize=false>;
+
+typedef struct
+{
+} RenderResource <optimize=false>;
+
+typedef struct
+{
+} IHighlightableResource <optimize=false>;
+
+typedef struct
+{
+    RenderResource _Parent;
+    IHighlightableResource _Parent2;
+    unsigned int frameIndex;
+} TextureMap <optimize=false>;
+
+typedef struct
+{
+    Ref category1Ref;
+    if (CanSeekTo(category1Ref))
+    {
+        SeekToRef(category1Ref);
+        TextureMap category1;
+        ReturnFromRef();
+    }
+    Ref category2Ref;
+    if (CanSeekTo(category2Ref))
+    {
+        SeekToRef(category2Ref);
+        TextureMap category2;
+        ReturnFromRef();
+    }
+    Ref category3Ref;
+    if (CanSeekTo(category3Ref))
+    {
+        SeekToRef(category3Ref);
+        TextureMap category3;
+        ReturnFromRef();
+    }
+    Ref category4Ref;
+    if (CanSeekTo(category4Ref))
+    {
+        SeekToRef(category4Ref);
+        TextureMap category4;
+        ReturnFromRef();
+    }
+    Ref category5Ref;
+    if (CanSeekTo(category5Ref))
+    {
+        SeekToRef(category5Ref);
+        TextureMap category5;
+        ReturnFromRef();
+    }
+    Ref category6Ref;
+    if (CanSeekTo(category6Ref))
+    {
+        SeekToRef(category6Ref);
+        TextureMap category6;
+        ReturnFromRef();
+    }
+    Ref category7Ref;
+    if (CanSeekTo(category7Ref))
+    {
+        SeekToRef(category7Ref);
+        TextureMap category7;
+        ReturnFromRef();
+    }
+    Ref category8Ref;
+    if (CanSeekTo(category8Ref))
+    {
+        SeekToRef(category8Ref);
+        TextureMap category8;
+        ReturnFromRef();
+    }
+    Ref category9Ref;
+    if (CanSeekTo(category9Ref))
+    {
+        SeekToRef(category9Ref);
+        TextureMap category9;
+        ReturnFromRef();
+    }
+    Ref category10Ref;
+    if (CanSeekTo(category10Ref))
+    {
+        SeekToRef(category10Ref);
+        TextureMap category10;
+        ReturnFromRef();
+    }
+    Ref category11Ref;
+    if (CanSeekTo(category11Ref))
+    {
+        SeekToRef(category11Ref);
+        TextureMap category11;
+        ReturnFromRef();
+    }
+    Ref category12Ref;
+    if (CanSeekTo(category12Ref))
+    {
+        SeekToRef(category12Ref);
+        TextureMap category12;
+        ReturnFromRef();
+    }
+    Ref category13Ref;
+    if (CanSeekTo(category13Ref))
+    {
+        SeekToRef(category13Ref);
+        TextureMap category13;
+        ReturnFromRef();
+    }
+    Ref category14Ref;
+    if (CanSeekTo(category14Ref))
+    {
+        SeekToRef(category14Ref);
+        TextureMap category14;
+        ReturnFromRef();
+    }
+    Ref category15Ref;
+    if (CanSeekTo(category15Ref))
+    {
+        SeekToRef(category15Ref);
+        TextureMap category15;
+        ReturnFromRef();
+    }
+    Ref category16Ref;
+    if (CanSeekTo(category16Ref))
+    {
+        SeekToRef(category16Ref);
+        TextureMap category16;
+        ReturnFromRef();
+    }
+} RenderGlobal__DummyTextures <optimize=false>;
+
+typedef struct
+{
+    byte liveUpdate;
+    FSkip(1);
+    RenderGlobal__GammaCurve hdGamma;
+    RenderGlobal__GammaCurve sdGamma;
+    FSkip(6);
+    RenderGlobal__DummyTextures dummyTextures;
+} RenderGlobal <optimize=false>;
+
+typedef struct
+{
+    IHighlightableResource _Parent;
+} IMaterial <optimize=false>;
+
+typedef struct
+{
+    RenderResource _Parent;
+} RenderMesh <optimize=false>;
+
+typedef struct
+{
+    IHighlightableResource _Parent;
+} IShaderLib <optimize=false>;
+
+typedef struct
+{
+    Ref debugMaterialRef;
+    if (CanSeekTo(debugMaterialRef))
+    {
+        SeekToRef(debugMaterialRef);
+        IMaterial debugMaterial;
+        ReturnFromRef();
+    }
+    Ref debugSpotMaterialRef;
+    if (CanSeekTo(debugSpotMaterialRef))
+    {
+        SeekToRef(debugSpotMaterialRef);
+        IMaterial debugSpotMaterial;
+        ReturnFromRef();
+    }
+    Ref stencilMaterialFullscreenRef;
+    if (CanSeekTo(stencilMaterialFullscreenRef))
+    {
+        SeekToRef(stencilMaterialFullscreenRef);
+        IMaterial stencilMaterialFullscreen;
+        ReturnFromRef();
+    }
+    Ref stencilMaterialTwoSidedRef;
+    if (CanSeekTo(stencilMaterialTwoSidedRef))
+    {
+        SeekToRef(stencilMaterialTwoSidedRef);
+        IMaterial stencilMaterialTwoSided;
+        ReturnFromRef();
+    }
+    Ref stencilMaterialSingleSidedRef;
+    if (CanSeekTo(stencilMaterialSingleSidedRef))
+    {
+        SeekToRef(stencilMaterialSingleSidedRef);
+        IMaterial stencilMaterialSingleSided;
+        ReturnFromRef();
+    }
+    Ref spotStencilMaterialTwoSidedRef;
+    if (CanSeekTo(spotStencilMaterialTwoSidedRef))
+    {
+        SeekToRef(spotStencilMaterialTwoSidedRef);
+        IMaterial spotStencilMaterialTwoSided;
+        ReturnFromRef();
+    }
+    Ref omniLightMeshRef;
+    if (CanSeekTo(omniLightMeshRef))
+    {
+        SeekToRef(omniLightMeshRef);
+        RenderMesh omniLightMesh;
+        ReturnFromRef();
+    }
+    Ref spotLightMeshRef;
+    if (CanSeekTo(spotLightMeshRef))
+    {
+        SeekToRef(spotLightMeshRef);
+        RenderMesh spotLightMesh;
+        ReturnFromRef();
+    }
+    Ref boxLightMeshRef;
+    if (CanSeekTo(boxLightMeshRef))
+    {
+        SeekToRef(boxLightMeshRef);
+        RenderMesh boxLightMesh;
+        ReturnFromRef();
+    }
+    Ref desaturateScreenMaterialRef;
+    if (CanSeekTo(desaturateScreenMaterialRef))
+    {
+        SeekToRef(desaturateScreenMaterialRef);
+        IMaterial desaturateScreenMaterial;
+        ReturnFromRef();
+    }
+    Ref deferredLightOverlapMaterialRef;
+    if (CanSeekTo(deferredLightOverlapMaterialRef))
+    {
+        SeekToRef(deferredLightOverlapMaterialRef);
+        IMaterial deferredLightOverlapMaterial;
+        ReturnFromRef();
+    }
+    Ref ambientSSAOLightMaterialRef;
+    if (CanSeekTo(ambientSSAOLightMaterialRef))
+    {
+        SeekToRef(ambientSSAOLightMaterialRef);
+        IMaterial ambientSSAOLightMaterial;
+        ReturnFromRef();
+    }
+    Ref ambientSSAOLightBlendMaterialRef;
+    if (CanSeekTo(ambientSSAOLightBlendMaterialRef))
+    {
+        SeekToRef(ambientSSAOLightBlendMaterialRef);
+        IMaterial ambientSSAOLightBlendMaterial;
+        ReturnFromRef();
+    }
+    Ref ambientSSAOLightHDAOMaterialRef;
+    if (CanSeekTo(ambientSSAOLightHDAOMaterialRef))
+    {
+        SeekToRef(ambientSSAOLightHDAOMaterialRef);
+        IMaterial ambientSSAOLightHDAOMaterial;
+        ReturnFromRef();
+    }
+    Ref ambientSSAOLightHDAOMultiResMaterialRef;
+    if (CanSeekTo(ambientSSAOLightHDAOMultiResMaterialRef))
+    {
+        SeekToRef(ambientSSAOLightHDAOMultiResMaterialRef);
+        IMaterial ambientSSAOLightHDAOMultiResMaterial;
+        ReturnFromRef();
+    }
+    Ref ambientMRSSAOLightMaterialRef;
+    if (CanSeekTo(ambientMRSSAOLightMaterialRef))
+    {
+        SeekToRef(ambientMRSSAOLightMaterialRef);
+        IMaterial ambientMRSSAOLightMaterial;
+        ReturnFromRef();
+    }
+    Ref wetDirMaterialRef;
+    if (CanSeekTo(wetDirMaterialRef))
+    {
+        SeekToRef(wetDirMaterialRef);
+        IMaterial wetDirMaterial;
+        ReturnFromRef();
+    }
+    Ref darkDirMaterialRef;
+    if (CanSeekTo(darkDirMaterialRef))
+    {
+        SeekToRef(darkDirMaterialRef);
+        IMaterial darkDirMaterial;
+        ReturnFromRef();
+    }
+    Ref darkDirAmbientMaterialRef;
+    if (CanSeekTo(darkDirAmbientMaterialRef))
+    {
+        SeekToRef(darkDirAmbientMaterialRef);
+        IMaterial darkDirAmbientMaterial;
+        ReturnFromRef();
+    }
+    Ref darkDirModulateMaterialRef;
+    if (CanSeekTo(darkDirModulateMaterialRef))
+    {
+        SeekToRef(darkDirModulateMaterialRef);
+        IMaterial darkDirModulateMaterial;
+        ReturnFromRef();
+    }
+    Ref lowResDirMaterialRef;
+    if (CanSeekTo(lowResDirMaterialRef))
+    {
+        SeekToRef(lowResDirMaterialRef);
+        IMaterial lowResDirMaterial;
+        ReturnFromRef();
+    }
+    Ref lowResDirAmbientMaterialRef;
+    if (CanSeekTo(lowResDirAmbientMaterialRef))
+    {
+        SeekToRef(lowResDirAmbientMaterialRef);
+        IMaterial lowResDirAmbientMaterial;
+        ReturnFromRef();
+    }
+    Ref lowResDirModulateMaterialRef;
+    if (CanSeekTo(lowResDirModulateMaterialRef))
+    {
+        SeekToRef(lowResDirModulateMaterialRef);
+        IMaterial lowResDirModulateMaterial;
+        ReturnFromRef();
+    }
+    Ref fillDirAmbientMaterialRef;
+    if (CanSeekTo(fillDirAmbientMaterialRef))
+    {
+        SeekToRef(fillDirAmbientMaterialRef);
+        IMaterial fillDirAmbientMaterial;
+        ReturnFromRef();
+    }
+    Ref fillDirModulateMaterialRef;
+    if (CanSeekTo(fillDirModulateMaterialRef))
+    {
+        SeekToRef(fillDirModulateMaterialRef);
+        IMaterial fillDirModulateMaterial;
+        ReturnFromRef();
+    }
+    Ref fillDirModulateNoSpecMaterialRef;
+    if (CanSeekTo(fillDirModulateNoSpecMaterialRef))
+    {
+        SeekToRef(fillDirModulateNoSpecMaterialRef);
+        IMaterial fillDirModulateNoSpecMaterial;
+        ReturnFromRef();
+    }
+    Ref fillDirNoSpecMaterialRef;
+    if (CanSeekTo(fillDirNoSpecMaterialRef))
+    {
+        SeekToRef(fillDirNoSpecMaterialRef);
+        IMaterial fillDirNoSpecMaterial;
+        ReturnFromRef();
+    }
+    Ref fillDirMaterialRef;
+    if (CanSeekTo(fillDirMaterialRef))
+    {
+        SeekToRef(fillDirMaterialRef);
+        IMaterial fillDirMaterial;
+        ReturnFromRef();
+    }
+    Ref fillDirShadowMaterialRef;
+    if (CanSeekTo(fillDirShadowMaterialRef))
+    {
+        SeekToRef(fillDirShadowMaterialRef);
+        IMaterial fillDirShadowMaterial;
+        ReturnFromRef();
+    }
+    Ref fillDirShadowModulationMaterialRef;
+    if (CanSeekTo(fillDirShadowModulationMaterialRef))
+    {
+        SeekToRef(fillDirShadowModulationMaterialRef);
+        IMaterial fillDirShadowModulationMaterial;
+        ReturnFromRef();
+    }
+    Ref fillDirShadowCHSMaterialRef;
+    if (CanSeekTo(fillDirShadowCHSMaterialRef))
+    {
+        SeekToRef(fillDirShadowCHSMaterialRef);
+        IMaterial fillDirShadowCHSMaterial;
+        ReturnFromRef();
+    }
+    Ref fillDirShadowModulationCHSMaterialRef;
+    if (CanSeekTo(fillDirShadowModulationCHSMaterialRef))
+    {
+        SeekToRef(fillDirShadowModulationCHSMaterialRef);
+        IMaterial fillDirShadowModulationCHSMaterial;
+        ReturnFromRef();
+    }
+    Ref fireDirModulateMaterialRef;
+    if (CanSeekTo(fireDirModulateMaterialRef))
+    {
+        SeekToRef(fireDirModulateMaterialRef);
+        IMaterial fireDirModulateMaterial;
+        ReturnFromRef();
+    }
+    Ref fireDirMaterialRef;
+    if (CanSeekTo(fireDirMaterialRef))
+    {
+        SeekToRef(fireDirMaterialRef);
+        IMaterial fireDirMaterial;
+        ReturnFromRef();
+    }
+    Ref wetPointMaterialRef;
+    if (CanSeekTo(wetPointMaterialRef))
+    {
+        SeekToRef(wetPointMaterialRef);
+        IMaterial wetPointMaterial;
+        ReturnFromRef();
+    }
+    Ref darkPointMaterialRef;
+    if (CanSeekTo(darkPointMaterialRef))
+    {
+        SeekToRef(darkPointMaterialRef);
+        IMaterial darkPointMaterial;
+        ReturnFromRef();
+    }
+    Ref darkPointAmbientMaterialRef;
+    if (CanSeekTo(darkPointAmbientMaterialRef))
+    {
+        SeekToRef(darkPointAmbientMaterialRef);
+        IMaterial darkPointAmbientMaterial;
+        ReturnFromRef();
+    }
+    Ref lowResPointMaterialRef;
+    if (CanSeekTo(lowResPointMaterialRef))
+    {
+        SeekToRef(lowResPointMaterialRef);
+        IMaterial lowResPointMaterial;
+        ReturnFromRef();
+    }
+    Ref lowResPointAmbientMaterialRef;
+    if (CanSeekTo(lowResPointAmbientMaterialRef))
+    {
+        SeekToRef(lowResPointAmbientMaterialRef);
+        IMaterial lowResPointAmbientMaterial;
+        ReturnFromRef();
+    }
+    Ref fillPointMaterialRef;
+    if (CanSeekTo(fillPointMaterialRef))
+    {
+        SeekToRef(fillPointMaterialRef);
+        IMaterial fillPointMaterial;
+        ReturnFromRef();
+    }
+    Ref fillPointNoSpecMaterialRef;
+    if (CanSeekTo(fillPointNoSpecMaterialRef))
+    {
+        SeekToRef(fillPointNoSpecMaterialRef);
+        IMaterial fillPointNoSpecMaterial;
+        ReturnFromRef();
+    }
+    Ref fillPointAmbientMaterialRef;
+    if (CanSeekTo(fillPointAmbientMaterialRef))
+    {
+        SeekToRef(fillPointAmbientMaterialRef);
+        IMaterial fillPointAmbientMaterial;
+        ReturnFromRef();
+    }
+    Ref firePointMaterialRef;
+    if (CanSeekTo(firePointMaterialRef))
+    {
+        SeekToRef(firePointMaterialRef);
+        IMaterial firePointMaterial;
+        ReturnFromRef();
+    }
+    Ref wetSpotMaterialRef;
+    if (CanSeekTo(wetSpotMaterialRef))
+    {
+        SeekToRef(wetSpotMaterialRef);
+        IMaterial wetSpotMaterial;
+        ReturnFromRef();
+    }
+    Ref darkSpotMaterialRef;
+    if (CanSeekTo(darkSpotMaterialRef))
+    {
+        SeekToRef(darkSpotMaterialRef);
+        IMaterial darkSpotMaterial;
+        ReturnFromRef();
+    }
+    Ref darkSpotAmbientMaterialRef;
+    if (CanSeekTo(darkSpotAmbientMaterialRef))
+    {
+        SeekToRef(darkSpotAmbientMaterialRef);
+        IMaterial darkSpotAmbientMaterial;
+        ReturnFromRef();
+    }
+    Ref darkSpotModulateMaterialRef;
+    if (CanSeekTo(darkSpotModulateMaterialRef))
+    {
+        SeekToRef(darkSpotModulateMaterialRef);
+        IMaterial darkSpotModulateMaterial;
+        ReturnFromRef();
+    }
+    Ref lowResSpotMaterialRef;
+    if (CanSeekTo(lowResSpotMaterialRef))
+    {
+        SeekToRef(lowResSpotMaterialRef);
+        IMaterial lowResSpotMaterial;
+        ReturnFromRef();
+    }
+    Ref lowResSpotAmbientMaterialRef;
+    if (CanSeekTo(lowResSpotAmbientMaterialRef))
+    {
+        SeekToRef(lowResSpotAmbientMaterialRef);
+        IMaterial lowResSpotAmbientMaterial;
+        ReturnFromRef();
+    }
+    Ref lowResSpotModulateMaterialRef;
+    if (CanSeekTo(lowResSpotModulateMaterialRef))
+    {
+        SeekToRef(lowResSpotModulateMaterialRef);
+        IMaterial lowResSpotModulateMaterial;
+        ReturnFromRef();
+    }
+    Ref fillSpotMaterialRef;
+    if (CanSeekTo(fillSpotMaterialRef))
+    {
+        SeekToRef(fillSpotMaterialRef);
+        IMaterial fillSpotMaterial;
+        ReturnFromRef();
+    }
+    Ref fillSpotNoSpecMaterialRef;
+    if (CanSeekTo(fillSpotNoSpecMaterialRef))
+    {
+        SeekToRef(fillSpotNoSpecMaterialRef);
+        IMaterial fillSpotNoSpecMaterial;
+        ReturnFromRef();
+    }
+    Ref fillSpotShadowMaterialRef;
+    if (CanSeekTo(fillSpotShadowMaterialRef))
+    {
+        SeekToRef(fillSpotShadowMaterialRef);
+        IMaterial fillSpotShadowMaterial;
+        ReturnFromRef();
+    }
+    Ref fillSpotShadowNoSpecMaterialRef;
+    if (CanSeekTo(fillSpotShadowNoSpecMaterialRef))
+    {
+        SeekToRef(fillSpotShadowNoSpecMaterialRef);
+        IMaterial fillSpotShadowNoSpecMaterial;
+        ReturnFromRef();
+    }
+    Ref fillSpotShadowCHSMaterialRef;
+    if (CanSeekTo(fillSpotShadowCHSMaterialRef))
+    {
+        SeekToRef(fillSpotShadowCHSMaterialRef);
+        IMaterial fillSpotShadowCHSMaterial;
+        ReturnFromRef();
+    }
+    Ref fillSpotShadowNoSpecCHSMaterialRef;
+    if (CanSeekTo(fillSpotShadowNoSpecCHSMaterialRef))
+    {
+        SeekToRef(fillSpotShadowNoSpecCHSMaterialRef);
+        IMaterial fillSpotShadowNoSpecCHSMaterial;
+        ReturnFromRef();
+    }
+    Ref fillSpotModulateMaterialRef;
+    if (CanSeekTo(fillSpotModulateMaterialRef))
+    {
+        SeekToRef(fillSpotModulateMaterialRef);
+        IMaterial fillSpotModulateMaterial;
+        ReturnFromRef();
+    }
+    Ref fillSpotModulateNoSpecMaterialRef;
+    if (CanSeekTo(fillSpotModulateNoSpecMaterialRef))
+    {
+        SeekToRef(fillSpotModulateNoSpecMaterialRef);
+        IMaterial fillSpotModulateNoSpecMaterial;
+        ReturnFromRef();
+    }
+    Ref fillSpotAmbientMaterialRef;
+    if (CanSeekTo(fillSpotAmbientMaterialRef))
+    {
+        SeekToRef(fillSpotAmbientMaterialRef);
+        IMaterial fillSpotAmbientMaterial;
+        ReturnFromRef();
+    }
+    Ref fillSpotShadowModulateMaterialRef;
+    if (CanSeekTo(fillSpotShadowModulateMaterialRef))
+    {
+        SeekToRef(fillSpotShadowModulateMaterialRef);
+        IMaterial fillSpotShadowModulateMaterial;
+        ReturnFromRef();
+    }
+    Ref fillSpotShadowModulateCHSMaterialRef;
+    if (CanSeekTo(fillSpotShadowModulateCHSMaterialRef))
+    {
+        SeekToRef(fillSpotShadowModulateCHSMaterialRef);
+        IMaterial fillSpotShadowModulateCHSMaterial;
+        ReturnFromRef();
+    }
+    Ref fireSpotModulateMaterialRef;
+    if (CanSeekTo(fireSpotModulateMaterialRef))
+    {
+        SeekToRef(fireSpotModulateMaterialRef);
+        IMaterial fireSpotModulateMaterial;
+        ReturnFromRef();
+    }
+    Ref fireSpotMaterialRef;
+    if (CanSeekTo(fireSpotMaterialRef))
+    {
+        SeekToRef(fireSpotMaterialRef);
+        IMaterial fireSpotMaterial;
+        ReturnFromRef();
+    }
+    Ref wetCapsuleMaterialRef;
+    if (CanSeekTo(wetCapsuleMaterialRef))
+    {
+        SeekToRef(wetCapsuleMaterialRef);
+        IMaterial wetCapsuleMaterial;
+        ReturnFromRef();
+    }
+    Ref darkCapsuleMaterialRef;
+    if (CanSeekTo(darkCapsuleMaterialRef))
+    {
+        SeekToRef(darkCapsuleMaterialRef);
+        IMaterial darkCapsuleMaterial;
+        ReturnFromRef();
+    }
+    Ref darkCapsuleAmbientMaterialRef;
+    if (CanSeekTo(darkCapsuleAmbientMaterialRef))
+    {
+        SeekToRef(darkCapsuleAmbientMaterialRef);
+        IMaterial darkCapsuleAmbientMaterial;
+        ReturnFromRef();
+    }
+    Ref lowResCapsuleMaterialRef;
+    if (CanSeekTo(lowResCapsuleMaterialRef))
+    {
+        SeekToRef(lowResCapsuleMaterialRef);
+        IMaterial lowResCapsuleMaterial;
+        ReturnFromRef();
+    }
+    Ref lowResCapsuleAmbientMaterialRef;
+    if (CanSeekTo(lowResCapsuleAmbientMaterialRef))
+    {
+        SeekToRef(lowResCapsuleAmbientMaterialRef);
+        IMaterial lowResCapsuleAmbientMaterial;
+        ReturnFromRef();
+    }
+    Ref fillCapsuleMaterialRef;
+    if (CanSeekTo(fillCapsuleMaterialRef))
+    {
+        SeekToRef(fillCapsuleMaterialRef);
+        IMaterial fillCapsuleMaterial;
+        ReturnFromRef();
+    }
+    Ref fillCapsuleNoSpecMaterialRef;
+    if (CanSeekTo(fillCapsuleNoSpecMaterialRef))
+    {
+        SeekToRef(fillCapsuleNoSpecMaterialRef);
+        IMaterial fillCapsuleNoSpecMaterial;
+        ReturnFromRef();
+    }
+    Ref fillCapsuleAmbientMaterialRef;
+    if (CanSeekTo(fillCapsuleAmbientMaterialRef))
+    {
+        SeekToRef(fillCapsuleAmbientMaterialRef);
+        IMaterial fillCapsuleAmbientMaterial;
+        ReturnFromRef();
+    }
+    Ref fireCapsuleMaterialRef;
+    if (CanSeekTo(fireCapsuleMaterialRef))
+    {
+        SeekToRef(fireCapsuleMaterialRef);
+        IMaterial fireCapsuleMaterial;
+        ReturnFromRef();
+    }
+    Ref wetCapsuleSpotMaterialRef;
+    if (CanSeekTo(wetCapsuleSpotMaterialRef))
+    {
+        SeekToRef(wetCapsuleSpotMaterialRef);
+        IMaterial wetCapsuleSpotMaterial;
+        ReturnFromRef();
+    }
+    Ref darkCapsuleSpotMaterialRef;
+    if (CanSeekTo(darkCapsuleSpotMaterialRef))
+    {
+        SeekToRef(darkCapsuleSpotMaterialRef);
+        IMaterial darkCapsuleSpotMaterial;
+        ReturnFromRef();
+    }
+    Ref darkCapsuleSpotAmbientMaterialRef;
+    if (CanSeekTo(darkCapsuleSpotAmbientMaterialRef))
+    {
+        SeekToRef(darkCapsuleSpotAmbientMaterialRef);
+        IMaterial darkCapsuleSpotAmbientMaterial;
+        ReturnFromRef();
+    }
+    Ref lowResCapsuleSpotMaterialRef;
+    if (CanSeekTo(lowResCapsuleSpotMaterialRef))
+    {
+        SeekToRef(lowResCapsuleSpotMaterialRef);
+        IMaterial lowResCapsuleSpotMaterial;
+        ReturnFromRef();
+    }
+    Ref lowResCapsuleSpotAmbientMaterialRef;
+    if (CanSeekTo(lowResCapsuleSpotAmbientMaterialRef))
+    {
+        SeekToRef(lowResCapsuleSpotAmbientMaterialRef);
+        IMaterial lowResCapsuleSpotAmbientMaterial;
+        ReturnFromRef();
+    }
+    Ref fillCapsuleSpotMaterialRef;
+    if (CanSeekTo(fillCapsuleSpotMaterialRef))
+    {
+        SeekToRef(fillCapsuleSpotMaterialRef);
+        IMaterial fillCapsuleSpotMaterial;
+        ReturnFromRef();
+    }
+    Ref fillCapsuleSpotNoSpecMaterialRef;
+    if (CanSeekTo(fillCapsuleSpotNoSpecMaterialRef))
+    {
+        SeekToRef(fillCapsuleSpotNoSpecMaterialRef);
+        IMaterial fillCapsuleSpotNoSpecMaterial;
+        ReturnFromRef();
+    }
+    Ref fillCapsuleSpotAmbientMaterialRef;
+    if (CanSeekTo(fillCapsuleSpotAmbientMaterialRef))
+    {
+        SeekToRef(fillCapsuleSpotAmbientMaterialRef);
+        IMaterial fillCapsuleSpotAmbientMaterial;
+        ReturnFromRef();
+    }
+    Ref fireCapsuleSpotMaterialRef;
+    if (CanSeekTo(fireCapsuleSpotMaterialRef))
+    {
+        SeekToRef(fireCapsuleSpotMaterialRef);
+        IMaterial fireCapsuleSpotMaterial;
+        ReturnFromRef();
+    }
+    Ref wetBoxMaterialRef;
+    if (CanSeekTo(wetBoxMaterialRef))
+    {
+        SeekToRef(wetBoxMaterialRef);
+        IMaterial wetBoxMaterial;
+        ReturnFromRef();
+    }
+    Ref darkBoxMaterialRef;
+    if (CanSeekTo(darkBoxMaterialRef))
+    {
+        SeekToRef(darkBoxMaterialRef);
+        IMaterial darkBoxMaterial;
+        ReturnFromRef();
+    }
+    Ref darkBoxAmbientMaterialRef;
+    if (CanSeekTo(darkBoxAmbientMaterialRef))
+    {
+        SeekToRef(darkBoxAmbientMaterialRef);
+        IMaterial darkBoxAmbientMaterial;
+        ReturnFromRef();
+    }
+    Ref lowResBoxMaterialRef;
+    if (CanSeekTo(lowResBoxMaterialRef))
+    {
+        SeekToRef(lowResBoxMaterialRef);
+        IMaterial lowResBoxMaterial;
+        ReturnFromRef();
+    }
+    Ref lowResBoxAmbientMaterialRef;
+    if (CanSeekTo(lowResBoxAmbientMaterialRef))
+    {
+        SeekToRef(lowResBoxAmbientMaterialRef);
+        IMaterial lowResBoxAmbientMaterial;
+        ReturnFromRef();
+    }
+    Ref fillBoxMaterialRef;
+    if (CanSeekTo(fillBoxMaterialRef))
+    {
+        SeekToRef(fillBoxMaterialRef);
+        IMaterial fillBoxMaterial;
+        ReturnFromRef();
+    }
+    Ref fillBoxNoSpecMaterialRef;
+    if (CanSeekTo(fillBoxNoSpecMaterialRef))
+    {
+        SeekToRef(fillBoxNoSpecMaterialRef);
+        IMaterial fillBoxNoSpecMaterial;
+        ReturnFromRef();
+    }
+    Ref fillBoxAmbientMaterialRef;
+    if (CanSeekTo(fillBoxAmbientMaterialRef))
+    {
+        SeekToRef(fillBoxAmbientMaterialRef);
+        IMaterial fillBoxAmbientMaterial;
+        ReturnFromRef();
+    }
+    Ref fireBoxMaterialRef;
+    if (CanSeekTo(fireBoxMaterialRef))
+    {
+        SeekToRef(fireBoxMaterialRef);
+        IMaterial fireBoxMaterial;
+        ReturnFromRef();
+    }
+    Ref combineAmbientPSRef;
+    if (CanSeekTo(combineAmbientPSRef))
+    {
+        SeekToRef(combineAmbientPSRef);
+        IShaderLib combineAmbientPS;
+        ReturnFromRef();
+    }
+    Ref ambientSHWeightsPSRef;
+    if (CanSeekTo(ambientSHWeightsPSRef))
+    {
+        SeekToRef(ambientSHWeightsPSRef);
+        IShaderLib ambientSHWeightsPS;
+        ReturnFromRef();
+    }
+    Ref ambientSHCombineWeightsVSRef;
+    if (CanSeekTo(ambientSHCombineWeightsVSRef))
+    {
+        SeekToRef(ambientSHCombineWeightsVSRef);
+        IShaderLib ambientSHCombineWeightsVS;
+        ReturnFromRef();
+    }
+} DeferredLightData <optimize=false>;
+
+typedef struct
+{
+    unsigned int shallowWater;
+    unsigned int deepWater;
+    unsigned int swamp;
+    unsigned int mud;
+    unsigned int snow;
+    unsigned int ice;
+    unsigned int playerFlesh;
+    unsigned int flesh;
+    unsigned int glassMirror;
+} SurfaceList <optimize=false>;
+
+typedef struct
+{
+    Ref checkerTextureRef;
+    if (CanSeekTo(checkerTextureRef))
+    {
+        SeekToRef(checkerTextureRef);
+        TextureMap checkerTexture;
+        ReturnFromRef();
+    }
+    Ref blackTextureRef;
+    if (CanSeekTo(blackTextureRef))
+    {
+        SeekToRef(blackTextureRef);
+        TextureMap blackTexture;
+        ReturnFromRef();
+    }
+    Ref overdrawMaterialRef;
+    if (CanSeekTo(overdrawMaterialRef))
+    {
+        SeekToRef(overdrawMaterialRef);
+        IMaterial overdrawMaterial;
+        ReturnFromRef();
+    }
+} globalobject__DebugResources <optimize=false>;
+
+typedef struct
+{
+    Ref sphereMeshRef;
+    if (CanSeekTo(sphereMeshRef))
+    {
+        SeekToRef(sphereMeshRef);
+        RenderMesh sphereMesh;
+        ReturnFromRef();
+    }
+    Ref planeMeshRef;
+    if (CanSeekTo(planeMeshRef))
+    {
+        SeekToRef(planeMeshRef);
+        RenderMesh planeMesh;
+        ReturnFromRef();
+    }
+    Ref boxMeshRef;
+    if (CanSeekTo(boxMeshRef))
+    {
+        SeekToRef(boxMeshRef);
+        RenderMesh boxMesh;
+        ReturnFromRef();
+    }
+    Ref occluderMeshMaterialRef;
+    if (CanSeekTo(occluderMeshMaterialRef))
+    {
+        SeekToRef(occluderMeshMaterialRef);
+        IMaterial occluderMeshMaterial;
+        ReturnFromRef();
+    }
+    Ref occluderPlaneMaterialRef;
+    if (CanSeekTo(occluderPlaneMaterialRef))
+    {
+        SeekToRef(occluderPlaneMaterialRef);
+        IMaterial occluderPlaneMaterial;
+        ReturnFromRef();
+    }
+} globalobject__OcclusionResources <optimize=false>;
+
+typedef union
+{
+    unsigned int globalCategory;
+} StreamLayerCategoryUnion;
+
+typedef struct
+{
+    unsigned int dlcHash;
+} DLCFeatureRef <optimize=false>;
+
+typedef struct
+{
+    Ref layerIDRef;
+    if (CanSeekTo(layerIDRef))
+    {
+        SeekToRef(layerIDRef);
+        string layerID;
+        ReturnFromRef();
+    }
+    int categoryTypeGlobalOnly;
+    StreamLayerCategoryUnion category;
+    DLCFeatureRef dlcRef;
+    byte active;
+    byte preload;
+    byte noSave;
+    FSkip(1);
+    int reservedDRAM;
+    int allocedReservedDRAM;
+    Ref dataPointerRef;
+    if (CanSeekTo(dataPointerRef))
+    {
+        SeekToRef(dataPointerRef);
+        byte dataPointer;
+        ReturnFromRef();
+    }
+    byte reservedCheck;
+} StreamLayer <optimize=false>;
+
+typedef struct
+{
+    Ref streamLayersRef;
+    unsigned int streamLayersCount;
+    if (CanSeekTo(streamLayersRef))
+    {
+        SeekToRef(streamLayersRef);
+        StreamLayer streamLayers[streamLayersCount];
+        ReturnFromRef();
+    }
+} StreamLayerList <optimize=false>;
+
+typedef struct
+{
+    Ref nameRef;
+    if (CanSeekTo(nameRef))
+    {
+        SeekToRef(nameRef);
+        string name;
+        ReturnFromRef();
+    }
+    byte volume;
+} StreamLayerCategory <optimize=false>;
+
+typedef struct
+{
+    Ref categoriesRef;
+    if (CanSeekTo(categoriesRef))
+    {
+        SeekToRef(categoriesRef);
+        StreamLayerCategory categories;
+        ReturnFromRef();
+    }
+    unsigned int categoryCount;
+} StreamLayerCategories <optimize=false>;
+
+typedef struct
+{
+    unsigned int streamLayer;
+} StreamLayerInfoGlobal <optimize=false>;
+
+typedef struct
+{
+    unsigned int unit;
+    unsigned int streamLayer;
+} StreamLayerInfoUnit <optimize=false>;
+
+typedef union
+{
+    StreamLayerInfoGlobal global;
+    StreamLayerInfoUnit unit;
+} StreamLayerInfo;
+
+typedef struct
+{
+    int action;
+    int streamLayerType;
+    StreamLayerInfo streamLayerInfo;
+} CustomizationInfo <optimize=false>;
+
+typedef struct
+{
+    Ref customizationListOnEnterRef;
+    if (CanSeekTo(customizationListOnEnterRef))
+    {
+        SeekToRef(customizationListOnEnterRef);
+        CustomizationInfo customizationListOnEnter;
+        ReturnFromRef();
+    }
+    unsigned int numEntriesOnEnter;
+    FSkip(4);
+    Ref customizationListOnExitRef;
+    if (CanSeekTo(customizationListOnExitRef))
+    {
+        SeekToRef(customizationListOnExitRef);
+        CustomizationInfo customizationListOnExit;
+        ReturnFromRef();
+    }
+    unsigned int numEntriesOnExit;
+    FSkip(4);
+    Ref debugNameRef;
+    if (CanSeekTo(debugNameRef))
+    {
+        SeekToRef(debugNameRef);
+        string debugName;
+        ReturnFromRef();
+    }
+} CustomizationState <optimize=false>;
+
+typedef struct
+{
+    unsigned int startupState;
+    FSkip(4);
+    Ref customizationStatesRef;
+    if (CanSeekTo(customizationStatesRef))
+    {
+        SeekToRef(customizationStatesRef);
+        CustomizationState customizationStates;
+        ReturnFromRef();
+    }
+    unsigned int numStates;
+    FSkip(4);
+    Ref debugNameRef;
+    if (CanSeekTo(debugNameRef))
+    {
+        SeekToRef(debugNameRef);
+        string debugName;
+        ReturnFromRef();
+    }
+} ExclusivityGroup <optimize=false>;
+
+typedef struct
+{
+    Ref customizationListOnEnterRef;
+    if (CanSeekTo(customizationListOnEnterRef))
+    {
+        SeekToRef(customizationListOnEnterRef);
+        CustomizationInfo customizationListOnEnter;
+        ReturnFromRef();
+    }
+    unsigned int numEntriesOnEnter;
+    FSkip(4);
+    Ref customizationListOnExitRef;
+    if (CanSeekTo(customizationListOnExitRef))
+    {
+        SeekToRef(customizationListOnExitRef);
+        CustomizationInfo customizationListOnExit;
+        ReturnFromRef();
+    }
+    unsigned int numEntriesOnExit;
+    FSkip(4);
+    Ref debugNameRef;
+    if (CanSeekTo(debugNameRef))
+    {
+        SeekToRef(debugNameRef);
+        string debugName;
+        ReturnFromRef();
+    }
+    byte bEnabledAtStartup;
+} BinaryCustomizationState <optimize=false>;
+
+typedef struct
+{
+    Ref exclusivityGroupsRef;
+    if (CanSeekTo(exclusivityGroupsRef))
+    {
+        SeekToRef(exclusivityGroupsRef);
+        ExclusivityGroup exclusivityGroups;
+        ReturnFromRef();
+    }
+    unsigned int numGroups;
+    FSkip(4);
+    Ref binaryStatesRef;
+    unsigned int numBinaryStates;
+    if (CanSeekTo(binaryStatesRef))
+    {
+        SeekToRef(binaryStatesRef);
+        BinaryCustomizationState binaryStates[numBinaryStates];
+        ReturnFromRef();
+    }
+} CustomizationManagerInfo <optimize=false>;
+
+typedef struct
+{
+    Ref stencilApplyMaterialRef;
+    if (CanSeekTo(stencilApplyMaterialRef))
+    {
+        SeekToRef(stencilApplyMaterialRef);
+        IMaterial stencilApplyMaterial;
+        ReturnFromRef();
+    }
+    Ref fullscreenFogMaterialRef;
+    if (CanSeekTo(fullscreenFogMaterialRef))
+    {
+        SeekToRef(fullscreenFogMaterialRef);
+        IMaterial fullscreenFogMaterial;
+        ReturnFromRef();
+    }
+    Ref groundFogMaterialRef;
+    if (CanSeekTo(groundFogMaterialRef))
+    {
+        SeekToRef(groundFogMaterialRef);
+        IMaterial groundFogMaterial;
+        ReturnFromRef();
+    }
+    Ref blingMaterialRef;
+    if (CanSeekTo(blingMaterialRef))
+    {
+        SeekToRef(blingMaterialRef);
+        IMaterial blingMaterial;
+        ReturnFromRef();
+    }
+    float blingRadius;
+    float blingAngularSpeed;
+    int numBlingRotations;
+    int maxSimultaneousBlings;
+    float minTimeBetweenBlings;
+    float maxTimeBetweenBlings;
+    Ref volumetricLightRenderVSRef;
+    if (CanSeekTo(volumetricLightRenderVSRef))
+    {
+        SeekToRef(volumetricLightRenderVSRef);
+        IShaderLib volumetricLightRenderVS;
+        ReturnFromRef();
+    }
+    Ref volumetricLightRenderPSRef;
+    if (CanSeekTo(volumetricLightRenderPSRef))
+    {
+        SeekToRef(volumetricLightRenderPSRef);
+        IShaderLib volumetricLightRenderPS;
+        ReturnFromRef();
+    }
+} globalobject__GameFX <optimize=false>;
+
+typedef struct
+{
+    Ref focalDownsampleMaterialRef;
+    if (CanSeekTo(focalDownsampleMaterialRef))
+    {
+        SeekToRef(focalDownsampleMaterialRef);
+        IMaterial focalDownsampleMaterial;
+        ReturnFromRef();
+    }
+    Ref focalBlurMaterialRef;
+    if (CanSeekTo(focalBlurMaterialRef))
+    {
+        SeekToRef(focalBlurMaterialRef);
+        IMaterial focalBlurMaterial;
+        ReturnFromRef();
+    }
+    Ref velocityMapMaterialRef;
+    if (CanSeekTo(velocityMapMaterialRef))
+    {
+        SeekToRef(velocityMapMaterialRef);
+        IMaterial velocityMapMaterial;
+        ReturnFromRef();
+    }
+    Ref velocityMapLowResMaterialRef;
+    if (CanSeekTo(velocityMapLowResMaterialRef))
+    {
+        SeekToRef(velocityMapLowResMaterialRef);
+        IMaterial velocityMapLowResMaterial;
+        ReturnFromRef();
+    }
+    Ref velocityMapCombineMaterialRef;
+    if (CanSeekTo(velocityMapCombineMaterialRef))
+    {
+        SeekToRef(velocityMapCombineMaterialRef);
+        IMaterial velocityMapCombineMaterial;
+        ReturnFromRef();
+    }
+    Ref motionBlurDownsampleMaterialRef;
+    if (CanSeekTo(motionBlurDownsampleMaterialRef))
+    {
+        SeekToRef(motionBlurDownsampleMaterialRef);
+        IMaterial motionBlurDownsampleMaterial;
+        ReturnFromRef();
+    }
+    Ref postMaterialEBRef;
+    if (CanSeekTo(postMaterialEBRef))
+    {
+        SeekToRef(postMaterialEBRef);
+        IMaterial postMaterialEB;
+        ReturnFromRef();
+    }
+    Ref postMaterialEBDBRef;
+    if (CanSeekTo(postMaterialEBDBRef))
+    {
+        SeekToRef(postMaterialEBDBRef);
+        IMaterial postMaterialEBDB;
+        ReturnFromRef();
+    }
+    Ref postMaterialEBDOFRef;
+    if (CanSeekTo(postMaterialEBDOFRef))
+    {
+        SeekToRef(postMaterialEBDOFRef);
+        IMaterial postMaterialEBDOF;
+        ReturnFromRef();
+    }
+    Ref postMaterialDBRef;
+    if (CanSeekTo(postMaterialDBRef))
+    {
+        SeekToRef(postMaterialDBRef);
+        IMaterial postMaterialDB;
+        ReturnFromRef();
+    }
+    Ref postMaterialDOFRef;
+    if (CanSeekTo(postMaterialDOFRef))
+    {
+        SeekToRef(postMaterialDOFRef);
+        IMaterial postMaterialDOF;
+        ReturnFromRef();
+    }
+    Ref postMaterialEBDRef;
+    if (CanSeekTo(postMaterialEBDRef))
+    {
+        SeekToRef(postMaterialEBDRef);
+        IMaterial postMaterialEBD;
+        ReturnFromRef();
+    }
+    Ref postMaterialCEBRef;
+    if (CanSeekTo(postMaterialCEBRef))
+    {
+        SeekToRef(postMaterialCEBRef);
+        IMaterial postMaterialCEB;
+        ReturnFromRef();
+    }
+    Ref postMaterialCEBDRef;
+    if (CanSeekTo(postMaterialCEBDRef))
+    {
+        SeekToRef(postMaterialCEBDRef);
+        IMaterial postMaterialCEBD;
+        ReturnFromRef();
+    }
+    Ref postMaterialEBCRef;
+    if (CanSeekTo(postMaterialEBCRef))
+    {
+        SeekToRef(postMaterialEBCRef);
+        IMaterial postMaterialEBC;
+        ReturnFromRef();
+    }
+    Ref postMaterialMBRef;
+    if (CanSeekTo(postMaterialMBRef))
+    {
+        SeekToRef(postMaterialMBRef);
+        IMaterial postMaterialMB;
+        ReturnFromRef();
+    }
+    Ref postMaterialCVRef;
+    if (CanSeekTo(postMaterialCVRef))
+    {
+        SeekToRef(postMaterialCVRef);
+        IMaterial postMaterialCV;
+        ReturnFromRef();
+    }
+    Ref postMaterialCCRef;
+    if (CanSeekTo(postMaterialCCRef))
+    {
+        SeekToRef(postMaterialCCRef);
+        IMaterial postMaterialCC;
+        ReturnFromRef();
+    }
+    Ref postMaterialCCDVRef;
+    if (CanSeekTo(postMaterialCCDVRef))
+    {
+        SeekToRef(postMaterialCCDVRef);
+        IMaterial postMaterialCCDV;
+        ReturnFromRef();
+    }
+    Ref postMaterialDVRef;
+    if (CanSeekTo(postMaterialDVRef))
+    {
+        SeekToRef(postMaterialDVRef);
+        IMaterial postMaterialDV;
+        ReturnFromRef();
+    }
+    Ref postMaterialBlurRef;
+    if (CanSeekTo(postMaterialBlurRef))
+    {
+        SeekToRef(postMaterialBlurRef);
+        IMaterial postMaterialBlur;
+        ReturnFromRef();
+    }
+    Ref postMaterialTAARef;
+    if (CanSeekTo(postMaterialTAARef))
+    {
+        SeekToRef(postMaterialTAARef);
+        IMaterial postMaterialTAA;
+        ReturnFromRef();
+    }
+    Ref ssaoNormalMaterialRef;
+    if (CanSeekTo(ssaoNormalMaterialRef))
+    {
+        SeekToRef(ssaoNormalMaterialRef);
+        IMaterial ssaoNormalMaterial;
+        ReturnFromRef();
+    }
+    Ref ssaoNormalApplyMaterialRef;
+    if (CanSeekTo(ssaoNormalApplyMaterialRef))
+    {
+        SeekToRef(ssaoNormalApplyMaterialRef);
+        IMaterial ssaoNormalApplyMaterial;
+        ReturnFromRef();
+    }
+    Ref ssaoHorizNormalBlurMaterialRef;
+    if (CanSeekTo(ssaoHorizNormalBlurMaterialRef))
+    {
+        SeekToRef(ssaoHorizNormalBlurMaterialRef);
+        IMaterial ssaoHorizNormalBlurMaterial;
+        ReturnFromRef();
+    }
+    Ref ssaoVertNormalBlurMaterialRef;
+    if (CanSeekTo(ssaoVertNormalBlurMaterialRef))
+    {
+        SeekToRef(ssaoVertNormalBlurMaterialRef);
+        IMaterial ssaoVertNormalBlurMaterial;
+        ReturnFromRef();
+    }
+    Ref ssaoDepthDownsampleMaterialRef;
+    if (CanSeekTo(ssaoDepthDownsampleMaterialRef))
+    {
+        SeekToRef(ssaoDepthDownsampleMaterialRef);
+        IMaterial ssaoDepthDownsampleMaterial;
+        ReturnFromRef();
+    }
+    Ref normalDownsampleMaterialRef;
+    if (CanSeekTo(normalDownsampleMaterialRef))
+    {
+        SeekToRef(normalDownsampleMaterialRef);
+        IMaterial normalDownsampleMaterial;
+        ReturnFromRef();
+    }
+    Ref computeInitialSSAOOcclusionMaterialRef;
+    if (CanSeekTo(computeInitialSSAOOcclusionMaterialRef))
+    {
+        SeekToRef(computeInitialSSAOOcclusionMaterialRef);
+        IMaterial computeInitialSSAOOcclusionMaterial;
+        ReturnFromRef();
+    }
+    Ref accumulateSSAOOcclusionMaterialRef;
+    if (CanSeekTo(accumulateSSAOOcclusionMaterialRef))
+    {
+        SeekToRef(accumulateSSAOOcclusionMaterialRef);
+        IMaterial accumulateSSAOOcclusionMaterial;
+        ReturnFromRef();
+    }
+    Ref computeFinalSSAOOcclusionMaterialRef;
+    if (CanSeekTo(computeFinalSSAOOcclusionMaterialRef))
+    {
+        SeekToRef(computeFinalSSAOOcclusionMaterialRef);
+        IMaterial computeFinalSSAOOcclusionMaterial;
+        ReturnFromRef();
+    }
+    Ref monoNoiseTextureRef;
+    if (CanSeekTo(monoNoiseTextureRef))
+    {
+        SeekToRef(monoNoiseTextureRef);
+        TextureMap monoNoiseTexture;
+        ReturnFromRef();
+    }
+    Ref filmGrainTextureRef;
+    if (CanSeekTo(filmGrainTextureRef))
+    {
+        SeekToRef(filmGrainTextureRef);
+        TextureMap filmGrainTexture;
+        ReturnFromRef();
+    }
+    Ref identityLutRef;
+    if (CanSeekTo(identityLutRef))
+    {
+        SeekToRef(identityLutRef);
+        TextureMap identityLut;
+        ReturnFromRef();
+    }
+    Ref defaultGrassLutRef;
+    if (CanSeekTo(defaultGrassLutRef))
+    {
+        SeekToRef(defaultGrassLutRef);
+        TextureMap defaultGrassLut;
+        ReturnFromRef();
+    }
+    Ref hairNoiseTextureRef;
+    if (CanSeekTo(hairNoiseTextureRef))
+    {
+        SeekToRef(hairNoiseTextureRef);
+        TextureMap hairNoiseTexture;
+        ReturnFromRef();
+    }
+    Ref marschnerMTextureRef;
+    if (CanSeekTo(marschnerMTextureRef))
+    {
+        SeekToRef(marschnerMTextureRef);
+        TextureMap marschnerMTexture;
+        ReturnFromRef();
+    }
+    Ref marschnerNTextureRef;
+    if (CanSeekTo(marschnerNTextureRef))
+    {
+        SeekToRef(marschnerNTextureRef);
+        TextureMap marschnerNTexture;
+        ReturnFromRef();
+    }
+    Ref alphaEdgeDetectRef;
+    if (CanSeekTo(alphaEdgeDetectRef))
+    {
+        SeekToRef(alphaEdgeDetectRef);
+        IMaterial alphaEdgeDetect;
+        ReturnFromRef();
+    }
+    Ref alphaCompositeRef;
+    if (CanSeekTo(alphaCompositeRef))
+    {
+        SeekToRef(alphaCompositeRef);
+        IMaterial alphaComposite;
+        ReturnFromRef();
+    }
+    Ref bilateralUpsampleRef;
+    if (CanSeekTo(bilateralUpsampleRef))
+    {
+        SeekToRef(bilateralUpsampleRef);
+        IMaterial bilateralUpsample;
+        ReturnFromRef();
+    }
+    float oarDepthThreshold;
+    float oarDepthFalloff;
+    Ref colorCompositeRef;
+    if (CanSeekTo(colorCompositeRef))
+    {
+        SeekToRef(colorCompositeRef);
+        IMaterial colorComposite;
+        ReturnFromRef();
+    }
+    Ref hiStencilFillMaterialRef;
+    if (CanSeekTo(hiStencilFillMaterialRef))
+    {
+        SeekToRef(hiStencilFillMaterialRef);
+        IMaterial hiStencilFillMaterial;
+        ReturnFromRef();
+    }
+    Ref colorFillMaterialRef;
+    if (CanSeekTo(colorFillMaterialRef))
+    {
+        SeekToRef(colorFillMaterialRef);
+        IMaterial colorFillMaterial;
+        ReturnFromRef();
+    }
+    Ref colorBlendMaterialRef;
+    if (CanSeekTo(colorBlendMaterialRef))
+    {
+        SeekToRef(colorBlendMaterialRef);
+        IMaterial colorBlendMaterial;
+        ReturnFromRef();
+    }
+    Ref textureFillMaterialRef;
+    if (CanSeekTo(textureFillMaterialRef))
+    {
+        SeekToRef(textureFillMaterialRef);
+        IMaterial textureFillMaterial;
+        ReturnFromRef();
+    }
+    Ref textureAddMaterialRef;
+    if (CanSeekTo(textureAddMaterialRef))
+    {
+        SeekToRef(textureAddMaterialRef);
+        IMaterial textureAddMaterial;
+        ReturnFromRef();
+    }
+    Ref textureAddMaterialNoAlphaRef;
+    if (CanSeekTo(textureAddMaterialNoAlphaRef))
+    {
+        SeekToRef(textureAddMaterialNoAlphaRef);
+        IMaterial textureAddMaterialNoAlpha;
+        ReturnFromRef();
+    }
+    Ref textureBlendMaterialRef;
+    if (CanSeekTo(textureBlendMaterialRef))
+    {
+        SeekToRef(textureBlendMaterialRef);
+        IMaterial textureBlendMaterial;
+        ReturnFromRef();
+    }
+    Ref stippleAlphaBlendMaterialRef;
+    if (CanSeekTo(stippleAlphaBlendMaterialRef))
+    {
+        SeekToRef(stippleAlphaBlendMaterialRef);
+        IMaterial stippleAlphaBlendMaterial;
+        ReturnFromRef();
+    }
+    Ref subsurfaceScatter1MaterialRef;
+    if (CanSeekTo(subsurfaceScatter1MaterialRef))
+    {
+        SeekToRef(subsurfaceScatter1MaterialRef);
+        IMaterial subsurfaceScatter1Material;
+        ReturnFromRef();
+    }
+    Ref subsurfaceScatter2MaterialRef;
+    if (CanSeekTo(subsurfaceScatter2MaterialRef))
+    {
+        SeekToRef(subsurfaceScatter2MaterialRef);
+        IMaterial subsurfaceScatter2Material;
+        ReturnFromRef();
+    }
+    Ref fillColorMaterialRef;
+    if (CanSeekTo(fillColorMaterialRef))
+    {
+        SeekToRef(fillColorMaterialRef);
+        IMaterial fillColorMaterial;
+        ReturnFromRef();
+    }
+    Ref fogApplyMaterialRef;
+    if (CanSeekTo(fogApplyMaterialRef))
+    {
+        SeekToRef(fogApplyMaterialRef);
+        IMaterial fogApplyMaterial;
+        ReturnFromRef();
+    }
+    Ref stencilMaterialFullscreenRef;
+    if (CanSeekTo(stencilMaterialFullscreenRef))
+    {
+        SeekToRef(stencilMaterialFullscreenRef);
+        IMaterial stencilMaterialFullscreen;
+        ReturnFromRef();
+    }
+    Ref screenSpaceAAMaterialRef;
+    if (CanSeekTo(screenSpaceAAMaterialRef))
+    {
+        SeekToRef(screenSpaceAAMaterialRef);
+        IMaterial screenSpaceAAMaterial;
+        ReturnFromRef();
+    }
+    Ref extractLuminanceMaterialRef;
+    if (CanSeekTo(extractLuminanceMaterialRef))
+    {
+        SeekToRef(extractLuminanceMaterialRef);
+        IMaterial extractLuminanceMaterial;
+        ReturnFromRef();
+    }
+    Ref adaptLuminanceMaterialRef;
+    if (CanSeekTo(adaptLuminanceMaterialRef))
+    {
+        SeekToRef(adaptLuminanceMaterialRef);
+        IMaterial adaptLuminanceMaterial;
+        ReturnFromRef();
+    }
+    Ref autoToneMapMaterialRef;
+    if (CanSeekTo(autoToneMapMaterialRef))
+    {
+        SeekToRef(autoToneMapMaterialRef);
+        IMaterial autoToneMapMaterial;
+        ReturnFromRef();
+    }
+    Ref bloomCombineAutoTonemapMaterialRef;
+    if (CanSeekTo(bloomCombineAutoTonemapMaterialRef))
+    {
+        SeekToRef(bloomCombineAutoTonemapMaterialRef);
+        IMaterial bloomCombineAutoTonemapMaterial;
+        ReturnFromRef();
+    }
+    Ref downsampleLuminance4x4MaterialRef;
+    if (CanSeekTo(downsampleLuminance4x4MaterialRef))
+    {
+        SeekToRef(downsampleLuminance4x4MaterialRef);
+        IMaterial downsampleLuminance4x4Material;
+        ReturnFromRef();
+    }
+    Ref downsampleLuminance2x2MaterialRef;
+    if (CanSeekTo(downsampleLuminance2x2MaterialRef))
+    {
+        SeekToRef(downsampleLuminance2x2MaterialRef);
+        IMaterial downsampleLuminance2x2Material;
+        ReturnFromRef();
+    }
+    Ref copyNearBlurMaterialRef;
+    if (CanSeekTo(copyNearBlurMaterialRef))
+    {
+        SeekToRef(copyNearBlurMaterialRef);
+        IMaterial copyNearBlurMaterial;
+        ReturnFromRef();
+    }
+    Ref lensFlareDrawRef;
+    if (CanSeekTo(lensFlareDrawRef))
+    {
+        SeekToRef(lensFlareDrawRef);
+        IMaterial lensFlareDraw;
+        ReturnFromRef();
+    }
+    Ref lensFlareOccluderRef;
+    if (CanSeekTo(lensFlareOccluderRef))
+    {
+        SeekToRef(lensFlareOccluderRef);
+        IMaterial lensFlareOccluder;
+        ReturnFromRef();
+    }
+    Ref lensFlareDispersalRef;
+    if (CanSeekTo(lensFlareDispersalRef))
+    {
+        SeekToRef(lensFlareDispersalRef);
+        IMaterial lensFlareDispersal;
+        ReturnFromRef();
+    }
+    Ref lensFlareRestoreRef;
+    if (CanSeekTo(lensFlareRestoreRef))
+    {
+        SeekToRef(lensFlareRestoreRef);
+        IMaterial lensFlareRestore;
+        ReturnFromRef();
+    }
+    Ref sssNonsepMatRef;
+    if (CanSeekTo(sssNonsepMatRef))
+    {
+        SeekToRef(sssNonsepMatRef);
+        IMaterial sssNonsepMat;
+        ReturnFromRef();
+    }
+    Ref sssNonsepMatVertRef;
+    if (CanSeekTo(sssNonsepMatVertRef))
+    {
+        SeekToRef(sssNonsepMatVertRef);
+        IMaterial sssNonsepMatVert;
+        ReturnFromRef();
+    }
+    Ref copyDeferredBufferRef;
+    if (CanSeekTo(copyDeferredBufferRef))
+    {
+        SeekToRef(copyDeferredBufferRef);
+        IMaterial copyDeferredBuffer;
+        ReturnFromRef();
+    }
+    Ref earGlowMatRef;
+    if (CanSeekTo(earGlowMatRef))
+    {
+        SeekToRef(earGlowMatRef);
+        IMaterial earGlowMat;
+        ReturnFromRef();
+    }
+    Ref debugDrawSHIrradianceL2Ref;
+    if (CanSeekTo(debugDrawSHIrradianceL2Ref))
+    {
+        SeekToRef(debugDrawSHIrradianceL2Ref);
+        IMaterial debugDrawSHIrradianceL2;
+        ReturnFromRef();
+    }
+    Ref colorCorrectionCombinePSRef;
+    if (CanSeekTo(colorCorrectionCombinePSRef))
+    {
+        SeekToRef(colorCorrectionCombinePSRef);
+        IShaderLib colorCorrectionCombinePS;
+        ReturnFromRef();
+    }
+    Ref colorCorrectionPSRef;
+    if (CanSeekTo(colorCorrectionPSRef))
+    {
+        SeekToRef(colorCorrectionPSRef);
+        IShaderLib colorCorrectionPS;
+        ReturnFromRef();
+    }
+    Ref lRTApplyPSRef;
+    if (CanSeekTo(lRTApplyPSRef))
+    {
+        SeekToRef(lRTApplyPSRef);
+        IShaderLib lRTApplyPS;
+        ReturnFromRef();
+    }
+    Ref fogapplicationVSRef;
+    if (CanSeekTo(fogapplicationVSRef))
+    {
+        SeekToRef(fogapplicationVSRef);
+        IShaderLib fogapplicationVS;
+        ReturnFromRef();
+    }
+    Ref fogapplicationPSRef;
+    if (CanSeekTo(fogapplicationPSRef))
+    {
+        SeekToRef(fogapplicationPSRef);
+        IShaderLib fogapplicationPS;
+        ReturnFromRef();
+    }
+    Ref blsDownsamplePSRef;
+    if (CanSeekTo(blsDownsamplePSRef))
+    {
+        SeekToRef(blsDownsamplePSRef);
+        IShaderLib blsDownsamplePS;
+        ReturnFromRef();
+    }
+    Ref blsBlurPSRef;
+    if (CanSeekTo(blsBlurPSRef))
+    {
+        SeekToRef(blsBlurPSRef);
+        IShaderLib blsBlurPS;
+        ReturnFromRef();
+    }
+    Ref blsLightScatterPSRef;
+    if (CanSeekTo(blsLightScatterPSRef))
+    {
+        SeekToRef(blsLightScatterPSRef);
+        IShaderLib blsLightScatterPS;
+        ReturnFromRef();
+    }
+    Ref blsApplyPSRef;
+    if (CanSeekTo(blsApplyPSRef))
+    {
+        SeekToRef(blsApplyPSRef);
+        IShaderLib blsApplyPS;
+        ReturnFromRef();
+    }
+    Ref arDownsamplepsRef;
+    if (CanSeekTo(arDownsamplepsRef))
+    {
+        SeekToRef(arDownsamplepsRef);
+        IShaderLib arDownsampleps;
+        ReturnFromRef();
+    }
+    Ref tmDownsamplepsRef;
+    if (CanSeekTo(tmDownsamplepsRef))
+    {
+        SeekToRef(tmDownsamplepsRef);
+        IShaderLib tmDownsampleps;
+        ReturnFromRef();
+    }
+    Ref tmHistorypsRef;
+    if (CanSeekTo(tmHistorypsRef))
+    {
+        SeekToRef(tmHistorypsRef);
+        IShaderLib tmHistoryps;
+        ReturnFromRef();
+    }
+    Ref tmLutpsRef;
+    if (CanSeekTo(tmLutpsRef))
+    {
+        SeekToRef(tmLutpsRef);
+        IShaderLib tmLutps;
+        ReturnFromRef();
+    }
+    Ref tmApplypsRef;
+    if (CanSeekTo(tmApplypsRef))
+    {
+        SeekToRef(tmApplypsRef);
+        IShaderLib tmApplyps;
+        ReturnFromRef();
+    }
+    Ref alchemySSAOPSRef;
+    if (CanSeekTo(alchemySSAOPSRef))
+    {
+        SeekToRef(alchemySSAOPSRef);
+        IShaderLib alchemySSAOPS;
+        ReturnFromRef();
+    }
+    Ref grayscaleBlurPSRef;
+    if (CanSeekTo(grayscaleBlurPSRef))
+    {
+        SeekToRef(grayscaleBlurPSRef);
+        IShaderLib grayscaleBlurPS;
+        ReturnFromRef();
+    }
+} globalobject__PostProcessing <optimize=false>;
+
+typedef struct
+{
+    int intro;
+    int pad;
+} _B311916A66505ABF1E118F6A97EEB479 <optimize=false>;
+
+typedef union
+{
+    uquad id;
+    _B311916A66505ABF1E118F6A97EEB479 _S1;
+} PlacementPath___unnamed_type_m_id0_;
+
+typedef struct
+{
+    unsigned int listType;
+    unsigned int zoneID;
+    PlacementPath___unnamed_type_m_id0_ id0;
+    uquad id1;
+    FSkip(4);
+    Ref moreIDsRef;
+    if (CanSeekTo(moreIDsRef))
+    {
+        SeekToRef(moreIDsRef);
+        uquad moreIDs;
+        ReturnFromRef();
+    }
+} PlacementPath <optimize=false>;
+
+typedef struct
+{
+    PlacementPath croftManorCheckPoint;
+    PlacementPath croftManorVRCheckPoint;
+} globalobject__CheckpointMapping <optimize=false>;
+
+typedef struct
+{
+    PlacementPath croftManorPlacement;
+    PlacementPath croftManorVRPlacement;
+    ushort croftManorPlacementZoneID;
+    ushort croftManorVRPlacementZoneID;
+} globalobject__ObjectPlacementMapping <optimize=false>;
+
+typedef struct
+{
+    Ref vrPlayAreaMaterialRef;
+    if (CanSeekTo(vrPlayAreaMaterialRef))
+    {
+        SeekToRef(vrPlayAreaMaterialRef);
+        IMaterial vrPlayAreaMaterial;
+        ReturnFromRef();
+    }
+    Ref vrPlayAreaDirectionMaterialRef;
+    if (CanSeekTo(vrPlayAreaDirectionMaterialRef))
+    {
+        SeekToRef(vrPlayAreaDirectionMaterialRef);
+        IMaterial vrPlayAreaDirectionMaterial;
+        ReturnFromRef();
+    }
+    Ref vrParabolaMaterialRef;
+    if (CanSeekTo(vrParabolaMaterialRef))
+    {
+        SeekToRef(vrParabolaMaterialRef);
+        IMaterial vrParabolaMaterial;
+        ReturnFromRef();
+    }
+    ushort croftManorUnitID;
+    ushort croftManorVRUnitID;
+    unsigned int numCroftManorCheckPointMappings;
+    Ref croftManorCheckPointMappingsRef;
+    if (CanSeekTo(croftManorCheckPointMappingsRef))
+    {
+        SeekToRef(croftManorCheckPointMappingsRef);
+        globalobject__CheckpointMapping croftManorCheckPointMappings[numCroftManorCheckPointMappings];
+        ReturnFromRef();
+    }
+    unsigned int numCroftManorObjectPlacementMappings;
+    FSkip(4);
+    Ref croftManorObjectPlacementMappingsRef;
+    if (CanSeekTo(croftManorObjectPlacementMappingsRef))
+    {
+        SeekToRef(croftManorObjectPlacementMappingsRef);
+        globalobject__ObjectPlacementMapping croftManorObjectPlacementMappings[numCroftManorObjectPlacementMappings];
+        ReturnFromRef();
+    }
+} globalobject__VR <optimize=false>;
+
+typedef struct
+{
+    Ref defaultSurvivalInstinctMaterialRef;
+    if (CanSeekTo(defaultSurvivalInstinctMaterialRef))
+    {
+        SeekToRef(defaultSurvivalInstinctMaterialRef);
+        IMaterial defaultSurvivalInstinctMaterial;
+        ReturnFromRef();
+    }
+} globalobject__HighlightMaterials <optimize=false>;
+
+typedef struct
+{
+    byte enabled;
+    FSkip(3);
+    float length;
+    float intensity;
+    float maxIntensity;
+    float decayPower;
+} ScatterBloomData__LightScatterData <optimize=false>;
+
+typedef struct
+{
+    byte enabled;
+    FSkip(3);
+    float bloomStrength;
+    float bloomThreshold;
+    float bloomRadius;
+} ScatterBloomData__BloomData <optimize=false>;
+
+typedef struct
+{
+    byte overrideSunDirection;
+    FSkip(3);
+    float sunPitch;
+    float sunYaw;
+    float skyGamma;
+    float skyIntensity;
+    float sunSize;
+    float sunFalloff;
+    float sunIntensity;
+    ScatterBloomData__LightScatterData scatterData;
+    ScatterBloomData__BloomData bloomData;
+} ScatterBloomData <optimize=false>;
+
+typedef struct
+{
+    ushort unit;
+    ushort unitLightGroupIdx;
+} UnitLightGroup <optimize=false>;
+
+typedef struct
+{
+    byte scriptDisabled;
+    byte enableLightCulling;
+    byte invertedLightCulling;
+    FSkip(1);
+    float cullLightDistance;
+    float cullLightFadeDistance;
+    int lightType;
+    int lightComplexity;
+    float range;
+    float lightIntensity;
+    ubyte lightColorR;
+    ubyte lightColorG;
+    ubyte lightColorB;
+    FSkip(1);
+    int probeModul;
+    float probePriority;
+    ushort scriptLightGroup;
+    UnitLightGroup unitLightGroup;
+    FSkip(2);
+    float rangeScale;
+    float rangeScaleScripted;
+    byte activeInGameplay : 1;
+    byte activeInCinematics : 1;
+    byte activeForMainPass : 1;
+    byte activeForReflection : 1;
+    byte activeForCapturing : 1;
+    byte _Bitfieldpadding16 : 3;
+    byte inExteriorCell;
+    byte disablePortalCulling;
+    FSkip(1);
+    float umbra;
+    float penumbra;
+    float nearRadius;
+    byte doIndirect;
+    FSkip(3);
+    float indirectStrength;
+    float indirectIntensity;
+    int indirectLightType;
+    float boxLightStartX;
+    float boxLightFalloffX;
+    float boxLightStartY;
+    float boxLightFalloffY;
+    float boxLightStartZ;
+    float boxLightFalloffZ;
+    float relReflCubeCenterX;
+    float relReflCubeCenterY;
+    float relReflCubeCenterZ;
+    byte relReflEnableColisionProxy;
+    FSkip(3);
+    float relReflCollisionBoxCenterX;
+    float relReflCollisionBoxCenterY;
+    float relReflCollisionBoxCenterZ;
+    float relReflCollisionBoxDimX;
+    float relReflCollisionBoxDimY;
+    float relReflCollisionBoxDimZ;
+    int fireLightFlameScale;
+    int fireLightMaskScale;
+    float fireLightBurnSpeed;
+    float fireLightCurrentBurn;
+    byte cheapWetLight;
+    FSkip(3);
+    float wetCubeMapIntensity;
+    float wetDarkLightIntensity;
+    FSkip(4);
+    Ref attenuationRef;
+    if (CanSeekTo(attenuationRef))
+    {
+        SeekToRef(attenuationRef);
+        ubyte attenuation;
+        ReturnFromRef();
+    }
+    float specularStrength;
+    float lambertWeight;
+    float halfLambertWeight;
+    float ambientWeight;
+    float minShadowSpecular;
+    byte enableVariation;
+    byte randomStartVariation;
+    FSkip(2);
+    float intensityVariationSpeed;
+    FSkip(4);
+    Ref intensityVariationRef;
+    if (CanSeekTo(intensityVariationRef))
+    {
+        SeekToRef(intensityVariationRef);
+        ubyte intensityVariation;
+        ReturnFromRef();
+    }
+    byte enableModulationTexture;
+    FSkip(7);
+    Ref modulationTextureRef;
+    if (CanSeekTo(modulationTextureRef))
+    {
+        SeekToRef(modulationTextureRef);
+        TextureMap modulationTexture;
+        ReturnFromRef();
+    }
+    float texScale;
+    float texRotation;
+    float texXScroll;
+    float texYScroll;
+    byte shadowEnabled;
+    byte shadowIncreaseResolution;
+    byte enablePerInstanceShadowBias;
+    FSkip(1);
+    float shadowConstBias;
+    float shadowSlopeBias;
+    float shadowDistanceBias;
+    int shadowMapSize;
+    byte isReceiverFocus;
+    byte isSoftshadow;
+    FSkip(2);
+    float softShadowRadius;
+    int softShadowNumSamples;
+    float softShadowDepthBias;
+    float softShadowExponent;
+    byte volumetricLightEnabled;
+    byte volumetricLightIntensityCorrellated;
+    FSkip(2);
+    float volumetricLightIntensity;
+    float volumetricLightScatterFactor;
+    int volumetricLightSamples;
+    int volumetricLightSamples2;
+    byte volumetricLightUseScatteringAmount;
+    byte volumetricLightParamOverride;
+    ubyte volumetricLightColorR;
+    ubyte volumetricLightColorG;
+    ubyte volumetricLightColorB;
+    FSkip(7);
+    Ref volumetricLightAttenuationRef;
+    if (CanSeekTo(volumetricLightAttenuationRef))
+    {
+        SeekToRef(volumetricLightAttenuationRef);
+        ubyte volumetricLightAttenuation;
+        ReturnFromRef();
+    }
+    byte volumetricLightParamSpotOverride;
+    FSkip(3);
+    float volumetricLightUmbra;
+    float volumetricLightPenumbra;
+    byte viewIndependentShadowCulling;
+    byte enableShadowLOD;
+    FSkip(2);
+    float shadowLODDist1;
+    float shadowLODDist2;
+    float shadowLODDist3;
+    byte enableAutomaticShadowLOD;
+    FSkip(3);
+    float automaticShadowLODMultiplier;
+    byte enableAutoLightConversion;
+    FSkip(3);
+    float conversionDistance;
+    byte enableShadowDistanceCulling;
+    FSkip(3);
+    float shadowFadeDistance;
+    float shadowCullDistance;
+    byte affectsPlayer : 1;
+    byte affectsIntros : 1;
+    byte affectsBGObjects : 1;
+    byte affectsTerrain : 1;
+    byte affectsGroup1 : 1;
+    byte affectsGroup2 : 1;
+    byte affectsGroup3 : 1;
+    byte affectsGroup4 : 1;
+    byte affectsCineGroup1 : 1;
+    byte affectsCineGroup2 : 1;
+    byte affectsCineGroup3 : 1;
+    byte affectsCineGroup4 : 1;
+    byte affectsCineGroup5 : 1;
+    byte affectsCineGroup6 : 1;
+    byte affectsCineGroup7 : 1;
+    byte affectsCineGroup8 : 1;
+    byte affectsWater : 1;
+    byte affectsFX : 1;
+    byte _Bitfieldpadding137 : 6;
+    char onlyAffects;
+    FSkip(4);
+    Ref affectsCellsRef;
+    unsigned int affectsCellsCount;
+    if (CanSeekTo(affectsCellsRef))
+    {
+        SeekToRef(affectsCellsRef);
+        unsigned int affectsCells[affectsCellsCount];
+        ReturnFromRef();
+    }
+    byte shadowAffectsPlayer : 1;
+    byte shadowAffectsIntros : 1;
+    byte shadowAffectsBGObjects : 1;
+    byte shadowAffectsTerrain : 1;
+    byte shadowAffectsGroup1 : 1;
+    byte shadowAffectsGroup2 : 1;
+    byte shadowAffectsGroup3 : 1;
+    byte shadowAffectsGroup4 : 1;
+    byte shadowAffectsCineGroup1 : 1;
+    byte shadowAffectsCineGroup2 : 1;
+    byte shadowAffectsCineGroup3 : 1;
+    byte shadowAffectsCineGroup4 : 1;
+    byte shadowAffectsCineGroup5 : 1;
+    byte shadowAffectsCineGroup6 : 1;
+    byte shadowAffectsCineGroup7 : 1;
+    byte shadowAffectsCineGroup8 : 1;
+    byte animEnabled;
+    FSkip(1);
+    float animParamsPosX[4];
+    float animParamsPosY[4];
+    float animParamsPosZ[4];
+    float animParamsDirX[4];
+    float animParamsDirY[4];
+    float animParamsDirZ[4];
+    float originalIntensity;
+    ubyte originalColorR;
+    ubyte originalColorG;
+    ubyte originalColorB;
+    FSkip(1);
+    float originalRangeScale;
+} LightTemplateData <optimize=false>;
+
+typedef struct
+{
+    float lightRotation[3];
+    float lightPosition[3];
+    LightTemplateData lightData;
+} globalobject__CollectibleLightRigData <optimize=false>;
+
+typedef struct
+{
+    ScatterBloomData bloomParams;
+    globalobject__CollectibleLightRigData light0;
+    globalobject__CollectibleLightRigData light1;
+    globalobject__CollectibleLightRigData light2;
+} globalobject__CollectibleLightRig <optimize=false>;
+
+typedef struct
+{
+    float dolly;
+    float truck[3];
+    float pitch;
+    float pitchOffset;
+    float yaw;
+    float yawOffset;
+    float roll;
+    float zoom;
+} SimpleCamController__InitialValues <optimize=false>;
+
+typedef struct
+{
+    float dollyCoeff;
+    float dollyMax;
+    float dollyMin;
+    float truckHorizCoeff;
+    float truckHorizMax;
+    float truckHorizMin;
+    float truckVertCoeff;
+    float truckVertMax;
+    float truckVertMin;
+    float pitchCoeff;
+    float pitchMax;
+    float pitchMin;
+    float yawCoeff;
+    float zoomCoeff;
+    float zoomMax;
+    float zoomMin;
+} SimpleCamController__InputAdjustmentValues <optimize=false>;
+
+typedef struct
+{
+    byte enableDolly;
+    byte enableHorizTruck;
+    byte enableVertTruck;
+    byte enablePitch;
+    byte enableYaw;
+    byte enableZoom;
+} SimpleCamController__InputEnableValues <optimize=false>;
+
+typedef struct
+{
+    byte enable;
+    FSkip(3);
+    float radius;
+    float probeOffset;
+    int lowSegment;
+    int medSegment;
+    int highSegment;
+} SimpleCamController__CameraCollision <optimize=false>;
+
+typedef struct
+{
+    byte invertYaw;
+    byte invertPitch;
+} SimpleCamController__InvertInputValues <optimize=false>;
+
+typedef struct
+{
+    byte enable;
+    FSkip(3);
+    float maxDist;
+    float maxSpeed;
+} SimpleCamController__CombatLockOn <optimize=false>;
+
+typedef struct
+{
+    int segment;
+    SimpleCamController__InitialValues initializers;
+    SimpleCamController__InputAdjustmentValues inputCoefficients;
+    SimpleCamController__InputEnableValues enableInputs;
+    SimpleCamController__CameraCollision collision;
+    SimpleCamController__InvertInputValues invertControls;
+    SimpleCamController__CombatLockOn combatLockOn;
+} SimpleCamController <optimize=false>;
+
+typedef struct
+{
+    float truck[3];
+    float dolly;
+    float dollyYaw;
+    float dollyPitch;
+    float yaw;
+    float pitch;
+    float minFOV;
+    float maxFOV;
+    float horizontalFOVInterpStart;
+    float horizontalFOVInterpEnd;
+    float verticalFOVInterpStart;
+    float verticalFOVInterpEnd;
+    float maxHorizontalPlayerSeparation;
+    float maxVerticalPlayerSeparation;
+    float focusDampeningControl;
+    float attractionWeight;
+    float attractionMaxLength;
+    float offsetDampeningControl;
+} IsoCamController__InitialValues <optimize=false>;
+
+typedef struct
+{
+    int segment;
+    float fOVLimit;
+    IsoCamController__InitialValues initializers;
+} IsoCamController <optimize=false>;
+
+typedef struct
+{
+    float focusPos[3];
+    float truck[3];
+    float dolly;
+    float dollyYaw;
+    float dollyPitch;
+    float yaw;
+    float pitch;
+    float fov;
+    float horizontalFOVInterpStart;
+    float horizontalFOVInterpEnd;
+    float verticalFOVInterpStart;
+    float verticalFOVInterpEnd;
+    float maxHorizontalPlayerSeparation;
+    float maxVerticalPlayerSeparation;
+    float focusDampeningControl;
+} MapViewCamController__MapViewValues <optimize=false>;
+
+typedef struct
+{
+    MapViewCamController__MapViewValues mapViewValues;
+} MapViewCamController <optimize=false>;
+
+typedef struct
+{
+} FreeCamController <optimize=false>;
+
+typedef struct
+{
+    float dolly;
+    float truck[3];
+    float pitch;
+    float yaw;
+    float roll;
+    float zoom;
+} ModelviewCamController__InitialValues <optimize=false>;
+
+typedef struct
+{
+    float dollyCoeff;
+    float truckHorizCoeff;
+    float truckVertCoeff;
+    float pitchCoeff;
+    float yawCoeff;
+    float zoomCoeff;
+} ModelviewCamController__InputAdjustmentValues <optimize=false>;
+
+typedef struct
+{
+    byte invertYaw;
+    byte invertPitch;
+} ModelviewCamController__InvertInputValues <optimize=false>;
+
+typedef struct
+{
+    int segment;
+    ModelviewCamController__InitialValues initializers;
+    ModelviewCamController__InputAdjustmentValues inputCoefficients;
+    ModelviewCamController__InvertInputValues invertControls;
+} ModelviewCamController <optimize=false>;
+
+typedef struct
+{
+    float dolly;
+    float truck[2];
+    float pitch;
+    float yaw;
+    float roll;
+    float zoom;
+    float focalLength;
+    float targetPosDampFreq;
+    float targetPosDampRatio;
+    byte useInitialPos;
+    byte useInitialRot;
+    byte useWorldRelative;
+    byte trackSelf;
+    byte useInitialCamPos;
+    byte useCumulativeRot;
+} AnchoredCamController__InitialValues <optimize=false>;
+
+typedef struct
+{
+    float dollyCoeff;
+    float dollyMax;
+    float dollyMin;
+    float truckHorizCoeff;
+    float truckHorizMax;
+    float truckHorizMin;
+    float truckVertCoeff;
+    float truckVertMax;
+    float truckVertMin;
+    float pitchCoeff;
+    float pitchMax;
+    float pitchMin;
+    float yawCoeff;
+    byte limitYaw;
+    byte limitTilt;
+    FSkip(2);
+    float yawMin;
+    float yawMax;
+    float zoomCoeff;
+    float zoomMax;
+    float zoomMin;
+} AnchoredCamController__InputAdjustmentValues <optimize=false>;
+
+typedef struct
+{
+    byte enableDolly;
+    byte enableHorizTruck;
+    byte enableVertTruck;
+    byte enablePitch;
+    byte enableYaw;
+    byte enableZoom;
+} AnchoredCamController__InputEnableValues <optimize=false>;
+
+typedef struct
+{
+    byte invertYaw;
+    byte invertPitch;
+} AnchoredCamController__InvertInputValues <optimize=false>;
+
+typedef struct
+{
+    byte enabled;
+    byte useSpring;
+    FSkip(2);
+    float delay;
+    float time;
+    int easeType;
+    float maxVel;
+    float damp;
+    float freq;
+    float mass;
+} AnchoredCamController__ReturnToCenter <optimize=false>;
+
+typedef struct
+{
+    int settingType;
+    float filmApertureX;
+    float filmApertureY;
+} CameraViewAngleSetting <optimize=false>;
+
+typedef struct
+{
+    int segment;
+    AnchoredCamController__InitialValues initializers;
+    FSkip(2);
+    AnchoredCamController__InputAdjustmentValues inputCoefficients;
+    AnchoredCamController__InputEnableValues enableInputs;
+    AnchoredCamController__InvertInputValues invertControls;
+    AnchoredCamController__ReturnToCenter returnToCenter;
+    CameraViewAngleSetting viewAngleSetting;
+} AnchoredCamController <optimize=false>;
+
+typedef struct
+{
+    float max;
+    float min;
+    float inputCoeff;
+    float restitution;
+    byte enableInput;
+    byte invertInput;
+    byte useRelLimits;
+} SplineCamController__InputConfig <optimize=false>;
+
+typedef struct
+{
+    float leftLimit;
+    float rightLimit;
+    float ratio;
+} SplineCamController__LateralOffset <optimize=false>;
+
+typedef struct
+{
+    byte enabled;
+    byte useSpring;
+    FSkip(2);
+    float delay;
+    float time;
+    int easeType;
+    float maxVel;
+    float damp;
+    float freq;
+    float mass;
+} SplineCamController__ReturnToCenter <optimize=false>;
+
+typedef struct
+{
+    SplineCamController__InputConfig panConfig;
+    FSkip(1);
+    SplineCamController__InputConfig tiltConfig;
+    FSkip(1);
+    CameraViewAngleSetting viewAngleSetting;
+    float focusOffset[3];
+    float dolly;
+    float pan;
+    float tilt;
+    float roll;
+    float zoom;
+    float focalLength;
+    float orientationInterpRate;
+    int segmentID;
+    float rodDist;
+    float dampening;
+    float frequency;
+    float mass;
+    byte enableFollowPosdampening;
+    FSkip(3);
+    float collisionRadius;
+    byte lookAtPlayer;
+    byte useLateralDistance;
+    FSkip(2);
+    SplineCamController__LateralOffset lateralOffset;
+    byte useScootBack;
+    FSkip(3);
+    float scootBackDist;
+    float scootBackTime;
+    float scootBackWaitTime;
+    SplineCamController__ReturnToCenter returnToCenter;
+} SplineCamController <optimize=false>;
+
+typedef struct
+{
+    float dolly;
+    float truck[3];
+    float pitch;
+    float pitchOffset;
+    float yaw;
+    float yawOffset;
+    float roll;
+    float zoom;
+} HmdCamController__InitialValues <optimize=false>;
+
+typedef struct
+{
+    float dollyCoeff;
+    float dollyMax;
+    float dollyMin;
+    float truckHorizCoeff;
+    float truckHorizMax;
+    float truckHorizMin;
+    float truckVertCoeff;
+    float truckVertMax;
+    float truckVertMin;
+    float pitchCoeff;
+    float pitchMax;
+    float pitchMin;
+    float yawCoeff;
+    float zoomCoeff;
+    float zoomMax;
+    float zoomMin;
+} HmdCamController__InputAdjustmentValues <optimize=false>;
+
+typedef struct
+{
+    byte enableDolly;
+    byte enableHorizTruck;
+    byte enableVertTruck;
+    byte enablePitch;
+    byte enableYaw;
+    byte enableZoom;
+} HmdCamController__InputEnableValues <optimize=false>;
+
+typedef struct
+{
+    byte enable;
+    FSkip(3);
+    float radius;
+    float probeOffset;
+    int lowSegment;
+    int medSegment;
+    int highSegment;
+} HmdCamController__CameraCollision <optimize=false>;
+
+typedef struct
+{
+    byte invertYaw;
+    byte invertPitch;
+} HmdCamController__InvertInputValues <optimize=false>;
+
+typedef struct
+{
+    byte enable;
+    FSkip(3);
+    float maxDist;
+    float maxSpeed;
+} HmdCamController__CombatLockOn <optimize=false>;
+
+typedef struct
+{
+    int segment;
+    HmdCamController__InitialValues initializers;
+    HmdCamController__InputAdjustmentValues inputCoefficients;
+    HmdCamController__InputEnableValues enableInputs;
+    HmdCamController__CameraCollision collision;
+    HmdCamController__InvertInputValues invertControls;
+    HmdCamController__CombatLockOn combatLockOn;
+} HmdCamController <optimize=false>;
+
+typedef struct
+{
+} ForceCamController <optimize=false>;
+
+typedef union
+{
+    short byUserDefinedIndex;
+    ushort byBoneIndex;
+    short byBoneID;
+    ushort byMarkerIndex;
+    ushort byMarkerID;
+} ModelBoneOrMarkerReference__ModelBoneOrMarkerRefData;
+
+typedef struct
+{
+    ubyte refType;
+    FSkip(1);
+    ModelBoneOrMarkerReference__ModelBoneOrMarkerRefData refData;
+} ModelBoneOrMarkerReference <optimize=false>;
+
+typedef struct
+{
+    ModelBoneOrMarkerReference segment;
+    float zoom;
+    byte useZoomFromCameraJointScale;
+    FSkip(3);
+    float axis[3];
+    float angle;
+    byte doCutDetection;
+    FSkip(3);
+    float cutAngleThreshold;
+    float cutDistThreshold;
+} CameraBoneCamController <optimize=false>;
+
+typedef struct
+{
+    float pitch;
+    float dolly;
+    float truck[3];
+    float tilt;
+    float pan;
+    float roll;
+    float zoom;
+    float focalLength;
+} ExplorationCamController__ValueSet <optimize=false>;
+
+typedef struct
+{
+    float dolly;
+    float truck[3];
+    float zoom;
+    float focalLength;
+} ExplorationCamController__ModifiedCrouchValueSet <optimize=false>;
+
+typedef struct
+{
+    float truck[3];
+} ExplorationCamController__ModifiedTreePitonValueSet <optimize=false>;
+
+typedef struct
+{
+    float defaultPitch;
+    float defaultYaw;
+    byte defaultToBestCoverTarget;
+    FSkip(3);
+    ExplorationCamController__ValueSet high;
+    ExplorationCamController__ValueSet mid;
+    ExplorationCamController__ValueSet low;
+    byte useCrouch3ptModifiers;
+    FSkip(3);
+    float crouch3ptModifierInterpTimeIn;
+    float crouch3ptModifierInterpTimeOut;
+    ExplorationCamController__ModifiedCrouchValueSet crouchHigh;
+    ExplorationCamController__ModifiedCrouchValueSet crouchMid;
+    ExplorationCamController__ModifiedCrouchValueSet crouchLow;
+    ExplorationCamController__ModifiedCrouchValueSet concealedCrouchHigh;
+    ExplorationCamController__ModifiedCrouchValueSet concealedCrouchMid;
+    ExplorationCamController__ModifiedCrouchValueSet concealedCrouchLow;
+    byte useTreePiton3ptModifiers;
+    FSkip(3);
+    ExplorationCamController__ModifiedTreePitonValueSet treePitonHigh;
+    ExplorationCamController__ModifiedTreePitonValueSet treePitonMid;
+    ExplorationCamController__ModifiedTreePitonValueSet treePitonLow;
+    ubyte treePiton3PtModWeightCurve[16];
+    float standCovTruckOffset;
+    float standCovYawToBeginOffset;
+    float standCovYawToMaxOffset;
+    float standCovTruckOffsetDampFreq;
+    float standCovTruckOffsetDampRatio;
+    ubyte blendCurve_3ptInterpHighToMid[8];
+    ubyte blendCurve_3ptInterpMidToLow[8];
+} ExplorationCamController__InitialValues <optimize=false>;
+
+typedef struct
+{
+    byte enable;
+    byte enableAvoidance;
+    FSkip(2);
+    float minSpeed;
+    float minDistance;
+    float forTolerance;
+    float bakTolerance;
+    float maxVelocity;
+    float velocityScalar;
+    float sideVelocityScalar;
+    float delayBeforeFollow;
+    float inMaxVelocity;
+    float inDampening;
+    float outMaxVelocity;
+    float outDampening;
+    float maxVelAngle;
+    byte pitchEnable;
+    byte dontPitchUpInAir;
+    byte followAvoidRisingWater;
+    FSkip(1);
+    float pitchMaxVelocity;
+    float pitchVelScalar;
+    byte usePitchSpecificMinSpeed;
+    FSkip(3);
+    float pitchSpecificMinSpeed;
+    byte useYawSpecificMinSpeed;
+    FSkip(3);
+    float yawSpecificMinSpeed;
+} ExplorationCamController__FollowCamValues <optimize=false>;
+
+typedef struct
+{
+    float pitch;
+    float yaw;
+    float dolly;
+    float dollyStick;
+    float truck[2];
+    float tilt;
+    float pan;
+    float roll;
+    float zoom;
+    float focalLength;
+} ExplorationCamController__InputMultipliers <optimize=false>;
+
+typedef struct
+{
+    float pitch;
+    float yaw;
+    float dolly;
+    float truck[3];
+    float tilt;
+    float pan;
+    float roll;
+    float zoom;
+    float focalLength;
+} ExplorationCamController__MinimumValues <optimize=false>;
+
+typedef struct
+{
+    float pitch;
+    float yaw;
+    float dolly;
+    float truck[3];
+    float tilt;
+    float pan;
+    float roll;
+    float zoom;
+    float focalLength;
+} ExplorationCamController__MaximumValues <optimize=false>;
+
+typedef struct
+{
+    byte doAltMaxPitchInLowCeiling;
+    FSkip(3);
+    float maxPitchInLowCeiling;
+    float lowCeilingPitchDampInFreq;
+    float lowCeilingPitchDampInRatio;
+    float lowCeilingPitchDampOutFreq;
+    float lowCeilingPitchDampOutRatio;
+    int lowCeilingProbeInstanceSegment;
+    float lowCeilingProbeVector[3];
+    byte lowCeilingProbeDebugDraw;
+} ExplorationCamController__AltMaxPitchInLowCeilingParams <optimize=false>;
+
+typedef struct
+{
+    byte doCameraSwitchAtLimits;
+    FSkip(3);
+    float triggerTime;
+    float triggerMinInputStick;
+    float triggerRangePitchMin;
+    float triggerRangePitchMax;
+    float transitionAngVelMin;
+    float transitionAngVelMax;
+    float transitionVelMin;
+    float transitionVelMax;
+    unsigned int cameraComponentID;
+} ExplorationCamController__CameraSwitchAtLimitsParams <optimize=false>;
+
+typedef struct
+{
+    ExplorationCamController__InputMultipliers modifiers;
+    ExplorationCamController__MinimumValues minValues;
+    ExplorationCamController__MaximumValues maxValues;
+    ubyte blendWeightDampening[16];
+    ubyte nearYawLimitDampening[16];
+    unsigned int pitchStickResponseIndex;
+    float pitchDampening;
+    float pitchStickDiagScale;
+    unsigned int yawStickResponseIndex;
+    float yawDampening;
+    float yawStickDiagScale;
+    byte yawLimitsDisable;
+    byte yawRelativeToFacing;
+    byte yawLimitOnlyOnSync;
+    ExplorationCamController__AltMaxPitchInLowCeilingParams lowCeilingParams;
+    ExplorationCamController__CameraSwitchAtLimitsParams cameraSwitchAtLimitsParams;
+} ExplorationCamController__InputAdjustmentValues <optimize=false>;
+
+typedef struct
+{
+    byte enableDolly : 1;
+    byte enableHorizTruck : 1;
+    byte enableVertTruck : 1;
+    byte enablePitch : 1;
+    byte enableYaw : 1;
+    byte enableZoom : 1;
+    byte _Bitfieldpadding0 : 2;
+    FSkip(3);
+    unsigned int actionDollyForward;
+    unsigned int actionDollyBack;
+    unsigned int actionDollyStick;
+    unsigned int actionHorizTruck;
+    unsigned int actionVertTruck;
+    unsigned int actionPitch;
+    unsigned int actionYaw;
+    unsigned int actionZoomIn;
+    unsigned int actionZoomOut;
+} ExplorationCamController__InputEnableValues <optimize=false>;
+
+typedef struct
+{
+    byte enable;
+    byte disableFocusCollision;
+    FSkip(2);
+    float radius;
+    float probeOffset;
+    float probeOffsetFromCamPos;
+    short lowSegment;
+    short medSegment;
+    short highSegment;
+    short aboveHeadSeg;
+    short aboveHeadSegmentOffset;
+    short aboveHeadCloseCollideStart;
+    short aboveHeadCloseCollideMax;
+    byte doHandHearHeadCheck;
+    FSkip(1);
+    short handNearHeadSeg;
+    short handNearHeadSegmentOffset;
+    short handNearHeadCloseCollideStart;
+    short handNearHeadCloseCollideMax;
+    byte doBowNearHeadCheck;
+    FSkip(1);
+    short bowNearHeadSeg;
+    short bowNearHeadSegmentOffset;
+    short bowNearHeadCloseCollideStart;
+    short bowNearHeadCloseCollideMax;
+    FSkip(2);
+    float orbitMaxVelocity;
+    float orbitDampeningControlOut;
+    float orbitDampeningControlIn;
+    float orbitDampeningControlInFast;
+} ExplorationCamController__CameraCollision <optimize=false>;
+
+typedef struct
+{
+    byte invertYaw;
+    byte invertPitch;
+} ExplorationCamController__InvertInputValues <optimize=false>;
+
+typedef struct
+{
+    byte enable;
+    FSkip(3);
+    float tolerance;
+    float time;
+} ExplorationCamController__TankCamValues <optimize=false>;
+
+typedef struct
+{
+    float minSpeed;
+    float minDistance;
+    float maxVelocity;
+    float inMaxVelocity;
+    float inDampening;
+    float outMaxVelocity;
+    float outDampening;
+} ExplorationCamController__ClimbFollowCamParameters <optimize=false>;
+
+typedef struct
+{
+    byte enable;
+    FSkip(3);
+    float moveUpTargetPitch;
+    ExplorationCamController__ClimbFollowCamParameters moveUpParams;
+    float moveDownTargetPitch;
+    ExplorationCamController__ClimbFollowCamParameters moveDownParams;
+    float moveLRTargetYaw;
+    ExplorationCamController__ClimbFollowCamParameters moveLRParams;
+} ExplorationCamController__ClimbFollowCamValues <optimize=false>;
+
+typedef struct
+{
+    int segment;
+    ExplorationCamController__InitialValues initVals;
+    ExplorationCamController__FollowCamValues followCam;
+    ExplorationCamController__InputAdjustmentValues limits;
+    ExplorationCamController__InputEnableValues enableInputs;
+    ExplorationCamController__CameraCollision collision;
+    ExplorationCamController__InvertInputValues invertControls;
+    FSkip(2);
+    CameraViewAngleSetting viewAngleSetting;
+    ExplorationCamController__TankCamValues tankCam;
+    ExplorationCamController__ClimbFollowCamValues climbFollowCam;
+    byte doFocusDampening;
+    FSkip(3);
+    float xYDampFreq;
+    float xYDampRatio;
+    float zDampFreq;
+    float zDampRatio;
+    int zLowPassDelay;
+    int zLowPassCycle;
+} ExplorationCamController <optimize=false>;
+
+typedef struct
+{
+    float pitchDefault;
+    float yawDefault;
+    float pitchMid;
+    float dollyMid;
+    float truckMid[3];
+    float tiltMid;
+    float panMid;
+    float rollMid;
+    float zoomMid;
+    float focalLengthMid;
+    float pitchLow;
+    float dollyLow;
+    float truckLow[3];
+    float tiltLow;
+    float panLow;
+    float rollLow;
+    float zoomLow;
+    float focalLengthLow;
+    float pitchHigh;
+    float dollyHigh;
+    float truckHigh[3];
+    float tiltHigh;
+    float panHigh;
+    float rollHigh;
+    float zoomHigh;
+    float focalLengthHigh;
+    ubyte blendCurve_3ptInterpHighToMid[8];
+    ubyte blendCurve_3ptInterpMidToLow[8];
+} AimCamController__InitialValues <optimize=false>;
+
+typedef struct
+{
+    float dollyCoeff;
+    float dollyMax;
+    float dollyMin;
+    float truckHorizCoeff;
+    float truckHorizMax;
+    float truckHorizMin;
+    float truckVertCoeff;
+    float truckVertMax;
+    float truckVertMin;
+    float pitchBaseSpeed;
+    float pitchMaxSpeed;
+    float pitchTimeToMaxSpeed;
+    float pitchInputCircleToSquareScale;
+    float pitchMax;
+    float pitchMin;
+    float yawBaseSpeed;
+    float yawMaxSpeed;
+    float yawTimeToMaxSpeed;
+    float yawInputCircleToSquareScale;
+    byte limitYaw;
+    FSkip(3);
+    float yawMax;
+    float yawMin;
+    byte yawRelativeToFacing;
+    FSkip(3);
+    float zoomCoeff;
+    float zoomMax;
+    float zoomMin;
+    ubyte yawInputCurve[32];
+    ubyte yawAccCurve[32];
+    ubyte yawMaxAccCurve[32];
+    ubyte pitchInputCurve[32];
+    ubyte pitchAccCurve[32];
+    ubyte pitchMaxAccCurve[32];
+    ubyte pitchNearLimitInputDampening[16];
+    ubyte yawNearLimitInputDampening[16];
+    float stickOffYawDampeningFreq;
+    float stickOffYawDampeningRatio;
+    float stickOffPitchDampeningFreq;
+    float stickOffPitchDampeningRatio;
+    int inputDataType;
+} AimCamController__InputAdjustmentValues <optimize=false>;
+
+typedef struct
+{
+    float minRange;
+    float maxRange;
+    float lateralMovementModifier;
+    float inputMovementModifier;
+    ubyte centerednessAccelerationCurve[32];
+    float timer;
+} AimCamController__AimAssistValues <optimize=false>;
+
+typedef struct
+{
+    byte enableDolly;
+    byte enableHorizTruck;
+    byte enableVertTruck;
+    byte enablePitch;
+    byte enableYaw;
+    byte enableZoom;
+} AimCamController__InputEnableValues <optimize=false>;
+
+typedef struct
+{
+    byte enable;
+    FSkip(3);
+    float radius;
+    float probeOffset;
+    int lowSegment;
+    int medSegment;
+    int highSegment;
+    float collideDollyInMaxSpeed;
+    float collideDollyInDampening;
+    float collideDollyOutMaxSpeed;
+    float collideDollyOutDampening;
+    byte bUseTruckCollideScales;
+    FSkip(3);
+    float truckCollideScales[3];
+} AimCamController__CameraCollision <optimize=false>;
+
+typedef struct
+{
+    byte invertYaw;
+    byte invertPitch;
+} AimCamController__InvertInputValues <optimize=false>;
+
+typedef struct
+{
+    byte enable;
+    FSkip(3);
+    float maxDist;
+    float maxSpeed;
+} AimCamController__CombatLockOn <optimize=false>;
+
+typedef struct
+{
+    byte useBaseRotations;
+    FSkip(3);
+    float baseYaw;
+    float basePitch;
+    float baseRoll;
+} AimCamController__BaseRotation <optimize=false>;
+
+typedef struct
+{
+    unsigned int defaultModeInputAdjustIndex;
+    unsigned int frictionModeInputAdjustIndex;
+    unsigned int highGearModeInputAdjustIndex;
+    ubyte blendCurveInputAdjust[16];
+} AimCamController__InputAdjustmentBlending <optimize=false>;
+
+typedef struct
+{
+    int segment;
+    AimCamController__InitialValues initializers;
+    AimCamController__InputAdjustmentValues inputCoefficients;
+    AimCamController__AimAssistValues assistModifiers;
+    AimCamController__InputEnableValues enableInputs;
+    AimCamController__CameraCollision collision;
+    AimCamController__InvertInputValues invertControls;
+    AimCamController__CombatLockOn combatLockOn;
+    CameraViewAngleSetting viewAngleSetting;
+    AimCamController__BaseRotation baseRotations;
+    AimCamController__InputAdjustmentBlending inputAdjustBlending;
+    unsigned int inputAdjustMemberListCount;
+    FSkip(4);
+    Ref inputAdjustMemberListRef;
+    if (CanSeekTo(inputAdjustMemberListRef))
+    {
+        SeekToRef(inputAdjustMemberListRef);
+        AimCamController__InputAdjustmentValues inputAdjustMemberList[inputAdjustMemberListCount];
+        ReturnFromRef();
+    }
+} AimCamController <optimize=false>;
+
+typedef struct
+{
+    float pitch;
+    float dolly;
+    float truck[3];
+    float tilt;
+    float pan;
+    float roll;
+    float zoom;
+} StealthCamController__ValueSet <optimize=false>;
+
+typedef struct
+{
+    float defaultPitch;
+    float defaultYaw;
+    float keepAimThreshold;
+    StealthCamController__ValueSet high;
+    StealthCamController__ValueSet mid;
+    StealthCamController__ValueSet low;
+    ubyte blendCurve_3ptInterpHighToMid[8];
+    ubyte blendCurve_3ptInterpMidToLow[8];
+} StealthCamController__InitialValues <optimize=false>;
+
+typedef struct
+{
+    byte enable;
+    byte enableAvoidance;
+    FSkip(2);
+    float minSpeed;
+    float minDistance;
+    float forTolerance;
+    float bakTolerance;
+    float maxVelocity;
+    float velocityScalar;
+    float delayBeforeFollow;
+    float inMaxVelocity;
+    float inDampening;
+    float outMaxVelocity;
+    float outDampening;
+    float maxVelAngle;
+    byte pitchEnable;
+    byte dontPitchUpInAir;
+    FSkip(2);
+    float pitchMaxVelocity;
+    float pitchVelScalar;
+    byte usePitchSpecificMinSpeed;
+    FSkip(3);
+    float pitchSpecificMinSpeed;
+    byte useYawSpecificMinSpeed;
+    FSkip(3);
+    float yawSpecificMinSpeed;
+} StealthCamController__FollowCamValues <optimize=false>;
+
+typedef struct
+{
+    float pitch;
+    float yaw;
+    float dolly;
+    float truck[2];
+    float tilt;
+    float pan;
+    float roll;
+    float zoom;
+} StealthCamController__InputMultipliers <optimize=false>;
+
+typedef struct
+{
+    float pitch;
+    float yaw;
+    float dolly;
+    float truck[3];
+    float tilt;
+    float pan;
+    float roll;
+    float zoom;
+} StealthCamController__MinimumValues <optimize=false>;
+
+typedef struct
+{
+    float pitch;
+    float yaw;
+    float dolly;
+    float truck[3];
+    float tilt;
+    float pan;
+    float roll;
+    float zoom;
+} StealthCamController__MaximumValues <optimize=false>;
+
+typedef struct
+{
+    StealthCamController__InputMultipliers modifiers;
+    StealthCamController__MinimumValues minValues;
+    StealthCamController__MaximumValues maxValues;
+    ubyte blendWeightDampening[16];
+    ubyte nearYawLimitDampening[16];
+    byte yawLimitsDisable;
+    byte yawRelativeToFacing;
+    byte yawLimitOnlyOnSync;
+} StealthCamController__InputAdjustmentValues <optimize=false>;
+
+typedef struct
+{
+    float minRange;
+    float maxRange;
+    float lateralMovementModifier;
+    float inputMovementModifier;
+    ubyte centerednessAccelerationCurve[32];
+    float timer;
+} StealthCamController__AimAssistValues <optimize=false>;
+
+typedef struct
+{
+    byte enableDolly : 1;
+    byte enableHorizTruck : 1;
+    byte enableVertTruck : 1;
+    byte enablePitch : 1;
+    byte enableYaw : 1;
+    byte enableZoom : 1;
+    byte pcUiMouseLook : 1;
+    byte _Bitfieldpadding0 : 1;
+    FSkip(3);
+    unsigned int actionDollyForward;
+    unsigned int actionDollyBack;
+    unsigned int actionHorizTruck;
+    unsigned int actionVertTruck;
+    unsigned int actionPitch;
+    unsigned int actionYaw;
+    unsigned int actionZoomIn;
+    unsigned int actionZoomOut;
+} StealthCamController__InputEnableValues <optimize=false>;
+
+typedef struct
+{
+    byte enable;
+    byte disableFocusCollision;
+    FSkip(2);
+    float radius;
+    float probeOffset;
+    int lowSegment;
+    int medSegment;
+    int highSegment;
+    int aboveHeadSeg;
+    int aboveHeadSegmentOffset;
+    int closeCollisionStart;
+    int closeCollisionMax;
+} StealthCamController__CameraCollision <optimize=false>;
+
+typedef struct
+{
+    byte invertYaw;
+    byte invertPitch;
+} StealthCamController__InvertInputValues <optimize=false>;
+
+typedef struct
+{
+    byte enable;
+    FSkip(3);
+    float maxDist;
+    float maxSpeed;
+} StealthCamController__CombatLockOn <optimize=false>;
+
+typedef struct
+{
+    byte enable;
+    FSkip(3);
+    float tolerance;
+    float idealYawOffset;
+    float idealTruckOffset;
+    float time;
+    byte allowPlayerControl;
+} StealthCamController__MeleeCamValues <optimize=false>;
+
+typedef struct
+{
+    byte enable;
+    FSkip(3);
+    float tolerance;
+    float time;
+} StealthCamController__TankCamValues <optimize=false>;
+
+typedef struct
+{
+    float minSpeed;
+    float minDistance;
+    float maxVelocity;
+    float inMaxVelocity;
+    float inDampening;
+    float outMaxVelocity;
+    float outDampening;
+} StealthCamController__ClimbFollowCamParameters <optimize=false>;
+
+typedef struct
+{
+    byte enable;
+    FSkip(3);
+    float moveUpTargetPitch;
+    StealthCamController__ClimbFollowCamParameters moveUpParams;
+    float moveDownTargetPitch;
+    StealthCamController__ClimbFollowCamParameters moveDownParams;
+    float moveLRTargetYaw;
+    StealthCamController__ClimbFollowCamParameters moveLRParams;
+} StealthCamController__ClimbFollowCamValues <optimize=false>;
+
+typedef struct
+{
+    float yawBaseSpeed;
+    float yawMaxSpeed;
+    float yawTimeToMaxSpeed;
+    ubyte yawInputCurve[32];
+    ubyte yawAccCurve[32];
+    float yawInputCircleToSquareScale;
+    float pitchBaseSpeed;
+    float pitchMaxSpeed;
+    float pitchTimeToMaxSpeed;
+    ubyte pitchInputCurve[32];
+    ubyte pitchAccCurve[32];
+    float pitchInputCircleToSquareScale;
+    float stickOffYawDampeningFreq;
+    float stickOffYawDampeningRatio;
+    float stickOffPitchDampeningFreq;
+    float stickOffPitchDampeningRatio;
+} StealthCamController__AccelerationAdjustmentValues <optimize=false>;
+
+typedef struct
+{
+    ushort segmentObjectID;
+    FSkip(2);
+    unsigned int segment;
+    float segmentOffset[3];
+    StealthCamController__InitialValues initializers;
+    StealthCamController__FollowCamValues followCam;
+    StealthCamController__InputAdjustmentValues limits;
+    FSkip(1);
+    StealthCamController__AimAssistValues assistModifiers;
+    StealthCamController__InputEnableValues enableInputs;
+    StealthCamController__CameraCollision collision;
+    StealthCamController__InvertInputValues invertControls;
+    StealthCamController__CombatLockOn combatLockOn;
+    StealthCamController__MeleeCamValues meleeCam;
+    StealthCamController__TankCamValues tankCam;
+    StealthCamController__ClimbFollowCamValues climbFollowCam;
+    byte enableFocusSmoothing : 1;
+    byte _Bitfieldpadding15 : 7;
+    float xYDampFreq;
+    float xYDampRatio;
+    float zDampFreq;
+    float zDampRatio;
+    int zLowPassDelay;
+    int zLowPassCycle;
+    StealthCamController__AccelerationAdjustmentValues inputAccelerationMods;
+} StealthCamController <optimize=false>;
+
+typedef union
+{
+    SimpleCamController simpleCamController;
+    IsoCamController isoCamController;
+    MapViewCamController mapViewCamController;
+    FreeCamController freeCamController;
+    ModelviewCamController modelviewCamController;
+    AnchoredCamController anchoredCamController;
+    SplineCamController splineCamController;
+    HmdCamController hmdCamController;
+    ForceCamController forceCamController;
+    CameraBoneCamController cameraBoneCamController;
+    ExplorationCamController explorationCamController;
+    AimCamController aimCamController;
+    StealthCamController stealthCamController;
+} CameraControllerData;
+
+typedef struct
+{
+    byte bStartActive;
+    byte bIgnorePlayerOverrides;
+    byte bDelayCreateTilActivated;
+    FSkip(1);
+    float dilationPercent;
+    int screenID;
+    int inputControllerID;
+    int inputControllerSource;
+    byte bInputStartsEnabled;
+    FSkip(3);
+    int cameraType;
+    unsigned int categoryHash;
+    CameraControllerData cameraData;
+} Camera <optimize=false>;
+
+typedef struct
+{
+    Camera cameraController;
+} CameraComponent <optimize=false>;
+
+typedef struct
+{
+    float savingGrabTime;
+} GameDifficultySettings <optimize=false>;
+
+typedef struct
+{
+    int storyNumber;
+    FSkip(4);
+    Ref descriptionRef;
+    if (CanSeekTo(descriptionRef))
+    {
+        SeekToRef(descriptionRef);
+        string description;
+        ReturnFromRef();
+    }
+    ushort sprintUnit;
+    FSkip(2);
+    unsigned int runnableID;
+    Ref runnableNameRef;
+    if (CanSeekTo(runnableNameRef))
+    {
+        SeekToRef(runnableNameRef);
+        string runnableName;
+        ReturnFromRef();
+    }
+} globalobject__UserStory <optimize=false>;
+
+typedef struct
+{
+    int sprintNumber;
+    FSkip(4);
+    Ref sprintDescriptionRef;
+    if (CanSeekTo(sprintDescriptionRef))
+    {
+        SeekToRef(sprintDescriptionRef);
+        string sprintDescription;
+        ReturnFromRef();
+    }
+    byte showSprint;
+    byte showSprintNonFinal;
+    FSkip(2);
+    unsigned int numStories;
+    Ref storyListRef;
+    if (CanSeekTo(storyListRef))
+    {
+        SeekToRef(storyListRef);
+        globalobject__UserStory storyList;
+        ReturnFromRef();
+    }
+} globalobject__Sprint <optimize=false>;
+
+typedef struct
+{
+    int releaseNumber;
+    FSkip(4);
+    Ref descriptionRef;
+    if (CanSeekTo(descriptionRef))
+    {
+        SeekToRef(descriptionRef);
+        string description;
+        ReturnFromRef();
+    }
+    byte showRelease;
+    byte showReleaseNonFinal;
+    FSkip(2);
+    unsigned int numSprints;
+    Ref sprintsListRef;
+    if (CanSeekTo(sprintsListRef))
+    {
+        SeekToRef(sprintsListRef);
+        globalobject__Sprint sprintsList[numSprints];
+        ReturnFromRef();
+    }
+} globalobject__Release <optimize=false>;
+
+typedef struct
+{
+    Ref textureIdRef;
+    if (CanSeekTo(textureIdRef))
+    {
+        SeekToRef(textureIdRef);
+        TextureMap textureId;
+        ReturnFromRef();
+    }
+    ubyte actionOrigin;
+} SteamControllerActionOriginTextureConfig__TextureSwapActionOriginEntryDef <optimize=false>;
+
+typedef struct
+{
+    Ref actionOriginTextureListRef;
+    if (CanSeekTo(actionOriginTextureListRef))
+    {
+        SeekToRef(actionOriginTextureListRef);
+        SteamControllerActionOriginTextureConfig__TextureSwapActionOriginEntryDef actionOriginTextureList;
+        ReturnFromRef();
+    }
+    unsigned int numTextures;
+} SteamControllerActionOriginTextureConfig <optimize=false>;
+
+typedef struct
+{
+    Ref textureIdRef;
+    if (CanSeekTo(textureIdRef))
+    {
+        SeekToRef(textureIdRef);
+        TextureMap textureId;
+        ReturnFromRef();
+    }
+} ScaleformTextureSwapConfig__TextureSwapEntryDef <optimize=false>;
+
+typedef struct
+{
+    byte resolveForSteam;
+    FSkip(1);
+    ushort inputButton;
+    FSkip(4);
+    Ref textureIdRef;
+    if (CanSeekTo(textureIdRef))
+    {
+        SeekToRef(textureIdRef);
+        TextureMap textureId;
+        ReturnFromRef();
+    }
+} ScaleformTextureSwapConfig__SteamTextureSwapEntryDef <optimize=false>;
+
+typedef struct
+{
+    ScaleformTextureSwapConfig__TextureSwapEntryDef x360;
+    ScaleformTextureSwapConfig__TextureSwapEntryDef dualshock;
+    ScaleformTextureSwapConfig__TextureSwapEntryDef oculusTouch;
+    ScaleformTextureSwapConfig__TextureSwapEntryDef vive;
+    ScaleformTextureSwapConfig__SteamTextureSwapEntryDef steamcontroller;
+} ScaleformTextureSwapConfig__TextureSwapItemEntry <optimize=false>;
+
+typedef struct
+{
+    Ref textureIDRef;
+    if (CanSeekTo(textureIDRef))
+    {
+        SeekToRef(textureIDRef);
+        TextureMap textureID;
+        ReturnFromRef();
+    }
+    ScaleformTextureSwapConfig__TextureSwapItemEntry typeList;
+} ScaleformTextureSwapConfig__TextureSwapListDef <optimize=false>;
+
+typedef struct
+{
+    Ref textureListRef;
+    unsigned int numTextures;
+    if (CanSeekTo(textureListRef))
+    {
+        SeekToRef(textureListRef);
+        ScaleformTextureSwapConfig__TextureSwapListDef textureList[numTextures];
+        ReturnFromRef();
+    }
+} ScaleformTextureSwapConfig <optimize=false>;
+
+typedef struct
+{
+    ushort uiCollection;
+    FSkip(6);
+    Ref fontIdentifierRef;
+    if (CanSeekTo(fontIdentifierRef))
+    {
+        SeekToRef(fontIdentifierRef);
+        string fontIdentifier;
+        ReturnFromRef();
+    }
+    Ref fontNameRef;
+    if (CanSeekTo(fontNameRef))
+    {
+        SeekToRef(fontNameRef);
+        string fontName;
+        ReturnFromRef();
+    }
+} FontButtonIconConfig__ButtonIconFontdef <optimize=false>;
+
+typedef struct
+{
+    unsigned int escapeChar;
+    ubyte glyphColorR;
+    ubyte glyphColorG;
+    ubyte glyphColorB;
+} FontButtonIconConfig__ButtonIconSpecialCharDef <optimize=false>;
+
+typedef struct
+{
+    FontButtonIconConfig__ButtonIconSpecialCharDef x360;
+    FSkip(1);
+    FontButtonIconConfig__ButtonIconSpecialCharDef dualshock;
+    FSkip(1);
+    FontButtonIconConfig__ButtonIconSpecialCharDef oculusTouch;
+    FSkip(1);
+    FontButtonIconConfig__ButtonIconSpecialCharDef vive;
+} FontButtonIconConfig__ButtonIconItemEntry <optimize=false>;
+
+typedef struct
+{
+    unsigned int escapeChar;
+    FontButtonIconConfig__ButtonIconItemEntry typeList;
+} FontButtonIconConfig__ButtonIconItem <optimize=false>;
+
+typedef struct
+{
+    FontButtonIconConfig__ButtonIconFontdef fontButtonIcons;
+    Ref specialCharListRef;
+    unsigned int numSpecialChars;
+    if (CanSeekTo(specialCharListRef))
+    {
+        SeekToRef(specialCharListRef);
+        FontButtonIconConfig__ButtonIconItem specialCharList[numSpecialChars];
+        ReturnFromRef();
+    }
+} FontButtonIconConfig <optimize=false>;
+
+typedef struct
+{
+    Ref mFontIdentifierRef;
+    if (CanSeekTo(mFontIdentifierRef))
+    {
+        SeekToRef(mFontIdentifierRef);
+        string mFontIdentifier;
+        ReturnFromRef();
+    }
+    Ref mFontNameRef;
+    if (CanSeekTo(mFontNameRef))
+    {
+        SeekToRef(mFontNameRef);
+        string mFontName;
+        ReturnFromRef();
+    }
+    ubyte mFontType;
+} ScaleformFontConfig__FontProperties <optimize=false>;
+
+typedef struct
+{
+    int langageType;
+    ushort uiCollection;
+    FSkip(2);
+    unsigned int fontPropertyCount;
+    FSkip(4);
+    Ref fontPropertyListRef;
+    if (CanSeekTo(fontPropertyListRef))
+    {
+        SeekToRef(fontPropertyListRef);
+        ScaleformFontConfig__FontProperties fontPropertyList[fontPropertyCount];
+        ReturnFromRef();
+    }
+} ScaleformFontConfig__FontConfigData <optimize=false>;
+
+typedef struct
+{
+    unsigned int dataListCount;
+    FSkip(4);
+    Ref dataListRef;
+    if (CanSeekTo(dataListRef))
+    {
+        SeekToRef(dataListRef);
+        ScaleformFontConfig__FontConfigData dataList[dataListCount];
+        ReturnFromRef();
+    }
+} ScaleformFontConfig <optimize=false>;
+
+typedef struct
+{
+    int nominalSize;
+    int padPixels;
+    int textureWidth;
+    int textureHeight;
+    float maxRasterScale;
+} ScaleformSettings__SettingsTexture <optimize=false>;
+
+typedef struct
+{
+    unsigned int actionIdx;
+    ubyte scaleformKeyId;
+} ScaleformInputMap__InputMapping <optimize=false>;
+
+typedef struct
+{
+    unsigned int inputMapItemCount;
+    FSkip(4);
+    Ref inputMapRef;
+    if (CanSeekTo(inputMapRef))
+    {
+        SeekToRef(inputMapRef);
+        ScaleformInputMap__InputMapping inputMap;
+        ReturnFromRef();
+    }
+} ScaleformInputMap <optimize=false>;
+
+typedef struct
+{
+    SteamControllerActionOriginTextureConfig steamControllerTextureList;
+    FSkip(4);
+    ScaleformTextureSwapConfig textureSwappingList;
+    FontButtonIconConfig fontButtonIconConfig;
+    ScaleformFontConfig fontConfig;
+    ScaleformSettings__SettingsTexture fontTextureConfig;
+    ScaleformInputMap inputMap;
+} ScaleformSettings <optimize=false>;
+
+typedef struct
+{
+    Ref urlRef;
+    if (CanSeekTo(urlRef))
+    {
+        SeekToRef(urlRef);
+        string url;
+        ReturnFromRef();
+    }
+    unsigned int id;
+} ScaleformMovie__DynamicTexture <optimize=false>;
+
+typedef struct
+{
+    unsigned int imageRes;
+    FSkip(4);
+    Ref filepathRef;
+    if (CanSeekTo(filepathRef))
+    {
+        SeekToRef(filepathRef);
+        string filepath;
+        ReturnFromRef();
+    }
+} ScaleformMovie__ImagePath <optimize=false>;
+
+typedef struct
+{
+    unsigned int script;
+    FSkip(4);
+    Ref actionScriptPathRef;
+    if (CanSeekTo(actionScriptPathRef))
+    {
+        SeekToRef(actionScriptPathRef);
+        string actionScriptPath;
+        ReturnFromRef();
+    }
+    Ref callbackPrefixRef;
+    if (CanSeekTo(callbackPrefixRef))
+    {
+        SeekToRef(callbackPrefixRef);
+        string callbackPrefix;
+        ReturnFromRef();
+    }
+    byte waitForAPI;
+} ScaleformMovie__Controller <optimize=false>;
+
+typedef struct
+{
+    Ref nameRef;
+    if (CanSeekTo(nameRef))
+    {
+        SeekToRef(nameRef);
+        string name;
+        ReturnFromRef();
+    }
+    Ref functionNameRef;
+    if (CanSeekTo(functionNameRef))
+    {
+        SeekToRef(functionNameRef);
+        string functionName;
+        ReturnFromRef();
+    }
+} ScaleformMovie__asAPI <optimize=false>;
+
+typedef struct
+{
+    byte verboseParse;
+    byte verboseParseAction;
+    byte verboseParseShape;
+    byte actionErrorSuppress;
+} ScaleformMovie__DebugLevelFlags <optimize=false>;
+
+typedef struct
+{
+    short localStrId;
+    FSkip(6);
+    Ref identifierRef;
+    if (CanSeekTo(identifierRef))
+    {
+        SeekToRef(identifierRef);
+        string identifier;
+        ReturnFromRef();
+    }
+} ScaleformMovie__LocalizationMapping <optimize=false>;
+
+typedef struct
+{
+    Ref movieNameRef;
+    if (CanSeekTo(movieNameRef))
+    {
+        SeekToRef(movieNameRef);
+        string movieName;
+        ReturnFromRef();
+    }
+    byte loadAsChild;
+    FSkip(3);
+    int optimization;
+    byte alwaysRender;
+    FSkip(3);
+    float position[2];
+    float size[3];
+    int scaleMode;
+    int alignType;
+    byte respectPause;
+    byte closeWhenDone;
+    byte sharedRenderTarget;
+    FSkip(1);
+    unsigned int backGroundColor;
+    short drawPriority;
+    byte is3D;
+    byte vrOverride;
+    byte isOrientedToHmd;
+    byte isOrientedToHmdRoot;
+    byte isOrientedToHmdChild;
+    FSkip(1);
+    float hmdYawAngle;
+    float hmdPitchAngle;
+    float hmdDepthOffset;
+    float vrScale[2];
+    byte is3DAndRendersOverAllButPlayer;
+    byte is3DAndRendersOverAll;
+    FSkip(2);
+    float showTime;
+    float preHideTime;
+    byte useCameraScaling;
+    FSkip(3);
+    float cameraScaleMin;
+    float cameraScaleMax;
+    float cameraScaleMinDistance;
+    float cameraScaleMaxDistance;
+    byte isAttaching;
+    byte isAttachingIn2D;
+    byte isAttachingToLocalSpace;
+    byte isAttachingToWorldPos;
+    byte doMatchMarkerRotation;
+    ModelBoneOrMarkerReference boneMarker;
+    ModelBoneOrMarkerReference boneMarker2;
+    FSkip(1);
+    ushort unitID;
+    PlacementPath markerID;
+    float localOffset[3];
+    float additional43LocalOffset[3];
+    byte do43WorldFix;
+    byte isEndCreditsMovie;
+    FSkip(2);
+    float localRotation[3];
+    byte useWorldSpaceAxis;
+    FSkip(3);
+    float worldOffset[3];
+    float worldRotation[3];
+    float facingOffset[3];
+    float facingRotation[3];
+    float worldPosition[3];
+    float worldPositionRotation[3];
+    byte facingCamera;
+    byte facingCameraHmdVr;
+    byte facingCameraOnAttach;
+    byte facingCameraAllAxes;
+    byte isAttachingCamera;
+    FSkip(3);
+    float cameraAttachingOffset[3];
+    float cameraAttachAdditional43Offset[3];
+    byte disableRenderingOnPause;
+    byte isAttachingHmd;
+    FSkip(2);
+    float hmdAttachingOffset[3];
+    byte useDampingFilter;
+    FSkip(3);
+    float frequency;
+    float ratio;
+    byte useCameraDistanceFade;
+    FSkip(3);
+    float cameraFadeDistanceMin;
+    float cameraFadeDistanceMax;
+    unsigned int dynamicTextureListCount;
+    FSkip(4);
+    Ref dynamicTextureListRef;
+    if (CanSeekTo(dynamicTextureListRef))
+    {
+        SeekToRef(dynamicTextureListRef);
+        ScaleformMovie__DynamicTexture dynamicTextureList[dynamicTextureListCount];
+        ReturnFromRef();
+    }
+    unsigned int streamingImagesResCount;
+    FSkip(4);
+    Ref streamingImageResRef;
+    if (CanSeekTo(streamingImageResRef))
+    {
+        SeekToRef(streamingImageResRef);
+        ScaleformMovie__ImagePath streamingImageRes;
+        ReturnFromRef();
+    }
+    unsigned int controllerListCount;
+    FSkip(4);
+    Ref controllerListRef;
+    if (CanSeekTo(controllerListRef))
+    {
+        SeekToRef(controllerListRef);
+        ScaleformMovie__Controller controllerList[controllerListCount];
+        ReturnFromRef();
+    }
+    unsigned int functionListCount;
+    FSkip(4);
+    Ref functionListRef;
+    if (CanSeekTo(functionListRef))
+    {
+        SeekToRef(functionListRef);
+        ScaleformMovie__asAPI functionList[functionListCount];
+        ReturnFromRef();
+    }
+    ScaleformMovie__DebugLevelFlags debugLevelFlags;
+    unsigned int movieSWFdataID;
+    int uiLayer;
+    byte ignoreLayerDisable;
+    FSkip(3);
+    unsigned int subtype;
+    int priority;
+    Ref movieRootRef;
+    if (CanSeekTo(movieRootRef))
+    {
+        SeekToRef(movieRootRef);
+        string movieRoot;
+        ReturnFromRef();
+    }
+    Ref actionScriptIdRef;
+    if (CanSeekTo(actionScriptIdRef))
+    {
+        SeekToRef(actionScriptIdRef);
+        string actionScriptId;
+        ReturnFromRef();
+    }
+    Ref scaleformMaterialTableRef;
+    if (CanSeekTo(scaleformMaterialTableRef))
+    {
+        SeekToRef(scaleformMaterialTableRef);
+        byte scaleformMaterialTable;
+        ReturnFromRef();
+    }
+    byte renderAfterPostProcess;
+    byte renderToTexture;
+    FSkip(2);
+    int targetWidth;
+    int targetHeight;
+    FSkip(4);
+    Ref localizationMapRef;
+    if (CanSeekTo(localizationMapRef))
+    {
+        SeekToRef(localizationMapRef);
+        ScaleformMovie__LocalizationMapping localizationMap;
+        ReturnFromRef();
+    }
+    unsigned int localizationMapItemCount;
+    byte useGlobalInputMap;
+    byte useLeftStickAsMouse;
+    byte useLeftStickAsZone;
+    byte useRightStick;
+    Ref inputMapRef;
+    if (CanSeekTo(inputMapRef))
+    {
+        SeekToRef(inputMapRef);
+        ScaleformInputMap inputMap;
+        ReturnFromRef();
+    }
+    ushort menuEnvironment;
+} ScaleformMovie <optimize=false>;
+
+typedef struct
+{
+    float inputRange[2];
+    float outputRange[2];
+    float gamma;
+} ColorCorrection__ColorLevels <optimize=false>;
+
+typedef struct
+{
+    int samplepoints[31];
+} MyColorBar <optimize=false>;
+
+typedef struct
+{
+    byte ccContrastEnabled;
+    FSkip(3);
+    ColorCorrection__ColorLevels intensityLevels;
+    ubyte intensityCurve[256];
+    byte ccSaturationEnabled;
+    FSkip(3);
+    float saturation;
+    ubyte intensitySaturation[256];
+    byte ccTintEnabled;
+    FSkip(7);
+    Ref intensityColorTintRef;
+    if (CanSeekTo(intensityColorTintRef))
+    {
+        SeekToRef(intensityColorTintRef);
+        MyColorBar intensityColorTint;
+        ReturnFromRef();
+    }
+    byte ccFilmGrainEnabledV2;
+    FSkip(3);
+    float ccFilmGrainStrength;
+    byte ccLutEnabled;
+    FSkip(7);
+    Ref lutTextureRef;
+    if (CanSeekTo(lutTextureRef))
+    {
+        SeekToRef(lutTextureRef);
+        TextureMap lutTexture;
+        ReturnFromRef();
+    }
+    float hdrSaturation;
+    float hdrValue;
+} ColorCorrection <optimize=false>;
+
+typedef struct
+{
+    ColorCorrection colorCorrectionParams;
+    unsigned int listNameHashed;
+} globalobject__ColorCorrectionWrapper <optimize=false>;
+
+typedef struct
+{
+    byte blurEnabled;
+    FSkip(3);
+    float blurStart;
+    float blurEnd;
+    float blurStrength;
+} DepthBlurData <optimize=false>;
+
+typedef struct
+{
+    uquad targetInstanceID;
+    unsigned int targetSegmentID;
+    byte blurEnabled;
+    FSkip(3);
+    float focusDistance;
+    float nearBlurStrength;
+    float nearBlendDistance;
+    float nearFocusRange;
+    float farBlurStrength;
+    float farBlendDistance;
+    float farFocusRange;
+    byte enableBokeh;
+    byte hexagonalBokeh;
+    FSkip(2);
+    float focalLength;
+    float fStop;
+    float bokehScale;
+} DepthOfFieldData <optimize=false>;
+
+typedef struct
+{
+    byte vignetteBlurEnabled;
+    FSkip(3);
+    float vignetteBlurInnerRadius;
+    float vignetteBlurOuterRadius;
+    float vignetteBlurAmount;
+} BlurVignetteData <optimize=false>;
+
+typedef struct
+{
+    byte vignetteColorEnabled;
+    FSkip(3);
+    float vignetteColorInnerRadius;
+    float vignetteColorOuterRadius;
+    float vignetteColorAmount;
+    unsigned int vignetteColor;
+    unsigned int vignetteInnerColor;
+    float vignetteInnerColorAmount;
+    float vignetteCenterPoint[2];
+} ColorVignetteData <optimize=false>;
+
+typedef struct
+{
+    float minAngleToActivate;
+    float minDistanceToActivate;
+    float activationTime;
+    byte disabled;
+    FSkip(3);
+    float minSpeedPercent;
+    float maxSpeedPercent;
+    float blurLengthScale;
+    float decayRate;
+    byte localEnabled;
+    FSkip(3);
+    float localDamper;
+    byte doCutDetection;
+    FSkip(3);
+    float cutAngleThresholdDegs;
+    float cutDistThreshold;
+} MotionBlurData <optimize=false>;
+
+typedef struct
+{
+    byte staticEnabled;
+    byte dynamicEnabled;
+    FSkip(2);
+    float motionblurScale;
+    float motionblurBeginOpacity;
+    float motionblurEndOpacity;
+    float velocityPower;
+} HlslMotionBlurData <optimize=false>;
+
+typedef struct
+{
+    byte distanceFogEnabled;
+    byte distanceFogOverridesDrawDist;
+    FSkip(2);
+    unsigned int distanceColor;
+    float distanceNear;
+    float distanceFar;
+    ubyte distanceCurve[256];
+    float skyBrightness;
+    float skyGamma;
+    float cubeInfl;
+    float rotZ;
+    Ref fogColTextureRef;
+    if (CanSeekTo(fogColTextureRef))
+    {
+        SeekToRef(fogColTextureRef);
+        TextureMap fogColTexture;
+        ReturnFromRef();
+    }
+    byte heightFogEnabled;
+    FSkip(3);
+    unsigned int heightColor;
+    float heightBottom;
+    float heightTop;
+    ubyte heightCurve[256];
+} NonLinearHeightFogData <optimize=false>;
+
+typedef struct
+{
+    byte ssaoEnabled;
+    FSkip(3);
+    float angularBias;
+    float blurRadius;
+    float blurSharpness;
+    float powExponent;
+    float sceneScale;
+    float ssaoStrength;
+    float rangeScale;
+    ubyte ssaoColorR;
+    ubyte ssaoColorG;
+    ubyte ssaoColorB;
+} SSAOSystem <optimize=false>;
+
+typedef struct
+{
+    ubyte colorR;
+    ubyte colorG;
+    ubyte colorB;
+    FSkip(1);
+    float intensity;
+} GlobalAmbient <optimize=false>;
+
+typedef struct
+{
+    byte enabled;
+    ubyte colorR;
+    ubyte colorG;
+    ubyte colorB;
+    float intensity;
+} SecondaryAmbient <optimize=false>;
+
+typedef struct
+{
+    float cubeMap[27];
+    float scale;
+} SphericalHarmonic <optimize=false>;
+
+typedef struct
+{
+    byte postSpecEnabled;
+    ubyte postSpecColR;
+    ubyte postSpecColG;
+    ubyte postSpecColB;
+    float postSpecInts;
+    float postSpecPowS;
+    float postSpecAmbS;
+    float postSpecSsrBooster;
+    FSkip(4);
+    Ref uberCubeReflTextureRef;
+    if (CanSeekTo(uberCubeReflTextureRef))
+    {
+        SeekToRef(uberCubeReflTextureRef);
+        TextureMap uberCubeReflTexture;
+        ReturnFromRef();
+    }
+    float postSpecUbercubeInfl;
+} PostReflection <optimize=false>;
+
+typedef struct
+{
+    GlobalAmbient globalAmbient;
+    SecondaryAmbient secondaryAmbient;
+    SphericalHarmonic sphericalHarmonic;
+    PostReflection postReflection;
+    byte bFullResAmbient;
+    byte bFullResSSR;
+} GraphicsOverride__AmbientOverrideData <optimize=false>;
+
+typedef struct
+{
+    float exposurePre;
+    float exposurePost;
+    float bloomScale;
+    float middleGray;
+    float rampInRate;
+    byte adaptationEnabled;
+    byte toneSmoothEnabled;
+    FSkip(2);
+    float adaptationPerc;
+    float adaptationShiftLimit;
+    float whitePoint;
+    float adaptationSpeed;
+    float keyGenAlpha;
+    float keyGenBeta;
+    float keyGenGamma;
+    float luminanceClamp;
+} TonemapData <optimize=false>;
+
+typedef struct
+{
+    ubyte rimColorR;
+    ubyte rimColorG;
+    ubyte rimColorB;
+    FSkip(1);
+    float distanceMax;
+    float distanceMin;
+    float powerMax;
+    float powerMin;
+    float intensityMax;
+    float intensityMin;
+} RimRenderData <optimize=false>;
+
+typedef struct
+{
+    float lodScaleMultiplier;
+} LODScaleData <optimize=false>;
+
+typedef struct
+{
+    byte useSDSM;
+    byte disableSDSM;
+    FSkip(2);
+    int numShadowMaps;
+    byte pssmIsAbsolute;
+    FSkip(3);
+    float pssmDistance1;
+    float pssmDistance2;
+    float pssmDistance3;
+    float pssmDistance4;
+} PSSMDistanceData <optimize=false>;
+
+typedef struct
+{
+    float lightRangeBucket1;
+    float lightRangeBucket2;
+    float lightRangeMin;
+    float lightRangeMax;
+    float lightRangeIncr;
+    float lightRangeDecr;
+    float lightRangeIncrThreshold;
+    float lightRangeDecrThreshold;
+    float lightRangeDefault;
+    float colorRangeBucket1;
+    float colorRangeBucket2;
+    float colorRangeMin;
+    float colorRangeMax;
+    float colorRangeIncr;
+    float colorRangeDecr;
+    float colorRangeIncrThreshold;
+    float colorRangeDecrThreshold;
+    float colorRangeDefault;
+    float lightRangeMinEffectiveUsage;
+} AdaptiveRangesData <optimize=false>;
+
+typedef struct
+{
+    byte bOARBeforeTranslucent;
+} GraphicsOverride__OSAlphaRenderOverrideData <optimize=false>;
+
+typedef union
+{
+    ColorCorrection colorCorrectionData;
+    DepthBlurData depthBlurData;
+    DepthOfFieldData depthOfFieldData;
+    BlurVignetteData blurVignetteData;
+    ColorVignetteData colorVignetteData;
+    MotionBlurData motionBlurData;
+    HlslMotionBlurData hlslMotionBlurData;
+    ScatterBloomData scatterBloomData;
+    NonLinearHeightFogData nlhFogData;
+    SSAOSystem ssaoData;
+    GraphicsOverride__AmbientOverrideData ambientData;
+    TonemapData tonemapData;
+    RimRenderData rimRenderData;
+    LODScaleData lodScaleData;
+    PSSMDistanceData pssmDistanceData;
+    AdaptiveRangesData adaptiveRangesData;
+    GraphicsOverride__OSAlphaRenderOverrideData osAlphaRenderOverrideData;
+} GraphicsOverride__OverrideDataUnion;
+
+typedef struct
+{
+    int overrideType;
+    GraphicsOverride__OverrideDataUnion overrideData;
+} GraphicsOverride__GraphicsOverrideData <optimize=false>;
+
+typedef struct
+{
+    Ref overrideListRef;
+    unsigned int numOverrides;
+    if (CanSeekTo(overrideListRef))
+    {
+        SeekToRef(overrideListRef);
+        GraphicsOverride__GraphicsOverrideData overrideList[numOverrides];
+        ReturnFromRef();
+    }
+    int overridePriority;
+} GraphicsOverride <optimize=false>;
+
+typedef struct
+{
+    GraphicsOverride graphicsOverrideParams;
+    unsigned int listNameHashed;
+} globalobject__GraphicsOverrideWrapper <optimize=false>;
+
+typedef struct
+{
+    uint platform : 1;
+    uint dontDeactivate : 1;
+    uint dontPauseInPause : 1;
+    uint waitForCommand : 1;
+    uint noDump : 1;
+    uint hasLod : 1;
+    uint dontStartFx : 1;
+    uint noSave : 1;
+    uint noDeaddead : 1;
+    uint lookatme : 1;
+    uint stayInPlayerUnit : 1;
+    uint canMoveToNewUnits : 1;
+    uint incrementalRemove : 1;
+    uint boundsphereOnTNode : 1;
+    uint alwaysUseBoundingSphere : 1;
+    uint useAnimatedBoundingBox : 1;
+    uint closeCameraFadeable : 1;
+    uint playerObject : 1;
+    uint enemyObject : 1;
+    uint vehicleObject : 1;
+    uint aimTransparent : 1;
+    uint skydome : 1;
+    uint modelviewOnly : 1;
+    uint megaObject : 1;
+    uint applyWetLight : 1;
+    uint doNotCreateAsStaticmesh : 1;
+    uint drawInSHCaptures : 1;
+    uint noSaveUnlessMoved : 1;
+    uint purgeableSave : 1;
+    uint npcObject : 1;
+    uint useBoneUsageMap : 1;
+    uint activateReticle : 1;
+    uint duplicated : 1;
+    uint npcAimTransparent : 1;
+    uint increasedLoadPriority : 1;
+    uint platformAffectsJump : 1;
+    uint scaleLODDistancesWhenFOVChanges : 1;
+    uint noEdgeGrab : 1;
+    uint pushpullDisableAutoDetach : 1;
+    uint isRollyBall : 1;
+    uint breaksGrappleRope : 1;
+    uint laraUpdatesJumpVelWhenJumpingFrom : 1;
+    uint laraCanTrapeze : 1;
+    uint isCombatObject : 1;
+    int _Bitfieldpadding32 : 20;
+} ObjectFlags <optimize=false>;
+
+typedef struct
+{
+    GlobalInfo globalInfoItem;
+    Ref fingerPrintRef;
+    if (CanSeekTo(fingerPrintRef))
+    {
+        SeekToRef(fingerPrintRef);
+        byte fingerPrint;
+        ReturnFromRef();
+    }
+    Ref fingerPrintExpiryRef;
+    if (CanSeekTo(fingerPrintExpiryRef))
+    {
+        SeekToRef(fingerPrintExpiryRef);
+        byte fingerPrintExpiry;
+        ReturnFromRef();
+    }
+    RenderGlobal renderGlobal;
+    PlayerObjects playerObjectsItem;
+    InputConfigs inputConfigsItem;
+    Ref boneSetTypesListRef;
+    if (CanSeekTo(boneSetTypesListRef))
+    {
+        SeekToRef(boneSetTypesListRef);
+        char boneSetTypesList;
+        ReturnFromRef();
+    }
+    DeferredLightData deferredLightData;
+    SurfaceList surfaceList;
+    FSkip(4);
+    globalobject__DebugResources debugResources;
+    globalobject__OcclusionResources occlusionResources;
+    Ref globalStreamLayersRef;
+    if (CanSeekTo(globalStreamLayersRef))
+    {
+        SeekToRef(globalStreamLayersRef);
+        StreamLayerList globalStreamLayers;
+        ReturnFromRef();
+    }
+    StreamLayerCategories streamLayerCategoriesItem;
+    FSkip(4);
+    CustomizationManagerInfo customizationManagerInfo;
+    FSkip(4);
+    Ref globalReferencedObjectsRef;
+    if (CanSeekTo(globalReferencedObjectsRef))
+    {
+        SeekToRef(globalReferencedObjectsRef);
+        unsigned int globalReferencedObjects;
+        ReturnFromRef();
+    }
+    globalobject__GameFX fx;
+    globalobject__PostProcessing postProcessing;
+    globalobject__VR vr;
+    globalobject__HighlightMaterials highlights;
+    globalobject__CollectibleLightRig collectibleRigData;
+    CameraComponent modelViewCamera;
+    CameraComponent skewCheatCamera;
+    CameraComponent mapViewCamera;
+    Ref gameDifficultySettingsListRef;
+    if (CanSeekTo(gameDifficultySettingsListRef))
+    {
+        SeekToRef(gameDifficultySettingsListRef);
+        GameDifficultySettings gameDifficultySettingsList;
+        ReturnFromRef();
+    }
+    unsigned int numReleases;
+    FSkip(4);
+    Ref releaseListRef;
+    if (CanSeekTo(releaseListRef))
+    {
+        SeekToRef(releaseListRef);
+        globalobject__Release releaseList[numReleases];
+        ReturnFromRef();
+    }
+    unsigned int numPermutationLibraries;
+    FSkip(4);
+    Ref permutationLibrariesRef;
+    if (CanSeekTo(permutationLibrariesRef))
+    {
+        SeekToRef(permutationLibrariesRef);
+        unsigned int permutationLibraries[numPermutationLibraries];
+        ReturnFromRef();
+    }
+    unsigned int geoLocationUnitConfig;
+    unsigned int globalFxWeatherObject;
+    ushort globalMenuCollection;
+    ushort preGameMenuCollection;
+    ushort inGameMenuCollectionMP;
+    ushort inGameMenuCollection;
+    ushort campsiteMenuCollection;
+    ushort singlePlayerLoadingMenuCollection;
+    ushort liveLoadingMenuCollection;
+    ushort inGameColdDarknessMenuCollection;
+    ushort inGameVRMenuCollection;
+    FSkip(6);
+    ScaleformSettings scaleformGlobals;
+    MenuItems menuItemsItem;
+    FSkip(2);
+    int scaleFormTestMenuType;
+    FSkip(4);
+    ScaleformMovie persistentScaleformMovie;
+    FSkip(2);
+    unsigned int numCCs;
+    Ref cCsRef;
+    if (CanSeekTo(cCsRef))
+    {
+        SeekToRef(cCsRef);
+        globalobject__ColorCorrectionWrapper cCs[numCCs];
+        ReturnFromRef();
+    }
+    Ref colorCorrectionListRef;
+    if (CanSeekTo(colorCorrectionListRef))
+    {
+        SeekToRef(colorCorrectionListRef);
+        globalobject__ColorCorrectionWrapper colorCorrectionList;
+        ReturnFromRef();
+    }
+    unsigned int numGfxOverrides;
+    FSkip(4);
+    Ref gfxOverridesRef;
+    if (CanSeekTo(gfxOverridesRef))
+    {
+        SeekToRef(gfxOverridesRef);
+        globalobject__GraphicsOverrideWrapper gfxOverrides[numGfxOverrides];
+        ReturnFromRef();
+    }
+    Ref graphicsOverrideListRef;
+    if (CanSeekTo(graphicsOverrideListRef))
+    {
+        SeekToRef(graphicsOverrideListRef);
+        globalobject__GraphicsOverrideWrapper graphicsOverrideList;
+        ReturnFromRef();
+    }
+    ObjectFlags defaultObjectFlags;
+} globalobject <optimize=false>;
+
+RefDefinitions refDefinitions;
+globalobject root <open=true>;

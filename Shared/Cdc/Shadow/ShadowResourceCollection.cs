@@ -30,7 +30,7 @@ namespace TrRebootTools.Shared.Cdc.Shadow
                 location.ArchivePart,
                 location.OffsetInArchive,
                 location.SizeInArchive,
-                location.OffsetInBatch,
+                location.DecompressionOffset,
                 identification.RefDefinitionsSize,
                 identification.BodySize
             );
@@ -63,7 +63,7 @@ namespace TrRebootTools.Shared.Cdc.Shadow
             location.ArchivePart = (short)resourceRef.ArchivePart;
             location.OffsetInArchive = resourceRef.Offset;
             location.SizeInArchive = resourceRef.Length;
-            location.OffsetInBatch = resourceRef.OffsetInBatch;
+            location.DecompressionOffset = resourceRef.DecompressionOffset;
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -76,7 +76,7 @@ namespace TrRebootTools.Shared.Cdc.Shadow
             public byte ArchiveSubId;
             public int OffsetInArchive;
             public int SizeInArchive;
-            public int OffsetInBatch;
+            public int DecompressionOffset;
 
             public int Type
             {

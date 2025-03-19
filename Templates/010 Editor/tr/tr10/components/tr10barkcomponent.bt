@@ -1,0 +1,55 @@
+#define TR_VERSION 10
+#include "../../trcommon.bt"
+
+typedef struct
+{
+    unsigned int hash;
+} EventEnum <optimize=false>;
+
+typedef struct
+{
+    unsigned int toneID;
+    int barkID;
+    byte enabled;
+    byte doRMScalcForAnim;
+    FSkip(6);
+    Ref msgRef;
+    if (CanSeekTo(msgRef))
+    {
+        SeekToRef(msgRef);
+        string msg;
+        ReturnFromRef();
+    }
+    int priority;
+    float timeOutIndividual;
+    float timeOutGlobal;
+} Bark <optimize=false>;
+
+typedef struct
+{
+    byte registerWithDialogueSystem;
+    FSkip(3);
+    unsigned int dialogueActorID;
+    unsigned int vocalsForStateControl;
+    unsigned int segmentMouth;
+    byte animMouthFlapEnabled;
+    FSkip(3);
+    float animMouthFlapDisabledTimeDelay;
+    float animMouthFlapRmsScale;
+    ushort animMouthFlapNamedvalueEnabledFlag;
+    ushort animMouthFlapNamedvalueFlappingMagnitude;
+    EventEnum animMouthFlapEnableEvent;
+    EventEnum animMouthFlapDisableEvent;
+    unsigned int numBarks;
+    FSkip(4);
+    Ref barksRef;
+    if (CanSeekTo(barksRef))
+    {
+        SeekToRef(barksRef);
+        Bark barks[numBarks];
+        ReturnFromRef();
+    }
+} BarkComponent <optimize=false>;
+
+RefDefinitions refDefinitions;
+BarkComponent root <open=true>;

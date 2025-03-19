@@ -10,7 +10,3 @@ class Tr2013ModelExporter(ModelExporter):
         for bl_obj in bl_objs:
             if len(bl_obj.vertex_groups) > 42:
                 raise Exception(f"TR2013 only supports 42 vertex groups per mesh, but object {bl_obj.name} has {len(bl_obj.vertex_groups)}. Please reduce the vertex groups or split the mesh.")
-
-    @property
-    def should_export_binormals_and_tangents(self) -> bool:
-        return False

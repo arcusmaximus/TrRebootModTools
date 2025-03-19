@@ -12,7 +12,7 @@
             int archivePart,
             int offsetInArchive,
             int sizeInArchive,
-            int offsetInBatch,
+            int decompressionOffset,
             int? refDefinitionsSize,
             int bodySize)
             : base(archiveId, archiveSubId, archivePart, offsetInArchive, sizeInArchive)
@@ -21,7 +21,7 @@
             SubType = subType;
             Id = resourceId;
             Locale = locale;
-            OffsetInBatch = offsetInBatch;
+            DecompressionOffset = decompressionOffset;
             RefDefinitionsSize = refDefinitionsSize;
             BodySize = bodySize;
         }
@@ -46,7 +46,7 @@
             get;
         }
 
-        public int OffsetInBatch
+        public int DecompressionOffset
         {
             get;
         }
@@ -63,7 +63,7 @@
 
         public override string ToString()
         {
-            return $"{Type}:{Id} -> Archive {ArchiveId}:{ArchiveSubId}:{ArchivePart}, Offset {Offset:X}, OffsetInBatch {OffsetInBatch:X}";
+            return $"{Type}:{Id} -> Archive {ArchiveId}:{ArchiveSubId}:{ArchivePart}, Offset {Offset:X}, OffsetInBatch {DecompressionOffset:X}";
         }
 
         public static implicit operator ResourceKey(ResourceReference resourceRef)

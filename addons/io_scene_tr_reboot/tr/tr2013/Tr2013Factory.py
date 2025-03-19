@@ -6,6 +6,7 @@ from io_scene_tr_reboot.tr.Cloth import Cloth
 from io_scene_tr_reboot.tr.Collection import Collection
 from io_scene_tr_reboot.tr.Collision import Collision, CollisionType
 from io_scene_tr_reboot.tr.Enumerations import CdcGame
+from io_scene_tr_reboot.tr.Hair import Hair
 from io_scene_tr_reboot.tr.IFactory import IFactory
 from io_scene_tr_reboot.tr.Mesh import IMesh
 from io_scene_tr_reboot.tr.MeshPart import IMeshPart
@@ -15,6 +16,7 @@ from io_scene_tr_reboot.tr.tr2013.Tr2013Bone import Tr2013Bone
 from io_scene_tr_reboot.tr.tr2013.Tr2013Cloth import Tr2013Cloth
 from io_scene_tr_reboot.tr.tr2013.Tr2013Collection import Tr2013Collection
 from io_scene_tr_reboot.tr.tr2013.Tr2013Collision import Tr2013Collision
+from io_scene_tr_reboot.tr.tr2013.Tr2013Hair import Tr2013Hair
 from io_scene_tr_reboot.tr.tr2013.Tr2013Mesh import Tr2013Mesh
 from io_scene_tr_reboot.tr.tr2013.Tr2013MeshPart import Tr2013MeshPart
 from io_scene_tr_reboot.tr.tr2013.Tr2013Model import Tr2013Model
@@ -58,3 +60,6 @@ class Tr2013Factory(IFactory):
 
     def deserialize_collision(self, data: str) -> Collision:
         return Tr2013Collision.deserialize(data)
+
+    def create_hair(self, model_id: int | None, hair_data_id: int) -> Hair:
+        return Tr2013Hair(model_id, hair_data_id)

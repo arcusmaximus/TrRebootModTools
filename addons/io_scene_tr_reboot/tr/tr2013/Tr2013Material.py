@@ -26,17 +26,17 @@ class _MaterialPass(CStruct32):
     vertex_shader_ref: ResourceReference | None
     flags: CInt
 
-    num_ps_textures_sub: CByte
-    num_ps_texture_ranges: CByte
     num_ps_textures: CByte
+    num_ps_texture_ranges: CByte
+    num_ps_textures_: CByte
     ps_texture_range_start: CByte
     ps_textures_ref: ResourceReference | None
     num_ps_constants: CInt
     ps_constants_ref: ResourceReference | None
 
-    num_vs_textures_sub: CByte
-    num_vs_texture_ranges: CByte
     num_vs_textures: CByte
+    num_vs_texture_ranges: CByte
+    num_vs_textures_: CByte
     vs_texture_range_start: CByte
     vs_textures_ref: ResourceReference | None
     num_vs_constants: CInt

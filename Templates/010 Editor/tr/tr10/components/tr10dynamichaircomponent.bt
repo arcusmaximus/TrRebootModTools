@@ -1,0 +1,225 @@
+#define TR_VERSION 10
+#include "../../trcommon.bt"
+
+typedef union
+{
+    short byUserDefinedIndex;
+    ushort byBoneIndex;
+    short byBoneID;
+    ushort byMarkerIndex;
+    ushort byMarkerID;
+} ModelBoneOrMarkerReference__ModelBoneOrMarkerRefData;
+
+typedef struct
+{
+    ubyte refType;
+    FSkip(1);
+    ModelBoneOrMarkerReference__ModelBoneOrMarkerRefData refData;
+} ModelBoneOrMarkerReference <optimize=false>;
+
+typedef struct
+{
+    unsigned int hairSplineObject;
+    ModelBoneOrMarkerReference playerBoneMarker;
+} HairSplineData <optimize=false>;
+
+typedef struct
+{
+    unsigned int hairProfile;
+    unsigned int groupNameHash;
+} DynamicHairComponent__ProfileMappingData <optimize=false>;
+
+typedef struct
+{
+    Ref nameRef;
+    if (CanSeekTo(nameRef))
+    {
+        SeekToRef(nameRef);
+        string name;
+        ReturnFromRef();
+    }
+    ushort numHairGroups;
+    FSkip(6);
+    Ref hairGroupDataRef;
+    if (CanSeekTo(hairGroupDataRef))
+    {
+        SeekToRef(hairGroupDataRef);
+        DynamicHairComponent__ProfileMappingData hairGroupData;
+        ReturnFromRef();
+    }
+    byte defaultSetting;
+    FSkip(7);
+} DynamicHairComponent__HairStateParameters <optimize=false, read=Str("%s", name)>;
+
+typedef struct
+{
+    unsigned int hairProfile;
+    unsigned int groupNameHash;
+    float interpMaxDistance;
+    float interpMinMasterDistance;
+    float interpMaxMasterDistance;
+    float interpScaleCurve[8];
+} DynamicHairComponent__RenderingProfileMappingData <optimize=false>;
+
+typedef struct
+{
+} RenderResource <optimize=false>;
+
+typedef struct
+{
+} IHighlightableResource <optimize=false>;
+
+typedef struct
+{
+    RenderResource _Parent;
+    IHighlightableResource _Parent2;
+    unsigned int frameIndex;
+} TextureMap <optimize=false>;
+
+typedef struct
+{
+    Ref nameRef;
+    if (CanSeekTo(nameRef))
+    {
+        SeekToRef(nameRef);
+        string name;
+        ReturnFromRef();
+    }
+    unsigned int numHairGroups;
+    FSkip(4);
+    Ref hairGroupDataRef;
+    if (CanSeekTo(hairGroupDataRef))
+    {
+        SeekToRef(hairGroupDataRef);
+        DynamicHairComponent__RenderingProfileMappingData hairGroupData;
+        ReturnFromRef();
+    }
+    unsigned int hairDirtProfile;
+    FSkip(4);
+    Ref hairDirtTextureRef;
+    if (CanSeekTo(hairDirtTextureRef))
+    {
+        SeekToRef(hairDirtTextureRef);
+        TextureMap hairDirtTexture;
+        ReturnFromRef();
+    }
+    ubyte dirtColorR;
+    ubyte dirtColorG;
+    ubyte dirtColorB;
+    FSkip(1);
+    float dirtStrength;
+    byte defaultSetting;
+    FSkip(7);
+} DynamicHairComponent__HairRenderingStateParameters <optimize=false, read=Str("%s", name)>;
+
+typedef struct
+{
+    ubyte rootColor0R;
+    ubyte rootColor0G;
+    ubyte rootColor0B;
+    ubyte tipColor0R;
+    ubyte tipColor0G;
+    ubyte tipColor0B;
+    ubyte rootColor1R;
+    ubyte rootColor1G;
+    ubyte rootColor1B;
+    ubyte tipColor1R;
+    ubyte tipColor1G;
+    ubyte tipColor1B;
+    float frequency;
+} DynamicHairComponent__HairStrandColorParameters <optimize=false>;
+
+typedef struct
+{
+    float fTickness;
+    float shapeCurve[8];
+    float alphaCurve[8];
+    float noiseFrequency;
+    float noiseStrength;
+    unsigned int numHairStrandColors;
+    Ref hairStrandColorsRef;
+    if (CanSeekTo(hairStrandColorsRef))
+    {
+        SeekToRef(hairStrandColorsRef);
+        DynamicHairComponent__HairStrandColorParameters hairStrandColors[numHairStrandColors];
+        ReturnFromRef();
+    }
+    unsigned int groupNameHash;
+} DynamicHairComponent__ConstantHairGroupData <optimize=false>;
+
+typedef struct
+{
+    Ref nameRef;
+    if (CanSeekTo(nameRef))
+    {
+        SeekToRef(nameRef);
+        string name;
+        ReturnFromRef();
+    }
+    unsigned int lodProfile;
+    FSkip(4);
+} DynamicHairComponent__HairLODOverrideParameters <optimize=false, read=Str("%s", name)>;
+
+typedef struct
+{
+    float targetUpdateRate;
+    float multiStepUpdateRateThreshold;
+    unsigned int numResetRelaxSteps;
+} DynamicHairComponent__SimUpdateRateSettings <optimize=false>;
+
+typedef struct
+{
+    byte hairEnabled;
+    FSkip(3);
+    HairSplineData hairSplineData;
+    float gravityUnderWater;
+    float dampingUnderWater;
+    ushort numHairProfiles;
+    FSkip(2);
+    Ref hairProfilesRef;
+    if (CanSeekTo(hairProfilesRef))
+    {
+        SeekToRef(hairProfilesRef);
+        DynamicHairComponent__HairStateParameters hairProfiles[numHairProfiles];
+        ReturnFromRef();
+    }
+    ushort numHairRenderingProfiles;
+    FSkip(6);
+    Ref hairRenderingProfilesRef;
+    if (CanSeekTo(hairRenderingProfilesRef))
+    {
+        SeekToRef(hairRenderingProfilesRef);
+        DynamicHairComponent__HairRenderingStateParameters hairRenderingProfiles[numHairRenderingProfiles];
+        ReturnFromRef();
+    }
+    ushort numConstantHairDataGroups;
+    FSkip(6);
+    Ref constantHairDataGroupsRef;
+    if (CanSeekTo(constantHairDataGroupsRef))
+    {
+        SeekToRef(constantHairDataGroupsRef);
+        DynamicHairComponent__ConstantHairGroupData constantHairDataGroups[numConstantHairDataGroups];
+        ReturnFromRef();
+    }
+    ushort numLODProfileOverrides;
+    FSkip(6);
+    Ref lODProfileOverridesRef;
+    if (CanSeekTo(lODProfileOverridesRef))
+    {
+        SeekToRef(lODProfileOverridesRef);
+        DynamicHairComponent__HairLODOverrideParameters lODProfileOverrides[numLODProfileOverrides];
+        ReturnFromRef();
+    }
+    byte useSourcePosNormal;
+    FSkip(3);
+    DynamicHairComponent__SimUpdateRateSettings simUpdateRateSettings;
+    unsigned int lodProfile;
+    unsigned int cinematicLodProfile;
+    unsigned int combatLodProfile;
+    float headRadius;
+    float headFalloff;
+    float headOffset[3];
+} DynamicHairComponent <optimize=false>;
+
+RefDefinitions refDefinitions;
+DynamicHairComponent root <open=true>;

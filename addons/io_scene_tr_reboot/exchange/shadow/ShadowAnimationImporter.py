@@ -23,6 +23,9 @@ class ShadowAnimationImporter(SlotsBase):
         self.bl_context = bpy.context
 
     def import_animation(self, file_path: str, bl_armature_obj: bpy.types.Object) -> None:
+        if self.bl_context.scene is None:
+            return
+
         resource_key = Collection.try_parse_resource_file_path(file_path, CdcGame.SOTTR)
         if resource_key is None:
             raise Exception("Invalid filename")
@@ -79,8 +82,11 @@ class ShadowAnimationImporter(SlotsBase):
                         bl_keyframe.interpolation = "LINEAR"
 
     def create_bone_fcurves(self, bl_armature_obj: bpy.types.Object, animation: ShadowAnimation) -> dict[_ItemAttrKey, list[bpy.types.FCurve]]:
-        if not bl_armature_obj.animation_data:
+        if bl_armature_obj.animation_data is None:
             bl_armature_obj.animation_data_create()
+
+        if bl_armature_obj.pose is None or bl_armature_obj.animation_data is None:
+            return {}
 
         action_name = BlenderNaming.make_action_name(animation.id, None, None)
         bl_action = bpy.data.actions.get(action_name) or bpy.data.actions.new(action_name)
@@ -116,7 +122,7 @@ class ShadowAnimationImporter(SlotsBase):
 
     def import_blend_shape_animation(self, bl_mesh_obj: bpy.types.Object, animation: ShadowAnimation) -> None:
         bl_mesh = cast(bpy.types.Mesh, bl_mesh_obj.data)
-        if not bl_mesh.shape_keys:
+        if bl_mesh.shape_keys is None:
             return
 
         for bl_shape_key in Enumerable(bl_mesh.shape_keys.key_blocks).skip(1):
@@ -135,11 +141,13 @@ class ShadowAnimationImporter(SlotsBase):
 
     def create_blend_shape_fcurves(self, bl_mesh_obj: bpy.types.Object, animation: ShadowAnimation) -> dict[int, bpy.types.FCurve]:
         bl_mesh = cast(bpy.types.Mesh, bl_mesh_obj.data)
-        if not bl_mesh.shape_keys:
+        if bl_mesh.shape_keys is None:
             return {}
 
-        if not bl_mesh.shape_keys.animation_data:
+        if bl_mesh.shape_keys.animation_data is None:
             bl_mesh.shape_keys.animation_data_create()
+            if bl_mesh.shape_keys.animation_data is None:
+                return {}
 
         mesh_id_set = BlenderNaming.parse_mesh_name(bl_mesh_obj.name)
         action_name = BlenderNaming.make_action_name(animation.id, mesh_id_set.model_data_id, mesh_id_set.mesh_idx)

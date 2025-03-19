@@ -57,8 +57,13 @@ class ModelExporter(SlotsBase):
 
         self.validate_blender_objects(bl_mesh_objs)
 
-        blend_shape_global_ids = ObjectSkeletonProperties.get_global_blend_shape_ids(bl_armature_obj) if bl_armature_obj is not None else None
-        tr_model = self.create_model(ids.model_id, ids.model_data_id, bl_mesh_objs, blend_shape_global_ids)
+        global_bone_ids: dict[int, int | None] | None = None
+        global_blend_shape_ids: dict[int, int] | None = None
+        if bl_armature_obj is not None:
+            global_bone_ids = Enumerable(cast(bpy.types.Armature, bl_armature_obj.data).bones).select(lambda b: BlenderNaming.parse_bone_name(b.name)).to_dict(lambda ids: ids.local_id or -1, lambda ids: ids.global_id)
+            global_blend_shape_ids = ObjectSkeletonProperties.get_global_blend_shape_ids(bl_armature_obj)
+
+        tr_model = self.create_model(ids.model_id, ids.model_data_id, bl_mesh_objs, global_bone_ids, global_blend_shape_ids)
 
         model_data_file_path = os.path.join(folder_path, f"{ids.model_data_id}.tr{self.game}modeldata")
         with open(model_data_file_path, "wb") as model_data_file:
@@ -71,14 +76,10 @@ class ModelExporter(SlotsBase):
     def validate_blender_objects(self, bl_objs: list[bpy.types.Object]) -> None:
         pass
 
-    @property
-    def should_export_binormals_and_tangents(self) -> bool:
-        return True
-
     def export_extra_files(self, folder_path: str, object_id: int, tr_model: IModel) -> None:
         pass
 
-    def create_model(self, model_id: int, model_data_id: int, bl_objs: list[bpy.types.Object], blend_shape_global_ids: dict[int, int] | None) -> IModel:
+    def create_model(self, model_id: int, model_data_id: int, bl_objs: list[bpy.types.Object], global_bone_ids: dict[int, int | None] | None, blend_shape_global_ids: dict[int, int] | None) -> IModel:
         tr_model = self.factory.create_model(model_id, model_data_id)
         tr_model.refs.material_resources = Enumerable(bl_objs).select(lambda o: o.data)                                          \
                                                               .cast(bpy.types.Mesh)                                              \
@@ -92,6 +93,7 @@ class ModelExporter(SlotsBase):
 
         tr_model.header.max_lod = 3.402823e+38
         tr_model.header.has_vertex_weights = Enumerable(bl_objs).any(lambda o: len(o.vertex_groups) > 0)
+        tr_model.header.num_bones = len(global_bone_ids) if global_bone_ids is not None else 0
         self.apply_bone_usage_map(tr_model, bl_objs)
 
         bl_shape_keys = Enumerable(bl_objs).select(lambda o: o.data)        \
@@ -103,7 +105,11 @@ class ModelExporter(SlotsBase):
 
         blend_shape_normals_source_file_path: str | None = None
         for bl_obj in bl_objs:
-            tr_model.meshes.append(self.create_mesh(tr_model, bl_obj, blend_shape_global_ids))
+            tr_mesh = self.create_mesh(tr_model, bl_obj, blend_shape_global_ids)
+            if tr_mesh is None:
+                continue
+
+            tr_model.meshes.append(tr_mesh)
             properties = ObjectProperties.get_instance(bl_obj)
             if properties.blend_shape_normals_source_file_path:
                 blend_shape_normals_source_file_path = properties.blend_shape_normals_source_file_path
@@ -129,15 +135,20 @@ class ModelExporter(SlotsBase):
 
             tr_model.header.bone_usage_map[local_id // 32] |= 1 << (local_id & 0x1F)
 
-    def create_mesh(self, tr_model: IModel, bl_obj: bpy.types.Object, blend_shape_global_ids: dict[int, int] | None) -> IMesh:
+    def create_mesh(self, tr_model: IModel, bl_obj: bpy.types.Object, blend_shape_global_ids: dict[int, int] | None) -> IMesh | None:
         with BlenderHelper.prepare_for_model_export(bl_obj):
             if not Enumerable(bl_obj.modifiers).of_type(bpy.types.TriangulateModifier).any():
                 bl_obj.modifiers.new("Triangulate", "TRIANGULATE")
 
             bl_mesh = self.get_evaluated_bl_mesh(bl_obj)
+            if len(bl_mesh.polygons) == 0:
+                return None
 
             if hasattr(bl_mesh, "calc_normals_split"):
                 getattr(bl_mesh, "calc_normals_split")()
+
+            if len(bl_mesh.uv_layers) > 0:
+                bl_mesh.calc_tangents()
 
             bl_mesh_maps = _BlenderMeshMaps(
                 self.collect_bl_color_maps(bl_mesh),
@@ -192,10 +203,8 @@ class ModelExporter(SlotsBase):
         tr_vertex_format.hash = random.randint(0, 0xFFFFFFFFFFFFFFFF)
         tr_vertex_format.add_attribute(Hashes.position, tr_vertex_format.types.float3, 0)
         tr_vertex_format.add_attribute(Hashes.normal,   tr_vertex_format.types.vectorc32, 0)
-
-        if self.should_export_binormals_and_tangents:
-            tr_vertex_format.add_attribute(Hashes.binormal, tr_vertex_format.types.vectorc32, 0)
-            tr_vertex_format.add_attribute(Hashes.tangent,  tr_vertex_format.types.vectorc32, 0)
+        tr_vertex_format.add_attribute(Hashes.binormal, tr_vertex_format.types.vectorc32, 0)
+        tr_vertex_format.add_attribute(Hashes.tangent,  tr_vertex_format.types.vectorc32, 0)
 
         for attr_name_hash in bl_mesh_maps.color_maps.keys():
             tr_vertex_format.add_attribute(attr_name_hash, tr_vertex_format.types.color32, 0)
@@ -252,9 +261,8 @@ class ModelExporter(SlotsBase):
         tr_vertex = Vertex()
         tr_vertex.attributes[Hashes.position] = cast(tuple[float, ...], bl_vertex.co / self.scale_factor)
         tr_vertex.attributes[Hashes.normal]   = cast(tuple[float, ...], bl_corner.normal.copy())
-        if self.should_export_binormals_and_tangents:
-            tr_vertex.attributes[Hashes.binormal] = cast(tuple[float, ...], bl_corner.bitangent.copy())
-            tr_vertex.attributes[Hashes.tangent]  = cast(tuple[float, ...], bl_corner.tangent.copy())
+        tr_vertex.attributes[Hashes.binormal] = cast(tuple[float, ...], -bl_corner.bitangent)
+        tr_vertex.attributes[Hashes.tangent]  = cast(tuple[float, ...], -bl_corner.tangent)
 
         for attr_name_hash, bl_color_map in bl_mesh_maps.color_maps.items():
             tr_vertex.attributes[attr_name_hash] = tuple(cast(Sequence[float], bl_color_map.data[bl_vertex_idx].color))
@@ -305,7 +313,7 @@ class ModelExporter(SlotsBase):
 
         bl_faces_by_material_idx: dict[int, list[bpy.types.MeshPolygon]] = Enumerable(bl_mesh.polygons).group_by(lambda p: p.material_index)
         for bl_material_idx, bl_faces in bl_faces_by_material_idx.items():
-            bl_material = cast(bpy.types.Material | None, bl_mesh.materials[bl_material_idx])
+            bl_material = bl_mesh.materials[bl_material_idx]
             if bl_material is None:
                 raise Exception(f"Mesh {bl_obj.name} has faces referencing an empty material slot. Please populate or delete any such slots.")
 
@@ -340,7 +348,7 @@ class ModelExporter(SlotsBase):
 
     def create_blend_shapes(self, tr_model: IModel, tr_mesh: IMesh, bl_obj: bpy.types.Object, bl_mesh: bpy.types.Mesh, bl_corner_to_tr_vertex: list[int], blend_shape_global_ids: dict[int, int] | None) -> None:
         tr_mesh.blend_shapes = [None] * tr_model.header.num_blend_shapes
-        if cast(bpy.types.Key | None, bl_mesh.shape_keys) is None:
+        if bl_mesh.shape_keys is None:
             return
 
         tr_vertex_to_bl_corner: list[int] = [-1] * len(tr_mesh.vertices)

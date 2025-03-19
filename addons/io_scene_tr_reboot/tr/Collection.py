@@ -4,6 +4,7 @@ import re
 from typing import ClassVar, Iterable, NamedTuple
 from mathutils import Matrix
 from io_scene_tr_reboot.tr.Collision import Collision
+from io_scene_tr_reboot.tr.Hair import Hair
 from io_scene_tr_reboot.tr.Material import Material
 from io_scene_tr_reboot.tr.Model import IModel
 from io_scene_tr_reboot.tr.ResourceReference import ResourceReference
@@ -21,7 +22,8 @@ class Collection(SlotsBase):
         extensions: list[str]
 
     class ModelInstance(NamedTuple):
-        resource: ResourceKey
+        skeleton_resource: ResourceKey | None
+        model_resource: ResourceKey
         transform: Matrix
 
     __resource_type_infos: ClassVar[dict[ResourceType, ResourceTypeInfo]] = {
@@ -86,7 +88,7 @@ class Collection(SlotsBase):
     def _create_material(self) -> Material: ...
 
     @abstractmethod
-    def get_skeleton(self) -> ISkeleton | None: ...
+    def get_skeleton(self, resource: ResourceKey) -> ISkeleton | None: ...
 
     @abstractmethod
     def get_collisions(self) -> list[Collision]: ...
@@ -101,6 +103,9 @@ class Collection(SlotsBase):
 
     @abstractmethod
     def get_cloth(self) -> Cloth | None: ...
+
+    @abstractmethod
+    def get_hair(self) -> Hair | None: ...
 
     def get_resources(self, resource_type: ResourceType) -> Iterable[ResourceKey]:
         return Enumerable(self.__resource_paths.keys()).where(lambda r: r.type == resource_type)
@@ -135,7 +140,7 @@ class Collection(SlotsBase):
 
         resource_id = int(match.group(1))
         for resource_type, resource_type_info in Collection.__resource_type_infos.items():
-            if file_extension.replace(str(game), "X") in resource_type_info.extensions:
+            if file_extension.lower().replace(str(game), "X") in resource_type_info.extensions:
                 return ResourceKey(resource_type, resource_id)
 
         return None

@@ -118,11 +118,11 @@ class _ClothTuneStripGroup(CStruct64, IClothTuneStripGroup if TYPE_CHECKING else
     wind_on_constraints: CInt
     max_mass_bounceback_factor: CFloat
     transform_type: CInt
-    spring_stretchiness_default_percentage: CInt
-    spring_stretchiness_lower_percentage: CInt
+    fixed_to_free_slop: CInt
+    free_to_free_slop: CInt
     rigidity_percentage: CInt
-    acceleration_divider: CFloat
-    time_delta_multiplier: CFloat
+    mass_scale: CFloat
+    time_delta_scale: CFloat
     collide_with_dynamic_hair: CInt
     num_strip_ids: CInt
     zone_context: CInt
@@ -141,11 +141,11 @@ class _ClothTuneStripGroup(CStruct64, IClothTuneStripGroup if TYPE_CHECKING else
     def gravity_factor(self, value: float) -> None:     # type: ignore
         self.gravity = value * 9.8
 
-    buoyancy: float
+    buoyancy_factor: float
     pose_follow_factor: float
-    spring_stretchiness_upper_percentage: int
-    reference_time_delta_multiplier: float
-    _ignored_fields_ = ("buoyancy", "pose_follow_factor", "spring_stretchiness_upper_percentage", "reference_time_delta_multiplier")
+    free_to_free_slop_z: int
+    blend_to_bind_time: float
+    _ignored_fields_ = ("buoyancy_factor", "pose_follow_factor", "free_to_free_slop_z", "blend_to_bind_time")
 
 assert(sizeof(_ClothTuneStripGroup) == 0x70)
 
@@ -246,8 +246,10 @@ class RiseCloth(Tr2013Cloth):
     def read_tune_strip_groups(self, reader: ResourceReader, count: int) -> Sequence[IClothTuneStripGroup]:
         dtp_strip_groups = reader.read_struct_list(_ClothTuneStripGroup, count)
         for dtp_strip_group in dtp_strip_groups:
+            dtp_strip_group.buoyancy_factor = 0.5
             dtp_strip_group.pose_follow_factor = 0.0
-            dtp_strip_group.spring_stretchiness_upper_percentage = 100
+            dtp_strip_group.free_to_free_slop_z = 0
+            dtp_strip_group.blend_to_bind_time = 10
 
         return dtp_strip_groups
 

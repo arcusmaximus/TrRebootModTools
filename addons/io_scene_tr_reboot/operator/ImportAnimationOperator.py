@@ -18,7 +18,7 @@ class ImportShadowAnimationOperator(ImportOperatorBase[ImportOperatorProperties]
     filename_ext = ".tr11anim"
 
     def invoke(self, context: bpy.types.Context | None, event: bpy.types.Event) -> set[OperatorReturnItems]:
-        if context is None:
+        if context is None or context.window_manager is None:
             return { "CANCELLED" }
 
         with OperatorContext.begin(self):
@@ -49,6 +49,9 @@ class ImportShadowAnimationOperator(ImportOperatorBase[ImportOperatorProperties]
 
         if bl_selected_obj and bl_selected_obj.parent and isinstance(bl_selected_obj.parent.data, bpy.types.Armature):
             return bl_selected_obj.parent
+
+        if context.scene is None:
+            return None
 
         bl_armature_objs = Enumerable(context.scene.objects).where(lambda o: isinstance(o.data, bpy.types.Armature) and not self.is_in_local_collection(o)).to_list()
         if len(bl_armature_objs) == 0:

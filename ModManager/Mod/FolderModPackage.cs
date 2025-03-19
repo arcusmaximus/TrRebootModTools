@@ -367,12 +367,12 @@ namespace TrRebootTools.ModManager.Mod
             string extension = Path.GetExtension(filePath);
             switch (resourceKey.Type)
             {
-                case ResourceType.Texture when extension == ".dds":
+                case ResourceType.Texture when extension.Equals(".dds", StringComparison.InvariantCultureIgnoreCase):
                     Stream textureStream = ConvertTexture(stream, resourceKey, archiveSet, resourceUsageCache);
                     stream.Close();
                     return textureStream;
 
-                case ResourceType.SoundBank when extension == ".bnk":
+                case ResourceType.SoundBank when extension.Equals(".bnk", StringComparison.InvariantCultureIgnoreCase):
                     Stream dtpStream = ConvertSoundBank(stream);
                     stream.Close();
                     return dtpStream;

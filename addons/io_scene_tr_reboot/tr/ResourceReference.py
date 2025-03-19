@@ -8,5 +8,11 @@ class ResourceReference(ResourceKey):
         super().__init__(type, id)
         self.offset = offset
 
+    def __str__(self) -> str:
+        return f"{self.type}:{self.id} @ {self.offset}"
+
+    def __hash__(self) -> int:
+        return hash((self.type, self.id, self.offset))
+
     def __eq__(self, value: object) -> bool:
         return isinstance(value, ResourceReference) and super().__eq__(value) and self.offset == value.offset

@@ -1311,7 +1311,7 @@ typedef union
     short byUserDefinedIndex;
     ushort byBoneIndex;
     ushort byMarkerIndex;
-} ModelBoneOrMarkerReferenceWithContext__ModelBoneOrMarkerRefData;
+} ModelBoneOrMarkerReferenceWithContext__ModelBoneOrMarkerRefData <read=Str("%u", byBoneIndex)>;
 
 typedef struct
 {
@@ -2260,7 +2260,7 @@ typedef struct
     if (CanSeekTo(ragdollsRef))
     {
         SeekToRef(ragdollsRef);
-        RagdollTune ragdolls;
+        RagdollTune ragdolls[numRagdolls];
         ReturnFromRef();
     }
     unsigned int numIKControllers;

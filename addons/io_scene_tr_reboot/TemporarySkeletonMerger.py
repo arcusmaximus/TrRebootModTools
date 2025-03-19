@@ -12,8 +12,9 @@ class TemporaryModelMerger(SkeletonMerger):
         bl_local_collection = bpy.data.collections.get(BlenderNaming.local_collection_name)
         if bl_local_collection is None:
             bl_local_collection = bpy.data.collections.new(BlenderNaming.local_collection_name)
-            bpy.context.scene.collection.children.link(bl_local_collection)
-            bpy.context.view_layer.layer_collection.children[bl_local_collection.name].exclude = True
+            if bpy.context.scene is not None and bpy.context.view_layer is not None:
+                bpy.context.scene.collection.children.link(bl_local_collection)
+                bpy.context.view_layer.layer_collection.children[bl_local_collection.name].exclude = True
 
         self.bl_local_collection = bl_local_collection
 

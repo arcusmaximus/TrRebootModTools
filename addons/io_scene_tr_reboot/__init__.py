@@ -3,7 +3,7 @@ bl_info = {
     "description": "Import/export files for the Tomb Raider Reboot games",
     "author": "arc_",
     "blender": (4, 0, 0),
-    "version": (1, 4, 0),
+    "version": (1, 4, 2),
     "location": "File > Import-Export",
     "support": "COMMUNITY",
     "category": "Import-Export"
@@ -11,6 +11,8 @@ bl_info = {
 
 from typing import Callable, Protocol, cast
 import bpy
+from io_scene_tr_reboot.operator.HairWeightPaintingOperator import HairWeightPaintingOperator
+from io_scene_tr_reboot.ui.HairPanel import HairPanel
 
 from io_scene_tr_reboot.util.CStructTypeMappings import CStructTypeMappings
 from io_scene_tr_reboot.tr.TrCStructTypeMappings import TrCStructTypeMappings
@@ -53,6 +55,7 @@ menu_operators: list[ITrMenuOperator] = [
 other_classes: list[type] = [
     BrowseBlendShapeNormalsSourceFileOperator,
     FixVertexGroupNamesOperator,
+    HairWeightPaintingOperator,
     PinClothBonesOperator,
     UnpinClothBonesOperator,
     RegenerateClothBonesOperator,
@@ -61,6 +64,7 @@ other_classes: list[type] = [
     ClothBonesPanel,
     ClothStripPanel,
     ClothSpringPanel,
+    HairPanel,
     MeshPanel,
     ScenePanel
 ]
@@ -83,6 +87,9 @@ menu_item_funcs: dict[ITrMenuOperator, Callable[[bpy.types.Menu, bpy.types.Conte
 
 def make_menu_item_func(operator: ITrMenuOperator) -> Callable[[bpy.types.Menu, bpy.types.Context], None]:
     def draw_menu_item(menu: bpy.types.Menu, context: bpy.types.Context) -> None:
+        if menu.layout is None:
+            return
+
         menu.layout.operator(operator.bl_idname, text = operator.bl_menu_item_name)
 
     return draw_menu_item

@@ -33,7 +33,7 @@ namespace TrRebootTools.Shared.Cdc.Tr2013
                 location.ArchivePart,
                 location.OffsetInArchive,
                 location.SizeInArchive,
-                location.OffsetInBatch,
+                location.DecompressionOffset,
                 identification.RefDefinitionsSize,
                 identification.BodySize
             );
@@ -65,7 +65,7 @@ namespace TrRebootTools.Shared.Cdc.Tr2013
         {
             location.PackedOffset = (resourceRef.Offset | (resourceRef.ArchiveId << 4) | resourceRef.ArchivePart);
             location.SizeInArchive = resourceRef.Length;
-            location.OffsetInBatch = resourceRef.OffsetInBatch;
+            location.DecompressionOffset = resourceRef.DecompressionOffset;
         }
 
         public static ResourceKey AdjustResourceKeyAfterRead(int archiveId, ResourceKey resourceKey)
@@ -107,7 +107,7 @@ namespace TrRebootTools.Shared.Cdc.Tr2013
             public int UniqueKey;
             public int PackedOffset;
             public int SizeInArchive;
-            public int OffsetInBatch;
+            public int DecompressionOffset;
 
             public int Type
             {

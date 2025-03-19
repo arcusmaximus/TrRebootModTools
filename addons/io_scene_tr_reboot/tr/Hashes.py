@@ -35,3 +35,4 @@ class Hashes:
     genericdoubleradiicapsuleshapelist  = _Hashes__hash_simple(b"genericdoubleradiicapsuleshapelist")
     genericsphereshapelist              = _Hashes__hash_simple(b"genericsphereshapelist")
     meshref                             = _Hashes__hash_simple(b"meshref")
+    modelhost                           = _Hashes__hash_simple(b"modelhost")

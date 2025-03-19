@@ -50,7 +50,7 @@ class _ObjectHeader(CStruct64):
 assert(sizeof(_ObjectHeader) == 0x98)
 
 class _ObjectSimpleComponent(CStruct64):
-    type_hash: CInt
+    type_hash: CUInt
     count: CInt
     dtp_ref: ResourceReference | None
 
@@ -79,6 +79,47 @@ class CollectionTransformedComponent(NamedTuple):
     hash: int
     dtp_ref: ResourceReference
     transform: Matrix
+
+class _MeshRefComponent(CStruct64):
+    debug_name_ref: ResourceReference | None
+    instance_type: CInt
+    render_mesh_id: CInt
+    collision_mesh_id: CInt
+
+assert(sizeof(_MeshRefComponent) == 0x14)
+
+class _ModelHostMaterialSwap(CStruct64):
+    original_material_ref: ResourceReference | None
+    override_material_ref: ResourceReference | None
+
+assert(sizeof(_ModelHostMaterialSwap) == 0x10)
+
+class _ModelHostMaterialSwapList(CStruct64):
+    entries_ref: ResourceReference | None
+    num_entries: CInt
+    material_set_type: CInt
+    debug_name_ref: ResourceReference | None
+
+assert(sizeof(_ModelHostMaterialSwapList) == 0x18)
+
+class _ModelHostModel(CStruct64):
+    debug_name_ref: ResourceReference | None
+    mesh_ref: ResourceReference | None
+    model_slot_type: CInt
+    restrict_to_zone: CInt
+    zone_ref: CInt
+    derived_zones: CInt
+    material_swap_lists_ref: ResourceReference | None
+    num_material_swap_lists: CInt
+    padding_0: CInt
+
+assert(sizeof(_ModelHostModel) == 0x30)
+
+class _ModelHostComponent(CStruct64):
+    models_ref: ResourceReference | None
+    num_models: CInt
+
+assert(sizeof(_ModelHostComponent) == 0xC)
 
 class RiseCollection(Collection):
     game = CdcGame.ROTTR
@@ -127,20 +168,63 @@ class RiseCollection(Collection):
 
     def get_model_instances(self) -> list[Collection.ModelInstance]:
         instances: list[Collection.ModelInstance] = []
+
         if self._header.render_model_ref is not None:
-            instances.append(Collection.ModelInstance(self._header.render_model_ref, Matrix()))
+            instances.append(Collection.ModelInstance(self._header.skeleton_ref, self._header.render_model_ref, Matrix()))
 
-        meshref_components = self._transformed_components.get(Hashes.meshref)
-        if meshref_components is None:
-            return instances
+        instances.extend(self.__get_model_instances_from_meshrefs())
+        instances.extend(self.__get_model_instances_from_modelhosts())
 
-        for meshref_component in meshref_components:
-            meshref_reader = self.get_resource_reader(meshref_component.dtp_ref, True)
-            if meshref_reader is None:
+        return instances
+
+    def __get_model_instances_from_meshrefs(self) -> list[Collection.ModelInstance]:
+        components = self._transformed_components.get(Hashes.meshref)
+        if components is None:
+            return []
+
+        instances: list[Collection.ModelInstance] = []
+        for component in components:
+            reader = self.get_resource_reader(component.dtp_ref, True)
+            if reader is None:
                 continue
 
-            model_id = meshref_reader.read_uint32_at(0xC)
-            instances.append(Collection.ModelInstance(ResourceKey(ResourceType.MODEL, model_id), meshref_component.transform))
+            meshref = reader.read_struct(_MeshRefComponent)
+            instances.append(
+                Collection.ModelInstance(
+                    self._header.skeleton_ref,
+                    ResourceKey(ResourceType.MODEL, meshref.render_mesh_id),
+                    component.transform
+                )
+            )
+
+        return instances
+
+    def __get_model_instances_from_modelhosts(self) -> list[Collection.ModelInstance]:
+        component_ref = self._simple_components.get(Hashes.modelhost)
+        if component_ref is None:
+            return []
+
+        reader = self.get_resource_reader(component_ref, True)
+        if reader is None:
+            return []
+
+        component = reader.read_struct(_ModelHostComponent)
+        if component.models_ref is None:
+            return []
+
+        instances: list[Collection.ModelInstance] = []
+        reader.seek(component.models_ref)
+        for model in reader.read_struct_list(_ModelHostModel, component.num_models):
+            if model.mesh_ref is None:
+                continue
+
+            instances.append(
+                Collection.ModelInstance(
+                    self._header.skeleton_ref,
+                    model.mesh_ref,
+                    Matrix()
+                )
+            )
 
         return instances
 
@@ -156,18 +240,15 @@ class RiseCollection(Collection):
     def _create_material(self) -> Material:
         return RiseMaterial()
 
-    def get_skeleton(self) -> ISkeleton | None:
+    def get_skeleton(self, resource: ResourceKey) -> ISkeleton | None:
         if self._skeleton is not None:
             return self._skeleton
 
-        if self._header.skeleton_ref is None:
-            return None
-
-        reader = self.get_resource_reader(self._header.skeleton_ref, True)
+        reader = self.get_resource_reader(resource, True)
         if reader is None:
             return None
 
-        self._skeleton = self._create_skeleton(self._header.skeleton_ref.id)
+        self._skeleton = self._create_skeleton(resource.id)
         self._skeleton.read(reader)
         return self._skeleton
 
@@ -178,7 +259,10 @@ class RiseCollection(Collection):
         if self._collisions is not None:
             return self._collisions
 
-        skeleton = self.get_skeleton()
+        if self._header.skeleton_ref is None:
+            return []
+
+        skeleton = self.get_skeleton(self._header.skeleton_ref)
         if skeleton is None:
             return []
 
@@ -218,9 +302,12 @@ class RiseCollection(Collection):
         return self._simple_components.get(Hashes.cloth)
 
     def get_cloth(self) -> Cloth | None:
+        if self._header.skeleton_ref is None:
+            return None
+
         cloth_definition_ref = self.cloth_definition_ref
         cloth_component_ref  = self.cloth_tune_ref
-        skeleton = self.get_skeleton()
+        skeleton = self.get_skeleton(self._header.skeleton_ref)
         if cloth_definition_ref is None or cloth_component_ref is None or skeleton is None:
             return None
 

@@ -1,10 +1,11 @@
 import os
 import shutil
-from typing import TYPE_CHECKING, Annotated, Iterable, Protocol
+from typing import TYPE_CHECKING, Annotated, Iterable, Protocol, Sequence
 import bpy
 from bpy.types import Context, Event
 from io_scene_tr_reboot.BlenderNaming import BlenderNaming
 from io_scene_tr_reboot.exchange.ClothExporter import ClothExporter
+from io_scene_tr_reboot.exchange.HairExporter import HairExporter
 from io_scene_tr_reboot.exchange.ModelExporter import ModelExporter
 from io_scene_tr_reboot.ModelSplitter import ModelSplitter
 from io_scene_tr_reboot.exchange.SkeletonExporter import SkeletonExporter
@@ -29,6 +30,7 @@ else:
 class _Properties(ExportOperatorProperties, Protocol):
     export_skeleton: Annotated[bool, Prop("Export skeleton")]
     export_cloth: Annotated[bool, Prop("Export cloth")]
+    export_all_tr2013_lara_duplicates: Annotated[bool, Prop("Export all Lara duplicates", default = True)]
 
 class ExportModelOperator(ExportOperatorBase[_Properties]):
     bl_idname = "export_scene.trmodel"
@@ -36,33 +38,44 @@ class ExportModelOperator(ExportOperatorBase[_Properties]):
     filename_ext = ""
 
     def invoke(self, context: Context | None, event: Event) -> set[OperatorReturnItems]:
-        if context is None:
+        if context is None or context.window_manager is None:
             return { "CANCELLED" }
 
         game = SceneProperties.get_game()
-        ExportModelOperator.filename_ext = f".tr{game}modeldata"
-        self.properties.filter_glob = "*" + ExportModelOperator.filename_ext
 
         with OperatorContext.begin(self):
             bl_mesh_objs = self.get_mesh_objects_to_export(context, False)
-            if len(bl_mesh_objs) == 0:
+            bl_hair_objs = self.get_hair_objects_to_export(context)
+            if len(bl_mesh_objs) == 0 and len(bl_hair_objs) == 0:
                 OperatorContext.log_error("No meshes found in scene.")
                 return { "CANCELLED" }
 
             folder_path: str
             if self.properties.filepath:
                 folder_path = os.path.split(self.properties.filepath)[0]
-            elif context.blend_data.filepath:
+            elif context.blend_data is not None and context.blend_data.filepath:
                 folder_path = os.path.split(context.blend_data.filepath)[0]
             else:
                 folder_path = ""
 
-            model_data_id = BlenderNaming.parse_mesh_name(Enumerable(bl_mesh_objs).first().name).model_data_id
-            self.properties.filepath = os.path.join(folder_path, str(model_data_id) + self.filename_ext)
+            export_id: int
+            if len(bl_mesh_objs) > 0:
+                export_id = BlenderNaming.parse_mesh_name(Enumerable(bl_mesh_objs).first().name).model_data_id
+                ExportModelOperator.filename_ext = f".tr{game}modeldata"
+            else:
+                export_ids = BlenderNaming.parse_hair_name(Enumerable(bl_hair_objs).first().name)
+                export_id = export_ids.hair_data_id
+                ExportModelOperator.filename_ext = f".tr{game}modeldata" if export_ids.model_id is not None else f".tr{game}dtp"
+
+            self.properties.filepath = os.path.join(folder_path, str(export_id) + ExportModelOperator.filename_ext)
+            self.properties.filter_glob = "*" + ExportModelOperator.filename_ext
             context.window_manager.fileselect_add(self)
             return { "RUNNING_MODAL" }
 
     def draw(self, context: Context) -> None:
+        if self.layout is None:
+            return
+
         game = SceneProperties.get_game()
         if not self.requires_skeleton_export(game):
             self.layout.prop(self.properties, "export_skeleton")
@@ -70,8 +83,11 @@ class ExportModelOperator(ExportOperatorBase[_Properties]):
         if not self.requires_cloth_export(game):
             self.layout.prop(self.properties, "export_cloth")
 
+        if game == CdcGame.TR2013:
+            self.layout.prop(self.properties, "export_all_tr2013_lara_duplicates")
+
     def execute(self, context: Context | None) -> set[OperatorReturnItems]:
-        if context is None:
+        if context is None or context.view_layer is None:
             return { "CANCELLED" }
 
         game = SceneProperties.get_game()
@@ -83,44 +99,62 @@ class ExportModelOperator(ExportOperatorBase[_Properties]):
                 was_local_collection_excluded = bl_local_collection.exclude
                 bl_local_collection.exclude = False
 
-            bl_mesh_objs = self.get_mesh_objects_to_export(context, True)
-
-            model_exporter = self.create_model_exporter(OperatorCommon.scale_factor, game)
             folder_path = os.path.split(self.properties.filepath)[0]
-            for model_id_set, bl_mesh_objs_of_model in Enumerable(bl_mesh_objs).group_by(lambda o: BlenderNaming.parse_model_name(o.name)).items():
-                bl_armature_obj = bl_mesh_objs_of_model[0].parent
-                if bl_armature_obj is not None and not isinstance(bl_armature_obj.data, bpy.types.Armature):
-                    bl_armature_obj = None
+            bl_hair_objs = self.get_hair_objects_to_export(context)
+            bl_unsplit_mesh_objs = self.get_mesh_objects_to_export(context, False)
+            bl_split_mesh_objs = self.get_mesh_objects_to_export(context, True)
 
-                model_exporter.export_model(folder_path, model_id_set, bl_mesh_objs_of_model, bl_armature_obj)
-
-            if self.properties.export_cloth or self.requires_cloth_export(game):
-                bl_unsplit_mesh_objs = self.get_mesh_objects_to_export(context, False)
-                bl_armature_obj = Enumerable(bl_unsplit_mesh_objs).select(lambda o: o.parent).first_or_none(lambda o: o is not None and isinstance(o.data, bpy.types.Armature))
-                if bl_armature_obj is not None:
-                    cloth_exporter = self.create_cloth_exporter(OperatorCommon.scale_factor, game)
-                    cloth_exporter.export_cloths(folder_path, bl_armature_obj, self.get_local_armatures(context))
-
-            if self.properties.export_skeleton or self.requires_skeleton_export(game):
-                skeleton_exporter = self.create_skeleton_exporter(OperatorCommon.scale_factor, game)
-                for bl_armature_obj in Enumerable(bl_mesh_objs).select(lambda o: o.parent) \
-                                                               .of_type(bpy.types.Object) \
-                                                               .where(lambda o: isinstance(o.data, bpy.types.Armature)) \
-                                                               .distinct():
-                    skeleton_exporter.export(folder_path, bl_armature_obj)
+            self.export(context, folder_path, bl_unsplit_mesh_objs, bl_split_mesh_objs, bl_hair_objs, game)
 
             if bl_local_collection is not None:
                 bl_local_collection.exclude = was_local_collection_excluded
 
             if game == CdcGame.TR2013:
-                self.copy_tr2013_model_dtps(folder_path)
+                if self.properties.export_all_tr2013_lara_duplicates:
+                    self.create_tr2013_lara_duplicates(folder_path)
+
+                self.create_tr2013_model_dtp_duplicates(folder_path)
 
             if not OperatorContext.warnings_logged and not OperatorContext.errors_logged:
                 OperatorContext.log_info("Model successfully exported.")
 
             return { "FINISHED" }
 
+    def export(self, context: bpy.types.Context, folder_path: str, bl_unsplit_mesh_objs: set[bpy.types.Object], bl_split_mesh_objs: set[bpy.types.Object], bl_hair_objs: set[bpy.types.Object], game: CdcGame):
+        model_exporter = self.create_model_exporter(OperatorCommon.scale_factor, game)
+        for model_id_set, bl_mesh_objs_of_model in Enumerable(bl_split_mesh_objs).group_by(lambda o: BlenderNaming.parse_model_name(o.name)).items():
+            bl_armature_obj = bl_mesh_objs_of_model[0].parent
+            if bl_armature_obj is not None and not isinstance(bl_armature_obj.data, bpy.types.Armature):
+                bl_armature_obj = None
+
+            model_exporter.export_model(folder_path, model_id_set, bl_mesh_objs_of_model, bl_armature_obj)
+
+        hair_exporter = self.create_hair_exporter(OperatorCommon.scale_factor, game)
+        for bl_hair_obj in bl_hair_objs:
+            hair_exporter.export_hair(folder_path, bl_hair_obj)
+
+        if self.properties.export_cloth or self.requires_cloth_export(game):
+            for bl_armature_obj in Enumerable(bl_unsplit_mesh_objs).concat(bl_hair_objs) \
+                                                                   .select(lambda o: o.parent) \
+                                                                   .of_type(bpy.types.Object) \
+                                                                   .distinct() \
+                                                                   .where(lambda o: isinstance(o.data, bpy.types.Armature)):
+                cloth_exporter = self.create_cloth_exporter(OperatorCommon.scale_factor, game)
+                cloth_exporter.export_cloths(folder_path, bl_armature_obj, self.get_local_armatures(context))
+
+        if self.properties.export_skeleton or self.requires_skeleton_export(game):
+            skeleton_exporter = self.create_skeleton_exporter(OperatorCommon.scale_factor, game)
+            for bl_armature_obj in Enumerable(bl_split_mesh_objs).concat(bl_hair_objs) \
+                                                                 .select(lambda o: o.parent) \
+                                                                 .of_type(bpy.types.Object) \
+                                                                 .where(lambda o: isinstance(o.data, bpy.types.Armature)) \
+                                                                 .distinct():
+                skeleton_exporter.export(folder_path, bl_armature_obj)
+
     def get_mesh_objects_to_export(self, context: bpy.types.Context, split_global_meshes: bool) -> set[bpy.types.Object]:
+        if context.scene is None:
+            return set()
+
         bl_mesh_objs_by_model_id: dict[int, list[bpy.types.Object]] = {}
         for bl_obj in Enumerable(context.scene.objects).where(lambda o: isinstance(o.data, bpy.types.Mesh)):
             mesh_id_set = BlenderNaming.try_parse_mesh_name(bl_obj.name)
@@ -160,6 +194,23 @@ class ExportModelOperator(ExportOperatorBase[_Properties]):
 
         return bl_mesh_objs_to_export
 
+    def get_hair_objects_to_export(self, context: bpy.types.Context) -> set[bpy.types.Object]:
+        if context.scene is None:
+            return set()
+
+        for bl_obj_set in [context.selected_objects, context.scene.objects]:
+            bl_hair_objs: set[bpy.types.Object] = set()
+            for bl_obj in Enumerable(bl_obj_set).where(lambda o: not self.is_in_local_collection(o)):
+                if isinstance(bl_obj.data, bpy.types.Armature):
+                    bl_hair_objs.update(Enumerable(bl_obj.children).where(self.is_hair_object))
+                elif self.is_hair_object(bl_obj):
+                    bl_hair_objs.add(bl_obj)
+
+            if len(bl_hair_objs) > 0:
+                return bl_hair_objs
+
+        return set()
+
     def is_in_local_collection(self, bl_obj: bpy.types.Object) -> bool:
         return Enumerable(bl_obj.users_collection).any(lambda c: c.name == BlenderNaming.local_collection_name)
 
@@ -167,7 +218,13 @@ class ExportModelOperator(ExportOperatorBase[_Properties]):
         return Enumerable(bl_armature_obj.children).where(
             lambda o: isinstance(o.data, bpy.types.Mesh) and BlenderNaming.try_parse_mesh_name(o.name) is not None)
 
+    def is_hair_object(self, bl_obj: bpy.types.Object) -> bool:
+        return isinstance(bl_obj.data, bpy.types.Curves) and BlenderNaming.try_parse_hair_name(bl_obj.name) is not None
+
     def get_local_armatures(self, context: bpy.types.Context) -> dict[int, bpy.types.Object]:
+        if context.scene is None:
+            return {}
+
         return Enumerable(context.scene.objects).where(lambda o: isinstance(o.data, bpy.types.Armature) and self.is_in_local_collection(o)) \
                                                 .to_dict(lambda o: BlenderNaming.parse_local_armature_name(o.name))
 
@@ -200,7 +257,15 @@ class ExportModelOperator(ExportOperatorBase[_Properties]):
             case _:
                 return ClothExporter(scale_factor, game)
 
-    def copy_tr2013_model_dtps(self, folder_path: str) -> None:
+    def create_hair_exporter(self, scale_factor: float, game: CdcGame) -> HairExporter:
+        return HairExporter(scale_factor, game)
+
+    def create_tr2013_lara_duplicates(self, folder_path: str) -> None:
+        self.create_file_duplicates(folder_path, (16648, 16663, 16716, 16729, 106832, 106837, 106881, 106886), ".tr9dtp")
+        self.create_file_duplicates(folder_path, (16650, 16665, 16718, 16731, 106834, 106839, 106883, 106888), ".tr9dtp")
+        self.create_file_duplicates(folder_path, (16645, 16660, 16713, 16726, 23789, 23807, 106878, 23800), ".tr9modeldata")
+
+    def create_tr2013_model_dtp_duplicates(self, folder_path: str) -> None:
         model_id_groups: list[tuple[int, ...]] = [
             (2906, 2926, 23746),
             (6744, 23897, 50318, 50476, 50497),
@@ -221,11 +286,14 @@ class ExportModelOperator(ExportOperatorBase[_Properties]):
             (23917, 106893, 108819, 108830, 108839)
         ]
         for model_id_group in model_id_groups:
-            model_paths = Enumerable(model_id_group).select(lambda id: os.path.join(folder_path, f"{id}.tr9dtp")).to_list()
-            exported_model_path_idx = Enumerable(model_paths).index_of(os.path.isfile)
-            if exported_model_path_idx < 0:
-                continue
+            self.create_file_duplicates(folder_path, model_id_group, ".tr9dtp")
 
-            for i in range(len(model_paths)):
-                if i != exported_model_path_idx:
-                    shutil.copyfile(model_paths[exported_model_path_idx], model_paths[i])
+    def create_file_duplicates(self, folder_path: str, ids: Sequence[int], extension: str) -> None:
+        file_paths = Enumerable(ids).select(lambda id: os.path.join(folder_path, f"{id}{extension}")).to_list()
+        exported_file_path = Enumerable(file_paths).where(os.path.isfile).order_by_descending(os.path.getmtime).first_or_none()
+        if exported_file_path is None:
+            return
+
+        for file_path in file_paths:
+            if file_path != exported_file_path:
+                shutil.copyfile(exported_file_path, file_path)
