@@ -8,6 +8,8 @@ This list will keep getting updated from time to time.
 
 ### Material parameters with a question mark (?) simply indicates that the functionality of the parameter hasn't been found (either yet, or ever).
 
+----------------------------------------------------------------------------------------
+
 - **Lara boot laces (267149.tr10material in laracroft.drm)**
 
 
