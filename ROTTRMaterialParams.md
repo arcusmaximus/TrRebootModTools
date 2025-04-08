@@ -11,12 +11,12 @@ This list will keep getting updated from time to time.
 
         passRefs[3]
             psConstants[34]
-                psConstants[23] = x.? y.? z.TilingMapRedDiffuseY w.TilingMapRedDiffuseY (detail diffuse map, RED colored part of detail mask ID 10374, diffuse being 233)
+                psConstants[23] = x.? y.? z.TilingMapRedDiffuseY w.TilingMapRedDiffuseY (detail diffuse map, RED colored part of detail mask ID 10374, diffuse being ID 233)
 
         passRefs[7]
             psConstants[25]
-                psConstants[10] = x.? y.? z.TilingMapGreenX w.TilingMapGreenY (detail normal map, GREEN colored part of detail mask ID 10374)
-                psConstants[13] = x.TilingMapRedX y.TilingMapRedY z.? w.? (detail normal map, RED colored part of detail mask ID 10374)
+                psConstants[10] = x.? y.? z.TilingMapGreenX w.TilingMapGreenY (detail normal map, GREEN colored part of detail mask texture ID 10374)
+                psConstants[13] = x.TilingMapRedX y.TilingMapRedY z.? w.? (detail normal map, RED colored part of detail mask texture ID 10374)
         
 ----------------------------------------------------------------------------------------
         
