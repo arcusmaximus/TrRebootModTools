@@ -6,6 +6,8 @@ This list will keep getting updated from time to time.
 
 ## Please note that this is for a pretty "advanced" level of modding. In most of the cases, you won't need to know any of this info.
 
+### Material parameters with a question mark (?) simply indicates that the functionality of the parameter hasn't been found (either yet, or ever).
+
 - **Lara boot laces (267149.tr10material in laracroft.drm)**
 
 
@@ -26,7 +28,7 @@ This list will keep getting updated from time to time.
             psConstants[14]
                 psConstants[1] = x.SpecularR y.SpecularG zSpecularB ?.w 
                 psConstants[3] = x.SpecularR y.SpecularG z.SpecularB ?.w
-                psConstants[9] = ?.x SpecularStrength.y ?.z ?.w
+                psConstants[9] = x.? SpecularStrength.y z.? w.?
                 psConstants[12] = x.Something_About_Specularity ?.y ?.z w.SpecularSpread (lower value, more spread specularity)
         
 ----------------------------------------------------------------------------------------
@@ -35,5 +37,5 @@ This list will keep getting updated from time to time.
         
         passRefs[8]
             psConstants[6]
-                psConstants[1] = ?.x ?.y ?.z w.SpecularStrength
-                psConstants[4] = ?.x ?.y ?.z w.SpecularSpread (lower value, more spread specularity)
+                psConstants[1] = x.? y.? z.? w.SpecularStrength
+                psConstants[4] = x.? y.? z.? w.SpecularSpread (lower value, more spread specularity)
