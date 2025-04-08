@@ -4,9 +4,9 @@ This is a list of Rise of the Tomb Raider materials, with all the known material
 
 This list will keep getting updated from time to time.
 
-## Please note that this is for a pretty "advanced" level of modding. In most of the cases, you won't need to know none of this info.
+## Please note that this is for a pretty "advanced" level of modding. In most of the cases, you won't need to know any of this info.
 
-Lara boot laces (267149.tr10material in laracroft.drm)
+- **Lara boot laces (267149.tr10material in laracroft.drm)**
 
 passRefs[3]
     psConstants[34]
@@ -19,7 +19,7 @@ passRefs[7]
         
 ----------------------------------------------------------------------------------------
         
-Lara Eyebrows (111348.tr10material in laracroft.drm)
+- **Lara Eyebrows (111348.tr10material in laracroft.drm)**
         
 passRefs[8]
     psConstants[14]
@@ -30,7 +30,7 @@ passRefs[8]
         
 ----------------------------------------------------------------------------------------
 
-Lara Tearline (2591.tr10material in laracroft.drm)
+- **Lara Tearline (2591.tr10material in laracroft.drm)**
         
 passRefs[8]
     psConstants[6]
