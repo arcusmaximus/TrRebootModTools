@@ -4,7 +4,7 @@ This is a list of Rise of the Tomb Raider materials, with all the known material
 
 This list will keep getting updated from time to time.
 
-## Please note that this is for a pretty "advanced" level of modding. In most of the cases, you won't need to know any of this info.
+## Please note that this documentation should only be relevant for an "advanced" level of modding. In most of the cases, you won't need to know all this info.
 
 ### Material parameters with a question mark (?) simply indicates that the functionality of the parameter hasn't been found (either yet, or ever).
 
