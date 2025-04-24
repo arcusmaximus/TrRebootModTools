@@ -30,7 +30,12 @@ class HairPanel(bpy.types.Panel):
 
     @classmethod
     def is_hair_using_curves(cls, bl_obj: bpy.types.Object) -> bool | None:
-        if BlenderNaming.try_parse_hair_name(bl_obj.name) is None:
+        bl_parent_obj = bl_obj.parent
+        if bl_parent_obj is None or not (bl_parent_obj.data is None or isinstance(bl_parent_obj.data, bpy.types.Armature)):
+            return None
+
+        id_set = BlenderNaming.try_parse_hair_strand_group_name(bl_obj.name)
+        if id_set is None:
             return None
 
         if isinstance(bl_obj.data, bpy.types.Curves):

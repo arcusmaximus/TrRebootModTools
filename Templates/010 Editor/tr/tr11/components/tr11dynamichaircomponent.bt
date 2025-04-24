@@ -1,4 +1,4 @@
-#define TR_VERSION 10
+#define TR_VERSION 11
 #include "../../trcommon.bt"
 
 enum <uint> HAIRGROUP
@@ -63,6 +63,14 @@ typedef struct
 
 typedef struct
 {
+    Ref diffuseOpacityTexRef;
+    Ref barbTexRef;
+    float alphaThreshold;
+    float motionScale;
+} HairRenderProfileFeather <optimize=false>;
+
+typedef struct
+{
     Ref nameRef;
     if (CanSeekTo(nameRef))
     {
@@ -82,11 +90,14 @@ typedef struct
     unsigned int hairTexProfile;
     FSkip(4);
     Ref hairDirtTextureRef;
+    byte enableDirt;
     ubyte dirtColorR;
     ubyte dirtColorG;
     ubyte dirtColorB;
-    FSkip(1);
     float dirtStrength;
+    float dirtCoordScale;
+    FSkip(4);
+    HairRenderProfileFeather feather;
     byte defaultSetting;
     FSkip(7);
 } HairRenderProfile <read=name, optimize=false>;

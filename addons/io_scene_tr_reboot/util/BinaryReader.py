@@ -1,10 +1,8 @@
 import ctypes
 from struct import unpack_from
-from typing import Sequence, TypeVar
+from typing import Sequence, TypeVar, cast
 from mathutils import Matrix, Vector
 from io_scene_tr_reboot.util.CStruct import CStruct
-from io_scene_tr_reboot.util.CStructTypeMappings import CVec3, CVec4
-from io_scene_tr_reboot.util.Enumerable import Enumerable
 from io_scene_tr_reboot.util.SlotsBase import SlotsBase
 
 TStruct = TypeVar("TStruct", bound = CStruct)
@@ -116,6 +114,21 @@ class BinaryReader(SlotsBase):
     def read_float_list(self, count: int) -> Sequence[float]:
         return self.read_bytes(count * 4).cast("f")
 
+    def read_vec2d(self) -> Vector:
+        result = self.read_vec2d_at(0)
+        self.position += 8
+        return result
+
+    def read_vec2d_at(self, offset: int) -> Vector:
+        return Vector(unpack_from("<2f", self.data, self.position + offset))
+
+    def read_vec2d_list(self, count: int) -> list[Vector]:
+        result = cast(list[Vector], [None] * count)
+        for i in range(count):
+            result[i] = self.read_vec2d()
+
+        return result
+
     def read_vec3d(self) -> Vector:
         result = self.read_vec3d_at(0)
         self.position += 0xC
@@ -125,7 +138,11 @@ class BinaryReader(SlotsBase):
         return Vector(unpack_from("<3f", self.data, self.position + offset))
 
     def read_vec3d_list(self, count: int) -> list[Vector]:
-        return Enumerable(self.read_struct_list(CVec3, count)).select(lambda v: v.to_vector()).to_list()
+        result = cast(list[Vector], [None] * count)
+        for i in range(count):
+            result[i] = self.read_vec3d()
+
+        return result
 
     def read_vec4d(self) -> Vector:
         result = self.read_vec4d_at(0).copy()
@@ -136,7 +153,11 @@ class BinaryReader(SlotsBase):
         return Vector(unpack_from("<4f", self.data, self.position + offset))
 
     def read_vec4d_list(self, count: int) -> list[Vector]:
-        return Enumerable(self.read_struct_list(CVec4, count)).select(lambda v: v.to_vector()).to_list()
+        result = cast(list[Vector], [None] * count)
+        for i in range(count):
+            result[i] = self.read_vec4d()
+
+        return result
 
     def read_mat4x4(self) -> Matrix:
         result = self.read_mat4x4_at(0)
@@ -151,6 +172,21 @@ class BinaryReader(SlotsBase):
         matrix = Matrix((col1, col2, col3, col4))
         matrix.transpose()
         return matrix
+
+    def read_mat4x4_list(self, count: int) -> list[Matrix]:
+        result = cast(list[Matrix], [None] * count)
+        for i in range(count):
+            result[i] = self.read_mat4x4()
+
+        return result
+
+    def read_string_at(self, offset: int) -> str:
+        start_pos = self.position + offset
+        end_pos = start_pos
+        while self.data[end_pos] != 0:
+            end_pos += 1
+
+        return self.data[start_pos:end_pos].decode()
 
     def read_struct(self, t: type[TStruct]) -> TStruct:
         result = t.from_buffer_copy(self.data, self.position)

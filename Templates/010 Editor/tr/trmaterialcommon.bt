@@ -43,9 +43,9 @@ typedef struct
     Ref vertexOrDomainShader;
     int flags <format=hex>;
     
-    byte numPsTextures_;
-    byte numPsTextureRanges;
     byte numPsTextures;
+    byte numPsTextureRanges;
+    byte numPsTextures_;
     byte psTextureRangeStartIdx;
     Ref psTexturesRef;
     if (CanSeekTo(psTexturesRef))
@@ -67,9 +67,9 @@ typedef struct
         ReturnFromRef();
     }
     
-    byte numVsTextures_;
-    byte numVsTextureRanges;
     byte numVsTextures;
+    byte numVsTextureRanges;
+    byte numVsTextures_;
     byte vsTextureRangeStartIdx;
     if (TR_VERSION > 9)
     {

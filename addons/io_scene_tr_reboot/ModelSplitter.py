@@ -33,9 +33,6 @@ class ModelSplitter(SlotsBase):
         self.bl_context = bpy.context
 
     def split(self, bl_global_armature_obj: bpy.types.Object) -> list[bpy.types.Object]:
-        if self.bl_context.object:
-            bpy.ops.object.mode_set(mode = "OBJECT")
-
         local_armatures: dict[int, _LocalArmature] = self.get_local_armatures(bl_global_armature_obj)
         local_skeleton_ids_by_global_bone_id = self.get_local_skeleton_ids_by_global_bone_id(local_armatures)
 

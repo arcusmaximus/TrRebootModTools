@@ -62,4 +62,7 @@ class Tr2013Factory(IFactory):
         return Tr2013Collision.deserialize(data)
 
     def create_hair(self, model_id: int | None, hair_data_id: int) -> Hair:
+        if model_id is None:
+            raise Exception()
+
         return Tr2013Hair(model_id, hair_data_id)

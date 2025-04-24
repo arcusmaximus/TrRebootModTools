@@ -1,6 +1,7 @@
 from mathutils import Matrix
 from io_scene_tr_reboot.tr.Cloth import Cloth
 from io_scene_tr_reboot.tr.Enumerations import CdcGame
+from io_scene_tr_reboot.tr.Hair import Hair
 from io_scene_tr_reboot.tr.Material import Material
 from io_scene_tr_reboot.tr.Model import IModel
 from io_scene_tr_reboot.tr.ResourceKey import ResourceKey
@@ -10,6 +11,7 @@ from io_scene_tr_reboot.tr.rise.RiseCollection import RiseCollection
 from io_scene_tr_reboot.tr.rise.RiseCollision import CollisionType
 from io_scene_tr_reboot.tr.shadow.ShadowCloth import ShadowCloth
 from io_scene_tr_reboot.tr.shadow.ShadowCollision import ShadowCollision
+from io_scene_tr_reboot.tr.shadow.ShadowHair import ShadowHair
 from io_scene_tr_reboot.tr.shadow.ShadowMaterial import ShadowMaterial
 from io_scene_tr_reboot.tr.shadow.ShadowModel import ShadowModel
 from io_scene_tr_reboot.tr.shadow.ShadowModelReferences import ShadowModelReferences
@@ -47,3 +49,6 @@ class ShadowCollection(RiseCollection):
 
     def _create_cloth(self, definition_id: int, component_id: int) -> Cloth:
         return ShadowCloth(definition_id, component_id)
+
+    def _create_hair(self, hair_data_id: int) -> Hair:
+        return ShadowHair(hair_data_id)

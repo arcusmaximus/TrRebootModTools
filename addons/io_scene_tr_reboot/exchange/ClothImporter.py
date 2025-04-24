@@ -18,14 +18,7 @@ class ClothImporter(SlotsBase):
         self.bl_context = bpy.context
 
     def import_from_collection(self, tr_collection: Collection, bl_armature_obj: bpy.types.Object) -> list[bpy.types.Object]:
-        if self.bl_context.object is not None:
-            bpy.ops.object.mode_set(mode = "OBJECT")
-
         skeleton_id = BlenderNaming.parse_local_armature_name(bl_armature_obj.name)
-
-        cloth_empty_name = BlenderNaming.make_cloth_empty_name(tr_collection.name)
-        bl_cloth_empty = bpy.data.objects.get(cloth_empty_name) or BlenderHelper.create_object(None, cloth_empty_name)
-        bl_cloth_empty.parent = bl_armature_obj
 
         tr_cloth = tr_collection.get_cloth()
         if tr_cloth is None:
@@ -33,17 +26,23 @@ class ClothImporter(SlotsBase):
             if bl_dummy_strip_obj is None:
                 return []
 
-            bl_dummy_strip_obj.parent = bl_cloth_empty
+            bl_dummy_strip_obj.parent = self.get_or_create_cloth_empty(tr_collection, bl_armature_obj)
             return [bl_dummy_strip_obj]
 
         bl_strip_objs: list[bpy.types.Object] = []
         for tr_cloth_strip in tr_cloth.strips:
             strip_name = BlenderNaming.make_cloth_strip_name(tr_collection.name, skeleton_id, tr_cloth.definition_id, tr_cloth.tune_id, tr_cloth_strip.id)
             bl_strip_obj = self.import_cloth_strip(tr_cloth_strip, strip_name, bl_armature_obj)
-            bl_strip_obj.parent = bl_cloth_empty
+            bl_strip_obj.parent = self.get_or_create_cloth_empty(tr_collection, bl_armature_obj)
             bl_strip_objs.append(bl_strip_obj)
 
         return bl_strip_objs
+
+    def get_or_create_cloth_empty(self, tr_collection: Collection, bl_armature_obj: bpy.types.Object) -> bpy.types.Object:
+        cloth_empty_name = BlenderNaming.make_cloth_empty_name(tr_collection.name)
+        bl_cloth_empty = bpy.data.objects.get(cloth_empty_name) or BlenderHelper.create_object(None, cloth_empty_name)
+        bl_cloth_empty.parent = bl_armature_obj
+        return bl_cloth_empty
 
     def import_cloth_strip(self, tr_cloth_strip: ClothStrip, name: str, bl_armature_obj: bpy.types.Object) -> bpy.types.Object:
         vertex_positions = Enumerable(tr_cloth_strip.masses).select(lambda m: m.position * self.scale_factor).to_list()

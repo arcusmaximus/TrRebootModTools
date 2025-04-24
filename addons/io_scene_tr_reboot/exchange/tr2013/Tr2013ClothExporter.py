@@ -70,7 +70,7 @@ class Tr2013ClothExporter(ClothExporter):
         if isinstance(bl_obj.data, bpy.types.Mesh):
             return BlenderNaming.parse_model_name(bl_obj.name).model_data_id
         elif isinstance(bl_obj.data, bpy.types.Curves):
-            return BlenderNaming.parse_hair_name(bl_obj.name).hair_data_id
+            return BlenderNaming.parse_hair_strand_group_name(bl_obj.name).hair_data_id
         else:
             return None
 

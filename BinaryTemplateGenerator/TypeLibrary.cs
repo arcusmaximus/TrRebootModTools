@@ -28,8 +28,11 @@ namespace TrRebootTools.BinaryTemplateGenerator
             AddPrimitive("unsigned int", 4);
             AddPrimitive("unsigned __int32", 4);
 
-            AddPrimitive("__int64", 4);
-            AddPrimitive("unsigned __int64", 4);
+            AddPrimitive("__int64", 8);
+            AddPrimitive("unsigned __int64", 8);
+
+            AddPrimitive("__int128", 16);
+            AddPrimitive("unsigned __int128", 16);
 
             AddPrimitive("float", 4);
             
@@ -51,10 +54,7 @@ namespace TrRebootTools.BinaryTemplateGenerator
 
         public void CalculateAlignmentsAndSizes(string typeName)
         {
-            if (!Types.TryGetValue(typeName, out CType type))
-                throw new ArgumentException("Specified type does not exist.");
-
-            CalculateAlignmentsAndSizes(type);
+            CalculateAlignmentsAndSizes(GetCType(typeName));
         }
 
         public void CalculateAlignmentsAndSizes(CType type)
@@ -74,9 +74,9 @@ namespace TrRebootTools.BinaryTemplateGenerator
                 if (!visitedTypes.Add(type))
                     return;
 
-                foreach (CType baseType in type.BaseTypes.Select(n => Types[n]))
+                foreach (CType baseType in type.BaseTypes.Select(GetCType))
                 {
-                    CalculateAlignmentsAndSizes(baseType);
+                    CalculateAlignmentsAndSizes(baseType, visitedTypes);
                     if (alignment == 0)
                         alignment = baseType.Alignment;
 
@@ -94,14 +94,14 @@ namespace TrRebootTools.BinaryTemplateGenerator
                 case CField field:
                     if (field.Type.EndsWith("*"))
                     {
-                        CType fieldType = Types[field.Type.TrimEnd('*').Trim()];
+                        CType fieldType = TryGetCType(field.Type.TrimEnd('*').Trim()) ?? GetCType("void");
                         CalculateAlignmentsAndSizes(fieldType, visitedTypes);
                         field.Alignment = _pointerSize;
                         field.Size = _pointerSize * field.TotalItemCount;
                     }
                     else
                     {
-                        CType fieldType = Types[field.Type];
+                        CType fieldType = GetCType(field.Type);
                         CalculateAlignmentsAndSizes(fieldType, visitedTypes);
                         field.Alignment = fieldType.Alignment;
                         field.Size = fieldType.Size * field.TotalItemCount;
@@ -134,6 +134,21 @@ namespace TrRebootTools.BinaryTemplateGenerator
                     break;
                 }
             }
+        }
+
+        private CType GetCType(string name)
+        {
+            CType type = TryGetCType(name);
+            if (type == null)
+                throw new Exception($"Type {name} not found in header file.");
+
+            return type;
+        }
+
+        private CType TryGetCType(string name)
+        {
+            Types.TryGetValue(name, out CType type);
+            return type;
         }
 
         private static int SeekForward(int offset, int alignment, int size)

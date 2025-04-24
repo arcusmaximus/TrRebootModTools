@@ -10,6 +10,7 @@ This toolset allows modding the games from the Tomb Raider Reboot trilogy. The f
 | Textures                                   | ✓                  | ✓                      | ✓                         |
 | Text (outfit descriptions, subtitles etc.) | ✓                  | ✓                      | ✓                         |
 | Cloth physics                              | ✓                  | ✓                       | ✓                         |
+| Hair                                       | ✓                  | ✓                       | ✓                        |
 | Animations                                 |                    |                         | ✓                         |
 | Sound                                      |                    |                         | ✓                         |
 
@@ -325,21 +326,13 @@ This toolset, however, exports model files from scratch, which gives you a lot m
 
 ### Head modding
 
-If you're looking to replace Lara's head in SOTTR by a custom one, you'll run into two problems: blend shapes and PureHair.
+In ROTTR and SOTTR, the head mesh has over a hundred blend shapes for facial expressions. Replicating all these on a
+custom mesh is quite the undertaking. In SOTTR, this is fortunately not necessary: the head also supports bone-based facial
+animation, meaning all you really have to do is transfer the vertex weights to your custom head. The full-detail standard head
+isn't weighted for facial bones, but the LOD meshes are, which is where the "Import LODs" option comes in handy.
 
-The head mesh has over a hundred blend shapes for facial expressions, used in cutscenes and the Photo Mode. Replicating all these
-on a custom mesh would be quite the undertaking. Fortunately, it's not necessary: TR also supports bone-based facial animation,
-meaning all you really have to do is transfer the weights. The full-detail head mesh isn't weighted for facial bones,
-but the LOD meshes are, which is where the "Import LODs" option comes in handy.
-
-Lara's hair, in turn, is stored in a [PureHair](https://en.wikipedia.org/wiki/TressFX) file that's referenced by the object metadata.
-You can't remove it through mesh editing — instead, you need to use the binary templates. This is done as follows:
-
-- Read the object ID from the Blender mesh name (first number).
-- Open the .tr11dtp file corresponding to this number in a hex editor and apply the "tr11object" binary template.
-- Find the `simpleComponents` entry, and within it, the `DYNAMICHAIR` entry.
-- Change the `type` field of the hair entry to `_NONE`.
-- Save the file and include it in your mod.
+TR2013 doesn't support blendshapes at all, so there, too, you can simply transfer the weights. In ROTTR, however,
+this is sadly not possible.
 
 
 ### Draw groups
@@ -368,16 +361,15 @@ all other modifiers so they don't affect the export result.
 Apart from models, the Blender addon also supports importing and exporting SOTTR animations (.tr11anim files).
 You can animate bone positions/rotations/scales and blendshape values.
 
-To find an animation to modify, you can click the Play button in the Extractor to launch the game and log animations
-as they're played (Steam version only). You can also use a binary template to browse the .tr11animlib files in
-e.g. tr11_lara.drm — these files map animation names to IDs, where the IDs correspond to the names of the .tr11anim files.
-Finally, you can check the appendix at the end of this page to find the IDs of the photo mode poses.
+To find an animation to modify, you can use a binary template to browse the .tr11animlib files in e.g. tr11_lara.drm —
+these files map animation names to IDs, where the IDs correspond to the names of the .tr11anim files.
+You can also check the appendix at the end of this page to find the IDs of the photo mode poses.
 
 Once you've found an animation you'd like to edit or replace, you'll want to do the following:
 
 - Import tr11_lara.tr11objectref from tr11_lara.drm and delete the dummy mesh, keeping just the skeleton.
 - Import the head, torso, and leg models of some outfit.
-- (In Blender 4.0) Hide the bone collections "Cloth bones" and "Twist bones" to reduce clutter.
+- Hide the bone collections "Cloth bones" and "Twist bones" to reduce clutter.
 - Import the .tr11anim file (File → Import → SOTTR animation).
 - Edit the animation. While imported animations have a keyframe on every frame, this is not required for
   custom animations.
@@ -502,7 +494,8 @@ making sure to check "Export skeleton" and "Export cloth" in the file chooser.
 TR2013 is a bit more annoying to get custom cloth physics into. Rather than putting the clothstrips
 and bones in the outfit itself like with the other games, they need to be put in laracroft.drm:
 
-- Import both laracroft.drm and the outfit you want to mod into the same Blender scene.
+- Import both laracroft.drm and the outfit you want to mod into the same Blender scene. (The miniature skeleton
+  in laracroft.drm is not needed and can be deleted again.)
 - Set up your custom cloth strip meshes under the laracroft skeleton and regenerate the physics bones as usual.
 - Update the outfit skeleton to match the laracroft skeleton. You can do this by deleting all the bones
   in the outfit skeleton (make sure all the bone collections are visible first), duplicating the laracroft
@@ -511,6 +504,68 @@ and bones in the outfit itself like with the other games, they need to be put in
 - Update the outfit mesh, adding vertex weights for the physics bones in the outfit skeleton.
 - When you're done, export both the laracroft model (for the skeleton and cloth strips) and the outfit model
   (for the mesh).
+
+
+## Hair modding
+
+The addon supports importing and exporting of [TressFX/PureHair](https://en.wikipedia.org/wiki/TressFX) models.
+Simply import one of the following to get started:
+
+| TR2013               | ROTTR             | SOTTR              |
+| -------------------- | ----------------- | ------------------ |
+| lara_hairsplines.drm | lara_hair_all.drm | tr11_lara_hair.drm |
+
+You can set the viewport shading mode to Material Preview to see where hair strands start (black) and where they
+end (white).
+
+### TR2013
+
+For TR2013, the hair is very straightforward: each hair part (ponytail, bangs etc.) gets imported as a single
+Blender "hair curves" object. Each part has vertex weights for the same single bone, indicating how strongly each
+vertex is "stuck" to the scalp. You can edit these weights by clicking *Start Weight Painting* in the *Tomb Raider*
+tab in Blender's Sidebar.
+
+You can add or remove parts as you see fit. The export will include the results of any modifiers. Also, while
+the game expects each hair strand to have exactly 16 vertices, you don't need to worry about this as the addon
+(temporarily) resamples all the strands during export.
+
+The hair color is determined by the texture 7827.dds in generalbank.drm.
+
+### ROTTR/SOTTR
+
+The latter two games use a more involved system with not one, but two sets of strands for each hair part.
+The first is a small number of "guide" strands, which are physics-simulated but invisible. The second is
+a large number of "render" strands, which are visible but simply mirror the shape of nearby guide strands
+(rather than being simulated themselves).
+
+The hair parts have their color and physics settings defined in a separate file, so you should stick with
+the existing names and not create additional parts. You can, however, delete any parts you don't need.
+
+The guide strands have vertex weights linking them to the skeleton; these can again be edited by clicking
+*Start Weight Painting* in the *Tomb Raider* Sidebar tab. Unlike TR2013, where each vertex has only one
+weight for one fixed bone, ROTTR and SOTTR support up to four weights for arbitrary bones. This means you can
+theoretically attach hair to other places than Lara's head.
+
+The render strands have vertex weights linking them to guide strands, but these are not imported
+into Blender and do not need to be manually configured before exporting. The addon calculates them
+automatically.
+
+You can change the color of each hair part as follows:
+
+- Extract an outfit (for ROTTR) or a head model (for SOTTR).
+- Open the .trXobjectref file in a hex editor and apply the "trXobjectref" template. You'll see it
+  references a .trXdtp file.
+- Open this .trXdtp file and apply the "trXobject" template.
+- Find the `simpleComponents` entry, and within it, the `DYNAMICHAIR` entry.
+- Expand the entry to find the .trXdtp file it references.
+- Open the above .trXdtp file and apply the "trXdynamichaircomponent" template.
+- Find the `groupConstants` array and, within it, the `hairStrandColors` field. This field defines two "root"
+  colors and two "tip" colors. The game renders each hair strand by first picking a random root color and a random
+  tip color interpolated between these defined colors, then paints the strand as a gradient from root to tip.
+- Save the modified .trXdtp file and include it in your mod.
+
+You can also remove the PureHair entirely by changing the `type` field of the `DYNAMICHAIR` entry to `_NONE`.
+This then lets you replace it by regular polygon-based hair on the head mesh.
 
 ## External resource references
 

@@ -3,11 +3,11 @@
 //
 //      File: tr11hairdata.bt
 //   Authors: arc_
-//   Purpose: Parse SOTTR PureHair files (tr11_lara_hair.drm -> 766728.tr11dtp)
-//  Category: SOTTR
+//   Purpose: Parse ROTTR PureHair files (lara_hair_all.drm -> 266767.tr10dtp)
+//  Category: ROTTR
 //------------------------------------------------
 
-#define TR_VERSION 11
+#define TR_VERSION 10
 
 #include "../trcommon.bt"
 #include "../trpurehair.bt"

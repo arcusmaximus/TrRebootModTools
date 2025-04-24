@@ -1,6 +1,7 @@
 from typing import TypeVar, cast
 from mathutils import Vector
 from io_scene_tr_reboot.tr.Enumerations import ResourceType
+from io_scene_tr_reboot.tr.Hashes import Hashes
 from io_scene_tr_reboot.tr.MeshPart import IMeshPart
 from io_scene_tr_reboot.tr.Model import Model
 from io_scene_tr_reboot.tr.IModelDataHeader import IModelDataHeader
@@ -48,7 +49,7 @@ class Tr2013ModelBase(Model[TModelReferences, TModelDataHeader, TMesh, TMeshPart
         for _ in range(self.header.num_mesh_parts):
             mesh = self.meshes[mesh_idx]
             mesh_part = self.read_mesh_part(reader)
-            mesh_part.indices = indices[mesh_part.first_index_idx:mesh_part.first_index_idx + mesh_part.num_triangles * 3]
+            mesh_part.indices = indices[mesh_part.first_index_idx:mesh_part.first_index_idx + mesh_part.num_primitives * (2 if mesh_part.is_hair else 3)]
 
             mesh.parts.append(mesh_part)
             if len(mesh.parts) == mesh.mesh_header.num_parts:
@@ -92,7 +93,7 @@ class Tr2013ModelBase(Model[TModelReferences, TModelDataHeader, TMesh, TMeshPart
         self.header.num_mesh_parts = Enumerable(self.meshes).sum(lambda m: len(m.parts))
         self.header.num_indexes = Enumerable(self.meshes).select_many(lambda m: m.parts).sum(lambda p: len(p.indices))
 
-        if self.header.num_bones > 0:
+        if Enumerable(self.meshes).any(lambda m: m.vertex_format.has_attribute(Hashes.skin_indices)):
             self.header.model_type = 1
 
         if self.header.num_lod_levels != 0 or \
@@ -128,7 +129,7 @@ class Tr2013ModelBase(Model[TModelReferences, TModelDataHeader, TMesh, TMeshPart
         for mesh in self.meshes:
             for mesh_part in mesh.parts:
                 mesh_part.first_index_idx = cumulative_index_count
-                mesh_part.num_triangles = len(mesh_part.indices) // (2 if mesh_part.is_hair else 3)
+                mesh_part.num_primitives = len(mesh_part.indices) // (2 if mesh_part.is_hair else 3)
                 writer.write_uint16_list(mesh_part.indices)
 
                 cumulative_index_count += len(mesh_part.indices)

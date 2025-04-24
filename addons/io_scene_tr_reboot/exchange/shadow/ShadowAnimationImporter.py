@@ -42,9 +42,6 @@ class ShadowAnimationImporter(SlotsBase):
         self.bl_context.scene.render.fps = 2500
         self.bl_context.scene.render.fps_base = animation.ms_per_frame
 
-        if self.bl_context.object is not None:
-            bpy.ops.object.mode_set(mode = "OBJECT")
-
         self.import_bone_animation(bl_armature_obj, animation)
         for bl_mesh_obj in Enumerable(bl_armature_obj.children).where(lambda o: isinstance(o.data, bpy.types.Mesh)):
             self.import_blend_shape_animation(bl_mesh_obj, animation)

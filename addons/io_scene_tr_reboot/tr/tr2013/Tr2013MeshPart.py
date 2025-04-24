@@ -7,7 +7,7 @@ from io_scene_tr_reboot.util.CStruct import CArray, CFlag, CInt, CStruct32
 class Tr2013MeshPart(CStruct32, IMeshPart if TYPE_CHECKING else object):
     center: Vector
     first_index_idx: CInt
-    num_triangles: CInt
+    num_primitives: CInt
     num_vertices: CInt
     flags: CInt
     draw_group_id: CInt

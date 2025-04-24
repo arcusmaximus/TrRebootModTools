@@ -19,9 +19,6 @@ class TemporaryModelMerger(SkeletonMerger):
         self.bl_local_collection = bl_local_collection
 
     def add(self, bl_global_armature_obj: bpy.types.Object | None, bl_local_armature_obj: bpy.types.Object) -> bpy.types.Object:
-        if bpy.context.object is not None:
-            bpy.ops.object.mode_set(mode = "OBJECT")
-
         bl_global_armature_obj, bone_renames = self.add_local_armature_to_global(bl_global_armature_obj, bl_local_armature_obj)
         self.apply_bone_renames_to_vertex_groups(bl_local_armature_obj, bone_renames)
         self.apply_bone_renames_to_cloth_strips(bl_local_armature_obj, bone_renames)

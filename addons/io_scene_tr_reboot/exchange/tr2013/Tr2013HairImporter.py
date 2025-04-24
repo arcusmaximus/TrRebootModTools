@@ -7,10 +7,11 @@ class Tr2013HairImporter(HairImporter):
     def get_collection_files_to_store(self, tr_collection: Collection) -> dict[int, bytes]:
         files: dict[int, bytes] = {}
 
-        tr_hair = tr_collection.get_hair()
-        if tr_hair is not None and tr_hair.model_id is not None:
-            model_reader = tr_collection.get_resource_reader(ResourceKey(ResourceType.DTP, tr_hair.model_id), True)
-            if model_reader is not None:
-                files[tr_hair.model_id] = model_reader.data
+        for hair_resource_set in tr_collection.get_hair_resource_sets():
+            tr_hair = tr_collection.get_hair(hair_resource_set.hair_resource)
+            if tr_hair is not None and tr_hair.model_id is not None:
+                model_reader = tr_collection.get_resource_reader(ResourceKey(ResourceType.DTP, tr_hair.model_id), True)
+                if model_reader is not None:
+                    files[tr_hair.model_id] = model_reader.data
 
         return files

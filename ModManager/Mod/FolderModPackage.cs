@@ -389,6 +389,8 @@ namespace TrRebootTools.ModManager.Mod
             uint originalFormat = GetOriginalTextureFormat(resourceKey, archiveSet, resourceUsageCache);
             if (CdcTexture.IsSrgbFormat(originalFormat))
                 texture.Header.Format = CdcTexture.MapRegularFormatToSrgb(texture.Header.Format);
+            else
+                texture.Header.Format = CdcTexture.MapSrgbFormatToRegular(texture.Header.Format);
 
             Stream textureStream = new MemoryStream();
             texture.Write(textureStream);

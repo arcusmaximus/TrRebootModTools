@@ -2,6 +2,7 @@ from typing import NamedTuple, cast
 import bpy
 import os
 import re
+from io_scene_tr_reboot.BlenderHelper import BlenderHelper
 from io_scene_tr_reboot.BlenderNaming import BlenderNaming
 from io_scene_tr_reboot.tr.Collection import Collection
 from io_scene_tr_reboot.tr.Material import Material
@@ -26,7 +27,7 @@ class MaterialImporter(SlotsBase):
         if tr_material is None:
             return None
 
-        bl_material = self.__create_empty_material(material_name)
+        bl_material = BlenderHelper.create_empty_material(material_name)
         if bl_material.node_tree is None:
             raise Exception()
 
@@ -46,10 +47,22 @@ class MaterialImporter(SlotsBase):
 
         bl_normal_node: bpy.types.Node | None = None
         if bl_texture_nodes.normal is not None:
+            bl_separate_node = bl_material.node_tree.nodes.new("ShaderNodeSeparateColor")
+            bl_separate_node.location = (300, -250)
+            bl_separate_node.hide = True
+            bl_material.node_tree.links.new(bl_texture_nodes.normal.outputs[0], bl_separate_node.inputs[0])
+
+            bl_combine_node = bl_material.node_tree.nodes.new("ShaderNodeCombineColor")
+            bl_combine_node.location = (300, -300)
+            bl_combine_node.hide = True
+            bl_material.node_tree.links.new(bl_separate_node.outputs[0], bl_combine_node.inputs[0])
+            bl_material.node_tree.links.new(bl_separate_node.outputs[1], bl_combine_node.inputs[1])
+            cast(bpy.types.NodeSocketFloat, bl_combine_node.inputs[2]).default_value = 1.0
+
             bl_normal_node = bl_material.node_tree.nodes.new("ShaderNodeNormalMap")
-            bl_normal_node.location = (300, -250)
+            bl_normal_node.location = (300, -350)
             cast(bpy.types.NodeSocketFloat, bl_normal_node.inputs[0]).default_value = 0.5
-            bl_material.node_tree.links.new(bl_texture_nodes.normal.outputs[0], bl_normal_node.inputs[1])
+            bl_material.node_tree.links.new(bl_combine_node.outputs[0], bl_normal_node.inputs[1])
             bl_material.node_tree.links.new(bl_normal_node.outputs[0], bl_diffuse_shader_node.inputs[2])
 
         bl_mix_node = bl_material.node_tree.nodes.new("ShaderNodeMixShader")
@@ -62,19 +75,6 @@ class MaterialImporter(SlotsBase):
         bl_output_node = bl_material.node_tree.nodes.new("ShaderNodeOutputMaterial")
         bl_output_node.location = (700, 0)
         bl_material.node_tree.links.new(bl_mix_node.outputs[0], bl_output_node.inputs[0])
-
-        return bl_material
-
-    def __create_empty_material(self, name: str) -> bpy.types.Material:
-        bl_material = bpy.data.materials.new(name)
-        bl_material.use_nodes = True
-        bl_material.show_transparent_back = False
-
-        if bl_material.node_tree is None:
-            raise Exception()
-
-        for node in bl_material.node_tree.nodes:
-            bl_material.node_tree.nodes.remove(node)
 
         return bl_material
 

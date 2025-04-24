@@ -120,6 +120,9 @@ class BlenderHelper:
     @staticmethod
     def get_bone_group(bl_armature_obj: bpy.types.Object, bl_bone: bpy.types.Bone) -> BlenderBoneGroup | None:
         if BlenderHelper.is_blender_40:
+            if bl_bone.color is None:
+                return None
+
             bl_armature = cast(bpy.types.Armature, bl_armature_obj.data)
             for bl_bone_collection in bl_armature.collections:
                 if bl_bone_collection.bones.get(bl_bone.name):
@@ -157,7 +160,8 @@ class BlenderHelper:
                 bl_bone_collection = bl_armature.collections.get(group_name) or bl_armature.collections.new(group_name)
                 bl_bone_collection.assign(bl_bone)
 
-            bl_bone.color.palette = cast(Any, palette or "DEFAULT")
+            if bl_bone.color is not None:
+                bl_bone.color.palette = cast(Any, palette or "DEFAULT")
         elif bl_armature_obj.pose is not None:
             bl_bone_group: Any = None
             if group_name is not None:
@@ -223,6 +227,18 @@ class BlenderHelper:
             else:
                 bl_layer_collection = cast(bmesh.types.BMLayerCollection[float | None], getattr(bl_mesh.edges.layers, "bevel_weight"))
                 bl_mesh.edges[edge_idx][bl_layer_collection.active] = weight
+
+    @staticmethod
+    def create_empty_material(name: str) -> bpy.types.Material:
+        bl_material = bpy.data.materials.new(name)
+        bl_material.use_nodes = True
+        bl_material.show_transparent_back = False
+
+        if bl_material.node_tree is not None:
+            for node in bl_material.node_tree.nodes:
+                bl_material.node_tree.nodes.remove(node)
+
+        return bl_material
 
     @staticmethod
     def view_all() -> None:

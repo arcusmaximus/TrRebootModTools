@@ -34,9 +34,6 @@ class ModelImporter(SlotsBase):
         self.split_into_parts = split_into_parts
 
     def import_from_collection(self, tr_collection: Collection, bl_armature_objs: dict[ResourceKey, bpy.types.Object]) -> list[bpy.types.Object]:
-        if bpy.context.object is not None:
-            bpy.ops.object.mode_set(mode = "OBJECT")
-
         self.import_materials(tr_collection)
         bl_objs_by_model = self.import_model_instances(tr_collection, bl_armature_objs)
 
@@ -78,9 +75,6 @@ class ModelImporter(SlotsBase):
         return bl_objs_by_model
 
     def import_model(self, tr_collection: Collection, tr_model: IModel, tr_skeleton: ISkeleton | None) -> list[bpy.types.Object]:
-        if bpy.context.object is not None:
-            bpy.ops.object.mode_set(mode = "OBJECT")
-
         bpy.ops.object.select_all(action = "DESELECT")
 
         bl_mesh_objs: list[bpy.types.Object] = []
@@ -166,9 +160,10 @@ class ModelImporter(SlotsBase):
 
         with BlenderHelper.enter_edit_mode():
             bpy.ops.mesh.select_all(action = "SELECT")
+            bpy.ops.mesh.delete_loose()
+            bpy.ops.mesh.select_all(action = "SELECT")
             bpy.ops.mesh.remove_doubles()
             bpy.ops.mesh.normals_make_consistent()
-            bpy.ops.mesh.delete_loose()
             bpy.ops.mesh.select_all(action = "DESELECT")
 
     def remove_loose_vertices(self) -> None:
@@ -267,8 +262,7 @@ class ModelImporter(SlotsBase):
                 for j in range(has_8_weights_per_vertex and 2 or 1):
                     mesh_bone_index = (int(bone_indices[i]) >> (j * bone_index_shift)) & bone_index_mask
                     weight = ((int(weights[i]) >> (j * 8)) & 0xFF) / 255.0 if weights is not None else 1.0
-                    if weight > 0:
-                        vertex_groups[mesh_bone_index][vertex_idx] = weight
+                    vertex_groups[mesh_bone_index][vertex_idx] += weight
 
         for mesh_bone_index, weights in enumerate(vertex_groups):
             local_bone_id = tr_mesh.bone_indices[mesh_bone_index]

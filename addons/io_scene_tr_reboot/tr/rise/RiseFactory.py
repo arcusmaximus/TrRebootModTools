@@ -16,6 +16,7 @@ from io_scene_tr_reboot.tr.rise.RiseBone import RiseBone
 from io_scene_tr_reboot.tr.rise.RiseCloth import RiseCloth
 from io_scene_tr_reboot.tr.rise.RiseCollection import RiseCollection
 from io_scene_tr_reboot.tr.rise.RiseCollision import RiseCollision
+from io_scene_tr_reboot.tr.rise.RiseHair import RiseHair
 from io_scene_tr_reboot.tr.rise.RiseMesh import RiseMesh
 from io_scene_tr_reboot.tr.rise.RiseMeshPart import RiseMeshPart
 from io_scene_tr_reboot.tr.rise.RiseModel import RiseModel
@@ -63,4 +64,4 @@ class RiseFactory(IFactory):
         return RiseCollision.deserialize(data)
 
     def create_hair(self, model_id: int | None, hair_data_id: int) -> Hair:
-        raise NotImplementedError()
+        return RiseHair(hair_data_id)

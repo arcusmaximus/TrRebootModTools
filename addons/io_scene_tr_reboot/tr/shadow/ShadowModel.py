@@ -52,7 +52,7 @@ class ShadowModel(Model[ShadowModelReferences, ShadowModelDataHeader, ShadowMesh
         for _ in range(self.header.num_mesh_parts):
             mesh: ShadowMesh = self.meshes[mesh_idx]
             mesh_part: ShadowMeshPart = reader.read_struct(ShadowMeshPart)
-            mesh_part.indices = indices[mesh_part.first_index_idx:mesh_part.first_index_idx + mesh_part.num_triangles * 3]
+            mesh_part.indices = indices[mesh_part.first_index_idx:mesh_part.first_index_idx + mesh_part.num_primitives * 3]
 
             mesh.parts.append(mesh_part)
             if len(mesh.parts) == mesh.mesh_header.num_parts:
@@ -95,7 +95,7 @@ class ShadowModel(Model[ShadowModelReferences, ShadowModelDataHeader, ShadowMesh
         for mesh in self.meshes:
             for mesh_part in mesh.parts:
                 mesh_part.first_index_idx = cumulative_index_count
-                mesh_part.num_triangles = len(mesh_part.indices) // 3
+                mesh_part.num_primitives = len(mesh_part.indices) // 3
                 writer.write_uint16_list(mesh_part.indices)
 
                 cumulative_index_count += len(mesh_part.indices)

@@ -32,12 +32,16 @@ class HairWeightPaintingOperator(BlenderOperatorBase[HairWeightPaintingPropertie
     bl_label = "Enter/Leave Hair Weight Painting"
     bl_description = "Convert a hair curve object to/from a Grease Pencil object to allow weight painting"
 
+    @staticmethod
+    def static_execute(enable: bool) -> None:
+        bpy.ops.tr_reboot.hair_weight_paint(enable = enable)      # type: ignore
+
     @classmethod
     def poll(cls, context: bpy.types.Context | None) -> bool:
         if context is None or context.active_object is None:
             return False
 
-        return BlenderNaming.try_parse_hair_name(context.active_object.name) is not None
+        return BlenderNaming.try_parse_hair_strand_group_name(context.active_object.name) is not None
 
     def execute(self, context: bpy.types.Context | None) -> set[OperatorReturnItems]:
         if context is None:
@@ -62,7 +66,7 @@ class HairWeightPaintingOperator(BlenderOperatorBase[HairWeightPaintingPropertie
 
     def convert_curves_to_grease_pencil(self, bl_obj: bpy.types.Object) -> None:
         bl_curves = cast(bpy.types.Curves, bl_obj.data)
-        material_id = self.get_curves_material_id(bl_obj)
+        material_name = self.get_curves_material_name(bl_obj)
 
         vertex_group_names: list[str] = []
         for bl_attr in bl_curves.attributes:
@@ -78,12 +82,12 @@ class HairWeightPaintingOperator(BlenderOperatorBase[HairWeightPaintingPropertie
         bl_grease = cast(bpy.types.GreasePencilv3, bl_obj.data)
 
         bl_grease.stroke_depth_order = "3D"
-        self.set_grease_pencil_material_id(bl_obj, material_id)
+        self.set_grease_pencil_material_name(bl_obj, material_name)
         for vertex_group_name in vertex_group_names:
             self.convert_grease_pencil_attribute_to_vertex_group(bl_obj, vertex_group_name)
 
     def convert_grease_pencil_to_curves(self, bl_obj: bpy.types.Object) -> None:
-        material_id = self.get_grease_pencil_material_id(bl_obj)
+        material_name = self.get_grease_pencil_material_name(bl_obj)
 
         vertex_group_names = Enumerable(bl_obj.vertex_groups).select(lambda g: g.name).to_list()
         for vertex_group_name in vertex_group_names:
@@ -96,7 +100,7 @@ class HairWeightPaintingOperator(BlenderOperatorBase[HairWeightPaintingPropertie
             return
 
         bl_obj = bpy.context.active_object
-        self.set_curves_material_id(bl_obj, material_id)
+        self.set_curves_material_name(bl_obj, material_name)
 
     def convert_grease_pencil_attribute_to_vertex_group(self, bl_obj: bpy.types.Object, attr_name: str) -> None:
         bl_grease = cast(bpy.types.GreasePencilv3, bl_obj.data)
@@ -132,8 +136,10 @@ class HairWeightPaintingOperator(BlenderOperatorBase[HairWeightPaintingPropertie
         bl_obj.vertex_groups.remove(bl_obj.vertex_groups[temp_vertex_group_name])
 
     def copy_attribute_using_geometry_nodes(self, bl_obj: bpy.types.Object, from_attr_name: str, to_attr_name: str) -> None:
-        bl_node_group = cast(bpy.types.GeometryNodeTree, bpy.data.node_groups.new("__copy_attribute", "GeometryNodeTree"))   # type: ignore
+        bl_node_group = cast(bpy.types.GeometryNodeTree, bpy.data.node_groups.new("__copy_attribute", "GeometryNodeTree"))
         bl_node_group.is_modifier = True
+        if bl_node_group.interface is None:
+            raise Exception()
 
         bl_node_group.interface.new_socket("Geometry", in_out = "INPUT",  socket_type = "NodeSocketGeometry")
         bl_node_group.interface.new_socket("Geometry", in_out = "OUTPUT", socket_type = "NodeSocketGeometry")
@@ -164,7 +170,7 @@ class HairWeightPaintingOperator(BlenderOperatorBase[HairWeightPaintingPropertie
 
         bpy.data.node_groups.remove(bl_node_group)
 
-    def get_curves_material_id(self, bl_obj: bpy.types.Object) -> int | None:
+    def get_curves_material_name(self, bl_obj: bpy.types.Object) -> str | None:
         bl_curves = cast(bpy.types.Curves, bl_obj.data)
         if len(bl_curves.materials) == 0:
             return None
@@ -173,20 +179,20 @@ class HairWeightPaintingOperator(BlenderOperatorBase[HairWeightPaintingPropertie
         if bl_material is None:
             return None
 
-        return BlenderNaming.parse_material_name(bl_material.name)
+        return bl_material.name
 
-    def set_curves_material_id(self, bl_obj: bpy.types.Object, material_id: int | None) -> None:
+    def set_curves_material_name(self, bl_obj: bpy.types.Object, material_name: str | None) -> None:
         bl_curves = cast(bpy.types.Curves, bl_obj.data)
-        if material_id is None:
+        if material_name is None:
             bl_curves.materials.clear()
             return
 
         if len(bl_curves.materials) == 0:
             bl_curves.materials.append(None)
 
-        bl_curves.materials[0] = Enumerable(bpy.data.materials).first_or_none(lambda m: not m.is_grease_pencil and BlenderNaming.try_parse_material_name(m.name) == material_id)
+        bl_curves.materials[0] = bpy.data.materials.get(material_name)
 
-    def get_grease_pencil_material_id(self, bl_obj: bpy.types.Object) -> int | None:
+    def get_grease_pencil_material_name(self, bl_obj: bpy.types.Object) -> str | None:
         bl_grease = cast(bpy.types.GreasePencilv3, bl_obj.data)
         if len(bl_grease.materials) == 0:
             return None
@@ -195,19 +201,21 @@ class HairWeightPaintingOperator(BlenderOperatorBase[HairWeightPaintingPropertie
         if bl_material is None:
             return None
 
-        return BlenderNaming.parse_grease_pencil_material_name(bl_material.name)
+        return BlenderNaming.try_parse_grease_pencil_material_name(bl_material.name)
 
-    def set_grease_pencil_material_id(self, bl_obj: bpy.types.Object, material_id: int | None) -> None:
+    def set_grease_pencil_material_name(self, bl_obj: bpy.types.Object, material_name: str | None) -> None:
         bl_grease = cast(bpy.types.GreasePencilv3, bl_obj.data)
-        if material_id is None:
+        if material_name is None:
             bl_grease.materials.clear()
             return
 
-        material_name = BlenderNaming.make_grease_pencil_material_name(material_id)
+        material_name = BlenderNaming.make_grease_pencil_material_name(material_name)
         bl_material = bpy.data.materials.get(material_name)
         if bl_material is None:
             bl_material = bpy.data.materials.new(material_name)
             bpy.data.materials.create_gpencil_data(bl_material)
+            if bl_material.grease_pencil is not None:
+                bl_material.grease_pencil.color = (0.5, 0.5, 0.5, 1)
 
         if len(bl_grease.materials) == 0:
             bl_grease.materials.append(None)

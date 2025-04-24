@@ -5,6 +5,7 @@ from io_scene_tr_reboot.tr.Cloth import Cloth
 from io_scene_tr_reboot.tr.Collection import Collection
 from io_scene_tr_reboot.tr.Collision import Collision
 from io_scene_tr_reboot.tr.Enumerations import CdcGame, ResourceType
+from io_scene_tr_reboot.tr.Hair import Hair
 from io_scene_tr_reboot.tr.Hashes import Hashes
 from io_scene_tr_reboot.tr.Material import Material
 from io_scene_tr_reboot.tr.Model import IModel
@@ -14,6 +15,7 @@ from io_scene_tr_reboot.tr.ResourceReference import ResourceReference
 from io_scene_tr_reboot.tr.Skeleton import ISkeleton
 from io_scene_tr_reboot.tr.rise.RiseCloth import RiseCloth
 from io_scene_tr_reboot.tr.rise.RiseCollision import RiseCollision, CollisionType
+from io_scene_tr_reboot.tr.rise.RiseHair import RiseHair
 from io_scene_tr_reboot.tr.rise.RiseMaterial import RiseMaterial
 from io_scene_tr_reboot.tr.rise.RiseModel import RiseModel
 from io_scene_tr_reboot.tr.rise.RiseSkeleton import RiseSkeleton
@@ -42,12 +44,14 @@ class _ObjectHeader(CStruct64):
     collision_model_ref: ResourceReference | None
     static_collision_model_ref: ResourceReference | None
     skeleton_ref: ResourceReference | None
-    field_80: CInt
+    skeleton_item_id: CInt
     field_84: CInt
-    field_88: CLong
+    pose_space_deformers_ref: ResourceReference | None
     cloth_definition_ref: ResourceReference | None
+    hair_data_ref: ResourceReference | None
+    object_zone_db_ref: ResourceReference | None
 
-assert(sizeof(_ObjectHeader) == 0x98)
+assert(sizeof(_ObjectHeader) == 0xA8)
 
 class _ObjectSimpleComponent(CStruct64):
     type_hash: CUInt
@@ -325,3 +329,21 @@ class RiseCollection(Collection):
 
     def _create_cloth(self, definition_id: int, component_id: int) -> Cloth:
         return RiseCloth(definition_id, component_id)
+
+    def get_hair_resource_sets(self) -> list[Collection.HairResourceSet]:
+        if self._header.hair_data_ref is None:
+            return []
+
+        return [Collection.HairResourceSet(self._header.skeleton_ref, self._header.hair_data_ref)]
+
+    def get_hair(self, resource: ResourceKey) -> Hair | None:
+        reader = self.get_resource_reader(resource, True)
+        if reader is None:
+            return None
+
+        hair = self._create_hair(resource.id)
+        hair.read(reader)
+        return hair
+
+    def _create_hair(self, hair_data_id: int) -> Hair:
+        return RiseHair(hair_data_id)

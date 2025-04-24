@@ -155,7 +155,7 @@ class RegenerateClothBonesOperator(BlenderOperatorBase[BlenderPropertyGroup]):
 
                 next_new_local_bone_id = Enumerable(cast(bpy.types.Armature, bl_local_armature_obj.data).bones).count(lambda b: BlenderNaming.parse_bone_name(b.name).global_id is not None)
 
-            for bone_id_set in bone_id_sets:
+            for bone_id_set in Enumerable(bone_id_sets).order_by(lambda ids: ids.local_id):
                 if bone_id_set.global_id is None and bone_id_set.local_id is not None:
                     if bone_id_set.local_id != next_new_local_bone_id:
                         old_bone_name = BlenderNaming.make_bone_name(bone_id_set.skeleton_id, None, bone_id_set.local_id)

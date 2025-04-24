@@ -4,7 +4,7 @@ from typing import MutableSequence, Protocol, Sequence
 class IMeshPart(Protocol):
     center: Vector
     first_index_idx: int
-    num_triangles: int
+    num_primitives: int
 
     indices: Sequence[int]
     texture_indices: MutableSequence[int]

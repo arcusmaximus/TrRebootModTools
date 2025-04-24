@@ -28,9 +28,6 @@ class SkeletonExporter(SlotsBase):
         self.factory = Factories.get(game)
 
     def export(self, folder_path: str, bl_armature_obj: bpy.types.Object) -> None:
-        if bpy.context.object is not None:
-            bpy.ops.object.mode_set(mode = "OBJECT")
-
         skeleton_id = BlenderNaming.parse_local_armature_name(bl_armature_obj.name)
         tr_skeleton = self.factory.create_skeleton(skeleton_id)
 

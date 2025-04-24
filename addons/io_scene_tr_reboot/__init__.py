@@ -3,7 +3,7 @@ bl_info = {
     "description": "Import/export files for the Tomb Raider Reboot games",
     "author": "arc_",
     "blender": (4, 0, 0),
-    "version": (1, 4, 2),
+    "version": (1, 5, 0),
     "location": "File > Import-Export",
     "support": "COMMUNITY",
     "category": "Import-Export"
@@ -11,8 +11,6 @@ bl_info = {
 
 from typing import Callable, Protocol, cast
 import bpy
-from io_scene_tr_reboot.operator.HairWeightPaintingOperator import HairWeightPaintingOperator
-from io_scene_tr_reboot.ui.HairPanel import HairPanel
 
 from io_scene_tr_reboot.util.CStructTypeMappings import CStructTypeMappings
 from io_scene_tr_reboot.tr.TrCStructTypeMappings import TrCStructTypeMappings
@@ -25,6 +23,7 @@ from io_scene_tr_reboot.operator.ImportObjectOperator import ImportObjectOperato
 from io_scene_tr_reboot.operator.ExportAnimationOperator import ExportShadowAnimationOperator
 from io_scene_tr_reboot.operator.ExportModelOperator import ExportModelOperator
 from io_scene_tr_reboot.operator.FixVertexGroupNamesOperator import FixVertexGroupNamesOperator
+from io_scene_tr_reboot.operator.HairWeightPaintingOperator import HairWeightPaintingOperator
 from io_scene_tr_reboot.operator.RegenerateClothBonesOperator import RegenerateClothBonesOperator
 from io_scene_tr_reboot.operator.PinClothBonesOperator import PinClothBonesOperator
 from io_scene_tr_reboot.operator.UnpinClothBonesOperator import UnpinClothBonesOperator
@@ -34,9 +33,10 @@ from io_scene_tr_reboot.properties.ObjectProperties import ObjectClothProperties
 from io_scene_tr_reboot.properties.SceneProperties import SceneFileProperties, SceneProperties
 from io_scene_tr_reboot.properties.ToolSettingProperties import ToolSettingProperties
 from io_scene_tr_reboot.ui.BonePanel import BonePanel
-from io_scene_tr_reboot.ui.ClothStripPanel import ClothStripPanel
-from io_scene_tr_reboot.ui.ClothSpringPanel import ClothSpringPanel
 from io_scene_tr_reboot.ui.ClothBonesPanel import ClothBonesPanel
+from io_scene_tr_reboot.ui.ClothSpringPanel import ClothSpringPanel
+from io_scene_tr_reboot.ui.ClothStripPanel import ClothStripPanel
+from io_scene_tr_reboot.ui.HairPanel import HairPanel
 from io_scene_tr_reboot.ui.MeshPanel import MeshPanel
 from io_scene_tr_reboot.ui.ScenePanel import ScenePanel
 

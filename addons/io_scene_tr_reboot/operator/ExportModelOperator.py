@@ -3,6 +3,7 @@ import shutil
 from typing import TYPE_CHECKING, Annotated, Iterable, Protocol, Sequence
 import bpy
 from bpy.types import Context, Event
+from io_scene_tr_reboot.BlenderHelper import BlenderHelper
 from io_scene_tr_reboot.BlenderNaming import BlenderNaming
 from io_scene_tr_reboot.exchange.ClothExporter import ClothExporter
 from io_scene_tr_reboot.exchange.HairExporter import HairExporter
@@ -14,6 +15,7 @@ from io_scene_tr_reboot.exchange.tr2013.Tr2013ClothExporter import Tr2013ClothEx
 from io_scene_tr_reboot.exchange.tr2013.Tr2013ModelExporter import Tr2013ModelExporter
 from io_scene_tr_reboot.exchange.tr2013.Tr2013SkeletonExporter import Tr2013SkeletonExporter
 from io_scene_tr_reboot.operator.BlenderOperatorBase import ExportOperatorBase, ExportOperatorProperties
+from io_scene_tr_reboot.operator.HairWeightPaintingOperator import HairWeightPaintingOperator
 from io_scene_tr_reboot.operator.OperatorCommon import OperatorCommon
 from io_scene_tr_reboot.operator.OperatorContext import OperatorContext
 from io_scene_tr_reboot.properties.BlenderPropertyGroup import Prop
@@ -30,7 +32,7 @@ else:
 class _Properties(ExportOperatorProperties, Protocol):
     export_skeleton: Annotated[bool, Prop("Export skeleton")]
     export_cloth: Annotated[bool, Prop("Export cloth")]
-    export_all_tr2013_lara_duplicates: Annotated[bool, Prop("Export all Lara duplicates", default = True)]
+    export_all_tr2013_lara_duplicates: Annotated[bool, Prop("Export all Lara duplicates", default = False)]
 
 class ExportModelOperator(ExportOperatorBase[_Properties]):
     bl_idname = "export_scene.trmodel"
@@ -45,9 +47,9 @@ class ExportModelOperator(ExportOperatorBase[_Properties]):
 
         with OperatorContext.begin(self):
             bl_mesh_objs = self.get_mesh_objects_to_export(context, False)
-            bl_hair_objs = self.get_hair_objects_to_export(context)
+            bl_hair_objs = self.get_hair_strand_group_objects_to_export(context, False)
             if len(bl_mesh_objs) == 0 and len(bl_hair_objs) == 0:
-                OperatorContext.log_error("No meshes found in scene.")
+                OperatorContext.log_error("Nothing selected to export.")
                 return { "CANCELLED" }
 
             folder_path: str
@@ -63,7 +65,7 @@ class ExportModelOperator(ExportOperatorBase[_Properties]):
                 export_id = BlenderNaming.parse_mesh_name(Enumerable(bl_mesh_objs).first().name).model_data_id
                 ExportModelOperator.filename_ext = f".tr{game}modeldata"
             else:
-                export_ids = BlenderNaming.parse_hair_name(Enumerable(bl_hair_objs).first().name)
+                export_ids = BlenderNaming.parse_hair_strand_group_name(Enumerable(bl_hair_objs).first().name)
                 export_id = export_ids.hair_data_id
                 ExportModelOperator.filename_ext = f".tr{game}modeldata" if export_ids.model_id is not None else f".tr{game}dtp"
 
@@ -90,6 +92,9 @@ class ExportModelOperator(ExportOperatorBase[_Properties]):
         if context is None or context.view_layer is None:
             return { "CANCELLED" }
 
+        if context.object is not None:
+            bpy.ops.object.mode_set(mode = "OBJECT")
+
         game = SceneProperties.get_game()
 
         with OperatorContext.begin(self):
@@ -100,11 +105,11 @@ class ExportModelOperator(ExportOperatorBase[_Properties]):
                 bl_local_collection.exclude = False
 
             folder_path = os.path.split(self.properties.filepath)[0]
-            bl_hair_objs = self.get_hair_objects_to_export(context)
+            bl_hair_strand_group_objs = self.get_hair_strand_group_objects_to_export(context, True)
             bl_unsplit_mesh_objs = self.get_mesh_objects_to_export(context, False)
             bl_split_mesh_objs = self.get_mesh_objects_to_export(context, True)
 
-            self.export(context, folder_path, bl_unsplit_mesh_objs, bl_split_mesh_objs, bl_hair_objs, game)
+            self.export(context, folder_path, bl_unsplit_mesh_objs, bl_split_mesh_objs, bl_hair_strand_group_objs, game)
 
             if bl_local_collection is not None:
                 bl_local_collection.exclude = was_local_collection_excluded
@@ -120,7 +125,7 @@ class ExportModelOperator(ExportOperatorBase[_Properties]):
 
             return { "FINISHED" }
 
-    def export(self, context: bpy.types.Context, folder_path: str, bl_unsplit_mesh_objs: set[bpy.types.Object], bl_split_mesh_objs: set[bpy.types.Object], bl_hair_objs: set[bpy.types.Object], game: CdcGame):
+    def export(self, context: bpy.types.Context, folder_path: str, bl_unsplit_mesh_objs: set[bpy.types.Object], bl_split_mesh_objs: set[bpy.types.Object], bl_hair_strand_group_objs: set[bpy.types.Object], game: CdcGame):
         model_exporter = self.create_model_exporter(OperatorCommon.scale_factor, game)
         for model_id_set, bl_mesh_objs_of_model in Enumerable(bl_split_mesh_objs).group_by(lambda o: BlenderNaming.parse_model_name(o.name)).items():
             bl_armature_obj = bl_mesh_objs_of_model[0].parent
@@ -130,11 +135,11 @@ class ExportModelOperator(ExportOperatorBase[_Properties]):
             model_exporter.export_model(folder_path, model_id_set, bl_mesh_objs_of_model, bl_armature_obj)
 
         hair_exporter = self.create_hair_exporter(OperatorCommon.scale_factor, game)
-        for bl_hair_obj in bl_hair_objs:
-            hair_exporter.export_hair(folder_path, bl_hair_obj)
+        for bl_strand_group_objs_of_hair in Enumerable(bl_hair_strand_group_objs).group_by(lambda o: BlenderNaming.parse_hair_strand_group_name(o.name).hair_data_id).values():
+            hair_exporter.export_hair(folder_path, bl_strand_group_objs_of_hair)
 
         if self.properties.export_cloth or self.requires_cloth_export(game):
-            for bl_armature_obj in Enumerable(bl_unsplit_mesh_objs).concat(bl_hair_objs) \
+            for bl_armature_obj in Enumerable(bl_unsplit_mesh_objs).concat(bl_hair_strand_group_objs) \
                                                                    .select(lambda o: o.parent) \
                                                                    .of_type(bpy.types.Object) \
                                                                    .distinct() \
@@ -144,7 +149,7 @@ class ExportModelOperator(ExportOperatorBase[_Properties]):
 
         if self.properties.export_skeleton or self.requires_skeleton_export(game):
             skeleton_exporter = self.create_skeleton_exporter(OperatorCommon.scale_factor, game)
-            for bl_armature_obj in Enumerable(bl_split_mesh_objs).concat(bl_hair_objs) \
+            for bl_armature_obj in Enumerable(bl_split_mesh_objs).concat(bl_hair_strand_group_objs) \
                                                                  .select(lambda o: o.parent) \
                                                                  .of_type(bpy.types.Object) \
                                                                  .where(lambda o: isinstance(o.data, bpy.types.Armature)) \
@@ -161,28 +166,18 @@ class ExportModelOperator(ExportOperatorBase[_Properties]):
             if mesh_id_set is not None and not self.is_in_local_collection(bl_obj):
                 DictionaryExtensions.get_or_add(bl_mesh_objs_by_model_id, mesh_id_set.model_id, lambda: []).append(bl_obj)
 
-        bl_mesh_objs_to_export = self.get_mesh_object_subset_to_export(context.selected_objects, split_global_meshes, bl_mesh_objs_by_model_id)
-        if len(bl_mesh_objs_to_export) == 0:
-            bl_mesh_objs_to_export = self.get_mesh_object_subset_to_export(context.scene.objects, split_global_meshes, bl_mesh_objs_by_model_id)
-
-        return bl_mesh_objs_to_export
-
-    def get_mesh_object_subset_to_export(self, bl_objs: Iterable[bpy.types.Object], split_global_meshes: bool, bl_mesh_objs_by_model_id: dict[int, list[bpy.types.Object]]) -> set[bpy.types.Object]:
         bl_mesh_objs_to_export: set[bpy.types.Object] = set()
         bl_visited_armature_objs: set[bpy.types.Object] = set()
-
-        for object_name in Enumerable(bl_objs).where(lambda o: not self.is_in_local_collection(o)).select(lambda o: o.name).to_list():
+        for object_name in Enumerable(context.selected_objects).where(lambda o: not self.is_in_local_collection(o)).select(lambda o: o.name).to_list():
             bl_obj = bpy.data.objects[object_name]
 
             if isinstance(bl_obj.data, bpy.types.Mesh):
                 mesh_id_set = BlenderNaming.try_parse_mesh_name(bl_obj.name)
-                if mesh_id_set is None:
-                    continue
-
-                if bl_obj.parent and isinstance(bl_obj.parent.data, bpy.types.Armature):
-                    bl_obj = bl_obj.parent
-                else:
+                if mesh_id_set is not None:
                     bl_mesh_objs_to_export.update(bl_mesh_objs_by_model_id[mesh_id_set.model_id])
+
+            while bl_obj.parent is not None:
+                bl_obj = bl_obj.parent
 
             if isinstance(bl_obj.data, bpy.types.Armature) and bl_obj not in bl_visited_armature_objs:
                 bl_visited_armature_objs.add(bl_obj)
@@ -194,23 +189,6 @@ class ExportModelOperator(ExportOperatorBase[_Properties]):
 
         return bl_mesh_objs_to_export
 
-    def get_hair_objects_to_export(self, context: bpy.types.Context) -> set[bpy.types.Object]:
-        if context.scene is None:
-            return set()
-
-        for bl_obj_set in [context.selected_objects, context.scene.objects]:
-            bl_hair_objs: set[bpy.types.Object] = set()
-            for bl_obj in Enumerable(bl_obj_set).where(lambda o: not self.is_in_local_collection(o)):
-                if isinstance(bl_obj.data, bpy.types.Armature):
-                    bl_hair_objs.update(Enumerable(bl_obj.children).where(self.is_hair_object))
-                elif self.is_hair_object(bl_obj):
-                    bl_hair_objs.add(bl_obj)
-
-            if len(bl_hair_objs) > 0:
-                return bl_hair_objs
-
-        return set()
-
     def is_in_local_collection(self, bl_obj: bpy.types.Object) -> bool:
         return Enumerable(bl_obj.users_collection).any(lambda c: c.name == BlenderNaming.local_collection_name)
 
@@ -218,8 +196,36 @@ class ExportModelOperator(ExportOperatorBase[_Properties]):
         return Enumerable(bl_armature_obj.children).where(
             lambda o: isinstance(o.data, bpy.types.Mesh) and BlenderNaming.try_parse_mesh_name(o.name) is not None)
 
-    def is_hair_object(self, bl_obj: bpy.types.Object) -> bool:
-        return isinstance(bl_obj.data, bpy.types.Curves) and BlenderNaming.try_parse_hair_name(bl_obj.name) is not None
+    def get_hair_strand_group_objects_to_export(self, context: bpy.types.Context, exit_weight_paint_mode: bool) -> set[bpy.types.Object]:
+        bl_hair_objects = set[bpy.types.Object]()
+        for bl_obj in context.selected_objects:
+            if self.is_hair_strand_group_object(bl_obj):
+                bl_hair_objects.add(bl_obj)
+                while bl_obj.parent is not None:
+                    bl_obj = bl_obj.parent
+
+            if bl_obj.data is None or isinstance(bl_obj.data, bpy.types.Armature):
+                bl_hair_objects.update(Enumerable(bl_obj.children_recursive).where(self.is_hair_strand_group_object))
+
+        hair_object_names = Enumerable(bl_hair_objects).select(lambda o: o.name).to_list()
+        for i in range(len(hair_object_names) - 1, -1, -1):
+            bl_obj = bpy.data.objects[hair_object_names[i]]
+            if isinstance(bl_obj.data, bpy.types.Curves):
+                continue
+
+            if isinstance(bl_obj.data, bpy.types.GreasePencilv3):
+                if exit_weight_paint_mode:
+                    BlenderHelper.select_object(bl_obj)
+                    HairWeightPaintingOperator.static_execute(False)
+
+                continue
+
+            hair_object_names.pop(i)
+
+        return Enumerable(hair_object_names).select(lambda n: bpy.data.objects[n]).to_set()
+
+    def is_hair_strand_group_object(self, bl_obj: bpy.types.Object) -> bool:
+        return BlenderNaming.try_parse_hair_strand_group_name(bl_obj.name) is not None
 
     def get_local_armatures(self, context: bpy.types.Context) -> dict[int, bpy.types.Object]:
         if context.scene is None:

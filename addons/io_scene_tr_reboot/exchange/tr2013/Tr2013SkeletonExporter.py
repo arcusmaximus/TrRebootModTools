@@ -33,7 +33,7 @@ class Tr2013SkeletonExporter(SkeletonExporter):
                 model_id = model_id_set.model_id
                 model_data_id = model_id_set.model_data_id
             elif isinstance(bl_obj.data, bpy.types.Curves):
-                hair_id_set = BlenderNaming.parse_hair_name(bl_obj.name)
+                hair_id_set = BlenderNaming.parse_hair_strand_group_name(bl_obj.name)
                 if hair_id_set.model_id is None:
                     continue
 

@@ -12,6 +12,7 @@ namespace TrRebootTools.BinaryTemplateGenerator
         private const string TypeRegex = @"(?:unsigned )?(?:long )?(?:(?<open><)|(?<-open>>)|(?(open)[^<>])|[^ <>,])+(?: \*+)?";
 
         public static readonly Regex DeclarationRegex = new Regex(@$"^(?<keyword>struct|union|enum){AnnotationsRegex} (?<name>{TypeRegex})(?: : (?:(?=.)(?<baseTypes>{TypeRegex})(?:, |$))+)?$", RegexOptions.Compiled);
+        private static readonly Regex TypedefRegex = new Regex($@"^typedef (?<source>{TypeRegex}) (?<target>{TypeRegex});$", RegexOptions.Compiled);
         private static readonly Regex FieldRegex = new Regex(@$"^  (?<type>{TypeRegex}) *(?<name>[<>\w]+)(?: : (?<bitLength>\d+))?(?:\[(?<arrayDimensions>\d*)\])*(?: */\*.*?\*/)?;$", RegexOptions.Compiled);
         private static readonly Regex EnumValueRegex = new Regex(@"^  (?<name>\w+) = 0x(?<value>\w+),$", RegexOptions.Compiled);
         private static readonly Regex IgnoredKeywordsRegex = new Regex(@"\b(?:const|volatile|(?!^)(?<!^const )(?<!^volatile )struct|__ptr32|__ptr64) ", RegexOptions.Compiled);
@@ -47,13 +48,25 @@ namespace TrRebootTools.BinaryTemplateGenerator
                 if (inComment)
                     continue;
 
-                if (line.Length == 0 || line.StartsWith("#") || line.StartsWith("typedef "))
+                if (line.Length == 0 || line.StartsWith("#"))
                     continue;
+
+                Match match;
+
+                if (line.StartsWith("typedef "))
+                {
+                    if (!line.Contains("("))
+                    {
+                        match = TypedefRegex.Match(line);
+                        if (match.Success && lib.Types.TryGetValue(match.Groups["source"].Value, out CType sourceType))
+                            lib.Types[match.Groups["target"].Value] = sourceType;
+                    }
+                    continue;
+                }
 
                 if ((line.StartsWith("struct ") || line.StartsWith("union ")) && line.EndsWith(";"))
                     continue;
 
-                Match match;
                 if (currentComposite == null && currentEnum == null)
                 {
                     line = IgnoredKeywordsRegex.Replace(line, "");

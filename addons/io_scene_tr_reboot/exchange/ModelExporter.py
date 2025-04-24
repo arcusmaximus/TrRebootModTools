@@ -24,6 +24,7 @@ from io_scene_tr_reboot.tr.VertexFormat import VertexFormat
 from io_scene_tr_reboot.tr.VertexOffsets import VertexOffsets
 from io_scene_tr_reboot.util.Enumerable import Enumerable
 from io_scene_tr_reboot.util.SlotsBase import SlotsBase
+from io_scene_tr_reboot.util.SpatialIndex import SpatialIndex
 
 class _BlenderMeshMaps(NamedTuple):
     color_maps: dict[int, bpy.types.ByteColorAttribute]
@@ -52,9 +53,6 @@ class ModelExporter(SlotsBase):
         self.bl_context = bpy.context
 
     def export_model(self, folder_path: str, ids: BlenderModelIdSet, bl_mesh_objs: list[bpy.types.Object], bl_armature_obj: bpy.types.Object | None) -> None:
-        if self.bl_context.object is not None:
-            bpy.ops.object.mode_set(mode = "OBJECT")
-
         self.validate_blender_objects(bl_mesh_objs)
 
         global_bone_ids: dict[int, int | None] | None = None
@@ -84,7 +82,7 @@ class ModelExporter(SlotsBase):
         tr_model.refs.material_resources = Enumerable(bl_objs).select(lambda o: o.data)                                          \
                                                               .cast(bpy.types.Mesh)                                              \
                                                               .select_many(lambda m: m.materials)                                \
-                                                              .where(lambda m: cast(bpy.types.Material | None, m) is not None)   \
+                                                              .of_type(bpy.types.Material)                                       \
                                                               .select(lambda m: BlenderNaming.parse_material_name(m.name))       \
                                                               .distinct()                                                        \
                                                               .select(lambda i: ResourceKey(ResourceType.MATERIAL, i))           \
@@ -508,23 +506,15 @@ class ModelExporter(SlotsBase):
             tr_source_mesh = tr_source_meshes[mesh_idx]
             tr_target_mesh = tr_target_meshes[mesh_idx]
 
-            target_vertex_idx_by_position: dict[tuple[int, int, int], int] = {}
+            target_vertex_lookup = SpatialIndex[int](0.001)
             for target_vertex_idx, target_vertex in enumerate(tr_target_mesh.vertices):
-                target_vertex_pos = target_vertex.attributes[Hashes.position]
-                target_vertex_idx_by_position[(
-                    int(round(target_vertex_pos[0] * 1000)),
-                    int(round(target_vertex_pos[1] * 1000)),
-                    int(round(target_vertex_pos[2] * 1000))
-                )] = target_vertex_idx
+                target_vertex_pos = Vector(target_vertex.attributes[Hashes.position])
+                target_vertex_lookup.add(target_vertex_pos, target_vertex_idx)
 
             source_vertex_idx_by_target_vertex_idx: list[int | None] = [None] * len(tr_target_mesh.vertices)
             for source_vertex_idx, source_vertex in enumerate(tr_source_mesh.vertices):
-                source_vertex_pos = source_vertex.attributes[Hashes.position]
-                target_vertex_idx = target_vertex_idx_by_position.get((
-                    int(round(source_vertex_pos[0] * 1000)),
-                    int(round(source_vertex_pos[1] * 1000)),
-                    int(round(source_vertex_pos[2] * 1000))
-                ))
+                source_vertex_pos = Vector(source_vertex.attributes[Hashes.position])
+                target_vertex_idx = target_vertex_lookup.find_nearest_item(source_vertex_pos)
                 if target_vertex_idx is not None:
                     source_vertex_idx_by_target_vertex_idx[target_vertex_idx] = source_vertex_idx
                     tr_target_mesh.vertices[target_vertex_idx].attributes[Hashes.normal] = source_vertex.attributes[Hashes.normal]

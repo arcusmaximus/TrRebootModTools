@@ -9,6 +9,7 @@ namespace TrRebootTools.BinaryTemplateGenerator
     internal class BinaryTemplateWriter
     {
         private readonly TextWriter _writer;
+        private readonly string[] TypesToSkip = new[] { "Instance" };
 
         public BinaryTemplateWriter(TextWriter writer, int trVersion)
         {
@@ -32,6 +33,12 @@ namespace TrRebootTools.BinaryTemplateGenerator
 
             foreach (CType referencedType in GetReferencedTypes(type, lib))
             {
+                if (TypesToSkip.Contains(referencedType.Name))
+                    continue;
+
+                if (referencedType is CStructure struc && struc.Fields.Any(f => f.Name == "__vftable"))
+                    continue;
+
                 WriteType(referencedType, lib, visitedTypes);
             }
 
@@ -254,7 +261,8 @@ namespace TrRebootTools.BinaryTemplateGenerator
                 IEnumerable<CField> fields = compositeType.Fields.Where(f => f.Name != "__vftable");
                 foreach (CField field in fields)
                 {
-                    yield return lib.Types[field.Type.TrimEnd('*').Trim()];
+                    if (lib.Types.TryGetValue(field.Type.TrimEnd('*').Trim(), out CType fieldType))
+                        yield return fieldType;
                 }
             }
         }

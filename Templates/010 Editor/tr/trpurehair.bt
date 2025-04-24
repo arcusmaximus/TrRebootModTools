@@ -1,0 +1,386 @@
+local uint gHairAssetPos;
+
+void SeekToArray(uint startOffset)
+{
+    gFilePosStack[gFilePosStackIdx++] = FTell();
+    FSeek(gHairAssetPos + startOffset);
+}
+
+void ReturnFromArray()
+{
+    FSeek(gFilePosStack[--gFilePosStackIdx]);
+}
+
+enum <int> HairMode
+{
+    eHair = 0,
+    eFeather = 1
+};
+
+typedef struct
+{
+    Vector3 min;
+    Vector3 max;
+} AABB;
+
+typedef struct
+{
+    uint startOffset <format=hex>;
+    uint endOffset <format=hex>;
+    
+    SeekToArray(startOffset);
+    ushort items[(endOffset - startOffset) / sizeof(ushort)] <format=hex>;
+    ReturnFromArray();
+} UShortArray <optimize=false>;
+
+typedef struct
+{
+    uint startOffset <format=hex>;
+    uint endOffset <format=hex>;
+    
+    SeekToArray(startOffset);
+    uint items[(endOffset - startOffset) / sizeof(uint)] <format=hex>;
+    ReturnFromArray();
+} UIntArray <optimize=false>;
+
+typedef struct
+{
+    uint startOffset <format=hex>;
+    uint endOffset <format=hex>;
+    
+    SeekToArray(startOffset);
+    float items[(endOffset - startOffset) / sizeof(float)];
+    ReturnFromArray();
+} FloatArray <optimize=false>;
+
+typedef struct
+{
+    uint startOffset <format=hex>;
+    uint endOffset <format=hex>;
+    
+    SeekToArray(startOffset);
+    Vector2 items[(endOffset - startOffset) / sizeof(Vector2)];
+    ReturnFromArray();
+} Vector2Array <optimize=false>;
+
+typedef struct
+{
+    uint startOffset <format=hex>;
+    uint endOffset <format=hex>;
+    
+    SeekToArray(startOffset);
+    Vector3 items[(endOffset - startOffset) / sizeof(Vector3)];
+    ReturnFromArray();
+} Vector3Array <optimize=false>;
+
+typedef struct
+{
+    uint startOffset <format=hex>;
+    uint endOffset <format=hex>;
+    
+    SeekToArray(startOffset);
+    Vector4 items[(endOffset - startOffset) / sizeof(Vector4)];
+    ReturnFromArray();
+} Vector4Array <optimize=false>;
+
+typedef struct
+{
+    uint startOffset <format=hex>;
+    uint endOffset <format=hex>;
+    
+    SeekToArray(startOffset);
+    Matrix items[(endOffset - startOffset) / sizeof(Matrix)];
+    ReturnFromArray();
+} MatrixArray <optimize=false>;
+
+typedef struct
+{
+    uint firstVertexIdx : 22;
+    uint numEdges : 5;
+    uint groupIdx : 5;
+} HairStrandDescriptor <read=Str("Group %d, vertices %d -> %d", groupIdx, firstVertexIdx, firstVertexIdx + numEdges)>;
+
+typedef struct
+{
+    uint startOffset <format=hex>;
+    uint endOffset <format=hex>;
+    
+    SeekToArray(startOffset);
+    HairStrandDescriptor items[(endOffset - startOffset) / sizeof(HairStrandDescriptor)];
+    ReturnFromArray();
+} HairStrandDescriptorArray;
+
+
+// ----------------------
+// Group names
+
+typedef struct
+{
+    uint startOffset <format=hex>;
+    uint endOffset <format=hex>;
+    
+    SeekToArray(startOffset);
+    char name[endOffset - startOffset];
+    ReturnFromArray();
+} HairAssetGroupNameRange <optimize=false, read=name>;
+
+typedef struct
+{
+    uint startOffset <format=hex>;
+    uint endOffset <format=hex>;
+    
+    SeekToArray(startOffset);
+    HairAssetGroupNameRange items[(endOffset - startOffset) / 8];
+    ReturnFromArray();
+} HairAssetGroupNameRangeArray <optimize=false>;
+
+// ----------------------
+// Master strands
+
+typedef struct
+{
+    MatrixArray rootBindFrames;
+    HairStrandDescriptorArray descriptors;
+} HairAssetMasterStrands <optimize=false>;
+
+
+// ----------------------
+// Master vertices
+
+typedef struct
+{
+    ushort weight;
+    ushort boneIdx;
+} HairMasterVtxBoneWeight <read=(weight > 0 ? Str("Bone %d weight %f", boneIdx, (float)weight / 65535) : "")>;
+
+typedef struct
+{
+    HairMasterVtxBoneWeight weights[4];
+} HairMasterVtxSkinning;
+
+typedef struct
+{
+    uint startOffset <format=hex>;
+    uint endOffset <format=hex>;
+    
+    SeekToArray(startOffset);
+    HairMasterVtxSkinning items[(endOffset - startOffset) / sizeof(HairMasterVtxSkinning)];
+    ReturnFromArray();
+} HairMasterVtxSkinningArray <optimize=false>;
+
+typedef struct
+{
+    ushort idxInStrand;
+    ushort strandIdx;
+} HairMasterVtxDescriptor <read=Str("Strand %d vertex %d", strandIdx, idxInStrand)>;
+
+typedef struct
+{
+    uint startOffset <format=hex>;
+    uint endOffset <format=hex>;
+    
+    SeekToArray(startOffset);
+    HairMasterVtxDescriptor items[(endOffset - startOffset) / sizeof(HairMasterVtxDescriptor)];
+    ReturnFromArray();
+} HairMasterVtxDescriptorArray <optimize=false>;
+
+typedef struct
+{
+    Vector4Array bindPositionsMeshSpace;
+    Vector3Array bindPositionsLocalSpace;
+    FloatArray restLengths;
+    Vector2Array diametersForCollision;
+    HairMasterVtxSkinningArray skinningData;
+    MatrixArray bindInvFrames;
+    HairMasterVtxDescriptorArray masterVtxDescriptors;
+} HairAssetMasterVertices <optimize=false>;
+
+
+// ----------------------
+// Slave strands
+
+typedef struct
+{
+    Vector3 rootBindPosition;
+    float bindPositionPackingScale;
+    ushort masterStrandIndex2;
+    ushort masterStrandIndex1;
+    uint interpDistance : 20;
+    uint masterStrandInterpFactor : 6;
+    uint masterStrandInterpCurveParam : 6;
+} HairSlaveStrandSkinning <read=Str("Master strands %d / %d, weight %f", masterStrandIndex1, masterStrandIndex2, (float)masterStrandInterpFactor / 63)>;
+
+typedef struct
+{
+    uint startOffset <format=hex>;
+    uint endOffset <format=hex>;
+    
+    SeekToArray(startOffset);
+    HairSlaveStrandSkinning items[(endOffset - startOffset) / sizeof(HairSlaveStrandSkinning)];
+    ReturnFromArray();
+} HairSlaveStrandSkinningArray <optimize=false>;
+
+typedef struct
+{
+    HairStrandDescriptorArray descriptors;
+    UIntArray cumulativeVertexCounts;
+    HairSlaveStrandSkinningArray skinningData;
+    UShortArray noiseOffsets;
+} HairAssetSlaveStrands <optimize=false>;
+
+
+// ----------------------
+// Slave vertices
+
+typedef struct
+{
+    uint z : 9;
+    uint zSign : 1;
+    uint y : 9;
+    uint ySign : 1;
+    uint x : 9;
+    uint xSign : 1;
+} HairSlaveVertexPosition <read=Str("(%d, %d, %d)", x * (xSign ? -1 : 1), y * (ySign ? -1 : 1), z * (zSign ? -1 : 1))>;
+
+typedef struct
+{
+    uint startOffset <format=hex>;
+    uint endOffset <format=hex>;
+    
+    SeekToArray(startOffset);
+    HairSlaveVertexPosition items[(endOffset - startOffset) / sizeof(HairSlaveVertexPosition)];
+    ReturnFromArray();
+} HairSlaveVertexPositionArray;
+
+typedef struct
+{
+    ushort weight : 6;
+    ushort masterStrandRelativeVertexIdx2 : 5;
+    ushort masterStrandRelativeVertexIdx1 : 5;
+} HairSlaveVertexSkinning <read=Str("Vertices %d / %d, weight %f", masterStrandRelativeVertexIdx1, masterStrandRelativeVertexIdx2, (float)weight / 63)>;
+
+typedef struct
+{
+    uint startOffset <format=hex>;
+    uint endOffset <format=hex>;
+    
+    SeekToArray(startOffset);
+    HairSlaveVertexSkinning items[(endOffset - startOffset) / sizeof(HairSlaveVertexSkinning)];
+    ReturnFromArray();
+} HairSlaveVertexSkinningArray;
+
+typedef struct
+{
+    HairSlaveVertexPositionArray localBindPositions;
+    UIntArray packedTexCoordUV;
+    UShortArray slaveStrandIndices;
+    HairSlaveVertexSkinningArray skinning;      // Ordered like: slaveVertex (1, 0), (3, 2), (5, 4), ...
+} HairAssetSlaveVertices <optimize=false>;
+
+
+// ----------------------
+// Rendering data
+
+typedef struct
+{
+    UIntArray slaveStripIndices;
+    if (TR_VERSION == 11)
+    {
+        FloatArray offsetDirection;
+    }
+} HairAssetRenderingData <optimize=false>;
+
+
+// ----------------------
+// Collision data
+
+typedef struct
+{
+    Vector3 position0;
+    Vector3 position1;
+    float halfHeight;
+    float radius;
+    uint skinningTransformIndex;
+} HairAssetCollisionCapsule;
+
+typedef struct
+{
+    uint startOffset <format=hex>;
+    uint endOffset <format=hex>;
+    
+    SeekToArray(startOffset);
+    HairAssetCollisionCapsule items[(endOffset - startOffset) / sizeof(HairAssetCollisionCapsule)];
+    ReturnFromArray();
+} HairAssetCollisionCapsuleArray <optimize=false>;
+
+typedef struct
+{
+    HairAssetCollisionCapsuleArray capsules;
+} HairAssetCollisionData <optimize=false>;
+
+
+// ----------------------
+// Asset
+
+typedef struct
+{
+    gHairAssetPos = startof(this);
+    
+    unsigned int headerMagic <format=hex>;
+    unsigned int version;
+    if (TR_VERSION == 11)
+    {
+        HairMode mode;
+        unsigned int numMeshColumns;
+    }
+    unsigned int size <format=hex>;
+    unsigned int numGroups;
+    unsigned int numSkinningTransforms;
+    unsigned int numMasterStrands;
+    unsigned int numMasterStrandVertices;
+    unsigned int numSlaveStrands;
+    unsigned int numSlaveStrandVertices;
+    AABB bindPoseAABB;
+    Vector3 bindPoseSlaveOffsetsReferencePosition;
+    float slaveOffsetsScale;
+    if (TR_VERSION == 11)
+    {
+        float occlusionSphereRadius;
+    }
+    HairAssetGroupNameRangeArray groupNames;
+    HairAssetMasterStrands masterStrands;
+    HairAssetMasterVertices masterVertices;
+    HairAssetSlaveStrands slaveStrands;
+    HairAssetSlaveVertices slaveVertices;
+    HairAssetRenderingData renderingData;
+    HairAssetCollisionData collisionData;
+    
+    FSeek(gHairAssetPos + size - 4);
+    unsigned int footerMagic <format=hex>;
+} HairAsset <optimize=false>;
+
+
+
+// ----------------------
+// File
+
+RefDefinitions refDefinitions;
+
+ubyte numSkinnedBoneIds;
+FSkip(7);
+Ref skinnedBoneIdsRef;
+if (CanSeekTo(skinnedBoneIdsRef))
+{
+    SeekToRef(skinnedBoneIdsRef);
+    ushort skinnedBoneIds[numSkinnedBoneIds];
+    ReturnFromRef();
+}
+
+Ref hairDataRef;
+uint hairDataSize <format=hex>;
+if (CanSeekTo(hairDataRef))
+{
+    SeekToRef(hairDataRef);
+    HairAsset hairData;
+    ReturnFromRef();
+}

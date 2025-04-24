@@ -1,10 +1,39 @@
 from mathutils import Matrix, Quaternion, Vector
 from io_scene_tr_reboot.util.CStruct import CFloat, CStruct, CStructTypeMapping
 
+class CVec2(CStruct):
+    x: CFloat
+    y: CFloat
+
+    @staticmethod
+    def from_coords(x: float, y: float) -> "CVec2":
+        c_value = CVec2()
+        c_value.x = x
+        c_value.y = y
+        return c_value
+
+    @staticmethod
+    def from_vector(mapped_value: Vector) -> "CVec2":
+        c_value = CVec2()
+        c_value.x = mapped_value.x
+        c_value.y = mapped_value.y
+        return c_value
+
+    def to_vector(self) -> Vector:
+        return Vector((self.x, self.y))
+
 class CVec3(CStruct):
     x: CFloat
     y: CFloat
     z: CFloat
+
+    @staticmethod
+    def from_coords(x: float, y: float, z: float) -> "CVec3":
+        c_value = CVec3()
+        c_value.x = x
+        c_value.y = y
+        c_value.z = z
+        return c_value
 
     @staticmethod
     def from_vector(mapped_value: Vector) -> "CVec3":
@@ -13,7 +42,7 @@ class CVec3(CStruct):
         c_value.y = mapped_value.y
         c_value.z = mapped_value.z
         return c_value
-    
+
     def to_vector(self) -> Vector:
         return Vector((self.x, self.y, self.z))
 
@@ -22,6 +51,15 @@ class CVec4(CStruct):
     y: CFloat
     z: CFloat
     w: CFloat
+
+    @staticmethod
+    def from_coords(x: float, y: float, z: float, w: float) -> "CVec4":
+        c_value = CVec4()
+        c_value.x = x
+        c_value.y = y
+        c_value.z = z
+        c_value.w = w
+        return c_value
 
     @staticmethod
     def from_vector(mapped_value: Vector) -> "CVec4":
@@ -40,6 +78,15 @@ class CQuat(CStruct):
     y: CFloat
     z: CFloat
     w: CFloat
+
+    @staticmethod
+    def from_coords(x: float, y: float, z: float, w: float) -> "CQuat":
+        c_value = CQuat()
+        c_value.x = x
+        c_value.y = y
+        c_value.z = z
+        c_value.w = w
+        return c_value
 
     @staticmethod
     def from_quaternion(mapped_value: Quaternion) -> "CQuat":
@@ -97,7 +144,7 @@ class CMatrix(CStruct):
         matrix.m32 = mapped_value[2][3]
         matrix.m33 = mapped_value[3][3]
         return matrix
-    
+
     def to_matrix(self) -> Matrix:
         return Matrix(((self.m00, self.m10, self.m20, self.m30),
                        (self.m01, self.m11, self.m21, self.m31),
@@ -107,21 +154,21 @@ class CMatrix(CStruct):
 class _VectorTypeMapping(CStructTypeMapping[Vector, CVec4]):
     def map_from_c(self, c_value: CVec4, offset: int, context: object) -> Vector:
         return c_value.to_vector()
-    
+
     def map_to_c(self, mapped_value: Vector, offset: int, context: object) -> CVec4:
         return CVec4.from_vector(mapped_value)
 
 class _QuaterionTypeMapping(CStructTypeMapping[Quaternion, CQuat]):
     def map_from_c(self, c_value: CQuat, offset: int, context: object) -> Quaternion:
         return c_value.to_quaternion()
-    
+
     def map_to_c(self, mapped_value: Quaternion, offset: int, context: object) -> CQuat:
         return CQuat.from_quaternion(mapped_value)
 
 class _MatrixTypeMapping(CStructTypeMapping[Matrix, CMatrix]):
     def map_from_c(self, c_value: CMatrix, offset: int, context: object) -> Matrix:
         return c_value.to_matrix()
-    
+
     def map_to_c(self, mapped_value: Matrix, offset: int, context: object) -> CMatrix:
         return CMatrix.from_matrix(mapped_value)
 

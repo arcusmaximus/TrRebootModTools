@@ -13,9 +13,6 @@ class _BoneRenames(NamedTuple):
 
 class PermanentModelMerger(SkeletonMerger):
     def add(self, bl_target_armature_obj: bpy.types.Object | None, bl_source_armature_obj: bpy.types.Object) -> bpy.types.Object:
-        if bpy.context.object is not None:
-            bpy.ops.object.mode_set(mode = "OBJECT")
-
         if bl_target_armature_obj is None:
             return bl_source_armature_obj
 

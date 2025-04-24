@@ -26,6 +26,10 @@ class Collection(SlotsBase):
         model_resource: ResourceKey
         transform: Matrix
 
+    class HairResourceSet(NamedTuple):
+        skeleton_resource: ResourceKey | None
+        hair_resource: ResourceKey
+
     __resource_type_infos: ClassVar[dict[ResourceType, ResourceTypeInfo]] = {
         ResourceType.ANIMATION:     ResourceTypeInfo("Animation",   [".trXanim"]),
         ResourceType.DTP:           ResourceTypeInfo("Dtp",         [".trXdtp"]),
@@ -105,7 +109,10 @@ class Collection(SlotsBase):
     def get_cloth(self) -> Cloth | None: ...
 
     @abstractmethod
-    def get_hair(self) -> Hair | None: ...
+    def get_hair_resource_sets(self) -> list[HairResourceSet]: ...
+
+    @abstractmethod
+    def get_hair(self, resource: ResourceKey) -> Hair | None: ...
 
     def get_resources(self, resource_type: ResourceType) -> Iterable[ResourceKey]:
         return Enumerable(self.__resource_paths.keys()).where(lambda r: r.type == resource_type)
@@ -162,9 +169,7 @@ class Collection(SlotsBase):
         else:
             reader = ResourceReader(reader)
 
-        if isinstance(resource, ResourceReference):
-            reader.position = reader.resource_body_pos + resource.offset
-
+        reader.position = reader.resource_body_pos + (resource.offset if isinstance(resource, ResourceReference) else 0)
         return reader
 
     def __scan_resources(self) -> None:

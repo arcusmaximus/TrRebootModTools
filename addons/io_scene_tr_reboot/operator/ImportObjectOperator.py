@@ -54,6 +54,9 @@ class ImportObjectOperator(ImportOperatorBase[_Properties]):
         if context is None:
             return { "CANCELLED" }
 
+        if context.object is not None:
+            bpy.ops.object.mode_set(mode = "OBJECT")
+
         game = self.get_game_from_file_path(self.properties.filepath)
         if game is None:
             return { "CANCELLED" }
@@ -74,7 +77,7 @@ class ImportObjectOperator(ImportOperatorBase[_Properties]):
             )
             model_importer.import_from_collection(tr_collection, bl_armature_objs)
 
-            bl_armature_obj = Enumerable(bl_armature_objs.values()).first() if len(bl_armature_objs) == 1 else None
+            bl_armature_obj = Enumerable(bl_armature_objs.values()).first_or_none(lambda o: Enumerable(o.children).any())
             if bl_armature_obj is not None:
                 collision_importer = self.create_collision_importer(OperatorCommon.scale_factor, game)
                 collision_importer.import_from_collection(tr_collection, bl_armature_obj)
@@ -83,7 +86,7 @@ class ImportObjectOperator(ImportOperatorBase[_Properties]):
                 cloth_importer.import_from_collection(tr_collection, bl_armature_obj)
 
             hair_importer = self.create_hair_importer(OperatorCommon.scale_factor, game)
-            hair_importer.import_from_collection(tr_collection, bl_armature_obj)
+            hair_importer.import_from_collection(tr_collection, bl_armature_objs)
 
             if game == CdcGame.SOTTR and self.properties.merge_with_existing_skeletons and bl_armature_obj is not None:
                 self.merge(context)

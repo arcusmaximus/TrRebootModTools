@@ -19,9 +19,6 @@ class CollisionImporter(SlotsBase):
         self.bl_context = bpy.context
 
     def import_from_collection(self, tr_collection: Collection, bl_armature_obj: bpy.types.Object) -> list[bpy.types.Object]:
-        bl_collision_empty = BlenderHelper.create_object(None, BlenderNaming.make_collision_empty_name(tr_collection.name))
-        bl_collision_empty.parent = bl_armature_obj
-
         tr_cloth = tr_collection.get_cloth()
         if tr_cloth is None:
             return []
@@ -29,11 +26,17 @@ class CollisionImporter(SlotsBase):
         bl_collision_objs: list[bpy.types.Object] = []
         for tr_collision in Enumerable(tr_collection.get_collisions()).concat(Enumerable(tr_cloth.strips).select_many(lambda s: s.collisions)).distinct():
             bl_collision_obj = self.import_collision(tr_collection, tr_collision, bl_armature_obj)
-            if bl_collision_obj is None:
-                continue
+            if bl_collision_obj is not None:
+                bl_collision_objs.append(bl_collision_obj)
 
-            bl_collision_obj.parent = bl_collision_empty
-            bl_collision_objs.append(bl_collision_obj)
+        if len(bl_collision_objs) > 0:
+            empty_name = BlenderNaming.make_collision_empty_name(tr_collection.name)
+            bl_collision_empty = bpy.data.objects.get(empty_name) or BlenderHelper.create_object(None, empty_name)
+            bl_collision_empty.parent = bl_armature_obj
+            bl_collision_empty.hide_set(True)
+
+            for bl_collision_obj in bl_collision_objs:
+                bl_collision_obj.parent = bl_collision_empty
 
         return bl_collision_objs
 

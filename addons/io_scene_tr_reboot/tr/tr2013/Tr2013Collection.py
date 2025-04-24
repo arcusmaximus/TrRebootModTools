@@ -31,10 +31,11 @@ class Tr2013ObjectHeader(CStruct32):
 class Tr2013Collection(Collection):
     game = CdcGame.TR2013
 
-    __model_refs: list[ResourceReference]
-    __cloth_tune_ref: ResourceReference | None
     __skeletons: dict[ResourceKey, Tr2013Skeleton]
+    __model_refs: list[ResourceReference]
     __models: dict[ResourceKey, Tr2013Model]
+    __cloth_tune_ref: ResourceReference | None
+    __cloth: Tr2013Cloth | None
 
     def __init__(self, object_ref_file_path: str) -> None:
         super().__init__(object_ref_file_path)
@@ -52,9 +53,10 @@ class Tr2013Collection(Collection):
         else:
             self.__model_refs = []
 
-        self.__cloth_tune_ref = object_header.cloth_tune_ref_1
         self.__skeletons = {}
         self.__models = {}
+        self.__cloth = None
+        self.__cloth_tune_ref = object_header.cloth_tune_ref_1
 
     def get_model_instances(self) -> list[Collection.ModelInstance]:
         instances: list[Collection.ModelInstance] = []
@@ -128,33 +130,47 @@ class Tr2013Collection(Collection):
         return self.__cloth_tune_ref
 
     def get_cloth(self) -> Cloth | None:
-        if len(self.__model_refs) != 1:
-            return None
+        if self.__cloth is not None:
+            return self.__cloth
 
-        cloth_definition_ref = self.cloth_definition_ref
-        cloth_tune_ref = self.cloth_tune_ref
-        skeleton = self.get_skeleton(self.__model_refs[0])
-        if cloth_definition_ref is None or skeleton is None:
-            return None
+        for model_ref in self.__model_refs:
+            model = cast(Tr2013Model | None, self.get_model(model_ref))
+            if model is None or model.refs.cloth_definition_ref is None:
+                continue
 
-        definition_reader = self.get_resource_reader(cloth_definition_ref, True)
-        tune_reader = self.get_resource_reader(self.object_ref, True) if cloth_tune_ref is not None else None
-        if definition_reader is None:
-            return None
+            skeleton = self.get_skeleton(model_ref)
+            if skeleton is None:
+                return None
 
-        definition_reader.seek(cloth_definition_ref)
-        if tune_reader is not None and cloth_tune_ref is not None:
-            tune_reader.seek(cloth_tune_ref)
+            definition_reader = self.get_resource_reader(model.refs.cloth_definition_ref, True)
+            tune_reader = self.get_resource_reader(self.__cloth_tune_ref, True) if self.__cloth_tune_ref is not None else None
+            if definition_reader is None:
+                return None
 
-        global_bone_ids = Enumerable(skeleton.bones).select(lambda b: b.global_id).to_list()
+            global_bone_ids = Enumerable(skeleton.bones).select(lambda b: b.global_id).to_list()
 
-        cloth = Tr2013Cloth(cloth_definition_ref.id, self.object_ref.id)
-        cloth.read(definition_reader, tune_reader, global_bone_ids, [])
-        return cloth
+            cloth = Tr2013Cloth(model.refs.cloth_definition_ref.id, self.object_ref.id)
+            cloth.read(definition_reader, tune_reader, global_bone_ids, [])
+            if len(cloth.strips) == 0:
+                continue
 
-    def get_hair(self) -> Hair | None:
-        model = Enumerable(self.__model_refs).select(self.get_model).of_type(Tr2013Model).first_or_none(self.is_hair_model)
-        if model is None or model.refs.model_data_resource is None:
+            self.__cloth = cloth
+            return cloth
+
+        return None
+
+    def get_hair_resource_sets(self) -> list[Collection.HairResourceSet]:
+        resource_sets: list[Collection.HairResourceSet] = []
+        for resource in self.__model_refs:
+            model = self.get_model(resource)
+            if model is not None and self.is_hair_model(model):
+                resource_sets.append(Collection.HairResourceSet(resource, resource))
+
+        return resource_sets
+
+    def get_hair(self, resource: ResourceKey) -> Hair | None:
+        model = self.get_model(resource)
+        if not isinstance(model, Tr2013Model) or not self.is_hair_model(model) or model.refs.model_data_resource is None:
             return None
 
         hair = Tr2013Hair(model.id, model.refs.model_data_resource.id)

@@ -18,11 +18,10 @@ class SkeletonImporter(SlotsBase):
         self.scale_factor = scale_factor
 
     def import_from_collection(self, tr_collection: Collection) -> dict[ResourceKey, bpy.types.Object]:
-        if bpy.context.object is not None:
-            bpy.ops.object.mode_set(mode = "OBJECT")
-
         bl_armature_objs: dict[ResourceKey, bpy.types.Object] = {}
-        for skeleton_resource in Enumerable(tr_collection.get_model_instances()).select(lambda i: i.skeleton_resource).of_type(ResourceKey).distinct():
+        model_skeleton_resources = Enumerable(tr_collection.get_model_instances()).select(lambda i: i.skeleton_resource).of_type(ResourceKey)
+        hair_skeleton_resources  = Enumerable(tr_collection.get_hair_resource_sets()).select(lambda s: s.skeleton_resource).of_type(ResourceKey)
+        for skeleton_resource in model_skeleton_resources.concat(hair_skeleton_resources).distinct():
             tr_skeleton = tr_collection.get_skeleton(skeleton_resource)
             if tr_skeleton is None or len(tr_skeleton.bones) == 0:
                 continue

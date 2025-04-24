@@ -17,6 +17,7 @@ from io_scene_tr_reboot.tr.shadow.ShadowBoneConstraint import ShadowBoneConstrai
 from io_scene_tr_reboot.tr.shadow.ShadowCloth import ShadowCloth
 from io_scene_tr_reboot.tr.shadow.ShadowCollection import ShadowCollection
 from io_scene_tr_reboot.tr.shadow.ShadowCollision import ShadowCollision
+from io_scene_tr_reboot.tr.shadow.ShadowHair import ShadowHair
 from io_scene_tr_reboot.tr.shadow.ShadowMesh import ShadowMesh
 from io_scene_tr_reboot.tr.shadow.ShadowMeshPart import ShadowMeshPart
 from io_scene_tr_reboot.tr.shadow.ShadowModel import ShadowModel
@@ -61,4 +62,4 @@ class ShadowFactory(IFactory):
         return ShadowCollision.deserialize(data)
 
     def create_hair(self, model_id: int | None, hair_data_id: int) -> Hair:
-        raise NotImplementedError()
+        return ShadowHair(hair_data_id)

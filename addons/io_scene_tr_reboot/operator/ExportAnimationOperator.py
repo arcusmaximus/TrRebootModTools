@@ -50,6 +50,9 @@ class ExportShadowAnimationOperator(ExportOperatorBase[_Properties]):
         if context is None:
             return { "CANCELLED" }
 
+        if context.object is not None:
+            bpy.ops.object.mode_set(mode = "OBJECT")
+
         with OperatorContext.begin(self):
             bl_armature_obj = self.get_source_armature(context)
             if bl_armature_obj is None:
