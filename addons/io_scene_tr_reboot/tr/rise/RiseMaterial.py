@@ -27,18 +27,18 @@ class _MaterialPass(CStruct64, IMaterialPass if TYPE_CHECKING else object):
     flags: CInt
 
     num_ps_textures: CByte
-    num_ps_texture_ranges: CByte
-    num_ps_textures_: CByte
-    ps_texture_range_start: CByte
+    num_ps_instance_textures: CByte
+    num_ps_material_textures: CByte
+    first_ps_instance_texture: CByte
     ps_textures_ref: ResourceReference | None
     num_ps_constants: CInt
     field_24: CInt
     ps_constants_ref: ResourceReference | None
 
     num_vs_textures: CByte
-    num_vs_texture_ranges: CByte
-    num_vs_textures_: CByte
-    vs_texture_range_start: CByte
+    num_vs_instance_textures: CByte
+    num_vs_material_textures: CByte
+    first_vs_instance_texture: CByte
     field_34: CInt
     vs_textures_ref: ResourceReference | None
     num_vs_constants: CInt

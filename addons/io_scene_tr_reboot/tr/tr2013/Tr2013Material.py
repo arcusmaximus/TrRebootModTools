@@ -27,17 +27,17 @@ class _MaterialPass(CStruct32):
     flags: CInt
 
     num_ps_textures: CByte
-    num_ps_texture_ranges: CByte
-    num_ps_textures_: CByte
-    ps_texture_range_start: CByte
+    num_ps_instance_textures: CByte
+    num_ps_material_textures: CByte
+    first_ps_instance_texture: CByte
     ps_textures_ref: ResourceReference | None
     num_ps_constants: CInt
     ps_constants_ref: ResourceReference | None
 
     num_vs_textures: CByte
-    num_vs_texture_ranges: CByte
-    num_vs_textures_: CByte
-    vs_texture_range_start: CByte
+    num_vs_instance_textures: CByte
+    num_vs_material_textures: CByte
+    first_vs_instance_texture: CByte
     vs_textures_ref: ResourceReference | None
     num_vs_constants: CInt
     vs_constants_ref: ResourceReference | None

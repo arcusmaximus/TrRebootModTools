@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using TrRebootTools.Shared.Cdc;
+using TrRebootTools.Shared.Forms;
 
 namespace TrRebootTools.Extractor
 {

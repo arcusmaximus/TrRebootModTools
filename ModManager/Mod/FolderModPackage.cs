@@ -193,7 +193,7 @@ namespace TrRebootTools.ModManager.Mod
                 if (fileRef == null)
                     throw new Exception($"{Path.GetFileName(wemFilePath)} in the mod was not found in the game's original files; incorrect subfolder?");
 
-                foreach (WwiseSoundBankItemReference soundUsage in resourceUsageCache.GetSoundUsages(soundId))
+                foreach (WwiseSoundBankItemReference soundUsage in resourceUsageCache.GetWwiseSoundUsages(soundId))
                 {
                     if (soundUsage.Type != WwiseSoundBankItemReferenceType.DataIndex)
                         continue;
@@ -389,8 +389,6 @@ namespace TrRebootTools.ModManager.Mod
             uint originalFormat = GetOriginalTextureFormat(resourceKey, archiveSet, resourceUsageCache);
             if (CdcTexture.IsSrgbFormat(originalFormat))
                 texture.Header.Format = CdcTexture.MapRegularFormatToSrgb(texture.Header.Format);
-            else
-                texture.Header.Format = CdcTexture.MapSrgbFormatToRegular(texture.Header.Format);
 
             Stream textureStream = new MemoryStream();
             texture.Write(textureStream);

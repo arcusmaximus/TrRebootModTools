@@ -544,11 +544,11 @@ class ModelExporter(SlotsBase):
 
         match = re.match(r".tr(\d+)model", os.path.splitext(file_path)[1])
         if match is None:
-            return
+            return None
 
         game = int(match.group(1))
         if game < 9 or game > 11:
-            return
+            return None
 
         game = CdcGame(game)
 

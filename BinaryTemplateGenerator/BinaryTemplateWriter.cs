@@ -9,7 +9,7 @@ namespace TrRebootTools.BinaryTemplateGenerator
     internal class BinaryTemplateWriter
     {
         private readonly TextWriter _writer;
-        private readonly string[] TypesToSkip = new[] { "Instance" };
+        private readonly string[] TypesToSkip = [ "Instance" ];
 
         public BinaryTemplateWriter(TextWriter writer, int trVersion)
         {

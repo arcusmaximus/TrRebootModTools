@@ -12,7 +12,7 @@ using TrRebootTools.Shared.Util;
 
 namespace TrRebootTools.Extractor
 {
-    internal class Extractor
+    public class Extractor
     {
         private readonly ArchiveSet _archiveSet;
 

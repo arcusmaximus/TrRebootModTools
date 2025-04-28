@@ -15,7 +15,7 @@ namespace TrRebootTools.Shared.Cdc
         protected readonly ResourceUsageCache _baseCache;
         protected readonly Dictionary<ResourceKey, Dictionary<ArchiveFileKey, int>> _resourceUsages = new();
         protected readonly Dictionary<string, ResourceKey> _resourceKeysByOriginalFilePath = new();
-        protected readonly Dictionary<int, HashSet<WwiseSoundBankItemReference>> _soundUsages = new();
+        protected readonly Dictionary<int, HashSet<WwiseSoundBankItemReference>> _wwiseSoundUsages = new();
 
         public ResourceUsageCache()
         {
@@ -78,7 +78,7 @@ namespace TrRebootTools.Shared.Cdc
             }
 
             ulong localePlatformMask = CdcGameInfo.Get(collection.Game).LocalePlatformMask;
-            bool parseSoundBanks = CdcGameInfo.Get(collection.Game).UsesWwise;
+            bool parseWwiseSoundBanks = CdcGameInfo.Get(collection.Game).UsesWwise;
             for (int i = 0; i < collection.ResourceReferences.Count; i++)
             {
                 ResourceReference resourceRef = collection.ResourceReferences[i];
@@ -86,8 +86,8 @@ namespace TrRebootTools.Shared.Cdc
                     continue;
 
                 AddResourceReference(archiveSet, collection, i);
-                if (resourceRef.Type == ResourceType.SoundBank && parseSoundBanks)
-                    AddSoundBank(archiveSet, resourceRef);
+                if (resourceRef.Type == ResourceType.SoundBank && parseWwiseSoundBanks)
+                    AddWwiseSoundBank(archiveSet, resourceRef);
             }
         }
 
@@ -123,7 +123,7 @@ namespace TrRebootTools.Shared.Cdc
             usages[collectionKey] = resourceIdx;
         }
 
-        private void AddSoundBank(ArchiveSet archiveSet, ResourceReference resourceRef)
+        private void AddWwiseSoundBank(ArchiveSet archiveSet, ResourceReference resourceRef)
         {
             WwiseSoundBank bank;
             using (Stream stream = archiveSet.OpenResource(resourceRef))
@@ -134,15 +134,15 @@ namespace TrRebootTools.Shared.Cdc
             int index = 0;
             foreach (int soundId in bank.EmbeddedSounds.Keys)
             {
-                _soundUsages.GetOrAdd(soundId, () => new())
-                            .Add(new WwiseSoundBankItemReference(resourceRef.Id, WwiseSoundBankItemReferenceType.DataIndex, index++));
+                _wwiseSoundUsages.GetOrAdd(soundId, () => new())
+                                 .Add(new WwiseSoundBankItemReference(resourceRef.Id, WwiseSoundBankItemReferenceType.DataIndex, index++));
             }
 
             index = 0;
             foreach (int soundId in bank.ReferencedSoundIds)
             {
-                _soundUsages.GetOrAdd(soundId, () => new())
-                            .Add(new WwiseSoundBankItemReference(resourceRef.Id, WwiseSoundBankItemReferenceType.Event, index++));
+                _wwiseSoundUsages.GetOrAdd(soundId, () => new())
+                                 .Add(new WwiseSoundBankItemReference(resourceRef.Id, WwiseSoundBankItemReferenceType.Event, index++));
             }
         }
 
@@ -193,11 +193,11 @@ namespace TrRebootTools.Shared.Cdc
             return collection?.ResourceReferences[collectionItem.ResourceIndex];
         }
 
-        public IEnumerable<int> SoundIds => _soundUsages.Keys;
+        public IEnumerable<int> WwiseSoundIds => _wwiseSoundUsages.Keys;
 
-        public IEnumerable<WwiseSoundBankItemReference> GetSoundUsages(int soundId)
+        public IEnumerable<WwiseSoundBankItemReference> GetWwiseSoundUsages(int soundId)
         {
-            return _soundUsages.GetOrDefault(soundId) ?? Enumerable.Empty<WwiseSoundBankItemReference>();
+            return _wwiseSoundUsages.GetOrDefault(soundId) ?? Enumerable.Empty<WwiseSoundBankItemReference>();
         }
 
         public bool Load(string archiveFolderPath)
@@ -265,7 +265,7 @@ namespace TrRebootTools.Shared.Cdc
                     int index = reader.ReadInt32();
                     usages.Add(new WwiseSoundBankItemReference(soundBankResourceId, type, index));
                 }
-                _soundUsages.Add(id, usages);
+                _wwiseSoundUsages.Add(id, usages);
             }
         }
 
@@ -319,8 +319,8 @@ namespace TrRebootTools.Shared.Cdc
 
         private void WriteSoundUsages(BinaryWriter writer)
         {
-            writer.Write(_soundUsages.Count);
-            foreach ((int soundId, HashSet<WwiseSoundBankItemReference> usages) in _soundUsages)
+            writer.Write(_wwiseSoundUsages.Count);
+            foreach ((int soundId, HashSet<WwiseSoundBankItemReference> usages) in _wwiseSoundUsages)
             {
                 writer.Write(soundId);
                 writer.Write(usages.Count);

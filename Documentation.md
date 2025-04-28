@@ -525,9 +525,10 @@ Blender "hair curves" object. Each part has vertex weights for the same single b
 vertex is "stuck" to the scalp. You can edit these weights by clicking *Start Weight Painting* in the *Tomb Raider*
 tab in Blender's Sidebar.
 
-You can add or remove parts as you see fit. The export will include the results of any modifiers. Also, while
-the game expects each hair strand to have exactly 16 vertices, you don't need to worry about this as the addon
-(temporarily) resamples all the strands during export.
+Each part index is linked to certain physics properties, so you should keep the original number of parts.
+The export will include the results of any modifiers. Also, while the game expects each hair strand to have
+exactly 16 vertices, you don't need to worry about this as the addon (temporarily) resamples all the strands
+during export.
 
 The hair color is determined by the texture 7827.dds in generalbank.drm.
 

@@ -1,9 +1,8 @@
 ﻿using System.Drawing;
 using System.Threading;
 using System.Windows.Forms;
-using TrRebootTools.Shared;
 
-namespace TrRebootTools.Extractor
+namespace TrRebootTools.Shared.Forms
 {
     public partial class FormWithProgress : Form, ITaskProgress
     {

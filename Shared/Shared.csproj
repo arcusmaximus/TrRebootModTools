@@ -12,7 +12,7 @@
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
-    <LangVersion>10</LangVersion>
+    <LangVersion>12</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -109,6 +109,12 @@
     <Compile Include="Controls\VirtualTreeView\VirtualTreeView.cs">
       <SubType>UserControl</SubType>
     </Compile>
+    <Compile Include="Forms\FormWithProgress.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\FormWithProgress.Designer.cs">
+      <DependentUpon>FormWithProgress.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\GameSelectionForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -128,6 +134,7 @@
     <Compile Include="Util\IoExtensions.cs" />
     <Compile Include="Util\IsExternalInit.cs" />
     <Compile Include="Util\PositionTrackingStream.cs" />
+    <Compile Include="Util\Vec4.cs" />
     <Compile Include="Util\WindowStream.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -136,6 +143,9 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Forms\FormWithProgress.resx">
+      <DependentUpon>FormWithProgress.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Forms\GameSelectionForm.resx">
       <DependentUpon>GameSelectionForm.cs</DependentUpon>
     </EmbeddedResource>

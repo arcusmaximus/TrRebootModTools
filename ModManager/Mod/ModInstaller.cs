@@ -115,7 +115,7 @@ namespace TrRebootTools.ModManager.Mod
             List<TigerModPackage> modPackages = new();
 
             Archive origGameArchive = _archiveSet.GetArchive(flattenedArchiveId, 0);
-            modPackages.Add(new TigerModPackage(new[] { origGameArchive }, _archiveSet.Game));
+            modPackages.Add(new TigerModPackage([origGameArchive], _archiveSet.Game));
 
             foreach (IGrouping<int, Archive> archivesOfId in _archiveSet.Archives
                                                                         .Where(a => a.ModName != null && a.MetaData.Enabled)

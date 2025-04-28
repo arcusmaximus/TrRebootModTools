@@ -1,4 +1,4 @@
-﻿namespace TrRebootTools.Extractor
+﻿namespace TrRebootTools.Shared.Forms
 {
     partial class FormWithProgress
     {

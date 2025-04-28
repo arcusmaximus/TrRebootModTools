@@ -52,7 +52,7 @@ class HairExporter:
             if bl_material is not None:
                 tr_hair.material_id = BlenderNaming.try_parse_hair_strand_group_material_name(bl_material.name)
 
-        for bl_obj in bl_strand_group_objs:
+        for bl_obj in Enumerable(bl_strand_group_objs).order_by(lambda o: o.name):
             bl_obj_eval = bl_obj.evaluated_get(bpy.context.evaluated_depsgraph_get())
             bl_data_eval = bl_obj_eval.data
             if not isinstance(bl_data_eval, bpy.types.Curves):
