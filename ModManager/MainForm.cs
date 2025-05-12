@@ -53,11 +53,9 @@ namespace TrRebootTools.ModManager
 
             if (!_gameResourceUsages.Load(_archiveSet.FolderPath))
             {
-                using (ArchiveSet gameArchiveSet = ArchiveSet.Open(_archiveSet.FolderPath, true, false, _archiveSet.Game))
-                {
-                    await Task.Run(() => _gameResourceUsages.AddArchiveSet(gameArchiveSet, this, _cancellationTokenSource.Token));
-                    _gameResourceUsages.Save(_archiveSet.FolderPath);
-                }
+                using ArchiveSet gameArchiveSet = ArchiveSet.Open(_archiveSet.FolderPath, true, false, _archiveSet.Game);
+                await Task.Run(() => _gameResourceUsages.AddArchiveSet(gameArchiveSet, this, _cancellationTokenSource.Token));
+                _gameResourceUsages.Save(_archiveSet.FolderPath);
             }
 
             if (_archiveSet.DuplicateArchives.Any(a => a.ModName != null))

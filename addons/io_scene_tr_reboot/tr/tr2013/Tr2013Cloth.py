@@ -279,8 +279,13 @@ class Tr2013Cloth(Cloth):
                 strip.collisions = strip_group_collisions
 
     def write(self, definition_writer: ResourceBuilder, tune_writer: ResourceBuilder, global_bone_ids: list[int | None]) -> None:
+        self.recalculate_strip_ids()
         self.write_definition(definition_writer)
         self.write_tune(tune_writer, global_bone_ids)
+
+    def recalculate_strip_ids(self) -> None:
+        for i, strip in enumerate(self.strips):
+            strip.id = i
 
     def write_definition(self, writer: ResourceBuilder) -> None:
         dtp = self.create_definition_header()

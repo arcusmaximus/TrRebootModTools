@@ -1,5 +1,5 @@
 ﻿using TrRebootTools.ModManager;
-using TrRebootTools.ModManager.Controls;
+using TrRebootTools.Shared.Controls;
 
 namespace TrRebootTools.ModManager
 {
@@ -30,7 +30,7 @@ namespace TrRebootTools.ModManager
             this._statusBar = new System.Windows.Forms.StatusStrip();
             this._lblStatus = new System.Windows.Forms.ToolStripStatusLabel();
             this._progressBar = new System.Windows.Forms.ToolStripProgressBar();
-            this._lvMods = new TrRebootTools.ModManager.Controls.BindableListView();
+            this._lvMods = new TrRebootTools.Shared.Controls.BindableListView();
             this._colModName = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this._folderBrowser = new Ookii.Dialogs.WinForms.VistaFolderBrowserDialog();
             this._fileBrowser = new System.Windows.Forms.OpenFileDialog();

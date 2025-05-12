@@ -33,4 +33,10 @@
         ShResource = 116,
         CubeLut = 117
     }
+
+    public enum ShaderType
+    {
+        Pixel,
+        Vertex
+    }
 }

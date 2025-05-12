@@ -183,6 +183,9 @@ class ShadowCloth(RiseCloth):
     def read_tune_strip_ids(self, reader: ResourceReader, count: int) -> Sequence[int]:
         return reader.read_uint16_list(count)
 
+    def recalculate_strip_ids(self) -> None:
+        pass
+
     def create_definition_header(self) -> IClothDef:
         return _ClothDef()
 

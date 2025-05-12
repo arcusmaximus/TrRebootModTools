@@ -75,7 +75,7 @@ namespace TrRebootTools.BinaryTemplateGenerator
                     {
                         string keyword = match.Groups["keyword"].Value;
                         string name = match.Groups["name"].Value;
-                        string[] baseTypes = match.Groups["baseTypes"].Success ? match.Groups["baseTypes"].Captures.Cast<Capture>().Select(c => c.Value).ToArray() : Array.Empty<string>();
+                        string[] baseTypes = match.Groups["baseTypes"].Success ? match.Groups["baseTypes"].Captures.Cast<Capture>().Select(c => c.Value).ToArray() : [];
                         switch (keyword)
                         {
                             case "struct":
@@ -122,7 +122,7 @@ namespace TrRebootTools.BinaryTemplateGenerator
 
                     Group arrayDimensionsGroup = match.Groups["arrayDimensions"];
                     int[] arrayDimensions = arrayDimensionsGroup.Success ? arrayDimensionsGroup.Captures.Cast<Capture>().Select(c => c.Length > 0 ? int.Parse(c.Value) : 0).ToArray()
-                                                                         : Array.Empty<int>();
+                                                                         : [];
                     
                     currentComposite.Fields.Add(new CField(type, name, bitLength, arrayDimensions));
                     continue;

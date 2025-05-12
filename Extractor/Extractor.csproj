@@ -61,16 +61,6 @@
     <Compile Include="Controls\ArchiveFileTreeView.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Controls\FileTreeView.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Controls\FileTreeViewBase.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Controls\FileTreeViewBase.Designer.cs">
-      <DependentUpon>FileTreeViewBase.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Enumerations.cs" />
     <Compile Include="Extractor.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
@@ -80,10 +70,6 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="Controls\FileTreeViewBase.resx">
-      <DependentUpon>FileTreeViewBase.cs</DependentUpon>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
     <EmbeddedResource Include="MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
     </EmbeddedResource>
@@ -111,11 +97,8 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="icon.ico" />
-    <Content Include="Resources\File.png" />
-    <Content Include="Resources\Folder.png" />
     <Content Include="Resources\List.png" />
     <Content Include="Resources\Localization.png" />
-    <Content Include="Resources\Search.png" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Shared\Shared.csproj">

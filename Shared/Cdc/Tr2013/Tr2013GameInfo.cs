@@ -8,6 +8,8 @@ namespace TrRebootTools.Shared.Cdc.Tr2013
 
         public override string ExeName => "TombRaider.exe";
 
+        public override int PointerSize => 4;
+
         public override string ShortName => "TR2013";
 
         public override Image Icon => Properties.Resources.Tr2013;
@@ -22,8 +24,8 @@ namespace TrRebootTools.Shared.Cdc.Tr2013
 
         public override bool UsesWwise => false;
 
-        public override Language[] Languages { get; } = new Language[]
-        {
+        public override Language[] Languages { get; } =
+        [
             new(0xFFFFFFFFFFFF1100 | 1,         "en", "ENGLISH"),
             new(0xFFFFFFFFFFFF1100 | 2,         "fr", "FRENCH"),
             new(0xFFFFFFFFFFFF1100 | 4,         "de", "GERMAN"),
@@ -37,6 +39,6 @@ namespace TrRebootTools.Shared.Cdc.Tr2013
             new(0xFFFFFFFFFFFF1100 | 0x2000,    "ar", "ARABIC"),
             new(0xFFFFFFFFFFFF1100 | 0x4000,    "ko", "KOREAN"),
             new(0xFFFFFFFFFFFF1100 | 0x8000,    "zhhant", "CHINESE")
-        };
+        ];
     }
 }

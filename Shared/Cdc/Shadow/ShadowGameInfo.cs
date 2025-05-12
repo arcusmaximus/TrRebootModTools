@@ -8,6 +8,8 @@ namespace TrRebootTools.Shared.Cdc.Shadow
 
         public override string ExeName => "SOTTR.exe";
 
+        public override int PointerSize => 8;
+
         public override string ShortName => "SOTTR";
 
         public override Image Icon => Properties.Resources.Shadow;
@@ -22,8 +24,8 @@ namespace TrRebootTools.Shared.Cdc.Shadow
 
         public override bool UsesWwise => true;
 
-        public override Language[] Languages { get; } = new Language[]
-        {
+        public override Language[] Languages { get; } =
+        [
             new(0xFFFFFFFFFFFF0400 | 1,         "en", "ENGLISH"),
             new(0xFFFFFFFFFFFF0400 | 2,         "fr", "FRENCH"),
             new(0xFFFFFFFFFFFF0400 | 4,         "de", "GERMAN"),
@@ -39,6 +41,6 @@ namespace TrRebootTools.Shared.Cdc.Shadow
             new(0xFFFFFFFFFFFF0400 | 0x1000,    "zhhant", "CHINESE"),
             new(0xFFFFFFFFFFFF0400 | 0x2000,    "zhhans", "SIMPLECHINESE"),
             new(0xFFFFFFFFFFFF0400 | 0x8000,    "ar", "ARABIC")
-        };
+        ];
     }
 }

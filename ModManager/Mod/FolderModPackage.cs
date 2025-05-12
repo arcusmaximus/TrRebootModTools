@@ -97,6 +97,9 @@ namespace TrRebootTools.ModManager.Mod
 
             foreach (string filePath in Directory.EnumerateFiles(folderPath, "*", recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly))
             {
+                if (new FileInfo(filePath).Length == 0)
+                    continue;
+
                 if (TryGetResourceKey(baseFolderPath, filePath, out ResourceKey resourceKey, usageCache, game))
                 {
                     resources[resourceKey] = filePath;
@@ -104,7 +107,7 @@ namespace TrRebootTools.ModManager.Mod
                 }
 
                 string extension = Path.GetExtension(filePath);
-                if (extension is ".txt" or ".png" or ".drm")
+                if (extension is ".txt" or ".png" or ".drm" or ".tmp")
                     continue;
 
                 string filePathToHash = filePath.Substring(baseFolderPath.Length);

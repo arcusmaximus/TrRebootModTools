@@ -8,6 +8,8 @@ namespace TrRebootTools.Shared.Cdc.Rise
 
         public override string ExeName => "ROTTR.exe";
 
+        public override int PointerSize => 8;
+
         public override string ShortName => "ROTTR";
 
         public override Image Icon => Properties.Resources.Rise;
@@ -22,8 +24,8 @@ namespace TrRebootTools.Shared.Cdc.Rise
 
         public override bool UsesWwise => false;
 
-        public override Language[] Languages { get; } = new Language[]
-        {
+        public override Language[] Languages { get; } =
+        [
             new(0xFFFFFFFFFFFF0000 | 1,         "en", "ENGLISH"),
             new(0xFFFFFFFFFFFF0000 | 2,         "fr", "FRENCH"),
             new(0xFFFFFFFFFFFF0000 | 4,         "de", "GERMAN"),
@@ -39,6 +41,6 @@ namespace TrRebootTools.Shared.Cdc.Rise
             new(0xFFFFFFFFFFFF0000 | 0x1000,    "zhhant", "CHINESE"),
             new(0xFFFFFFFFFFFF0000 | 0x2000,    "zhhans", "SIMPLECHINESE"),
             new(0xFFFFFFFFFFFF0000 | 0x8000,    "ar", "ARABIC")
-        };
+        ];
     }
 }

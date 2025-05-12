@@ -81,7 +81,7 @@ namespace TrRebootTools.Shared.Cdc
             if (type == 0)
                 return false;
 
-            Match match = Regex.Match(filePath, @"[\\/\.](\d+)\.\w+$");
+            Match match = Regex.Match(filePath, @"(?:^|[\\/\.])(\d+)\.\w+$");
             if (!match.Success)
                 return false;
 

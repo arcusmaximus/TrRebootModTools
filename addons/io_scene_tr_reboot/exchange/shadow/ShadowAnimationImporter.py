@@ -124,6 +124,8 @@ class ShadowAnimationImporter(SlotsBase):
 
         for bl_shape_key in Enumerable(bl_mesh.shape_keys.key_blocks).skip(1):
             bl_shape_key.value = 0
+            bl_shape_key.slider_min = -10
+            bl_shape_key.slider_max = 10
 
         bl_fcurves: dict[int, bpy.types.FCurve] = self.create_blend_shape_fcurves(bl_mesh_obj, animation)
 

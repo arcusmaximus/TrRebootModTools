@@ -74,10 +74,15 @@ namespace TrRebootTools.Shared.Util
 
         public static void AddRange<T>(this BindingList<T> list, IEnumerable<T> items)
         {
+            bool prevRaiseEvents = list.RaiseListChangedEvents;
+            list.RaiseListChangedEvents = false;
             foreach (T item in items)
             {
                 list.Add(item);
             }
+            list.RaiseListChangedEvents = prevRaiseEvents;
+            if (prevRaiseEvents)
+                list.ResetBindings();
         }
 
         public static void RemoveAll<TKey, TValue>(this IDictionary<TKey, TValue> dict, Func<KeyValuePair<TKey, TValue>, bool> predicate)

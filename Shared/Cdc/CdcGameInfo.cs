@@ -10,12 +10,11 @@ namespace TrRebootTools.Shared.Cdc
     public abstract class CdcGameInfo
     {
         private static readonly CdcGameInfo[] Instances =
-            new CdcGameInfo[]
-            {
+            [
                 new Tr2013GameInfo(),
                 new RiseGameInfo(),
                 new ShadowGameInfo()
-            };
+            ];
 
         public static CdcGameInfo Get(CdcGame game)
         {
@@ -25,6 +24,8 @@ namespace TrRebootTools.Shared.Cdc
         public abstract CdcGame Game { get; }
 
         public abstract string ExeName { get; }
+
+        public abstract int PointerSize { get; }
 
         public abstract string ShortName { get; }
 

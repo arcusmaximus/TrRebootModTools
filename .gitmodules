@@ -1,3 +1,3 @@
 [submodule "vendor/Detours"]
-	path = vendor/Detours
+	path = Hooks/vendor/Detours
 	url = https://github.com/microsoft/Detours.git

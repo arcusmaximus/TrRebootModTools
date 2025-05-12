@@ -68,7 +68,7 @@ namespace TrRebootTools.BinaryTemplateGenerator
             int baseTypeIdx = 1;
             foreach (CType baseType in structure.BaseTypes.Select(n => lib.Types[n]))
             {
-                CField field = new CField(baseType.Name, "__parent" + (baseTypeIdx > 1 ? baseTypeIdx : ""), null, Array.Empty<int>())
+                CField field = new CField(baseType.Name, "__parent" + (baseTypeIdx > 1 ? baseTypeIdx : ""), null, [])
                                {
                                    Alignment = baseType.Alignment,
                                    Size = baseType.Size

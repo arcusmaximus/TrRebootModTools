@@ -1,0 +1,50 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <ItemsProjectGuid>{ca794b28-985c-4fbd-83af-ed057c30f9e3}</ItemsProjectGuid>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)CommandChannel.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)dllmain.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)MaterialConstantStore.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)NotificationChannel.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ResourceNaming.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)TrHook.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Tr\CommonMaterial.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Tr\PCDX11StaticConstantBuffer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Tr\PCDX12StaticConstantBuffer.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)CommandChannel.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MaterialConstantStore.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)NotificationChannel.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Shared.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TrHook.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Tr\ArchiveSet.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Tr\CommonMaterial.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Tr\Game.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Tr\IFileSystem.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Tr\MSFileSystemFile.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Tr\MultiFileSystem.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Tr\PCDX11RenderDevice.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Tr\PCDX11StaticConstantBuffer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Tr\PCDX12RenderDevice.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Tr\PCDX12StaticConstantBuffer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Tr\PCDX12UploadPool.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Tr\RenderAsyncCreateResource.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ResourceKey.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ResourceNaming.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Util\CaseInsensitiveLess.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Util\mem_func_ptr.h" />
+  </ItemGroup>
+</Project>

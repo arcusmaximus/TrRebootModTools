@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 
 namespace TrRebootTools.ModManager.Mod
 {
-    internal class InstalledMod : INotifyPropertyChanged
+    public class InstalledMod : INotifyPropertyChanged
     {
         private bool _enabled;
 

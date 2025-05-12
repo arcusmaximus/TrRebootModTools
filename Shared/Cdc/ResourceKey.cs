@@ -1,6 +1,4 @@
-﻿using TrRebootTools.Shared.Cdc;
-
-namespace TrRebootTools.Shared.Cdc
+﻿namespace TrRebootTools.Shared.Cdc
 {
     public struct ResourceKey
     {

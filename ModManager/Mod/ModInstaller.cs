@@ -12,7 +12,7 @@ using TrRebootTools.ModManager.Util;
 
 namespace TrRebootTools.ModManager.Mod
 {
-    internal class ModInstaller
+    public class ModInstaller
     {
         private record struct ResourceCollectionItem(ResourceCollection Collection, int ResourceIndex);
 
@@ -41,11 +41,16 @@ namespace TrRebootTools.ModManager.Mod
         public InstalledMod InstallFromFolder(string folderPath, ITaskProgress progress, CancellationToken cancellationToken)
         {
             string modName = Path.GetFileName(folderPath);
+            return InstallFromFolder(modName, folderPath, progress, cancellationToken);
+        }
+
+        public InstalledMod InstallFromFolder(string modName, string folderPath, ITaskProgress progress, CancellationToken cancellationToken)
+        {
             Archive existingArchive = _archiveSet.Archives.FirstOrDefault(a => a.ModName == modName);
             if (existingArchive != null)
                 _archiveSet.Delete(existingArchive.Id, _gameResourceUsageCache, progress, cancellationToken);
 
-            using ModPackage modPackage = new FolderModPackage(folderPath, _archiveSet, _gameResourceUsageCache);
+            using ModPackage modPackage = new FolderModPackage(modName, folderPath, _archiveSet, _gameResourceUsageCache);
             return Install(modPackage, progress, cancellationToken);
         }
 

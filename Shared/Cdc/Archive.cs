@@ -132,7 +132,7 @@ namespace TrRebootTools.Shared.Cdc
                     for (int i = 0; i < _numParts; i++)
                     {
                         string partFilePath = GetPartFilePath(i);
-                        _partStreams.Add(File.Open(partFilePath, FileMode.Open, ModName != null ? FileAccess.ReadWrite : FileAccess.Read, FileShare.Read));
+                        _partStreams.Add(File.Open(partFilePath, FileMode.Open, ModName != null ? FileAccess.ReadWrite : FileAccess.Read, FileShare.ReadWrite));
                     }
                 }
                 return _partStreams;

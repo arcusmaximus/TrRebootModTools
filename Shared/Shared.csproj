@@ -64,6 +64,7 @@
     <Compile Include="Cdc\CdcTexture.cs" />
     <Compile Include="Cdc\Enumerations.cs" />
     <Compile Include="Cdc\LocalsBin.cs" />
+    <Compile Include="Cdc\Material.cs" />
     <Compile Include="Cdc\ResourceCollection.cs" />
     <Compile Include="Cdc\ResourceCollectionDependency.cs" />
     <Compile Include="Cdc\ResourceCollectionItemReference.cs" />
@@ -78,6 +79,7 @@
     <Compile Include="Cdc\Rise\RiseGameInfo.cs" />
     <Compile Include="Cdc\Rise\RiseHash.cs" />
     <Compile Include="Cdc\Rise\RiseLocalsBin.cs" />
+    <Compile Include="Cdc\Rise\RiseMaterial.cs" />
     <Compile Include="Cdc\Rise\RiseResourceCollection.cs" />
     <Compile Include="Cdc\Rise\RiseResourceNaming.cs" />
     <Compile Include="Cdc\Rise\RiseResourceRefDefinitions.cs" />
@@ -86,6 +88,7 @@
     <Compile Include="Cdc\Shadow\ShadowGameInfo.cs" />
     <Compile Include="Cdc\Shadow\ShadowHash.cs" />
     <Compile Include="Cdc\Shadow\ShadowLocalsBin.cs" />
+    <Compile Include="Cdc\Shadow\ShadowMaterial.cs" />
     <Compile Include="Cdc\Shadow\ShadowResourceCollection.cs" />
     <Compile Include="Cdc\Shadow\ShadowResourceNaming.cs" />
     <Compile Include="Cdc\Shadow\ShadowResourceRefDefinitions.cs" />
@@ -93,6 +96,7 @@
     <Compile Include="Cdc\Tr2013\Tr2013GameInfo.cs" />
     <Compile Include="Cdc\Tr2013\Tr2013Hash.cs" />
     <Compile Include="Cdc\Tr2013\Tr2013LocalsBin.cs" />
+    <Compile Include="Cdc\Tr2013\Tr2013Material.cs" />
     <Compile Include="Cdc\Tr2013\Tr2013ResourceCollection.cs" />
     <Compile Include="Cdc\Tr2013\Tr2013ResourceNaming.cs" />
     <Compile Include="Cdc\Tr2013\Tr2013ResourceRefDefinitions.cs" />
@@ -101,6 +105,34 @@
     <Compile Include="Cdc\SpecMasksToc.cs" />
     <Compile Include="Cdc\WwiseSoundBank.cs" />
     <Compile Include="Cdc\Tr2013\Tr2013Archive.cs" />
+    <Compile Include="Controls\ArrayControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\ArrayControl.Designer.cs">
+      <DependentUpon>ArrayControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\BindableListView.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\DraggableNumberControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\DraggableNumberControl.Designer.cs">
+      <DependentUpon>DraggableNumberControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\FileTreeView.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\FileTreeViewBase.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\FileTreeViewBase.Designer.cs">
+      <DependentUpon>FileTreeViewBase.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\FsFileTreeView.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\IArrayItemControl.cs" />
     <Compile Include="Controls\VirtualTreeView\Editors.cs" />
     <Compile Include="Controls\VirtualTreeView\Helpers.cs" />
     <Compile Include="Controls\VirtualTreeView\VirtualTreeColumn.cs" />
@@ -143,6 +175,15 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Controls\ArrayControl.resx">
+      <DependentUpon>ArrayControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\DraggableNumberControl.resx">
+      <DependentUpon>DraggableNumberControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\FileTreeViewBase.resx">
+      <DependentUpon>FileTreeViewBase.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Forms\FormWithProgress.resx">
       <DependentUpon>FormWithProgress.cs</DependentUpon>
     </EmbeddedResource>
@@ -150,7 +191,7 @@
       <DependentUpon>GameSelectionForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
+      <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
@@ -162,6 +203,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Shadow.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Resources\File.png" />
+    <Content Include="Resources\Folder.png" />
+    <Content Include="Resources\Search.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -102,16 +102,22 @@ namespace TrRebootTools.Shared.Cdc
             {
                 foreach (int refPos in _internalRefDefinitionPosByRefPos.Keys)
                 {
-                    int targetPos = GetInternalRefTarget(refPos);
+                    int targetPos = GetInternalRefTarget(refPos).Value;
                     yield return new InternalRef(refPos, targetPos);
                 }
             }
         }
 
-        public int GetInternalRefTarget(int refPos)
+        public int? GetInternalRefTarget(int refPos)
         {
-            _stream.Position = _internalRefDefinitionPosByRefPos[refPos] + 4;
-            return Size + _reader.ReadInt32();
+            if (!_internalRefDefinitionPosByRefPos.TryGetValue(refPos, out int refDefinitionPos))
+                return null;
+
+            long prevPos = _stream.Position;
+            _stream.Position = refDefinitionPos + 4;
+            int targetPos = Size + _reader.ReadInt32();
+            _stream.Position = prevPos;
+            return targetPos;
         }
 
         public void SetInternalRefTarget(int refPos, int targetPos)
@@ -127,17 +133,20 @@ namespace TrRebootTools.Shared.Cdc
             {
                 foreach (int refPos in _packedExternalRefDefinitionPosByRefPos.Keys)
                 {
-                    ResourceKey resourceKey = GetExternalRefTarget(refPos);
+                    ResourceKey resourceKey = GetExternalRefTarget(refPos).Value;
                     yield return new ExternalRef(refPos, resourceKey);
                 }
             }
         }
 
-        public virtual ResourceKey GetExternalRefTarget(int refPos)
+        public virtual ResourceKey? GetExternalRefTarget(int refPos)
         {
+            if (!_packedExternalRefDefinitionPosByRefPos.TryGetValue(refPos, out int refDefinitionPos))
+                return null;
+
             long prevPos = _stream.Position;
 
-            _stream.Position = _packedExternalRefDefinitionPosByRefPos[refPos];
+            _stream.Position = refDefinitionPos;
             int packedRef = _reader.ReadInt32();
             ResourceType resourceType = (ResourceType)(packedRef >> 25);
 

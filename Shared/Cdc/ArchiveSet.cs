@@ -126,7 +126,7 @@ namespace TrRebootTools.Shared.Cdc
                 int version = _archives.Values.Max(a => a.MetaData?.Version ?? 0) + 1;
                 int id = _archives.Values.Max(a => a.Id) + 1;
                 string steamId = _archives.Values
-                                          .SelectMany(a => (IEnumerable<string>)a.MetaData?.CustomEntries ?? Array.Empty<string>())
+                                          .SelectMany(a => (IEnumerable<string>)a.MetaData?.CustomEntries ?? [])
                                           .FirstOrDefault(c => c.StartsWith("steamID:"));
 
                 string nfoFilePath = Path.Combine(FolderPath, $"{ModArchivePrefix}{simplifiedName}.000.000.nfo");
@@ -188,7 +188,7 @@ namespace TrRebootTools.Shared.Cdc
 
                 try
                 {
-                    progress.Begin($"Enabling mod {archive.ModName}...");
+                    progress?.Begin($"Enabling mod {archive.ModName}...");
 
                     archive.MetaData.Enabled = true;
 
@@ -199,7 +199,7 @@ namespace TrRebootTools.Shared.Cdc
                 }
                 finally
                 {
-                    progress.End();
+                    progress?.End();
                 }
             }
         }
@@ -221,7 +221,7 @@ namespace TrRebootTools.Shared.Cdc
 
             try
             {
-                progress.Begin(statusText);
+                progress?.Begin(statusText);
 
                 List<Archive> sortedArchives = GetSortedArchives();
                 int index = sortedArchives.IndexOf(archive);
@@ -241,7 +241,7 @@ namespace TrRebootTools.Shared.Cdc
             }
             finally
             {
-                progress.End();
+                progress?.End();
             }
         }
 
@@ -291,7 +291,7 @@ namespace TrRebootTools.Shared.Cdc
                     cancellationToken.ThrowIfCancellationRequested();
 
                     numUpdatedFiles++;
-                    progress.Report((float)numUpdatedFiles / numTotalFiles);
+                    progress?.Report((float)numUpdatedFiles / numTotalFiles);
 
                     ResourceCollection collection = archive.GetResourceCollection(file);
                     if (collection == null)

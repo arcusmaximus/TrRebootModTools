@@ -11,10 +11,13 @@ namespace TrRebootTools.Shared.Cdc.Tr2013
 
         protected override int WideExternalRefSize => 8;
 
-        public override ResourceKey GetExternalRefTarget(int refPos)
+        public override ResourceKey? GetExternalRefTarget(int refPos)
         {
-            ResourceKey resourceKey = base.GetExternalRefTarget(refPos);
-            return Tr2013ResourceCollection.AdjustResourceKeyAfterRead(_resourceRef.ArchiveId, resourceKey);
+            ResourceKey? resourceKey = base.GetExternalRefTarget(refPos);
+            if (resourceKey == null)
+                return null;
+
+            return Tr2013ResourceCollection.AdjustResourceKeyAfterRead(_resourceRef.ArchiveId, resourceKey.Value);
         }
 
         public override void SetExternalRefTarget(int refPos, ResourceKey resourceKey)

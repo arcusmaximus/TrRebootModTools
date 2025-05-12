@@ -2,6 +2,7 @@
 using System.Drawing;
 using System.IO;
 using TrRebootTools.Shared.Cdc;
+using TrRebootTools.Shared.Controls;
 using TrRebootTools.Shared.Util;
 
 namespace TrRebootTools.Extractor.Controls
@@ -36,7 +37,7 @@ namespace TrRebootTools.Extractor.Controls
                     continue;
 
                 FileTreeNode fileNode = rootNode.Add(name);
-                fileNode.Image = ExtensionImages.GetOrDefault(Path.GetExtension(name)) ?? Properties.Resources.File;
+                fileNode.Image = ExtensionImages.GetOrDefault(Path.GetExtension(name)) ?? FileImage;
 
                 if (fileNode.Children.Count == 0)
                 {

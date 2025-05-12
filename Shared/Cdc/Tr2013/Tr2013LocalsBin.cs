@@ -47,7 +47,7 @@ namespace TrRebootTools.Shared.Cdc.Tr2013
             int numStringPositions = Strings.Count > 0 ? Strings.Max(p => int.Parse(p.Key)) + 1 : 0;
             writer.Write(numStringPositions);
 
-            foreach (string inputSpecificKey in InputSpecificKeys ?? Array.Empty<string>())
+            foreach (string inputSpecificKey in InputSpecificKeys ?? [])
             {
                 writer.Write(int.Parse(inputSpecificKey));
             }

@@ -463,7 +463,38 @@ namespace TrRebootTools.Shared.Controls.VirtualTreeView
             }
         }
 
-        public VirtualTreeNode ActiveNode => FLastSelected?.node;
+        public VirtualTreeNode ActiveNode
+        {
+            get => FLastSelected?.node;
+            set
+            {
+                ClearSelected();
+                if (value != null)
+                    AddToSelected(value);
+
+                ReDrawTree();
+            }
+        }
+
+        public void SelectAll()
+        {
+            FFirstSelected = null;
+            FSelectedCount = 0;
+            SelectedContainer prevContainer = null;
+            foreach (VirtualTreeNode node in Nodes)
+            {
+                SelectedContainer container = new SelectedContainer { node = node };
+                if (prevContainer == null)
+                    FFirstSelected = container;
+                else
+                    prevContainer.next = container;
+
+                prevContainer = container;
+                FSelectedCount++;
+            }
+            FLastSelected = prevContainer;
+            ReDrawTree();
+        }
 
         public IEnumerable<VirtualTreeNode> SelectedNodes
         {

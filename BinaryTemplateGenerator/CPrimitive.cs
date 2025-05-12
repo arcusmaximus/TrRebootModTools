@@ -1,11 +1,9 @@
-﻿using System;
-
-namespace TrRebootTools.BinaryTemplateGenerator
+﻿namespace TrRebootTools.BinaryTemplateGenerator
 {
     internal class CPrimitive : CType
     {
         public CPrimitive(string name, int size)
-            : base(name, Array.Empty<string>())
+            : base(name, [])
         {
             Alignment = size;
             Size = size;

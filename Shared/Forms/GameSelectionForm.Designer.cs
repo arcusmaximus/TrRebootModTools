@@ -76,6 +76,7 @@
             this.Controls.Add(this._btnShadow);
             this.Controls.Add(this._btnRise);
             this.Controls.Add(this._btnTr2013);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "GameSelectionForm";
