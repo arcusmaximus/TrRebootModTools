@@ -196,7 +196,7 @@ namespace TrRebootTools.HookTool
         {
             if (InvokeRequired)
             {
-                Invoke(HandleProcessExited);
+                Invoke(HandleGameExited);
                 return;
             }
             _ingame = false;
