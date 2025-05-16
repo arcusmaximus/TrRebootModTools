@@ -7,17 +7,28 @@ Rise of the Romb Raider, and Shadow of the Tomb Raider.
 
 [Documentation](https://github.com/arcusmaximus/TrRebootModTools/blob/main/Documentation.md)
 
-## Mod Manager
+## Mod manager
 
-A standalone tool for installing/uninstalling mods. Temporarily disabling is also possible.
+A tool for installing/uninstalling mods. Temporarily disabling is also possible.
 
 ![Screenshot of the mod manager](Screenshots/shadow/manager.png)
 
 ## Extractor
 
-A standalone tool for extracting resources from the game.
+A tool for extracting resources from the game.
 
 ![Screenshot of the extractor](Screenshots/shadow/extractor.png)
+
+## Hook tool
+
+A tool that hooks into a running game and does the following:
+
+- Logs the in-archive files and (for SOTTR) animations accessed by the game in real time.
+- Watches a mod folder for changes and automatically reinstalls it, making it possible to
+  see those changes ingame without restarting.
+- Allows editing material parameters and seeing the results instantly ingame.
+
+![Screenshot of the hook tool](Screenshots/hooktool.png)
 
 ## Blender addon
 
