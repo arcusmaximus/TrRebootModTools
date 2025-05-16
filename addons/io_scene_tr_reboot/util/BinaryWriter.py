@@ -108,7 +108,10 @@ class BinaryWriter(SlotsBase):
         self.write_float(value.x)
         self.write_float(value.y)
         self.write_float(value.z)
-        self.write_float(value.w)
+        if len(value) == 4:
+            self.write_float(value.w)
+        else:
+            self.write_float(1.0)
 
     def write_vec4d_list(self, values: Sequence[Vector]) -> None:
         for value in values:

@@ -27,7 +27,7 @@ namespace TrRebootTools.ModManager.Mod
 
         public InstalledMod InstallFromZip(string filePath, ITaskProgress progress, CancellationToken cancellationToken)
         {
-            string modName = Regex.Replace(Path.GetFileNameWithoutExtension(filePath), @"-\d+$", "");
+            string modName = Regex.Replace(Path.GetFileNameWithoutExtension(filePath), @"(-\d+)+$", "");
             if (IsModAlreadyInstalled(modName))
                 return null;
 
@@ -170,9 +170,13 @@ namespace TrRebootTools.ModManager.Mod
         {
             ArchiveSet archiveSet = null;
             Dictionary<ulong, Archive> archives = null;
+            string modName = modPackage.Name;
+            if (modVariation != null)
+                modName += $" ({modVariation.Name})";
+
             try
             {
-                progress.Begin($"Installing mod {modPackage.Name}...");
+                progress.Begin($"Installing mod {modName}...");
 
                 _archiveSet.CloseStreams();
                 ResourceUsageCache resourceUsageCache = !flattened ? GetFullResourceUsageCache() : _gameResourceUsageCache;
@@ -203,11 +207,11 @@ namespace TrRebootTools.ModManager.Mod
                 Dictionary<ArchiveFileKey, HashSet<ResourceKey>> resourceRefsToAdd = GetResourceRefsToAdd(modPackage, modVariation, modResourceKeys, resourceUsageCache);
                 AddResourceReferencesToCollections(modResourceCollections, modResourceCollectionItems, resourceRefsToAdd);
 
-                IEnumerable<ArchiveFileKey> fileKeys = modResourceCollections.Keys.Concat(modPackage.Files).Concat(modVariation?.Files ?? Enumerable.Empty<ArchiveFileKey>());
+                IEnumerable<ArchiveFileKey> fileKeys = modResourceCollections.Keys.Concat(modPackage.Files).Concat(modVariation?.Files ?? []);
                 Dictionary<ulong, int> fileCountsByLocale = fileKeys.GroupBy(f => f.Locale).ToDictionary(g => g.Key, g => g.Count());
                 fileCountsByLocale.TryAdd(0xFFFFFFFFFFFFFFFF, 0);
 
-                archives = !flattened ? archiveSet.CreateModArchives(modPackage.Name, fileCountsByLocale)
+                archives = !flattened ? archiveSet.CreateModArchives(modName, fileCountsByLocale)
                                       : new() { { 0xFFFFFFFFFFFFFFFF, archiveSet.CreateFlattenedModArchive(fileCountsByLocale.Values.Sum()) } };
 
                 AddResourcesToArchive(archives[0xFFFFFFFFFFFFFFFF], modPackage, modVariation, modResourceCollectionItems, progress, cancellationToken);
@@ -219,7 +223,7 @@ namespace TrRebootTools.ModManager.Mod
                     if (!flattened)
                         archiveSet.Add(archive, _gameResourceUsageCache, progress, cancellationToken);
                 }
-                return new InstalledMod(archives.Values.First().Id, modPackage.Name, true);
+                return new InstalledMod(archives.Values.First().Id, modName, true);
             }
             catch
             {

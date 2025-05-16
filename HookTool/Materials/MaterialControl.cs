@@ -143,6 +143,7 @@ namespace TrRebootTools.HookTool.Materials
             if (file == null || _currentMaterial == null)
                 return;
 
+            SavingMaterial?.Invoke(this, EventArgs.Empty);
             try
             {
                 using Stream stream = file.Create();
@@ -162,6 +163,8 @@ namespace TrRebootTools.HookTool.Materials
                 constant.MarkClean();
             }
         }
+
+        public event EventHandler SavingMaterial;
 
         private void _btnRevert_Click(object sender, EventArgs e)
         {

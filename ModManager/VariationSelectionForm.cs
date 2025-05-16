@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Windows.Forms;
-using TrRebootTools.ModManager;
 using TrRebootTools.ModManager.Mod;
 
 namespace TrRebootTools.ModManager
@@ -36,20 +35,26 @@ namespace TrRebootTools.ModManager
             _pbPreview.Image = SelectedVariation.Image;
             _txtDescription.Text = SelectedVariation.Description;
 
-            _spltDetails.Panel1Collapsed = false;
-            _spltDetails.Panel2Collapsed = false;
+            _spltScreenshot.Panel1Collapsed = false;
+            _spltScreenshot.Panel2Collapsed = false;
             if (SelectedVariation.Image == null)
             {
-                _spltDetails.Panel1Collapsed = true;
+                _spltScreenshot.Panel1Collapsed = true;
                 if (string.IsNullOrWhiteSpace(SelectedVariation.Description))
                     _txtDescription.Text = "(No description provided)";
             }
             else if (string.IsNullOrEmpty(SelectedVariation.Description))
             {
-                _spltDetails.Panel2Collapsed = true;
+                _spltScreenshot.Panel2Collapsed = true;
             }
 
             _btnOK.Enabled = true;
+        }
+
+        private void _lstVariation_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            if (_btnOK.Enabled)
+                _btnOK_Click(_btnOK, EventArgs.Empty);
         }
 
         public ModVariation SelectedVariation

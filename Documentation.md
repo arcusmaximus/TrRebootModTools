@@ -14,8 +14,8 @@ This toolset allows modding the games from the Tomb Raider Reboot trilogy. The f
 | Animations                                 |                    |                         | ✓                         |
 | Sound                                      |                    |                         | ✓                         |
 
-\* For Tomb Raider (2013), the "Definitive Edition" that can only be bought on the Xbox store is **not** supported.
-Only the "regular" version is.
+<small>\* For Tomb Raider (2013), the "Definitive Edition" that can only be bought on the Xbox store is **not** supported.
+Only the "regular" edition from e.g. Steam or the EGS is.</small>
 
 This page will give a quick introduction to the various file types involved, and then explain how to create and package mods.
 
@@ -605,6 +605,9 @@ manager will then create a new locals.bin that includes your changes.
 SOTTR uses the Wwise sound engine, which has a proprietary file format called .wem
 (for Wwise Encoded Media). To create such files, you need the Wwise authoring tools,
 which can be installed for free through the [Audiokinetic Launcher](https://www.audiokinetic.com/download/).
+~~You may be able to skip past the account registration using
+[bugmenot.com](https://bugmenot.com/view/audiokinetic.com).~~ Specifically, you need version 2023.1.1.8417.
+
 While it's possible to do the conversion using these tools alone, it's a bit cumbersome,
 so you can use the modding toolset's WwiseSoundConverter.exe instead.
 
@@ -659,6 +662,68 @@ can choose the one they like.
 > [!TIP]
 > This window is also shown if the mod contains only one variation, which can be useful
 > if you have no variations but still want to present users with e.g. a readme before installing.
+
+
+## Hook tool
+
+The hook tool launches the selected game and hooks into it to offer various "live" features.
+It has a few requirements:
+
+- It's only been tested on the Steam editions of the games.
+- The game must have the latest version (so make sure you're not on an old beta).
+- ROTTR and SOTTR must have DirectX 12 enabled.
+
+For convenience, you may want to disable the Fullscreen option so you can place the game window
+and the hook tool window next to each other.
+
+The features are as follows:
+
+### File logging
+
+The tool logs every file that the game reads from the .tiger archives. This lets you more easily
+find the .drm containing the model you'd like to modify (or for SOTTR, the .wem containing a particular
+sound or voice line).
+
+### Animation logging
+
+For SOTTR, the tool also logs every animation that the game plays.
+
+### Live mod reloading
+
+This feature lets you see your latest changes ingame without having to restart the game. You can use
+it as follows:
+
+- Click the button at the top to select the folder of the mod you're working on. This will install
+  the folder as a temporary mod. (It will be uninstalled again when you close the tool.)
+- Make some changes in the folder, e.g. export an updated model from Blender or save a texture.
+  The tool will automatically detect this change and reinstall the mod.
+- Make the game reload the changed resources from the mod. For outfits, this can be done by going
+  to a campsite, switching to a different outfit, and then switching back to the one you're working on.
+
+### Material editing
+
+A .trXmaterial file contains texture references, shader references, and parameters for those shaders.
+The parameters determine things like tinting and specularity, so it can be interesting to modify them
+to get the exact look you want — but sadly, they're unnamed, so it's hard to find out which parameter
+does what.
+
+Previously, modders had to blindly patch the parameters with a hex editor and then restart the game to see
+if anything changed, but with the hook tool, you can now change a number and see the effect instantly.
+
+You can use the material editor as follows:
+
+- Click the button at the top to select the folder of the mod you're working on. This will list the
+  .trXmaterial files in that folder. (If you want to edit additional materials, simply copy them into
+  the folder and the list will refresh automatically.)
+- Select a material — this will list its render passes.
+- Select a render pass — this will list the parameters of the shader for that pass.
+- Each parameter consists of four numbers. You can change a number by dragging left and right on it,
+  or by clicking it and typing a new value. Any changes will be instantly reflected ingame.
+- Changed parameters are hilighted with a yellow background. You can click the "Revert changes"
+  button to reset the parameters for the current render pass to their original values.
+- Once you're happy with your changes, you can click the "Save" button to write them to the material file,
+  which is then ready to ship with your mod.
+
 
 ## Appendix 1: Outfit reference
 

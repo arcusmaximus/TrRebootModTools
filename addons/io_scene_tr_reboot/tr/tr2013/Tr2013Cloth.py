@@ -141,7 +141,8 @@ class _ClothTuneStripGroup(CStruct32, IClothTuneStripGroup if TYPE_CHECKING else
     pose_follow_factor: float
     free_to_free_slop_z: int
     blend_to_bind_time: float
-    _ignored_fields_ = ("buoyancy_factor", "pose_follow_factor", "free_to_free_slop_z", "blend_to_bind_time")
+    collide_with_dynamic_hair: int
+    _ignored_fields_ = ("buoyancy_factor", "pose_follow_factor", "free_to_free_slop_z", "blend_to_bind_time", "collide_with_dynamic_hair")
 
 assert(sizeof(_ClothTuneStripGroup) == 0x5C)
 
@@ -410,6 +411,7 @@ class Tr2013Cloth(Cloth):
             dtp_strip_group.blend_to_bind_time = strip.blend_to_bind_time
             dtp_strip_group.strip_ids_ref = writer.make_internal_ref()
             dtp_strip_group.num_strip_ids = 1
+            dtp_strip_group.collide_with_dynamic_hair = 1
             dtp_strip_group.collision_group_indices_ref = writer.make_internal_ref()
             dtp_strip_group.num_collision_group_indices = 1
             writer.write_struct(cast(CStruct, dtp_strip_group))

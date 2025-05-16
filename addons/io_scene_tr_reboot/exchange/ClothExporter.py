@@ -250,8 +250,8 @@ class ClothExporter:
     def add_cloth_strip_collisions(self, tr_cloth_strip: ClothStrip, bl_cloth_strip_obj: bpy.types.Object, collision_bounding_boxes: dict[Collision, _BoundingBox]) -> None:
         cloth_strip_bounding_box = self.get_world_bounding_box(bl_cloth_strip_obj)
         cloth_strip_bounding_box = _BoundingBox(
-            cloth_strip_bounding_box.min - Vector((0.5, 0.5, 0.5)),
-            cloth_strip_bounding_box.max + Vector((0.5, 0.5, 0.5))
+            cloth_strip_bounding_box.min - Vector((1, 1, 1)),
+            cloth_strip_bounding_box.max + Vector((1, 1, 1))
         )
         for collision_key, collision_bounding_box in collision_bounding_boxes.items():
             if cloth_strip_bounding_box.intersects(collision_bounding_box):

@@ -1,4 +1,7 @@
-﻿namespace TrRebootTools.HookTool
+﻿using TrRebootTools.HookTool.Logging;
+using TrRebootTools.HookTool;
+
+namespace TrRebootTools.HookTool.Logging
 {
     partial class AccessLogControl
     {
@@ -18,7 +21,7 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(AccessLogControl));
             TrRebootTools.Shared.Controls.VirtualTreeView.MiscOptionHelper miscOptionHelper1 = new TrRebootTools.Shared.Controls.VirtualTreeView.MiscOptionHelper();
             TrRebootTools.Shared.Controls.VirtualTreeView.PaintOptionHelper paintOptionHelper1 = new TrRebootTools.Shared.Controls.VirtualTreeView.PaintOptionHelper();
-            this._tvLog = new TrRebootTools.HookTool.LogListView();
+            this._tvLog = new TrRebootTools.HookTool.Logging.LogListView();
             this._btnExtract = new System.Windows.Forms.Button();
             this._toolStrip = new System.Windows.Forms.ToolStrip();
             this._btnEnableLogging = new System.Windows.Forms.ToolStripButton();
@@ -26,6 +29,7 @@
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this._btnCopy = new System.Windows.Forms.ToolStripButton();
             this._btnSave = new System.Windows.Forms.ToolStripButton();
+            this._txtFilter = new System.Windows.Forms.ToolStripTextBox();
             this._saveFileDialog = new System.Windows.Forms.SaveFileDialog();
             this._toolStrip.SuspendLayout();
             this.SuspendLayout();
@@ -85,7 +89,8 @@
             this._btnClearLists,
             this.toolStripSeparator1,
             this._btnCopy,
-            this._btnSave});
+            this._btnSave,
+            this._txtFilter});
             this._toolStrip.Location = new System.Drawing.Point(0, 0);
             this._toolStrip.Name = "_toolStrip";
             this._toolStrip.Size = new System.Drawing.Size(703, 25);
@@ -140,6 +145,18 @@
             this._btnSave.ToolTipText = "Save list to .csv";
             this._btnSave.Click += new System.EventHandler(this._btnSave_Click);
             // 
+            // _txtFilter
+            // 
+            this._txtFilter.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this._txtFilter.Font = new System.Drawing.Font("Yu Gothic UI", 9F);
+            this._txtFilter.ForeColor = System.Drawing.SystemColors.GrayText;
+            this._txtFilter.Name = "_txtFilter";
+            this._txtFilter.Size = new System.Drawing.Size(150, 25);
+            this._txtFilter.Text = "Filter";
+            this._txtFilter.Enter += new System.EventHandler(this._txtFilter_Enter);
+            this._txtFilter.Leave += new System.EventHandler(this._txtFilter_Leave);
+            this._txtFilter.TextChanged += new System.EventHandler(this._txtFilter_TextChanged);
+            // 
             // _saveFileDialog
             // 
             this._saveFileDialog.Filter = "CSV file|*.csv";
@@ -170,5 +187,6 @@
         private System.Windows.Forms.ToolStripButton _btnCopy;
         private System.Windows.Forms.ToolStripButton _btnSave;
         private System.Windows.Forms.SaveFileDialog _saveFileDialog;
+        private System.Windows.Forms.ToolStripTextBox _txtFilter;
     }
 }

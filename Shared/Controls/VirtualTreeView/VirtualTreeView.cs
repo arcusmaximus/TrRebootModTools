@@ -472,6 +472,7 @@ namespace TrRebootTools.Shared.Controls.VirtualTreeView
                 if (value != null)
                     AddToSelected(value);
 
+                OnSelectionChanged?.Invoke(this, EventArgs.Empty);
                 ReDrawTree();
             }
         }
@@ -493,6 +494,14 @@ namespace TrRebootTools.Shared.Controls.VirtualTreeView
                 FSelectedCount++;
             }
             FLastSelected = prevContainer;
+            OnSelectionChanged?.Invoke(this, EventArgs.Empty);
+            ReDrawTree();
+        }
+
+        public void UnselectAll()
+        {
+            ClearSelected();
+            OnSelectionChanged?.Invoke(this, EventArgs.Empty);
             ReDrawTree();
         }
 
@@ -533,7 +542,6 @@ namespace TrRebootTools.Shared.Controls.VirtualTreeView
             FFirstSelected = null;
             FLastSelected = null;
             FSelectedCount = 0;
-
         }
 
 
@@ -1621,7 +1629,12 @@ namespace TrRebootTools.Shared.Controls.VirtualTreeView
                 ReDrawTree();
                 OnSelectionChanged?.Invoke(this, EventArgs.Empty);
             }
-
+            else if (ModifierKeys == Keys.None && FSelectedCount > 0)
+            {
+                ClearSelected();
+                ReDrawTree();
+                OnSelectionChanged?.Invoke(this, EventArgs.Empty);
+            }
 
             if (e.Y <= FHeader.Height)
             {
@@ -1909,6 +1922,10 @@ namespace TrRebootTools.Shared.Controls.VirtualTreeView
             string s;
             bool firstPaint = true;
             RectangleNode currentRectangleNode = null;
+
+            firstRectangleNode = null;
+            lastRectangleNode = null;
+
             for (int i = 0; i < FHeader.Columns.Count; i++)
             {
                 var r = GetColumnRect(i);
@@ -2525,11 +2542,13 @@ namespace TrRebootTools.Shared.Controls.VirtualTreeView
             FLastNode = null;
             FTotalNodes = 0;
             totalNodeHeight = 0;
-            FSelectedCount = 0;
-            FFirstSelected = null;
+            ClearSelected();
+            firstRectangleNode = null;
+            lastRectangleNode = null;
             vertScroll.Value = vertScroll.Minimum;
             horzScroll.Value = horzScroll.Minimum;
             if (!FUpdating) ReDrawTree();
+            OnSelectionChanged?.Invoke(this, EventArgs.Empty);
         }
 
         public VirtualTreeNode GetFirstChild(VirtualTreeNode node)

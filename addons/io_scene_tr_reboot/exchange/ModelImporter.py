@@ -111,12 +111,10 @@ class ModelImporter(SlotsBase):
         self.create_shape_keys(bl_obj, tr_mesh, tr_skeleton)
 
         bpy.ops.object.shade_smooth()
-        if has_blend_shapes:
-            self.clean_mesh(bl_mesh)
-        else:
+        if not has_blend_shapes:
             self.apply_vertex_normals(bl_mesh, tr_mesh)
-            self.remove_loose_vertices()
 
+        self.clean_mesh(bl_mesh)
         return bl_obj
 
     def create_mesh(self, tr_model: IModel, tr_mesh: IMesh, name: str) -> tuple[bpy.types.Object | None, bpy.types.Mesh | None]:
@@ -157,19 +155,12 @@ class ModelImporter(SlotsBase):
 
     def clean_mesh(self, bl_mesh: bpy.types.Mesh) -> None:
         bl_mesh.validate()
-
         with BlenderHelper.enter_edit_mode():
             bpy.ops.mesh.select_all(action = "SELECT")
             bpy.ops.mesh.delete_loose()
             bpy.ops.mesh.select_all(action = "SELECT")
             bpy.ops.mesh.remove_doubles()
             bpy.ops.mesh.normals_make_consistent()
-            bpy.ops.mesh.select_all(action = "DESELECT")
-
-    def remove_loose_vertices(self) -> None:
-        with BlenderHelper.enter_edit_mode():
-            bpy.ops.mesh.select_all(action = "SELECT")
-            bpy.ops.mesh.delete_loose()
             bpy.ops.mesh.select_all(action = "DESELECT")
 
     def create_color_maps(self, bl_mesh: bpy.types.Mesh, tr_mesh: IMesh) -> None:

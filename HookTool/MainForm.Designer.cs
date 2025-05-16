@@ -1,4 +1,5 @@
 ﻿using TrRebootTools.HookTool.Materials;
+using TrRebootTools.HookTool.Logging;
 
 namespace TrRebootTools.HookTool
 {
@@ -21,12 +22,12 @@ namespace TrRebootTools.HookTool
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this._tcMain = new System.Windows.Forms.TabControl();
             this._tpFiles = new System.Windows.Forms.TabPage();
+            this._fileLog = new TrRebootTools.HookTool.Logging.FileAccessLogControl();
             this._tpAnimations = new System.Windows.Forms.TabPage();
+            this._animationLog = new TrRebootTools.HookTool.Logging.AnimationAccessLogControl();
             this._tpMaterials = new System.Windows.Forms.TabPage();
-            this._btnBrowseModFolder = new System.Windows.Forms.Button();
-            this._fileLog = new TrRebootTools.HookTool.FileAccessLogControl();
-            this._animationLog = new TrRebootTools.HookTool.AnimationAccessLogControl();
             this._materialControl = new TrRebootTools.HookTool.Materials.MaterialControl();
+            this._btnBrowseModFolder = new System.Windows.Forms.Button();
             this._tcMain.SuspendLayout();
             this._tpFiles.SuspendLayout();
             this._tpAnimations.SuspendLayout();
@@ -58,6 +59,15 @@ namespace TrRebootTools.HookTool
             this._tpFiles.TabIndex = 0;
             this._tpFiles.Text = "File log";
             // 
+            // _fileLog
+            // 
+            this._fileLog.Dock = System.Windows.Forms.DockStyle.Fill;
+            this._fileLog.Location = new System.Drawing.Point(4, 4);
+            this._fileLog.Margin = new System.Windows.Forms.Padding(4);
+            this._fileLog.Name = "_fileLog";
+            this._fileLog.Size = new System.Drawing.Size(823, 408);
+            this._fileLog.TabIndex = 0;
+            // 
             // _tpAnimations
             // 
             this._tpAnimations.BackColor = System.Drawing.SystemColors.Control;
@@ -70,6 +80,15 @@ namespace TrRebootTools.HookTool
             this._tpAnimations.TabIndex = 1;
             this._tpAnimations.Text = "Animation log";
             // 
+            // _animationLog
+            // 
+            this._animationLog.Dock = System.Windows.Forms.DockStyle.Fill;
+            this._animationLog.Location = new System.Drawing.Point(4, 4);
+            this._animationLog.Margin = new System.Windows.Forms.Padding(4);
+            this._animationLog.Name = "_animationLog";
+            this._animationLog.Size = new System.Drawing.Size(823, 408);
+            this._animationLog.TabIndex = 0;
+            // 
             // _tpMaterials
             // 
             this._tpMaterials.BackColor = System.Drawing.SystemColors.Control;
@@ -80,6 +99,17 @@ namespace TrRebootTools.HookTool
             this._tpMaterials.Size = new System.Drawing.Size(831, 416);
             this._tpMaterials.TabIndex = 2;
             this._tpMaterials.Text = "Material editor";
+            // 
+            // _materialControl
+            // 
+            this._materialControl.AllowDrop = true;
+            this._materialControl.Dock = System.Windows.Forms.DockStyle.Fill;
+            this._materialControl.Location = new System.Drawing.Point(3, 3);
+            this._materialControl.Margin = new System.Windows.Forms.Padding(4);
+            this._materialControl.Name = "_materialControl";
+            this._materialControl.Size = new System.Drawing.Size(825, 410);
+            this._materialControl.TabIndex = 0;
+            this._materialControl.SavingMaterial += new System.EventHandler(this._materialControl_SavingMaterial);
             // 
             // _btnBrowseModFolder
             // 
@@ -92,34 +122,6 @@ namespace TrRebootTools.HookTool
             this._btnBrowseModFolder.Text = "Open mod folder...";
             this._btnBrowseModFolder.UseVisualStyleBackColor = true;
             this._btnBrowseModFolder.Click += new System.EventHandler(this._btnBrowseModFolder_Click);
-            // 
-            // _fileLog
-            // 
-            this._fileLog.Dock = System.Windows.Forms.DockStyle.Fill;
-            this._fileLog.Location = new System.Drawing.Point(4, 4);
-            this._fileLog.Margin = new System.Windows.Forms.Padding(4);
-            this._fileLog.Name = "_fileLog";
-            this._fileLog.Size = new System.Drawing.Size(823, 408);
-            this._fileLog.TabIndex = 0;
-            // 
-            // _animationLog
-            // 
-            this._animationLog.Dock = System.Windows.Forms.DockStyle.Fill;
-            this._animationLog.Location = new System.Drawing.Point(4, 4);
-            this._animationLog.Margin = new System.Windows.Forms.Padding(4);
-            this._animationLog.Name = "_animationLog";
-            this._animationLog.Size = new System.Drawing.Size(823, 410);
-            this._animationLog.TabIndex = 0;
-            // 
-            // _materialControl
-            // 
-            this._materialControl.AllowDrop = true;
-            this._materialControl.Dock = System.Windows.Forms.DockStyle.Fill;
-            this._materialControl.Location = new System.Drawing.Point(3, 3);
-            this._materialControl.Margin = new System.Windows.Forms.Padding(4);
-            this._materialControl.Name = "_materialControl";
-            this._materialControl.Size = new System.Drawing.Size(825, 412);
-            this._materialControl.TabIndex = 0;
             // 
             // MainForm
             // 

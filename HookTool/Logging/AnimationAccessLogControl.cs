@@ -2,15 +2,16 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using TrRebootTools.Shared;
 using TrRebootTools.Shared.Cdc;
 using TrRebootTools.Shared.Controls.VirtualTreeView;
 using TrRebootTools.Shared.Util;
+using TrRebootTools.HookTool.Logging;
+using TrRebootTools.HookTool;
 
-namespace TrRebootTools.HookTool
+namespace TrRebootTools.HookTool.Logging
 {
     internal class AnimationAccessLogControl : AccessLogControl
     {
@@ -37,6 +38,11 @@ namespace TrRebootTools.HookTool
             public override int GetHashCode()
             {
                 return Id;
+            }
+
+            public override string ToString()
+            {
+                return $"{Drm} - {Name}";
             }
         }
 
@@ -77,7 +83,7 @@ namespace TrRebootTools.HookTool
                 if (drmPath != null)
                     drmName = Path.GetFileName(drmPath);
             }
-            _tvLog.AppendNode(new AnimationLogEntry(DateTime.Now, drmName, id, name));
+            _tvLog.AddItem(new AnimationLogEntry(DateTime.Now, drmName, id, name));
         }
 
         protected override void GetNodeCellText(VirtualTreeView tree, VirtualTreeNode node, int column, out string cellText)

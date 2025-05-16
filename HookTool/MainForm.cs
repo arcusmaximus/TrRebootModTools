@@ -25,6 +25,7 @@ namespace TrRebootTools.HookTool
         private string _modFolder;
         private readonly FileSystemWatcher _watcher = new() { NotifyFilter = NotifyFilters.FileName | NotifyFilters.DirectoryName | NotifyFilters.LastWrite, IncludeSubdirectories = true };
         private readonly System.Timers.Timer _modReinstallTimer = new(1000) { AutoReset = false };
+        private bool _skipNextMaterialRefresh;
 
         public MainForm()
         {
@@ -44,16 +45,10 @@ namespace TrRebootTools.HookTool
             _watcher.Changed += HandleModChanged;
             _watcher.Renamed += HandleModChanged;
             _watcher.Deleted += HandleModChanged;
-            _modReinstallTimer.Elapsed += async (s, e) => await ReinstallModAsync();
+            _modReinstallTimer.Elapsed += async (s, e) => await HandleModChangeTimerElapsed();
 
             if (game != CdcGame.Shadow)
                 _tcMain.TabPages.Remove(_tpAnimations);
-        }
-
-        private void HandleModChanged(object sender, FileSystemEventArgs e)
-        {
-            _modReinstallTimer.Stop();
-            _modReinstallTimer.Start();
         }
 
         private async void MainForm_Load(object sender, EventArgs e)
@@ -82,7 +77,7 @@ namespace TrRebootTools.HookTool
                 return;
             }
             _process.Events.GameEntered += HandleGameEntered;
-            _process.Exited += HandleProcessExited;
+            _process.Exited += HandleGameExited;
 
             _fileLog.Init(_archiveSet, _gameResourceUsages, _process.Events, this, CancellationTokenSource.Token);
             _animationLog.Init(_archiveSet, _gameResourceUsages, _process.Events, this, CancellationTokenSource.Token);
@@ -145,11 +140,29 @@ namespace TrRebootTools.HookTool
             _watcher.EnableRaisingEvents = true;
         }
 
-        private async Task ReinstallModAsync()
+        private void _materialControl_SavingMaterial(object sender, EventArgs e)
         {
-            UninstallMod();
-            await InstallModAsync();
-            Invoke(() => _materialControl.SetModFolder(_modFolder));
+            _skipNextMaterialRefresh = true;
+        }
+
+        private void HandleModChanged(object sender, FileSystemEventArgs e)
+        {
+            _modReinstallTimer.Stop();
+            _modReinstallTimer.Start();
+        }
+
+        private async Task HandleModChangeTimerElapsed()
+        {
+            if (_ingame)
+            {
+                UninstallMod();
+                await InstallModAsync();
+            }
+
+            if (_skipNextMaterialRefresh)
+                _skipNextMaterialRefresh = false;
+            else
+                Invoke(() => _materialControl.SetModFolder(_modFolder));
         }
 
         private void UninstallMod()
@@ -179,7 +192,7 @@ namespace TrRebootTools.HookTool
                 _process.Commands.LoadNewArchives();
         }
 
-        private void HandleProcessExited()
+        private void HandleGameExited()
         {
             if (InvokeRequired)
             {

@@ -83,7 +83,6 @@ namespace TrRebootTools.HookTool.Materials
             this._lvPasses.ButtonStyle = TrRebootTools.Shared.Controls.VirtualTreeView.ButtonStyle.bsRectangle;
             this._lvPasses.Dock = System.Windows.Forms.DockStyle.Fill;
             this._lvPasses.Header.BackColor = System.Drawing.SystemColors.ButtonFace;
-            this._lvPasses.Header.Columns = ((System.Collections.Generic.List<TrRebootTools.Shared.Controls.VirtualTreeView.VirtualTreeColumn>)(resources.GetObject("resource.Columns")));
             this._lvPasses.Header.Font = new System.Drawing.Font("Tahoma", 8F);
             this._lvPasses.Header.ForeColor = System.Drawing.Color.Black;
             this._lvPasses.Header.Height = 0;

@@ -197,6 +197,7 @@ class IClothTuneStripGroup(Protocol):
     mass_scale: float
     time_delta_scale: float
     blend_to_bind_time: float
+    collide_with_dynamic_hair: int
     num_strip_ids: int
     strip_ids_ref: ResourceReference | None
     num_collision_group_indices: int

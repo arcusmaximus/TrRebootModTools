@@ -56,22 +56,22 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AccessLogControl.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="AccessLogControl.Designer.cs">
-      <DependentUpon>AccessLogControl.cs</DependentUpon>
-    </Compile>
-    <Compile Include="AnimationAccessLogControl.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
     <Compile Include="CommandChannel.cs" />
     <Compile Include="DllInjector.cs" />
-    <Compile Include="FileAccessLogControl.cs">
+    <Compile Include="GameProcess.cs" />
+    <Compile Include="Logging\AccessLogControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="GameProcess.cs" />
-    <Compile Include="LogListView.cs">
+    <Compile Include="Logging\AccessLogControl.Designer.cs">
+      <DependentUpon>AccessLogControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Logging\AnimationAccessLogControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Logging\FileAccessLogControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Logging\LogListView.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="MainForm.cs">
@@ -103,7 +103,7 @@
     <Compile Include="NotificationChannel.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="AccessLogControl.resx">
+    <EmbeddedResource Include="Logging\AccessLogControl.resx">
       <DependentUpon>AccessLogControl.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="MainForm.resx">
@@ -160,5 +160,6 @@
   <ItemGroup>
     <Content Include="icon.ico" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -10,8 +10,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Text;
+using System.Drawing;
 
-namespace TrRebootTools.HookTool
+namespace TrRebootTools.HookTool.Logging
 {
     internal partial class AccessLogControl : UserControl, ITaskProgress
     {
@@ -115,6 +116,28 @@ namespace TrRebootTools.HookTool
                 result.AppendLine();
             }
             return result.ToString();
+        }
+
+        private void _txtFilter_Enter(object sender, EventArgs e)
+        {
+            _txtFilter.Text = _tvLog.Filter;
+            _txtFilter.SelectAll();
+            _txtFilter.ForeColor = SystemColors.WindowText;
+        }
+
+        private void _txtFilter_TextChanged(object sender, EventArgs e)
+        {
+            if (_txtFilter.Focused)
+                _tvLog.Filter = _txtFilter.Text;
+        }
+
+        private void _txtFilter_Leave(object sender, EventArgs e)
+        {
+            if (string.IsNullOrEmpty(_tvLog.Filter))
+            {
+                _txtFilter.Text = "Filter";
+                _txtFilter.ForeColor = SystemColors.GrayText;
+            }
         }
 
         protected virtual void GetNodeCellText(VirtualTreeView tree, VirtualTreeNode node, int column, out string cellText)

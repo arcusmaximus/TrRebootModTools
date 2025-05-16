@@ -7,8 +7,10 @@ using System.Threading.Tasks;
 using TrRebootTools.Shared;
 using TrRebootTools.Shared.Cdc;
 using TrRebootTools.Shared.Controls.VirtualTreeView;
+using TrRebootTools.HookTool.Logging;
+using TrRebootTools.HookTool;
 
-namespace TrRebootTools.HookTool
+namespace TrRebootTools.HookTool.Logging
 {
     internal class FileAccessLogControl : AccessLogControl
     {
@@ -35,6 +37,11 @@ namespace TrRebootTools.HookTool
             public override int GetHashCode()
             {
                 return Key.GetHashCode();
+            }
+
+            public override string ToString()
+            {
+                return Path;
             }
         }
 
@@ -67,7 +74,7 @@ namespace TrRebootTools.HookTool
             }
 
             string soundBank = Path.GetExtension(path) == ".wem" ? GetWwiseSoundBank(path) : null;
-            _tvLog.AppendNode(new FileLogEntry(DateTime.Now, key, path, soundBank));
+            _tvLog.AddItem(new FileLogEntry(DateTime.Now, key, path, soundBank));
         }
 
         private string GetWwiseSoundBank(string soundFilePath)
