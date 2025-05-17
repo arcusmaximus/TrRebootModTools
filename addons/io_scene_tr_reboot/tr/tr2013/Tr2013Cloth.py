@@ -494,6 +494,7 @@ class Tr2013Cloth(Cloth):
             dtp_strip_group.pose_follow_factor = 0.0
             dtp_strip_group.free_to_free_slop_z = 0
             dtp_strip_group.blend_to_bind_time = 10
+            dtp_strip_group.collide_with_dynamic_hair = 0
 
         return dtp_strip_groups
 
