@@ -1,7 +1,7 @@
 from ctypes import sizeof
 from typing import TYPE_CHECKING, Sequence
 from mathutils import Vector
-from io_scene_tr_reboot.tr.Cloth import IClothDef, IClothDefAnchorBone, IClothDefMass, IClothDefSpring, IClothDefStrip, IClothTune, IClothTuneCollisionGroup, IClothTuneCollisionKey, IClothTuneConfig, IClothTuneStripGroup
+from io_scene_tr_reboot.tr.Cloth import ClothFeatureSupport, IClothDef, IClothDefAnchorBone, IClothDefMass, IClothDefSpring, IClothDefStrip, IClothTune, IClothTuneCollisionGroup, IClothTuneCollisionKey, IClothTuneConfig, IClothTuneStripGroup
 from io_scene_tr_reboot.tr.Collision import Collision, CollisionKey, CollisionType
 from io_scene_tr_reboot.tr.ResourceBuilder import ResourceBuilder
 from io_scene_tr_reboot.tr.ResourceReader import ResourceReader
@@ -170,6 +170,16 @@ class _ClothTuneCollisionKey(CStruct64, IClothTuneCollisionKey if TYPE_CHECKING 
 assert(sizeof(_ClothTuneCollisionKey) == 0x30)
 
 class RiseCloth(Tr2013Cloth):
+    supports = ClothFeatureSupport(
+        strip_buoyancy_factor = False,
+        strip_pose_follow_factor = False,
+        strip_free_to_free_slop_z = False,
+        strip_blend_to_bind_time = False,
+        mass_specific_bounceback_factor = False,
+        spring_specific_stretchiness = False,
+        hair_collision = True
+    )
+
     def read_definition_header(self, reader: ResourceReader) -> IClothDef:
         return reader.read_struct(_ClothDef)
 

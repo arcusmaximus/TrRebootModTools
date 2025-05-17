@@ -67,6 +67,7 @@ class ClothStrip(SlotsBase):
     mass_scale: float
     time_delta_scale: float
     blend_to_bind_time: float
+    is_hair_collider: bool
 
     def __init__(self, id: int, parent_bone_local_id: int) -> None:
         self.id = id
@@ -94,6 +95,7 @@ class ClothStrip(SlotsBase):
         self.mass_scale = 200
         self.time_delta_scale = 1
         self.blend_to_bind_time = 8
+        self.is_hair_collider = False
 
 class ClothFeatureSupport(NamedTuple):
     strip_buoyancy_factor: bool
@@ -102,6 +104,7 @@ class ClothFeatureSupport(NamedTuple):
     strip_blend_to_bind_time: float
     mass_specific_bounceback_factor: bool
     spring_specific_stretchiness: bool
+    hair_collision: bool
 
 class Cloth(SlotsBase):
     supports: ClassVar[ClothFeatureSupport]

@@ -159,7 +159,8 @@ class Tr2013Cloth(Cloth):
         strip_free_to_free_slop_z = False,
         strip_blend_to_bind_time = False,
         mass_specific_bounceback_factor = False,
-        spring_specific_stretchiness = False
+        spring_specific_stretchiness = False,
+        hair_collision = False
     )
 
     definition_id: int
@@ -250,25 +251,26 @@ class Tr2013Cloth(Cloth):
                 if strip is None:
                     continue
 
-                strip.gravity_factor = dtp_strip_group.gravity_factor
-                strip.buoyancy_factor = dtp_strip_group.buoyancy_factor
-                strip.wind_factor = dtp_strip_group.wind_factor
-                strip.pose_follow_factor = dtp_strip_group.pose_follow_factor
-                strip.rigidity = dtp_strip_group.rigidity_percentage / 100
-                strip.mass_bounceback_factor = dtp_strip_group.max_mass_bounceback_factor
-                strip.drag = dtp_strip_group.drag
+                strip.gravity_factor            = dtp_strip_group.gravity_factor
+                strip.buoyancy_factor           = dtp_strip_group.buoyancy_factor
+                strip.wind_factor               = dtp_strip_group.wind_factor
+                strip.pose_follow_factor        = dtp_strip_group.pose_follow_factor
+                strip.rigidity                  = dtp_strip_group.rigidity_percentage / 100
+                strip.mass_bounceback_factor    = dtp_strip_group.max_mass_bounceback_factor
+                strip.drag                      = dtp_strip_group.drag
 
-                strip.transform_type = dtp_strip_group.transform_type
-                strip.max_velocity_iterations = dtp_strip_group.max_velocity_update_iterations
-                strip.max_position_iterations = dtp_strip_group.max_position_update_iterations
-                strip.relaxation_iterations = dtp_strip_group.relaxation_iterations
-                strip.sub_step_count = dtp_strip_group.sub_step_count
-                strip.fixed_to_free_slop = dtp_strip_group.fixed_to_free_slop / 100
-                strip.free_to_free_slop = dtp_strip_group.free_to_free_slop / 100
-                strip.free_to_free_slop_z = dtp_strip_group.free_to_free_slop_z / 100
-                strip.mass_scale = dtp_strip_group.mass_scale
-                strip.time_delta_scale = dtp_strip_group.time_delta_scale
-                strip.blend_to_bind_time = dtp_strip_group.blend_to_bind_time
+                strip.transform_type            = dtp_strip_group.transform_type
+                strip.max_velocity_iterations   = dtp_strip_group.max_velocity_update_iterations
+                strip.max_position_iterations   = dtp_strip_group.max_position_update_iterations
+                strip.relaxation_iterations     = dtp_strip_group.relaxation_iterations
+                strip.sub_step_count            = dtp_strip_group.sub_step_count
+                strip.fixed_to_free_slop        = dtp_strip_group.fixed_to_free_slop / 100
+                strip.free_to_free_slop         = dtp_strip_group.free_to_free_slop / 100
+                strip.free_to_free_slop_z       = dtp_strip_group.free_to_free_slop_z / 100
+                strip.mass_scale                = dtp_strip_group.mass_scale
+                strip.time_delta_scale          = dtp_strip_group.time_delta_scale
+                strip.blend_to_bind_time        = dtp_strip_group.blend_to_bind_time
+                strip.is_hair_collider          = dtp_strip_group.collide_with_dynamic_hair != 0 or strip.is_hair_collider
 
                 for mass in strip.masses:
                     mass.bounceback_factor *= dtp_strip_group.max_mass_bounceback_factor
@@ -411,7 +413,7 @@ class Tr2013Cloth(Cloth):
             dtp_strip_group.blend_to_bind_time = strip.blend_to_bind_time
             dtp_strip_group.strip_ids_ref = writer.make_internal_ref()
             dtp_strip_group.num_strip_ids = 1
-            dtp_strip_group.collide_with_dynamic_hair = 1
+            dtp_strip_group.collide_with_dynamic_hair = self.supports.hair_collision and strip.is_hair_collider
             dtp_strip_group.collision_group_indices_ref = writer.make_internal_ref()
             dtp_strip_group.num_collision_group_indices = 1
             writer.write_struct(cast(CStruct, dtp_strip_group))

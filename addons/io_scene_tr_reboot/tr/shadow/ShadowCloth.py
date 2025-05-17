@@ -153,7 +153,8 @@ class ShadowCloth(RiseCloth):
         strip_free_to_free_slop_z = True,
         strip_blend_to_bind_time = True,
         mass_specific_bounceback_factor = True,
-        spring_specific_stretchiness = True
+        spring_specific_stretchiness = True,
+        hair_collision = False
     )
 
     def read_definition_header(self, reader: ResourceReader) -> IClothDef:
