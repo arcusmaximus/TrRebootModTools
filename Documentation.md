@@ -293,9 +293,7 @@ On the flipside, the presence of local IDs again means you can't immediately reu
 outfit, because the bone names will be different there.
 
 Because merging skeletons this way changes their local bone IDs, you have to check both "Export skeleton" and
-"Export cloth" when exporting models so that the IDs stay synchronized between all three. Also, in order
-to be able to export the cloth physics, you need to check "Import cloth and collisions" when importing
-the models at the start.
+"Export cloth" when exporting models so that the IDs stay synchronized between all three.
 
 #### Vertex group name fixing
 
