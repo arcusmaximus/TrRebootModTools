@@ -9,14 +9,8 @@ class TemporaryModelMerger(SkeletonMerger):
     bl_local_collection: bpy.types.Collection
 
     def __init__(self) -> None:
-        bl_local_collection = bpy.data.collections.get(BlenderNaming.local_collection_name)
-        if bl_local_collection is None:
-            bl_local_collection = bpy.data.collections.new(BlenderNaming.local_collection_name)
-            if bpy.context.scene is not None and bpy.context.view_layer is not None:
-                bpy.context.scene.collection.children.link(bl_local_collection)
-                bpy.context.view_layer.layer_collection.children[bl_local_collection.name].exclude = True
-
-        self.bl_local_collection = bl_local_collection
+        self.bl_local_collection = BlenderHelper.get_or_create_collection(BlenderNaming.local_collection_name)
+        BlenderHelper.set_collection_excluded(self.bl_local_collection, True)
 
     def add(self, bl_global_armature_obj: bpy.types.Object | None, bl_local_armature_obj: bpy.types.Object) -> bpy.types.Object:
         bl_global_armature_obj, bone_renames = self.add_local_armature_to_global(bl_global_armature_obj, bl_local_armature_obj)
@@ -31,7 +25,8 @@ class TemporaryModelMerger(SkeletonMerger):
 
         BlenderHelper.move_object_to_collection(bl_local_armature_obj, self.bl_local_collection)
         for model_id_set in model_id_sets:
-            bl_local_empty = BlenderHelper.create_object(None, BlenderNaming.make_local_empty_name(model_id_set.object_id, model_id_set.model_id, model_id_set.model_data_id))
+            local_empty_name = BlenderNaming.make_local_empty_name(model_id_set.object_id, model_id_set.model_id, model_id_set.model_data_id)
+            bl_local_empty = BlenderHelper.create_object(None, local_empty_name)
             bl_local_empty.parent = bl_local_armature_obj
             BlenderHelper.move_object_to_collection(bl_local_empty, self.bl_local_collection)
 

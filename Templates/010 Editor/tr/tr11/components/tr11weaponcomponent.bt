@@ -1,3 +1,12 @@
+//------------------------------------------------
+//--- 010 Editor v14.0 Binary Template
+//
+//      File: tr11interactablecomponent.bt
+//   Authors: arc_
+//   Purpose: Parse .tr11dtp files storing WEAPON components
+//  Category: SOTTR
+//------------------------------------------------
+
 #define TR_VERSION 11
 #include "../../trcommon.bt"
 

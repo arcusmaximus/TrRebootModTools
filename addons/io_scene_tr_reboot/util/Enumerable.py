@@ -238,6 +238,9 @@ class Enumerable(Generic[T]):
 
         return lookup
 
+    def with_descendants(self, get_children: Callable[[T], Iterable[T]]) -> "Enumerable[T]":
+        return _WithDescendantsEnumerable(self, get_children)
+
 class _SkipEnumerable(Enumerable[T]):
     skip_count: int
 
@@ -326,3 +329,22 @@ class _ZipEnumerable(Enumerable[T]):
             result = map(lambda p: mapping(p[0], p[1]), result)
 
         return result
+
+class _WithDescendantsEnumerable(Enumerable[T]):
+    get_children: Callable[[T], Iterable[T]]
+    queue: list[Iterator[T]]
+
+    def __init__(self, root_items: Iterable[T], get_children: Callable[[T], Iterable[T]]) -> None:
+        super().__init__(root_items)
+        self.get_children = get_children
+        self.queue = [iter(root_items)]
+
+    def __iter__(self) -> Iterator[T]:
+        while len(self.queue) > 0:
+            it = self.queue[len(self.queue) - 1]
+            try:
+                item = next(it)
+                yield item
+                self.queue.append(iter(self.get_children(item)))
+            except StopIteration:
+                self.queue.pop()

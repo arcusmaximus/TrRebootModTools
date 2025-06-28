@@ -49,9 +49,9 @@ TrHook_MSFileSystemFile_dtor proc
     push rcx
     push rdx
 
-    sub rsp, 20h
+    sub rsp, 28h
     call TrHandler_MSFileSystemFile_dtor
-    add rsp, 20h
+    add rsp, 28h
 
     pop rdx
     pop rcx

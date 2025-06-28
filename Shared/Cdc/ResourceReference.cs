@@ -63,7 +63,7 @@
 
         public override string ToString()
         {
-            return $"{Type}:{Id} -> Archive {ArchiveId}:{ArchiveSubId}:{ArchivePart}, Offset {Offset:X}, OffsetInBatch {DecompressionOffset:X}";
+            return $"{(ResourceKey)this} -> Archive {ArchiveId}:{ArchiveSubId}:{ArchivePart}, Offset {Offset:X}, OffsetInBatch {DecompressionOffset:X}";
         }
 
         public static implicit operator ResourceKey(ResourceReference resourceRef)

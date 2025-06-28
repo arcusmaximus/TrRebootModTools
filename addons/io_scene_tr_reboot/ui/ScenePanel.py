@@ -17,4 +17,7 @@ class ScenePanel(bpy.types.Panel):
             return
 
         props = SceneProperties.get_instance(context.scene)
+        self.layout.use_property_split = True
+        self.layout.use_property_decorate = False
         self.layout.prop(props, "game")
+        self.layout.prop(props, "scale_factor")

@@ -3,7 +3,7 @@ bl_info = {
     "description": "Import/export files for the Tomb Raider Reboot games",
     "author": "arc_",
     "blender": (4, 0, 0),
-    "version": (1, 6, 1),
+    "version": (1, 6, 2),
     "location": "File > Import-Export",
     "support": "COMMUNITY",
     "category": "Import-Export"
@@ -18,24 +18,27 @@ CStructTypeMappings.register()
 TrCStructTypeMappings.register()
 
 from io_scene_tr_reboot.operator.BrowseBlendShapeNormalsSourceFileOperator import BrowseBlendShapeNormalsSourceFileOperator
-from io_scene_tr_reboot.operator.ImportAnimationOperator import ImportShadowAnimationOperator
-from io_scene_tr_reboot.operator.ImportObjectOperator import ImportObjectOperator
 from io_scene_tr_reboot.operator.ExportAnimationOperator import ExportShadowAnimationOperator
 from io_scene_tr_reboot.operator.ExportModelOperator import ExportModelOperator
+from io_scene_tr_reboot.operator.ImportAnimationOperator import ImportShadowAnimationOperator
+from io_scene_tr_reboot.operator.ImportObjectOperator import ImportObjectOperator
 from io_scene_tr_reboot.operator.FixVertexGroupNamesOperator import FixVertexGroupNamesOperator
 from io_scene_tr_reboot.operator.HairWeightPaintingOperator import HairWeightPaintingOperator
-from io_scene_tr_reboot.operator.RegenerateClothBonesOperator import RegenerateClothBonesOperator
 from io_scene_tr_reboot.operator.PinClothBonesOperator import PinClothBonesOperator
+from io_scene_tr_reboot.operator.RegenerateClothBonesOperator import RegenerateClothBonesOperator
+from io_scene_tr_reboot.operator.ToggleCollisionVisibilityOperator import ToggleCollisionVisibilityOperator
 from io_scene_tr_reboot.operator.UnpinClothBonesOperator import UnpinClothBonesOperator
 from io_scene_tr_reboot.properties.BlenderPropertyGroup import BlenderPropertyGroup
 from io_scene_tr_reboot.properties.BoneProperties import BoneClothProperties, BoneConstraintProperties, BoneProperties
-from io_scene_tr_reboot.properties.ObjectProperties import ObjectClothProperties, ObjectCollisionProperties, ObjectMeshProperties, ObjectProperties, ObjectSkeletonProperties
+from io_scene_tr_reboot.properties.ObjectProperties import ObjectClothProperties, ObjectCollisionModelProperties, ObjectCollisionShapeProperties, ObjectMeshProperties, ObjectProperties, ObjectSkeletonProperties
 from io_scene_tr_reboot.properties.SceneProperties import SceneFileProperties, SceneProperties
 from io_scene_tr_reboot.properties.ToolSettingProperties import ToolSettingProperties
 from io_scene_tr_reboot.ui.BonePanel import BonePanel
 from io_scene_tr_reboot.ui.ClothBonesPanel import ClothBonesPanel
 from io_scene_tr_reboot.ui.ClothSpringPanel import ClothSpringPanel
 from io_scene_tr_reboot.ui.ClothStripPanel import ClothStripPanel
+from io_scene_tr_reboot.ui.CollisionModelPanel import CollisionModelPanel
+from io_scene_tr_reboot.ui.CollisionsPanel import CollisionsPanel
 from io_scene_tr_reboot.ui.HairPanel import HairPanel
 from io_scene_tr_reboot.ui.MeshPanel import MeshPanel
 from io_scene_tr_reboot.ui.ScenePanel import ScenePanel
@@ -59,11 +62,14 @@ other_classes: list[type] = [
     PinClothBonesOperator,
     UnpinClothBonesOperator,
     RegenerateClothBonesOperator,
+    ToggleCollisionVisibilityOperator,
 
     BonePanel,
     ClothBonesPanel,
     ClothStripPanel,
     ClothSpringPanel,
+    CollisionModelPanel,
+    CollisionsPanel,
     HairPanel,
     MeshPanel,
     ScenePanel
@@ -74,7 +80,8 @@ custom_property_groups: list[type[BlenderPropertyGroup]] = [
     BoneClothProperties,
     BoneProperties,
     ObjectClothProperties,
-    ObjectCollisionProperties,
+    ObjectCollisionModelProperties,
+    ObjectCollisionShapeProperties,
     ObjectMeshProperties,
     ObjectSkeletonProperties,
     ObjectProperties,

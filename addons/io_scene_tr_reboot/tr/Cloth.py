@@ -1,7 +1,7 @@
 from abc import abstractmethod
 from typing import ClassVar, NamedTuple, Protocol
 from mathutils import Vector
-from io_scene_tr_reboot.tr.Collision import Collision
+from io_scene_tr_reboot.tr.CollisionShape import CollisionShape
 from io_scene_tr_reboot.tr.ResourceBuilder import ResourceBuilder
 from io_scene_tr_reboot.tr.ResourceReader import ResourceReader
 from io_scene_tr_reboot.tr.ResourceReference import ResourceReference
@@ -46,7 +46,7 @@ class ClothStrip(SlotsBase):
     parent_bone_local_id: int
     masses: list[ClothMass]
     springs: list[ClothSpring]
-    collisions: list[Collision]
+    collisions: list[CollisionShape]
 
     gravity_factor: float
     buoyancy_factor: float
@@ -119,7 +119,7 @@ class Cloth(SlotsBase):
         self.strips = []
 
     @abstractmethod
-    def read(self, definition_reader: ResourceReader, tune_reader: ResourceReader, global_bone_ids: list[int | None], external_collisions: list[Collision]) -> None: ...
+    def read(self, definition_reader: ResourceReader, tune_reader: ResourceReader, skeleton_id: int, global_bone_ids: list[int | None], external_collisions: list[CollisionShape]) -> None: ...
 
     @abstractmethod
     def write(self, definition_writer: ResourceBuilder, tune_writer: ResourceBuilder, global_bone_ids: list[int | None]) -> None: ...

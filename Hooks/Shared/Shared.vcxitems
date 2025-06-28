@@ -26,6 +26,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)CommandChannel.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Debug.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)MaterialConstantStore.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)NotificationChannel.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Shared.h" />

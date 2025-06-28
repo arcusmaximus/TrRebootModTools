@@ -26,6 +26,7 @@ namespace TrRebootTools.Shared.Controls
             _tvFiles.OnGetNodeCellImage += OnGetNodeCellCellImage;
             _tvFiles.OnGetNodeCellText += GetCellText;
             _tvFiles.OnSelectionChanged += (s, e) => SelectionChanged?.Invoke(this, EventArgs.Empty);
+            _tvFiles.OnNodeDoubleClick += (tree, node, column) => FileDoubleClicked?.Invoke(this, new FileEventArgs(tree.GetNodeData<FileTreeNode>(node).File));
 
             OnResize(e);
         }
@@ -42,6 +43,8 @@ namespace TrRebootTools.Shared.Controls
         }
 
         public event EventHandler SelectionChanged;
+
+        public event EventHandler<FileEventArgs> FileDoubleClicked;
 
         public TFile ActiveFile
         {
@@ -247,6 +250,11 @@ namespace TrRebootTools.Shared.Controls
 
                 return x.Name.CompareTo(y.Name);
             }
+        }
+
+        public class FileEventArgs(TFile file) : EventArgs
+        {
+            public TFile File => file;
         }
     }
 }

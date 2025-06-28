@@ -1,3 +1,12 @@
+//------------------------------------------------
+//--- 010 Editor v14.0 Binary Template
+//
+//      File: tr11interactablecomponent.bt
+//   Authors: arc_
+//   Purpose: Parse .tr11dtp files storing PLAYER components
+//  Category: SOTTR
+//------------------------------------------------
+
 #define TR_VERSION 11
 #include "../../trcommon.bt"
 
@@ -564,33 +573,6 @@ typedef struct
     FSkip(3);
     float fScalar;
 } TeamBasedScalar;
-
-typedef struct
-{
-    int intro;
-    int pad;
-} _B311916A66505ABF1E118F6A97EEB479;
-
-typedef struct
-{
-    uquad id;
-    _B311916A66505ABF1E118F6A97EEB479 __s1;
-} PlacementPath___unnamed_type_m_id0_;
-
-typedef struct
-{
-    unsigned int listType;
-    unsigned int zoneID;
-    PlacementPath___unnamed_type_m_id0_ id0;
-    uquad id1;
-    Ref moreIDsRef;
-    if (CanSeekTo(moreIDsRef))
-    {
-        SeekToRef(moreIDsRef);
-        uquad moreIDs;
-        ReturnFromRef();
-    }
-} PlacementPath;
 
 typedef struct
 {

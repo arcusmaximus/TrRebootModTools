@@ -4,9 +4,9 @@ import bpy
 from io_scene_tr_reboot.BlenderNaming import BlenderNaming
 from io_scene_tr_reboot.exchange.shadow.ShadowAnimationExporter import ShadowAnimationExporter
 from io_scene_tr_reboot.operator.BlenderOperatorBase import ExportOperatorBase, ExportOperatorProperties
-from io_scene_tr_reboot.operator.OperatorCommon import OperatorCommon
 from io_scene_tr_reboot.operator.OperatorContext import OperatorContext
 from io_scene_tr_reboot.properties.BlenderPropertyGroup import Prop
+from io_scene_tr_reboot.properties.SceneProperties import SceneProperties
 from io_scene_tr_reboot.util.Enumerable import Enumerable
 
 if TYPE_CHECKING:
@@ -58,7 +58,7 @@ class ExportShadowAnimationOperator(ExportOperatorBase[_Properties]):
             if bl_armature_obj is None:
                 return { "CANCELLED" }
 
-            exporter = ShadowAnimationExporter(OperatorCommon.scale_factor, self.properties.apply_lara_bone_fix_constraints)
+            exporter = ShadowAnimationExporter(SceneProperties.get_scale_factor(), self.properties.apply_lara_bone_fix_constraints)
             exporter.export_animation(self.properties.filepath, bl_armature_obj)
 
             if not OperatorContext.warnings_logged and not OperatorContext.errors_logged:

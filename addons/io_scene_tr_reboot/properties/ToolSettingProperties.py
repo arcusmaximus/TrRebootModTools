@@ -74,5 +74,5 @@ def set_cloth_spring_stretchiness(self: bpy.types.Property, value: float) -> Non
 
 class ToolSettingProperties(BlenderAttachedPropertyGroup[bpy.types.Scene]):
     property_name = "tr11_tool_properties"
-    cloth_bone_bounceback_factor: Annotated[float, Prop("Bounceback strength", min = 0, max = 1, subtype = "FACTOR", get = get_cloth_bone_bounceback, set = set_cloth_bone_bounceback)]
+    cloth_bone_bounceback_factor: Annotated[float, Prop("Bounceback Strength", min = 0, max = 1, subtype = "FACTOR", get = get_cloth_bone_bounceback, set = set_cloth_bone_bounceback)]
     cloth_spring_stretchiness: Annotated[float, Prop("Stretchiness", min = 0, max = 1, subtype = "FACTOR", get = get_cloth_spring_stretchiness, set = set_cloth_spring_stretchiness)]

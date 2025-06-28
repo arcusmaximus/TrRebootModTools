@@ -43,8 +43,11 @@ class ObjectClothProperties(BlenderPropertyGroup):
     blend_to_bind_time: Annotated[float, Prop("Blend to Bind Time", min = 0, default = 8)]
     is_hair_collider: Annotated[bool, Prop("Hair Collider")]
 
-class ObjectCollisionProperties(BlenderPropertyGroup):
+class ObjectCollisionShapeProperties(BlenderPropertyGroup):
     data: Annotated[str, Prop("Data")]
+
+class ObjectCollisionModelProperties(BlenderPropertyGroup):
+    collision_type_id: Annotated[int, Prop("Collision Type ID")]
 
 class ObjectMeshProperties(BlenderPropertyGroup):
     draw_group_id: Annotated[int, Prop("Draw Group ID")]
@@ -70,7 +73,8 @@ class ObjectProperties(BlenderAttachedPropertyGroup[bpy.types.Object]):
     property_name = "tr11_properties"
 
     blend_shape_normals_source_file_path: Annotated[str, Prop("Shape Key Normals Source", description = ".trXmodeldata file to copy shape key normals from")]
-    cloth: Annotated[ObjectClothProperties, Prop("Cloth properties")]
-    collision: Annotated[ObjectCollisionProperties, Prop("Collision properties")]
-    mesh: Annotated[ObjectMeshProperties, Prop("Mesh properties")]
-    skeleton: Annotated[ObjectSkeletonProperties, Prop("Skeleton properties")]
+    cloth: Annotated[ObjectClothProperties, Prop("Cloth Properties")]
+    collision: Annotated[ObjectCollisionShapeProperties, Prop("Collision Shape Properties")]
+    collision_model: Annotated[ObjectCollisionModelProperties, Prop("Collision Model Properties")]
+    mesh: Annotated[ObjectMeshProperties, Prop("Mesh Properties")]
+    skeleton: Annotated[ObjectSkeletonProperties, Prop("Skeleton {roperties")]

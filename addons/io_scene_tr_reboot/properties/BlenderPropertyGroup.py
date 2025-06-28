@@ -84,6 +84,9 @@ class BlenderPropertyGroup(Protocol):
         annotations: dict[str, Any] = {}
 
         for property_name, annotation in orig_annotations.items():
+            if annotation.__origin__ == ClassVar:
+                continue
+
             property_type = annotation.__origin__
             property_metadata = annotation.__metadata__[0]
 

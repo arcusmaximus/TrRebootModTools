@@ -100,6 +100,10 @@ void TrHook::InstallGameSpecificHooks()
 
 void TrHook::ApplyGameSpecificPatches()
 {
+    // Skip launcher. We *could* of course just pass the -nolauncher command line argument instead,
+    // but ironically, that may result in a safety warning from Steam.
+    *(BYTE*)(Game::ImageBase + 0x13D912) = 0xEB;
+
     // Execute game loop even if we're not the foreground window
     *(WORD*)(Game::ImageBase + 0x13DE19) = 0x9090;
 

@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq.Expressions;
 using System.Text;
 using TrRebootTools.Shared.Util;
 
@@ -14,6 +16,7 @@ namespace TrRebootTools.Shared.Cdc.Rise
                 { (ResourceType.AnimationLib, 0), [".tr10animlib", ".trigger"] },
                 { (ResourceType.CollisionMesh, 0), [".tr10cmesh", ".tr2cmesh"] },
                 { (ResourceType.Dtp, 0), [".tr10dtp", ".dtp"] },
+                { (ResourceType.Dtp, ResourceSubType.StreamLayer), [".tr10layer"] },
                 { (ResourceType.GlobalContentReference, 0), [".tr10contentref", ".object"] },
                 { (ResourceType.Material, 0), [".tr10material", ".material"] },
                 { (ResourceType.Model, ResourceSubType.CubeLut), [".tr10cubelut"] },
@@ -65,60 +68,37 @@ namespace TrRebootTools.Shared.Cdc.Rise
 
         private static string ReadMaterialOriginalFilePath(Stream stream)
         {
-            byte[] data = new byte[(int)stream.Length];
-            stream.Read(data, 0, data.Length);
+            MemoryStream memStream = new();
+            stream.CopyTo(memStream);
+            memStream.Position = 0;
 
-            int nameOffset = data.Length - 1;
-            if (data[nameOffset] != 0x00)
+            ResourceRefDefinitions refDefs = ResourceRefDefinitions.Create(null, memStream, CdcGame.Rise);
+            int? namePos = refDefs.GetInternalRefTarget(refDefs.Size + 0x48);
+            if (namePos == null)
                 return null;
 
-            while (nameOffset > 0 && data[nameOffset - 1] >= 0x40)
-            {
-                nameOffset--;
-            }
-            if (nameOffset == 0 || nameOffset == data.Length - 1)
-                return null;
-
-            return Encoding.ASCII.GetString(data, nameOffset, data.Length - 1 - nameOffset);
+            memStream.Position = namePos.Value;
+            return new BinaryReader(memStream).ReadZeroTerminatedString();
         }
 
         private static string ReadModelOriginalFilePath(Stream stream)
         {
-            BinaryReader reader = new BinaryReader(stream);
-            reader.ReadBytes(0x10);
-            long numMaterials = reader.ReadInt64();
-            if (numMaterials < 0 || numMaterials > 0x1000)
+            MemoryStream memStream = new();
+            stream.CopyTo(memStream);
+            memStream.Position = 0;
+
+            ResourceRefDefinitions refDefs = ResourceRefDefinitions.Create(null, memStream, CdcGame.Rise);
+            int? modelDataPos = refDefs.GetInternalRefTarget(refDefs.Size);
+            if (modelDataPos == null)
                 return null;
 
-            int dataSize = reader.ReadInt32();
-            for (int i = 0; i < 5; i++)
-            {
-                int meshGroup = reader.ReadInt32();
-            }
-            reader.ReadInt32();
-            for (long i = 0; i < numMaterials; i++)
-            {
-                int material = reader.ReadInt32();
-            }
-            reader.ReadBytes(8 * 4 + 8);
-            long numHashes = reader.ReadInt64();
-            if (numHashes < 0 || numHashes > 0x1000)
+            BinaryReader reader = new BinaryReader(memStream);
+            memStream.Position = modelDataPos.Value + 0xC0;
+            int namePos = reader.ReadInt32();
+            if (namePos <= 0)
                 return null;
 
-            for (long i = 0; i < numHashes; i++)
-            {
-                long hash = reader.ReadInt64();
-            }
-
-            long offsetMeshStart = numHashes * 4 + 52 + dataSize;
-            reader.ReadBytes((int)(offsetMeshStart - stream.Position));
-
-            reader.ReadBytes(0xC0);
-            long offsetModelName = reader.ReadInt64();
-            if (offsetModelName <= 0 || offsetModelName > 0x1000)
-                return null;
-
-            reader.ReadBytes((int)(offsetMeshStart + offsetModelName - stream.Position));
+            memStream.Position = modelDataPos.Value + namePos;
             return reader.ReadZeroTerminatedString();
         }
 

@@ -23,6 +23,8 @@ namespace TrRebootTools.Extractor
 
         public void Extract(string folderPath, ICollection<ArchiveFileReference> fileRefs, ITaskProgress progress, CancellationToken cancellationToken)
         {
+            folderPath = @"\\?\" + Path.GetFullPath(folderPath);
+
             progress = new MultiStepTaskProgress(progress, fileRefs.Count);
             foreach (ArchiveFileReference fileRef in fileRefs)
             {
@@ -58,7 +60,8 @@ namespace TrRebootTools.Extractor
 
                 foreach ((string collectionName, ResourceReference resourceRef) in refResources)
                 {
-                    string filePath = Path.Combine(folderPath, collectionName + ResourceNaming.GetExtension(resourceRef.Type, resourceRef.SubType, _archiveSet.Game));
+                    string fileName = collectionName + ResourceNaming.GetExtension(resourceRef.Type, resourceRef.SubType, _archiveSet.Game);
+                    string filePath = Path.Combine(folderPath, fileName);
                     ExtractResource(filePath, resourceRef, ref numExtractedResources, numTotalResources, progress, cancellationToken);
                 }
 
@@ -69,9 +72,6 @@ namespace TrRebootTools.Extractor
                         continue;
 
                     string filePath = Path.Combine(folderPath, ResourceNaming.GetFilePath(_archiveSet, resourceRef));
-                    if (filePath.Length > 260)
-                        filePath = Path.Combine(folderPath, ResourceNaming.GetFilePath(_archiveSet, resourceRef, false));
-
                     Directory.CreateDirectory(Path.GetDirectoryName(filePath));
                     ExtractResource(filePath, resourceRef, ref numExtractedResources, numTotalResources, progress, cancellationToken);
                 }
@@ -125,14 +125,57 @@ namespace TrRebootTools.Extractor
             while (collections.Count > 0)
             {
                 collection = collections.Dequeue();
-                string collectionName = Path.GetFileNameWithoutExtension(CdcHash.Lookup(collection.NameHash, _archiveSet.Game));
+                string collectionPath = CdcHash.Lookup(collection.NameHash, _archiveSet.Game);
+                if (collectionPath == null)
+                    continue;
 
+                string collectionName = Path.GetFileNameWithoutExtension(collectionPath);
+
+                bool isStreamLayer = collectionPath.Contains("\\streamlayers\\");
+                ResourceReference mainResourceRef = collection.MainResourceReference;
                 foreach (ResourceReference resource in collection.ResourceReferences)
                 {
-                    if (resource.Type == ResourceType.ObjectReference || resource.Type == ResourceType.GlobalContentReference)
+                    if (resource == mainResourceRef)
+                    {
+                        ResourceSubType? subType = null;
+                        if (resource.Type == ResourceType.Dtp)
+                        {
+                            if (isStreamLayer)
+                                subType = ResourceSubType.StreamLayer;
+                            else if (_archiveSet.Game == CdcGame.Tr2013)
+                                subType = ResourceSubType.Level;
+                        }
+
+                        if (subType != null)
+                        {
+                            refResources[collectionName] = new ResourceReference(
+                                ResourceType.Dtp,
+                                subType.Value,
+                                resource.Id,
+                                resource.Locale,
+                                resource.ArchiveId,
+                                resource.ArchiveSubId,
+                                resource.ArchivePart,
+                                resource.Offset,
+                                resource.Length,
+                                resource.DecompressionOffset,
+                                resource.RefDefinitionsSize,
+                                resource.BodySize
+                            );
+                        }
+                        else
+                        {
+                            refResources[collectionName] = resource;
+                        }
+                    }
+                    else if (resource.Type == ResourceType.ObjectReference || resource.Type == ResourceType.GlobalContentReference)
+                    {
                         refResources[collectionName] = resource;
+                    }
                     else
+                    {
                         otherResources.Add(resource);
+                    }
                 }
 
                 foreach (ResourceCollectionDependency dependency in collection.Dependencies)

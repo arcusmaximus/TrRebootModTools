@@ -110,6 +110,7 @@ namespace TrRebootTools.HookTool
             this._materialControl.Size = new System.Drawing.Size(825, 410);
             this._materialControl.TabIndex = 0;
             this._materialControl.SavingMaterial += new System.EventHandler(this._materialControl_SavingMaterial);
+            this._materialControl.SavedMaterial += new System.EventHandler(this._materialControl_SavedMaterial);
             // 
             // _btnBrowseModFolder
             // 

@@ -137,16 +137,16 @@ typedef struct
     Vector4 center;
     int firstIndexIdx;
     int numTriangles;
-    int field_18;
+    int numVertices;
     int flags <format=hex>;
-    int field_20;
-    int field_24;
-    int field_28;
+    int drawGroupId;
+    int order;
+    int actualPg;
     short lodLevel;
-    short field_2E;
+    FSkip(2);
     quad materialIdx;
     quad textureIndices[5] <format=hex>;
-} MeshPart;
+} MeshPart <optimize=true>;
 
 typedef struct
 {

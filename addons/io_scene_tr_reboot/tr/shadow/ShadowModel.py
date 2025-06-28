@@ -2,13 +2,14 @@ from mathutils import Vector
 from io_scene_tr_reboot.tr.Model import Model
 from io_scene_tr_reboot.tr.ResourceBuilder import ResourceBuilder
 from io_scene_tr_reboot.tr.ResourceReader import ResourceReader
+from io_scene_tr_reboot.tr.shadow.ShadowLodLevel import ShadowLodLevel
 from io_scene_tr_reboot.tr.shadow.ShadowMesh import ShadowMesh
 from io_scene_tr_reboot.tr.shadow.ShadowMeshPart import ShadowMeshPart
 from io_scene_tr_reboot.tr.shadow.ShadowModelDataHeader import ShadowModelDataHeader
 from io_scene_tr_reboot.tr.shadow.ShadowModelReferences import ShadowModelReferences
 from io_scene_tr_reboot.util.Enumerable import Enumerable
 
-class ShadowModel(Model[ShadowModelReferences, ShadowModelDataHeader, ShadowMesh, ShadowMeshPart]):
+class ShadowModel(Model[ShadowModelReferences, ShadowModelDataHeader, ShadowLodLevel, ShadowMesh, ShadowMeshPart]):
     def __init__(self, model_id: int, refs: ShadowModelReferences) -> None:
         super().__init__(model_id, refs)
         self.header = ShadowModelDataHeader()
@@ -27,7 +28,7 @@ class ShadowModel(Model[ShadowModelReferences, ShadowModelDataHeader, ShadowMesh
         if self.header.pre_tesselation_info_offset != 0xFFFFFFFF:
             raise NotImplementedError()
 
-        reader.skip(self.header.num_lod_levels * 0x40)
+        self.lod_levels = reader.read_struct_list(ShadowLodLevel, self.header.num_lod_levels)
         reader.skip(self.header.num_bones * 4)
         reader.align(0x20)
 

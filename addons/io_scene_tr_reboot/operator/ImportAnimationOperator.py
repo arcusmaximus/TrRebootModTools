@@ -3,8 +3,8 @@ import bpy
 from io_scene_tr_reboot.BlenderNaming import BlenderNaming
 from io_scene_tr_reboot.exchange.shadow.ShadowAnimationImporter import ShadowAnimationImporter
 from io_scene_tr_reboot.operator.BlenderOperatorBase import ImportOperatorBase, ImportOperatorProperties
-from io_scene_tr_reboot.operator.OperatorCommon import OperatorCommon
 from io_scene_tr_reboot.operator.OperatorContext import OperatorContext
+from io_scene_tr_reboot.properties.SceneProperties import SceneProperties
 from io_scene_tr_reboot.util.Enumerable import Enumerable
 
 if TYPE_CHECKING:
@@ -26,8 +26,7 @@ class ImportShadowAnimationOperator(ImportOperatorBase[ImportOperatorProperties]
             if bl_armature_obj is None:
                 return { "CANCELLED" }
 
-            context.window_manager.fileselect_add(self)
-            return { "RUNNING_MODAL" }
+            return super().invoke(context, event)
 
     def execute(self, context: bpy.types.Context | None) -> set[OperatorReturnItems]:
         if context is None:
@@ -38,7 +37,7 @@ class ImportShadowAnimationOperator(ImportOperatorBase[ImportOperatorProperties]
             if bl_armature_obj is None:
                 return { "CANCELLED" }
 
-            importer = ShadowAnimationImporter(OperatorCommon.scale_factor)
+            importer = ShadowAnimationImporter(SceneProperties.get_scale_factor())
             importer.import_animation(getattr(self.properties, "filepath"), bl_armature_obj)
             return { "FINISHED" }
 

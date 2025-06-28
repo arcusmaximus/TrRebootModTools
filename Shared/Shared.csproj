@@ -181,8 +181,12 @@
     <EmbeddedResource Include="Controls\DraggableNumberControl.resx">
       <DependentUpon>DraggableNumberControl.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Controls\FileTreeView.resx">
+      <DependentUpon>FileTreeView.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Controls\FileTreeViewBase.resx">
       <DependentUpon>FileTreeViewBase.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\FormWithProgress.resx">
       <DependentUpon>FormWithProgress.cs</DependentUpon>

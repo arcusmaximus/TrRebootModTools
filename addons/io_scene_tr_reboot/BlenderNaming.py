@@ -1,6 +1,6 @@
 import re
 from typing import ClassVar, Iterable, NamedTuple, overload
-from io_scene_tr_reboot.tr.Collision import CollisionKey, CollisionType
+from io_scene_tr_reboot.tr.CollisionShape import CollisionShapeKey, CollisionShapeType
 from io_scene_tr_reboot.util.Conditional import coalesce
 from io_scene_tr_reboot.util.Enumerable import Enumerable
 
@@ -13,6 +13,15 @@ class BlenderMeshIdSet(NamedTuple):
     object_id: int
     model_id: int
     model_data_id: int
+    mesh_idx: int
+
+class BlenderCollisionModelIdSet(NamedTuple):
+    object_id: int
+    model_id: int
+
+class BlenderCollisionMeshIdSet(NamedTuple):
+    object_id: int
+    model_id: int
     mesh_idx: int
 
 class BlenderBoneIdSet(NamedTuple):
@@ -54,6 +63,18 @@ class BlenderNaming:
     constrained_bone_palette_name: ClassVar[str] = "THEME03"
 
     @staticmethod
+    def make_collection_empty_name(collection_name: str, object_id: int) -> str:
+        return BlenderNaming.make_collection_item_name(collection_name, f"object_{object_id}")
+
+    @staticmethod
+    def try_parse_collection_empty_name(name: str) -> int | None:
+        match = re.search(r"_object_(\d+)(?:\.\d+)?$", name)
+        if match is None:
+            return None
+
+        return int(match.group(1))
+
+    @staticmethod
     def make_mesh_name(collection_name: str, object_id: int, model_id: int, model_data_id: int, mesh_idx: int) -> str:
         return BlenderNaming.make_collection_item_name(collection_name, f"model_{object_id}_{model_id}_{model_data_id}_{mesh_idx}")
 
@@ -63,7 +84,7 @@ class BlenderNaming:
 
     @staticmethod
     def try_parse_mesh_name(name: str) -> BlenderMeshIdSet | None:
-        match = re.fullmatch(r"\w+_model_(?:(\d+)_)?(\d+)_(\d+)_(\d+)(?:\.\d+)?", name)
+        match = re.search(r"_model_(?:(\d+)_)?(\d+)_(\d+)_(\d+)(?:\.\d+)?$", name)
         if match is None:
             return None
 
@@ -79,9 +100,20 @@ class BlenderNaming:
         return mesh_id_set
 
     @staticmethod
-    def parse_model_name(name: str) -> BlenderModelIdSet:
-        mesh_id_set = BlenderNaming.parse_mesh_name(name)
+    def try_parse_model_name(name: str) -> BlenderModelIdSet | None:
+        mesh_id_set = BlenderNaming.try_parse_mesh_name(name)
+        if mesh_id_set is None:
+            return None
+
         return BlenderModelIdSet(mesh_id_set.object_id, mesh_id_set.model_id, mesh_id_set.model_data_id)
+
+    @staticmethod
+    def parse_model_name(name: str) -> BlenderModelIdSet:
+        model_id_set = BlenderNaming.try_parse_model_name(name)
+        if model_id_set is None:
+            raise Exception(f"{name} is not a valid mesh name.")
+
+        return model_id_set
 
     @staticmethod
     def make_local_empty_name(object_id: int, model_id: int, model_data_id: int) -> str:
@@ -132,16 +164,20 @@ class BlenderNaming:
         )
 
     @staticmethod
-    def is_global_armature_name(name: str) -> bool:
-        return name.startswith("merged_skeleton_")
+    def try_parse_global_armature_name(name: str) -> list[int] | None:
+        match = re.fullmatch(r"merged_skeleton_([_\d]+)(?:\.\d+)?", name)
+        if match is None:
+            return None
+
+        return Enumerable(match.group(1).split("_")).select(lambda id: int(id)).to_list()
 
     @staticmethod
     def parse_global_armature_name(name: str) -> list[int]:
-        match = re.fullmatch(r"merged_skeleton_([_\d]+)(?:\.\d+)?", name)
-        if match is None:
+        skeleton_ids = BlenderNaming.try_parse_global_armature_name(name)
+        if skeleton_ids is None:
             raise Exception(f"{name} is not a valid merged armature name.")
 
-        return Enumerable(match.group(1).split("_")).select(lambda id: int(id)).to_list()
+        return skeleton_ids
 
     @staticmethod
     def make_local_armature_name(collection_name: str, id: int) -> str:
@@ -149,7 +185,7 @@ class BlenderNaming:
 
     @staticmethod
     def try_parse_local_armature_name(name: str) -> int | None:
-        match = re.fullmatch(r"\w+_skeleton_(\d+)(?:\.\d+)?", name)
+        match = re.search(r"_skeleton_(\d+)(?:\.\d+)?$", name)
         if match is None:
             return None
 
@@ -312,7 +348,7 @@ class BlenderNaming:
 
     @staticmethod
     def is_cloth_empty_name(name: str) -> bool:
-        return name.endswith("_cloth")
+        return re.search(r"_cloth(?:\.\d+)?$", name) is not None
 
     @staticmethod
     def make_cloth_strip_name(collection_name: str, skeleton_id: int, definition_id: int, component_id: int, strip_id: int) -> str:
@@ -320,7 +356,7 @@ class BlenderNaming:
 
     @staticmethod
     def try_parse_cloth_strip_name(name: str) -> BlenderClothStripIdSet | None:
-        match = re.fullmatch(r"\w+_clothstrip_(\d+)_(\d+)_(\d+)_(\d+)", name)
+        match = re.search(r"_clothstrip_(\d+)_(\d+)_(\d+)_(\d+)(?:\.\d+)?$", name)
         if match is None:
             return None
 
@@ -343,24 +379,75 @@ class BlenderNaming:
         return name.endswith("_collisions")
 
     @staticmethod
-    def make_collision_name(collection_name: str, collision_type: CollisionType, collision_hash: int) -> str:
-        return BlenderNaming.make_collection_item_name(collection_name, f"collision_{collision_type.name.lower()}_{collision_hash:016X}")
+    def make_collision_shape_name(collection_name: str, collision_type: CollisionShapeType, skeleton_id: int, collision_hash: int) -> str:
+        return BlenderNaming.make_collection_item_name(collection_name, f"collision_{collision_type.name.lower()}_{skeleton_id}_{collision_hash:016X}")
 
     @staticmethod
-    def parse_collision_name(name: str) -> CollisionKey:
-        match = re.fullmatch(r"\w+_collision_([a-z]+)_([0-9A-F]+)", name)
+    def try_parse_collision_shape_name(name: str) -> CollisionShapeKey | None:
+        match = re.search(r"_collision_([a-z]+)(?:_(\d+))?_([0-9A-F]+)(?:\.\d+)?$", name)
         if match is None:
-            raise Exception(f"{name} is not a valid collision name")
+            return None
 
-        return CollisionKey(CollisionType[match.group(1).upper()], int(match.group(2), base = 16))
+        type = CollisionShapeType[match.group(1).upper()]
+        skeleton_id = int(match.group(2)) if match.group(2) else None
+        hash = int(match.group(3), base = 16)
+        return CollisionShapeKey(type, skeleton_id, hash)
 
     @staticmethod
-    def make_hair_asset_name(collection_name: str, model_id: int | None, hair_data_id: int) -> str:
-        ids = str(hair_data_id)
-        if model_id is not None:
-            ids = f"{model_id}_{ids}"
+    def parse_collision_shape_name(name: str) -> CollisionShapeKey:
+        key = BlenderNaming.try_parse_collision_shape_name(name)
+        if key is None:
+            raise Exception(f"{name} is not a valid collision shape name")
 
-        return BlenderNaming.make_collection_item_name(collection_name, f"hair_{ids}")
+        return key
+
+    @staticmethod
+    def make_collision_mesh_name(collection_name: str, object_id: int, model_id: int, mesh_idx: int) -> str:
+        return BlenderNaming.make_collection_item_name(collection_name, f"cmodel_{object_id}_{model_id}_{mesh_idx}")
+
+    @staticmethod
+    def try_parse_collision_mesh_name(name: str) -> BlenderCollisionMeshIdSet | None:
+        match = re.search(r"_cmodel_(\d+)_(\d+)_(\d+)(?:\.\d+)?$", name)
+        if match is None:
+            return None
+
+        return BlenderCollisionMeshIdSet(int(match.group(1)), int(match.group(2)), int(match.group(3)))
+
+    @staticmethod
+    def try_parse_collision_model_name(name: str) -> BlenderCollisionModelIdSet | None:
+        mesh_id_set = BlenderNaming.try_parse_collision_mesh_name(name)
+        if mesh_id_set is None:
+            return None
+
+        return BlenderCollisionModelIdSet(mesh_id_set.object_id, mesh_id_set.model_id)
+
+    @staticmethod
+    def parse_collision_model_name(name: str) -> BlenderCollisionModelIdSet:
+        model_id_set = BlenderNaming.try_parse_collision_model_name(name)
+        if model_id_set is None:
+            raise Exception(f"{name} is not a valid collision mesh name.")
+
+        return model_id_set
+
+    @staticmethod
+    def make_collision_material_name(id: int) -> str:
+        return f"collision_material_{id}"
+
+    @staticmethod
+    def try_parse_collision_material_name(name: str) -> int | None:
+        match = re.fullmatch(r"collision_material_(\d+)(?:\.\d+)?", name)
+        if match is None:
+            return None
+
+        return int(match.group(1))
+
+    @staticmethod
+    def parse_collision_material_name(name: str) -> int:
+        id = BlenderNaming.try_parse_collision_material_name(name)
+        if id is None:
+            raise Exception(f"{name} is not a valid collision material name.")
+
+        return id
 
     @staticmethod
     def make_hair_strand_group_name(collection_name: str, model_id: int | None, hair_data_id: int, part_name: str, is_master: bool) -> str:
@@ -372,7 +459,7 @@ class BlenderNaming:
 
     @staticmethod
     def try_parse_hair_strand_group_name(name: str) -> BlenderHairStrandGroupIdSet | None:
-        match = re.fullmatch(r"\w+_hair(?:_(\d+))?_(\d+)_([a-zA-Z0-9]+)_(guide|render)(?:\.\d+)?", name)
+        match = re.search(r"_hair(?:_(\d+))?_(\d+)_([a-zA-Z0-9]+)_(guide|render)(?:\.\d+)?$", name)
         if match is None:
             return None
 

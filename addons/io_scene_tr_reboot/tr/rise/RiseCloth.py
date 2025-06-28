@@ -2,7 +2,7 @@ from ctypes import sizeof
 from typing import TYPE_CHECKING, Sequence
 from mathutils import Vector
 from io_scene_tr_reboot.tr.Cloth import ClothFeatureSupport, IClothDef, IClothDefAnchorBone, IClothDefMass, IClothDefSpring, IClothDefStrip, IClothTune, IClothTuneCollisionGroup, IClothTuneCollisionKey, IClothTuneConfig, IClothTuneStripGroup
-from io_scene_tr_reboot.tr.Collision import Collision, CollisionKey, CollisionType
+from io_scene_tr_reboot.tr.CollisionShape import CollisionShape, CollisionShapeKey, CollisionShapeType
 from io_scene_tr_reboot.tr.ResourceBuilder import ResourceBuilder
 from io_scene_tr_reboot.tr.ResourceReader import ResourceReader
 from io_scene_tr_reboot.tr.ResourceReference import ResourceReference
@@ -213,20 +213,28 @@ class RiseCloth(Tr2013Cloth):
     def read_tune_collision_groups(self, reader: ResourceReader, count: int) -> Sequence[IClothTuneCollisionGroup]:
         return reader.read_struct_list(_ClothTuneCollisionGroup, count)
 
-    def read_tune_collisions(self, reader: ResourceReader, base_idx: int, count: int, global_bone_ids: list[int | None], external_collisions: dict[CollisionKey, Collision]) -> Sequence[Collision]:
+    def read_tune_collisions(
+        self,
+        reader: ResourceReader,
+        base_idx: int,
+        count: int,
+        skeleton_id: int,
+        global_bone_ids: list[int | None],
+        external_collisions: dict[CollisionShapeKey, CollisionShape]
+    ) -> Sequence[CollisionShape]:
         dtp_collision_hashes = reader.read_struct_list(_ClothTuneCollisionKey, count)
-        collisions: list[Collision] = []
+        collisions: list[CollisionShape] = []
         for dtp_collision_hash in dtp_collision_hashes:
-            collision_key = self.read_tune_collision_key(dtp_collision_hash, reader)
+            collision_key = self.read_tune_collision_key(reader, skeleton_id, dtp_collision_hash)
             collision = external_collisions.get(collision_key)
             if collision is not None:
                 collisions.append(collision)
 
         return collisions
 
-    def read_tune_collision_key(self, dtp_collision: IClothTuneCollisionKey, reader: ResourceReader) -> CollisionKey:
+    def read_tune_collision_key(self, reader: ResourceReader, skeleton_id: int, dtp_collision: IClothTuneCollisionKey) -> CollisionShapeKey:
         if dtp_collision.hash_data_2 == 0:
-            return CollisionKey(CollisionType(dtp_collision.type), dtp_collision.hash_data_1)
+            return CollisionShapeKey(CollisionShapeType(dtp_collision.type), skeleton_id, dtp_collision.hash_data_1)
 
         inputs: list[int] = [dtp_collision.hash_data_1]
         if dtp_collision.hash_data_2 != 0:
@@ -240,7 +248,7 @@ class RiseCloth(Tr2013Cloth):
 
                     inputs.append(value)
 
-        return CollisionKey(CollisionType(dtp_collision.type), self.get_collision_hash(inputs))
+        return CollisionShapeKey(CollisionShapeType(dtp_collision.type), skeleton_id, self.get_collision_hash(inputs))
 
     def get_collision_hash(self, input: list[int]) -> int:
         hash = 0
@@ -296,7 +304,7 @@ class RiseCloth(Tr2013Cloth):
     def create_tune_collision_group(self) -> IClothTuneCollisionGroup:
         return _ClothTuneCollisionGroup()
 
-    def create_tune_collision(self, collision: Collision, global_bone_ids: list[int | None]) -> CStruct:
+    def create_tune_collision(self, collision: CollisionShape, global_bone_ids: list[int | None]) -> CStruct:
         dtp_collision_hash = _ClothTuneCollisionKey()
         dtp_collision_hash.type = collision.type
         dtp_collision_hash.hash_data_1 = collision.hash

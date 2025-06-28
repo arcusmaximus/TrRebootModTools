@@ -11,6 +11,7 @@ namespace TrRebootTools.Shared.Cdc.Tr2013
                 { (ResourceType.AnimationLib, 0), [".tr9animlib"] },
                 { (ResourceType.CollisionMesh, 0), [".tr9cmesh"] },
                 { (ResourceType.Dtp, 0), [".tr9dtp"] },
+                { (ResourceType.Dtp, ResourceSubType.Level), [".tr9level"] },
                 { (ResourceType.GlobalContentReference, 0), [".tr9objectref"] },
                 { (ResourceType.Material, 0), [".tr9material"] },
                 { (ResourceType.Model, 0), [".tr9modeldata", ".mesh"] },

@@ -14,28 +14,55 @@ class BlenderHelper:
     is_blender_40: ClassVar[bool] = cast(tuple[int, ...], bpy.app.version) >= (4, 0, 0)
 
     @staticmethod
-    def select_object(bl_obj: bpy.types.Object) -> None:
+    def get_or_create_collection(name: str) -> bpy.types.Collection:
+        bl_collection = bpy.data.collections.get(name)
+        if bl_collection is None:
+            bl_collection = bpy.data.collections.new(name)
+            if bpy.context.scene is not None:
+                bpy.context.scene.collection.children.link(bl_collection)
+
+        return bl_collection
+
+    @staticmethod
+    def is_collection_excluded(bl_collection: bpy.types.Collection) -> bool:
+        return BlenderHelper.__get_view_layer_collection(bl_collection).exclude
+
+    @staticmethod
+    def set_collection_excluded(bl_collection: bpy.types.Collection, exclude: bool) -> None:
+        BlenderHelper.__get_view_layer_collection(bl_collection).exclude = exclude
+
+    @staticmethod
+    def __get_view_layer_collection(bl_collection: bpy.types.Collection) -> bpy.types.LayerCollection:
         if bpy.context.view_layer is None:
-            return
+            raise Exception()
 
-        bpy.ops.object.select_all(action = "DESELECT")
-        bl_obj.hide_set(False)
-        bl_obj.select_set(True)
-        bpy.context.view_layer.objects.active = bl_obj
+        return Enumerable([bpy.context.view_layer.layer_collection]).with_descendants(lambda c: c.children).first(lambda c: c.collection == bl_collection)
 
     @staticmethod
-    def enter_edit_mode(bl_obj: bpy.types.Object | None = None) -> "BlenderEditContext":
-        if bpy.context and bpy.context.object:
-            bpy.ops.object.mode_set(mode = "OBJECT")
+    def move_object_to_collection(bl_obj: bpy.types.Object, bl_collection: bpy.types.Collection | None, include_children: bool = False) -> None:
+        if bl_collection is None:
+            if bpy.context.scene is None:
+                return
 
-        if bl_obj is not None:
-            BlenderHelper.select_object(bl_obj)
+            bl_collection = bpy.context.scene.collection
 
-        return BlenderEditContext()
+        bl_objs = [bl_obj]
+        if include_children:
+            bl_objs.extend(bl_obj.children_recursive)
 
-    @staticmethod
-    def prepare_for_model_export(bl_obj: bpy.types.Object) -> "BlenderModelExportContext":
-        return BlenderModelExportContext(bl_obj)
+        for bl_obj in bl_objs:
+            hidden = bl_obj.hide_get() or bl_obj.hide_viewport
+
+            for bl_existing_collection in list(bl_obj.users_collection):
+                bl_existing_collection.objects.unlink(bl_obj)
+
+            bl_collection.objects.link(bl_obj)
+
+            if BlenderHelper.is_collection_excluded(bl_collection):
+                bl_obj.hide_viewport = hidden
+            else:
+                bl_obj.hide_viewport = False
+                bl_obj.hide_set(hidden)
 
     @staticmethod
     def create_object(bl_data: bpy.types.ID | None, name: str | None = None) -> bpy.types.Object:
@@ -44,12 +71,18 @@ class BlenderHelper:
         return bl_obj
 
     @staticmethod
-    def duplicate_object(bl_obj: bpy.types.Object) -> bpy.types.Object:
+    def duplicate_object(bl_obj: bpy.types.Object, duplicate_data: bool, recursive: bool = False) -> bpy.types.Object:
         bl_copied_obj = bl_obj.copy()
-        if bl_obj.data:
+        if duplicate_data and bl_obj.data is not None:
             bl_copied_obj.data = bl_obj.data.copy()
 
         BlenderHelper.__add_object_to_scene(bl_copied_obj)
+
+        if recursive:
+            for bl_child_obj in bl_obj.children:
+                bl_copied_child_obj = BlenderHelper.duplicate_object(bl_child_obj, duplicate_data, True)
+                bl_copied_child_obj.parent = bl_copied_obj
+
         return bl_copied_obj
 
     @staticmethod
@@ -62,6 +95,26 @@ class BlenderHelper:
         bpy.ops.object.select_all(action = "DESELECT")
         bl_obj.select_set(True)
         bpy.context.view_layer.objects.active = bl_obj
+
+    @staticmethod
+    def select_object(bl_obj: bpy.types.Object) -> None:
+        if bpy.context.view_layer is None:
+            return
+
+        bpy.ops.object.select_all(action = "DESELECT")
+        bl_obj.hide_set(False)
+        bl_obj.select_set(True)
+        bpy.context.view_layer.objects.active = bl_obj
+
+    @staticmethod
+    def enter_edit_mode(bl_obj: bpy.types.Object | None = None) -> "BlenderEditContext":
+        if bpy.context and bpy.context.object and not bpy.context.object.hide_get():
+            bpy.ops.object.mode_set(mode = "OBJECT")
+
+        if bl_obj is not None:
+            BlenderHelper.select_object(bl_obj)
+
+        return BlenderEditContext()
 
     @staticmethod
     def join_objects(bl_target_obj: bpy.types.Object, bl_source_objs: Iterable[bpy.types.Object]) -> None:
@@ -77,11 +130,8 @@ class BlenderHelper:
         bpy.ops.object.join()
 
     @staticmethod
-    def move_object_to_collection(bl_obj: bpy.types.Object, bl_collection: bpy.types.Collection) -> None:
-        for bl_existing_collection in list(bl_obj.users_collection):
-            bl_existing_collection.objects.unlink(bl_obj)
-
-        bl_collection.objects.link(bl_obj)
+    def prepare_for_model_export(bl_obj: bpy.types.Object) -> "BlenderModelExportContext":
+        return BlenderModelExportContext(bl_obj)
 
     @staticmethod
     def is_bone_visible(bl_armature: bpy.types.Armature, bl_bone: bpy.types.Bone) -> bool:
@@ -200,6 +250,7 @@ class BlenderHelper:
                 if bl_layer is None:
                     return 0
 
+                bl_mesh.edges.ensure_lookup_table()
                 return bl_mesh.edges[edge_idx][bl_layer] or 0
         else:
             if isinstance(bl_mesh, bpy.types.Mesh):

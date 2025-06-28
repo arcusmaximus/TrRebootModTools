@@ -5,6 +5,7 @@ import re
 from io_scene_tr_reboot.BlenderHelper import BlenderHelper
 from io_scene_tr_reboot.BlenderNaming import BlenderNaming
 from io_scene_tr_reboot.tr.Collection import Collection
+from io_scene_tr_reboot.tr.Enumerations import ResourceType
 from io_scene_tr_reboot.tr.Material import Material
 from io_scene_tr_reboot.tr.ResourceKey import ResourceKey
 from io_scene_tr_reboot.util.DdsFile import DdsFile, DdsType
@@ -16,6 +17,10 @@ class _TextureNodeSet(NamedTuple):
     normal:  bpy.types.ShaderNodeTexImage | None
 
 class MaterialImporter(SlotsBase):
+    def import_from_collection(self, tr_collection: Collection) -> None:
+        for material_resource in tr_collection.get_resources(ResourceType.MATERIAL):
+            self.import_material(tr_collection, material_resource)
+
     def import_material(self, tr_collection: Collection, material_resource: ResourceKey) -> bpy.types.Material | None:
         material_name = BlenderNaming.make_material_name(tr_collection.get_resource_name(material_resource), material_resource.id)
 

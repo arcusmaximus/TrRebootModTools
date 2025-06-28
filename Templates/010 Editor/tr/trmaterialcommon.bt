@@ -44,9 +44,9 @@ typedef struct
     int flags <format=hex>;
     
     byte numPsTextures;
-    byte numPsTextureRanges;
-    byte numPsTextures_;
-    byte psTextureRangeStartIdx;
+    byte numPsInstanceTextures;
+    byte numPsMaterialTextures;
+    byte firstPsInstanceTexture;
     Ref psTexturesRef;
     if (CanSeekTo(psTexturesRef))
     {
@@ -68,9 +68,9 @@ typedef struct
     }
     
     byte numVsTextures;
-    byte numVsTextureRanges;
-    byte numVsTextures_;
-    byte vsTextureRangeStartIdx;
+    byte numVsInstanceTextures;
+    byte numVsMaterialTextures;
+    byte firstVsTextureInstanceTexture;
     if (TR_VERSION > 9)
     {
         FSkip(4);

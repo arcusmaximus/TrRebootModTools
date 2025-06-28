@@ -62,7 +62,10 @@ class ResourceReader(BinaryReader):
                 prev_pos = self.position
                 self.position = pointer_pos
                 value = self.read_uint32()
-                target_type = ResourceType(value >> 24)
+                try:
+                    target_type = ResourceType(value >> 24)
+                except:
+                    target_type = ResourceType.DTP
                 target_id = value & 0xFFFFFF
                 self.position = prev_pos
             else:

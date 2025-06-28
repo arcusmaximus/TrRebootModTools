@@ -31,7 +31,11 @@
         Model = 26,
         ModelData = 27,
         ShResource = 116,
-        CubeLut = 117
+        CubeLut = 117,
+
+        // Custom
+        Level = 9998,
+        StreamLayer = 9999
     }
 
     public enum ShaderType

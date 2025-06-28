@@ -73,4 +73,5 @@ namespace Tr
 #include "MaterialConstantStore.h"
 #include "NotificationChannel.h"
 #include "CommandChannel.h"
+#include "Debug.h"
 #include "TrHook.h"

@@ -16,8 +16,8 @@ class PermanentModelMerger(SkeletonMerger):
         if bl_target_armature_obj is None:
             return bl_source_armature_obj
 
-        if BlenderNaming.is_global_armature_name(bl_target_armature_obj.name) or \
-           BlenderNaming.is_global_armature_name(bl_source_armature_obj.name):
+        if BlenderNaming.try_parse_global_armature_name(bl_target_armature_obj.name) is not None or \
+           BlenderNaming.try_parse_global_armature_name(bl_source_armature_obj.name) is not None:
             raise Exception("Can't merge an armature that has been previously merged with \"Keep original skeletons\" enabled.")
 
         bone_renames = self.get_bone_renames(bl_target_armature_obj, bl_source_armature_obj)

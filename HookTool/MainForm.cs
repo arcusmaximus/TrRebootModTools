@@ -25,7 +25,8 @@ namespace TrRebootTools.HookTool
         private string _modFolder;
         private readonly FileSystemWatcher _watcher = new() { NotifyFilter = NotifyFilters.FileName | NotifyFilters.DirectoryName | NotifyFilters.LastWrite, IncludeSubdirectories = true };
         private readonly System.Timers.Timer _modReinstallTimer = new(1000) { AutoReset = false };
-        private bool _skipNextMaterialRefresh;
+
+        private readonly SemaphoreSlim _modInstallLock = new(1, 1);
 
         public MainForm()
         {
@@ -61,8 +62,13 @@ namespace TrRebootTools.HookTool
             }
 
             string modFolderPath = ConfigurationManager.AppSettings["ModFolder"];
-            if (!string.IsNullOrEmpty(modFolderPath) && Directory.Exists(modFolderPath))
-                await SetModFolderAsync(modFolderPath);
+            if (!string.IsNullOrEmpty(modFolderPath))
+            {
+                if (Directory.Exists(modFolderPath))
+                    await SetModFolderAsync(modFolderPath);
+                else
+                    modFolderPath = null;
+            }
 
             string gameExePath = Path.Combine(_archiveSet.FolderPath, CdcGameInfo.Get(_archiveSet.Game).ExeName);
             try
@@ -142,7 +148,12 @@ namespace TrRebootTools.HookTool
 
         private void _materialControl_SavingMaterial(object sender, EventArgs e)
         {
-            _skipNextMaterialRefresh = true;
+            _watcher.EnableRaisingEvents = false;
+        }
+
+        private void _materialControl_SavedMaterial(object sender, EventArgs e)
+        {
+            _watcher.EnableRaisingEvents = true;
         }
 
         private void HandleModChanged(object sender, FileSystemEventArgs e)
@@ -155,14 +166,23 @@ namespace TrRebootTools.HookTool
         {
             if (_ingame)
             {
-                UninstallMod();
-                await InstallModAsync();
+                await _modInstallLock.WaitAsync();
+                try
+                {
+                    UninstallMod();
+                    await InstallModAsync();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.ToString(), "", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                }
+                finally
+                {
+                    _modInstallLock.Release();
+                }
             }
 
-            if (_skipNextMaterialRefresh)
-                _skipNextMaterialRefresh = false;
-            else
-                Invoke(() => _materialControl.SetModFolder(_modFolder));
+            Invoke(() => _materialControl.SetModFolder(_modFolder));
         }
 
         private void UninstallMod()

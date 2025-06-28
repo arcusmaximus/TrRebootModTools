@@ -8,7 +8,7 @@ from io_scene_tr_reboot.properties.BoneProperties import BoneProperties
 from io_scene_tr_reboot.properties.ObjectProperties import ObjectProperties
 from io_scene_tr_reboot.tr.Cloth import Cloth, ClothMass, ClothMassAnchorBone, ClothMassSpringVector, ClothSpring, ClothStrip
 from io_scene_tr_reboot.tr.Collection import Collection
-from io_scene_tr_reboot.tr.Collision import Collision
+from io_scene_tr_reboot.tr.CollisionShape import CollisionShape
 from io_scene_tr_reboot.tr.Enumerations import CdcGame, ResourceType
 from io_scene_tr_reboot.tr.Factories import Factories
 from io_scene_tr_reboot.tr.IFactory import IFactory
@@ -55,22 +55,23 @@ class ClothExporter:
                                                                                   .group_by(self.get_cloth_id_set) \
                                                                                   .items():
                 bl_local_armature_obj = bl_local_armature_objs.get(cloth_id_set.skeleton_id) or bl_armature_obj
+                skeleton_id = BlenderNaming.parse_local_armature_name(bl_local_armature_obj.name)
                 bone_infos_by_local_id = self.get_bone_infos_by_local_id(bl_local_armature_obj)
-                self.export_cloth(folder_path, cloth_id_set, bl_cloth_strip_objs, bl_armature_obj, bone_infos_by_local_id, collision_bounding_boxes)
+                self.export_cloth(folder_path, cloth_id_set, bl_cloth_strip_objs, bl_armature_obj, skeleton_id, bone_infos_by_local_id, collision_bounding_boxes)
 
-    def get_collision_bounding_boxes(self, bl_armature_obj: bpy.types.Object) -> dict[Collision, _BoundingBox]:
-        result: dict[Collision, _BoundingBox] = {}
+    def get_collision_bounding_boxes(self, bl_armature_obj: bpy.types.Object) -> dict[CollisionShape, _BoundingBox]:
+        result: dict[CollisionShape, _BoundingBox] = {}
 
         for bl_empty in Enumerable(bl_armature_obj.children).where(lambda o: not o.data and BlenderNaming.is_collision_empty_name(o.name)):
             for bl_obj in Enumerable(bl_empty.children).where(lambda o: isinstance(o.data, bpy.types.Mesh)):
-                collision_key = BlenderNaming.parse_collision_name(bl_obj.name)
+                collision_key = BlenderNaming.parse_collision_shape_name(bl_obj.name)
 
                 collision_data = ObjectProperties.get_instance(bl_obj).collision.data
-                collision: Collision
+                collision: CollisionShape
                 if collision_data:
-                    collision = self.factory.deserialize_collision(collision_data)
+                    collision = self.factory.deserialize_collision_shape(collision_data)
                 else:
-                    collision = self.factory.create_collision(collision_key.type, collision_key.hash)
+                    collision = self.factory.create_collision_shape(collision_key.type, collision_key.skeleton_id, collision_key.hash)
 
                 bounding_box = self.get_world_bounding_box(bl_obj)
                 result[collision] = bounding_box
@@ -81,13 +82,18 @@ class ClothExporter:
         cloth_strip_id_set = BlenderNaming.parse_cloth_strip_name(bl_cloth_strip_obj.name)
         return _ClothIdSet(cloth_strip_id_set.skeleton_id, cloth_strip_id_set.definition_id, cloth_strip_id_set.component_id)
 
-    def get_bone_infos_by_local_id(self, bl_armature_obj: bpy.types.Object) -> dict[int, _BoneInfo]:
-        result: dict[int, _BoneInfo] = {}
+    def get_bone_infos_by_local_id(self, bl_armature_obj: bpy.types.Object) -> list[_BoneInfo]:
+        result: list[_BoneInfo] = []
         with BlenderHelper.enter_edit_mode(bl_armature_obj):
             for bl_bone in cast(bpy.types.Armature, bl_armature_obj.data).edit_bones:
                 bone_id_set = BlenderNaming.parse_bone_name(bl_bone.name)
-                if bone_id_set.local_id is not None:
-                    result[bone_id_set.local_id] = _BoneInfo(bone_id_set.global_id, bl_bone.head / self.scale_factor)
+                if bone_id_set.local_id is None:
+                    raise Exception()
+
+                while len(result) <= bone_id_set.local_id:
+                    result.append(cast(_BoneInfo, None))
+
+                result[bone_id_set.local_id] = _BoneInfo(bone_id_set.global_id, bl_bone.head / self.scale_factor)
 
         return result
 
@@ -97,22 +103,20 @@ class ClothExporter:
         cloth_id_set: _ClothIdSet,
         bl_cloth_strip_objs: list[bpy.types.Object],
         bl_armature_obj: bpy.types.Object,
-        bone_infos_by_local_id: dict[int, _BoneInfo],
-        collision_bounding_boxes: dict[Collision, _BoundingBox]
+        skeleton_id: int,
+        bone_infos_by_local_id: list[_BoneInfo],
+        collision_bounding_boxes: dict[CollisionShape, _BoundingBox]
     ) -> None:
         tr_cloth = self.factory.create_cloth(cloth_id_set.definition_id, cloth_id_set.tune_id)
         for bl_cloth_strip_obj in bl_cloth_strip_objs:
             if len(cast(bpy.types.Mesh, bl_cloth_strip_obj.data).vertices) == 0:
                 continue
 
-            self.add_cloth_strip(tr_cloth, bl_cloth_strip_obj, bl_armature_obj, bone_infos_by_local_id, collision_bounding_boxes)
+            self.add_cloth_strip(tr_cloth, bl_cloth_strip_obj, bl_armature_obj, skeleton_id, bone_infos_by_local_id, collision_bounding_boxes)
 
         definition_builder = ResourceBuilder(ResourceKey(ResourceType.DTP, cloth_id_set.definition_id), self.game)
         tune_builder = ResourceBuilder(ResourceKey(ResourceType.DTP, cloth_id_set.tune_id), self.game)
-        global_bone_ids = Enumerable(cast(bpy.types.Armature, bl_armature_obj.data).bones).select(lambda b: BlenderNaming.parse_bone_name(b.name)) \
-                                                                                          .order_by(lambda ids: ids.local_id) \
-                                                                                          .select(lambda ids: ids.global_id) \
-                                                                                          .to_list()
+        global_bone_ids = Enumerable(bone_infos_by_local_id).select(lambda i: i.global_id).to_list()
         tr_cloth.write(definition_builder, tune_builder, global_bone_ids)
 
         self.write_cloth_definition_file(folder_path, bl_armature_obj, definition_builder)
@@ -133,8 +137,9 @@ class ClothExporter:
             tr_cloth: Cloth,
             bl_cloth_strip_obj: bpy.types.Object,
             bl_armature_obj: bpy.types.Object,
-            bone_infos_by_local_id: dict[int, _BoneInfo],
-            collision_bounding_boxes: dict[Collision, _BoundingBox]
+            skeleton_id: int,
+            bone_infos_by_local_id: list[_BoneInfo],
+            collision_bounding_boxes: dict[CollisionShape, _BoundingBox]
         ) -> None:
         cloth_strip_id_set = BlenderNaming.parse_cloth_strip_name(bl_cloth_strip_obj.name)
 
@@ -142,10 +147,10 @@ class ClothExporter:
         self.apply_cloth_strip_properties(tr_cloth_strip, bl_cloth_strip_obj)
         self.add_cloth_strip_masses(tr_cloth_strip, bl_cloth_strip_obj, bl_armature_obj, bone_infos_by_local_id)
         self.add_cloth_strip_springs(tr_cloth_strip, bl_cloth_strip_obj)
-        self.add_cloth_strip_collisions(tr_cloth_strip, bl_cloth_strip_obj, collision_bounding_boxes)
+        self.add_cloth_strip_collisions(tr_cloth_strip, bl_cloth_strip_obj, skeleton_id, collision_bounding_boxes)
         tr_cloth.strips.append(tr_cloth_strip)
 
-    def get_cloth_strip_parent_bone_local_id(self, bl_cloth_strip_obj: bpy.types.Object, bone_infos_by_local_id: dict[int, _BoneInfo]) -> int:
+    def get_cloth_strip_parent_bone_local_id(self, bl_cloth_strip_obj: bpy.types.Object, bone_infos_by_local_id: list[_BoneInfo]) -> int:
         cloth_strip_properties = ObjectProperties.get_instance(bl_cloth_strip_obj).cloth
         if not cloth_strip_properties:
             raise Exception(f"Cloth strip {bl_cloth_strip_obj.name} has no parent bone. Please select a valid bone in the sidebar or delete the cloth strip.")
@@ -160,7 +165,7 @@ class ClothExporter:
         if parent_bone_id_set.global_id is None:
             raise Exception(f"Cloth strip object {bl_cloth_strip_obj.name} has parent bone {cloth_strip_properties.parent_bone_name} which has no global ID.")
 
-        for local_bone_id, bone_info in bone_infos_by_local_id.items():
+        for local_bone_id, bone_info in enumerate(bone_infos_by_local_id):
             if bone_info.global_id == parent_bone_id_set.global_id:
                 return local_bone_id
 
@@ -194,7 +199,7 @@ class ClothExporter:
         tr_cloth_strip: ClothStrip,
         bl_cloth_strip_obj: bpy.types.Object,
         bl_armature_obj: bpy.types.Object,
-        bone_infos_by_local_id: dict[int, _BoneInfo]
+        bone_infos_by_local_id: list[_BoneInfo]
     ) -> None:
         bl_armature = cast(bpy.types.Armature, bl_armature_obj.data)
 
@@ -248,15 +253,24 @@ class ClothExporter:
                 cross_vector = tr_cloth_mass.spring_vectors[i].vector.cross(tr_cloth_mass.spring_vectors[(i + 1) % num_springs].vector)
                 tr_cloth_mass.spring_vectors.append(ClothMassSpringVector(-1, cast(Vector, cross_vector)))
 
-    def add_cloth_strip_collisions(self, tr_cloth_strip: ClothStrip, bl_cloth_strip_obj: bpy.types.Object, collision_bounding_boxes: dict[Collision, _BoundingBox]) -> None:
+    def add_cloth_strip_collisions(
+        self,
+        tr_cloth_strip: ClothStrip,
+        bl_cloth_strip_obj: bpy.types.Object,
+        skeleton_id: int,
+        collision_bounding_boxes: dict[CollisionShape, _BoundingBox]
+    ) -> None:
         cloth_strip_bounding_box = self.get_world_bounding_box(bl_cloth_strip_obj)
+        padding_size = 20 * self.scale_factor
+        padding_vector = Vector((padding_size, padding_size, padding_size))
         cloth_strip_bounding_box = _BoundingBox(
-            cloth_strip_bounding_box.min - Vector((1, 1, 1)),
-            cloth_strip_bounding_box.max + Vector((1, 1, 1))
+            cloth_strip_bounding_box.min - padding_vector,
+            cloth_strip_bounding_box.max + padding_vector
         )
-        for collision_key, collision_bounding_box in collision_bounding_boxes.items():
-            if cloth_strip_bounding_box.intersects(collision_bounding_box):
-                tr_cloth_strip.collisions.append(collision_key)
+        for collision_shape, collision_bounding_box in collision_bounding_boxes.items():
+            if (collision_shape.skeleton_id is None or collision_shape.skeleton_id == skeleton_id) and \
+               cloth_strip_bounding_box.intersects(collision_bounding_box):
+                tr_cloth_strip.collisions.append(collision_shape)
 
     def get_world_bounding_box(self, bl_obj: bpy.types.Object) -> _BoundingBox:
         corners = Enumerable(bl_obj.bound_box).select(lambda c: bl_obj.matrix_world @ Vector(c)).to_list()

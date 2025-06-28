@@ -170,7 +170,7 @@ class ModelSplitter(SlotsBase):
             for local_skeleton_id in local_skeleton_ids:
                 global_vertex_indices_by_local_skeleton_id[local_skeleton_id].append(bl_vertex.index)
 
-        bl_splittable_global_mesh_obj = BlenderHelper.duplicate_object(bl_global_mesh_obj)
+        bl_splittable_global_mesh_obj = BlenderHelper.duplicate_object(bl_global_mesh_obj, True)
         if not cast(bpy.types.Mesh, bl_splittable_global_mesh_obj.data).has_custom_normals:
             bpy.ops.mesh.customdata_custom_splitnormals_add()
 

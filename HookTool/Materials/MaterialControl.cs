@@ -154,6 +154,10 @@ namespace TrRebootTools.HookTool.Materials
                 MessageBox.Show(ex.Message, "Failed to save material", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                 return;
             }
+            finally
+            {
+                SavedMaterial?.Invoke(this, EventArgs.Empty);
+            }
 
             if (_currentConstants == null)
                 return;
@@ -165,6 +169,8 @@ namespace TrRebootTools.HookTool.Materials
         }
 
         public event EventHandler SavingMaterial;
+
+        public event EventHandler SavedMaterial;
 
         private void _btnRevert_Click(object sender, EventArgs e)
         {

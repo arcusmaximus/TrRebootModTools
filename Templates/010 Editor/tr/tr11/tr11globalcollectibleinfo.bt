@@ -1,245 +1,628 @@
-//------------------------------------------------
-//--- 010 Editor v14.0 Binary Template
-//
-//      File: tr11globalcollectibleinfo.bt
-//   Authors: arc_
-//   Purpose: Parse the .tr11dtp file in globalcollectibleinfo.drm
-//  Category: SOTTR
-//------------------------------------------------
-
 #define TR_VERSION 11
 #include "../trcommon.bt"
 
 typedef struct
 {
-    uint hash <format=hex>;
+    unsigned int imageRes;
     FSkip(4);
-    
-    Ref nameRef;
-    if (CanSeekTo(nameRef))
+    Ref filepathRef;
+    if (CanSeekTo(filepathRef))
     {
-        SeekToRef(nameRef);
-        string name;
+        SeekToRef(filepathRef);
+        string filepath;
         ReturnFromRef();
     }
-    
-    FSkip(0x1F0 - 0x10);
-} CollectibleItem1 <read=name, optimize=false>;
+    int offSetX;
+    int offSetY;
+    int width;
+    int height;
+    Ref actionRef;
+    if (CanSeekTo(actionRef))
+    {
+        SeekToRef(actionRef);
+        string action;
+        ReturnFromRef();
+    }
+    unsigned int imageResVR;
+    FSkip(4);
+    Ref filepathVRRef;
+    if (CanSeekTo(filepathVRRef))
+    {
+        SeekToRef(filepathVRRef);
+        string filepathVR;
+        ReturnFromRef();
+    }
+    int offSetXVR;
+    int offSetYVR;
+    int widthVR;
+    int heightVR;
+} ImagePath <optimize=false, read=filepath>;
+
+typedef union
+{
+    short byUserDefinedIndex;
+    ushort byBoneIndex;
+    short byBoneID;
+    ushort byMarkerIndex;
+    ushort byMarkerID;
+} ModelBoneOrMarkerReference__ModelBoneOrMarkerRefData;
 
 typedef struct
 {
+    ubyte refType;
+    FSkip(1);
+    ModelBoneOrMarkerReference__ModelBoneOrMarkerRefData refData;
+} ModelBoneOrMarkerReference <optimize=false>;
+
+typedef struct
+{
+    unsigned int id <format=hex>;
+    FSkip(4);
+    Ref metricNameRef;
+    if (CanSeekTo(metricNameRef))
+    {
+        SeekToRef(metricNameRef);
+        string metricName;
+        ReturnFromRef();
+    }
     int type;
-    FSkip(0x10 - 4);
-    
-    Ref nameRef;
-    if (CanSeekTo(nameRef))
-    {
-        SeekToRef(nameRef);
-        string name;
-        ReturnFromRef();
-    }
-    
-    FSkip(0x38 - 0x18);
-    Ref filePath1Ref;
-    if (CanSeekTo(filePath1Ref))
-    {
-        SeekToRef(filePath1Ref);
-        string filePath1;
-        ReturnFromRef();
-    }
-    
-    FSkip(0x60 - 0x40);
-    Ref filePath2Ref;
-    if (CanSeekTo(filePath2Ref))
-    {
-        SeekToRef(filePath2Ref);
-        string filePath2;
-        ReturnFromRef();
-    }
-    
-    FSkip(0x98 - 0x68);
-    Ref itemsRef;
-    int numItems;
     FSkip(4);
-    if (CanSeekTo(itemsRef))
+    Ref typeAdditionalDataRef;
+    if (CanSeekTo(typeAdditionalDataRef))
     {
-        SeekToRef(itemsRef);
-        CollectibleItem1 items[numItems];
+        SeekToRef(typeAdditionalDataRef);
+        byte typeAdditionalData;
         ReturnFromRef();
     }
-} CollectibleSet1 <read=name, optimize=false>;
-
-typedef struct
-{
-    uint hash <format=hex>;
+    unsigned int regionId <format=hex>;
+    unsigned int unit;
+    PlacementPath placementID;
+    int elevation;
+    float coordinateX;
+    float coordinateY;
+    float instanceZ;
+    byte hasAreaMarker;
+    FSkip(3);
+    unsigned int areaRegionId <format=hex>;
+    unsigned int areaUnit;
+    PlacementPath areaPlacementID;
+    int areaElevation;
+    float areaCoordinateX;
+    float areaCoordinateY;
+    float areaInstanceZ;
+    float areaMarkerScale;
+    unsigned int mapRevealGroupID <format=hex>;
     FSkip(4);
-    
-    Ref nameRef;
-    if (CanSeekTo(nameRef))
+    Ref mapRevealGroupIDsRef;
+    unsigned int mapRevealGroupIDsCount;
+    if (CanSeekTo(mapRevealGroupIDsRef))
     {
-        SeekToRef(nameRef);
-        string name;
+        SeekToRef(mapRevealGroupIDsRef);
+        unsigned int mapRevealGroupIDs[mapRevealGroupIDsCount];
         ReturnFromRef();
     }
-    
-    FSkip(0xF0-0x10);
-} CollectibleItem2 <read=name, optimize=false>;
-
-typedef struct
-{
-    int type;
-    FSkip(0x10 - 4);
-    
-    Ref itemsRef;
-    int numItems;
+    byte mapRevealAsKnown;
+    FSkip(3);
+    unsigned int revealedObjectUnit;
+    PlacementPath revealedObjectPlacementID;
     FSkip(4);
-    if (CanSeekTo(itemsRef))
+    uquad selectedDescription;
+    byte doNotShowOnMap;
+    FSkip(7);
+    Ref mapMarkerIconRef;
+    if (CanSeekTo(mapMarkerIconRef))
     {
-        SeekToRef(itemsRef);
-        CollectibleItem2 items[numItems];
+        SeekToRef(mapMarkerIconRef);
+        string mapMarkerIcon;
         ReturnFromRef();
     }
-} CollectibleSet2 <optimize=false>;
-
-enum OutfitPieceSlot
-{
-    HEAD,
-    HAIR,
-    TORSO,
-    LEGS
-};
-
-typedef struct
-{
-    Ref childHashesRef;
-    int numChildHashes;
-    if (CanSeekTo(childHashesRef) && numChildHashes > 0)
+    uquad name <format=hex>;
+    uquad description <format=hex>;
+    uquad extraInfo <format=hex>;
+    uquad shortDescription <format=hex>;
+    Ref nameTextRef;
+    if (CanSeekTo(nameTextRef))
     {
-        SeekToRef(childHashesRef);
-        uint childHashes[numChildHashes] <format=hex>;
+        SeekToRef(nameTextRef);
+        string nameText;
         ReturnFromRef();
     }
-    
-    OutfitPieceSlot slot;
-    ushort zoneId;
-    FSkip(2);
-} OutfitInfo <optimize=false>;
-
-typedef struct
-{
-    uint hash <format=hex>;
-    FSkip(4);
-    
-    Ref nameRef;
-    if (CanSeekTo(nameRef))
+    ushort objectId;
+    byte hasTraitAlternativeObject;
+    FSkip(1);
+    ushort alternativeTrait;
+    ushort alternativeObjectId;
+    ImagePath imagePath;
+    ImagePath thumbnailPath;
+    Ref iconTypeRef;
+    if (CanSeekTo(iconTypeRef))
     {
-        SeekToRef(nameRef);
-        string name;
+        SeekToRef(iconTypeRef);
+        string iconType;
         ReturnFromRef();
     }
-    
-    FSkip(0xF0 - 0x10);
-    int isPiece;
-    FSkip(0x108-0xF4);
-    
-    Ref traitsRef;
-    int numTraits;
-    FSkip(4);
-    if (CanSeekTo(traitsRef) && numTraits > 0)
-    {
-        SeekToRef(traitsRef);
-        ushort traits[numTraits];
-        ReturnFromRef();
-    }
-    
-    uquad nameLocaleHash <format=hex>;
-    uquad descriptionLocaleHash <format=hex>;
+    int cultureIndex;
     FSkip(8);
-    
-    Ref infoRef;
-    if (CanSeekTo(infoRef))
+    unsigned int audioClip;
+    unsigned int audioClipSecondary;
+    unsigned int audioClipShortDescription;
+    ModelBoneOrMarkerReference miniGameMarker;
+    float miniGameMarkerVariance;
+    byte preventClose;
+    byte incrementsRegionCollectibleFoundCount;
+    byte foundByDefault;
+    FSkip(5);
+    Ref traitsRewardedRef;
+    unsigned int traitsRewardedCount;
+    if (CanSeekTo(traitsRewardedRef))
     {
-        SeekToRef(infoRef);
-        OutfitInfo info;
+        SeekToRef(traitsRewardedRef);
+        ushort traitsRewarded[traitsRewardedCount];
         ReturnFromRef();
     }
-    
-    int imageDtpId;
     FSkip(4);
-    Ref imageFileNameRef;
-    if (CanSeekTo(imageFileNameRef))
+} StoryCollectibleItem <optimize=false, read=nameText>;
+
+typedef struct
+{
+    int groupType;
+    byte isDLC;
+    FSkip(3);
+    unsigned int dlcHash <format=hex>;
+    FSkip(4);
+    Ref nameRef;
+    if (CanSeekTo(nameRef))
     {
-        SeekToRef(imageFileNameRef);
-        string imageFileName;
+        SeekToRef(nameRef);
+        string name;
         ReturnFromRef();
     }
-    
-    FSkip(0x1C8 - 0x148);
-    byte initiallyAvailable1;
-    FSkip(0x1D5 - 0x1C9);
-    byte initiallyAvailable2;
-    FSkip(0x1D8 - 0x1D6);
+    uquad title <format=hex>;
+    uquad description <format=hex>;
+    uquad conclusion <format=hex>;
+    ImagePath imagePath;
+    unsigned int xpRewardedOnCompletion;
+    FSkip(4);
+    Ref traitsRewardedOnCompletionRef;
+    unsigned int traitsRewardedOnCompletionCount;
+    if (CanSeekTo(traitsRewardedOnCompletionRef))
+    {
+        SeekToRef(traitsRewardedOnCompletionRef);
+        ushort traitsRewardedOnCompletion[traitsRewardedOnCompletionCount];
+        ReturnFromRef();
+    }
+    unsigned int audioClipDescription <format=hex>;
+    unsigned int audioClipConclusion <format=hex>;
+    FSkip(4);
+    Ref collectiblesRef;
+    unsigned int collectiblesCount;
+    if (CanSeekTo(collectiblesRef))
+    {
+        SeekToRef(collectiblesRef);
+        StoryCollectibleItem collectibles[collectiblesCount];
+        ReturnFromRef();
+    }
+    byte exemptFromCollectionAchievement;
+    FSkip(3);
+} CollectibleStory <optimize=false, read=name>;
+
+typedef struct
+{
+    Ref singlePlayerRef;
+    unsigned int singlePlayerCount;
+    if (CanSeekTo(singlePlayerRef))
+    {
+        SeekToRef(singlePlayerRef);
+        CollectibleStory singlePlayer[singlePlayerCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref multiPlayerRef;
+    unsigned int multiPlayerCount;
+    if (CanSeekTo(multiPlayerRef))
+    {
+        SeekToRef(multiPlayerRef);
+        CollectibleStory multiPlayer[multiPlayerCount];
+        ReturnFromRef();
+    }
+} CollectibleStoryCollection <optimize=false>;
+
+typedef struct
+{
+    unsigned int id <format=hex>;
+    FSkip(4);
+    Ref metricNameRef;
+    if (CanSeekTo(metricNameRef))
+    {
+        SeekToRef(metricNameRef);
+        string metricName;
+        ReturnFromRef();
+    }
+    int type;
+    FSkip(4);
+    Ref typeAdditionalDataRef;
+    if (CanSeekTo(typeAdditionalDataRef))
+    {
+        SeekToRef(typeAdditionalDataRef);
+        byte typeAdditionalData;
+        ReturnFromRef();
+    }
+    unsigned int regionId <format=hex>;
+    unsigned int unit;
+    PlacementPath placementID;
+    int elevation;
+    float coordinateX;
+    float coordinateY;
+    float instanceZ;
+    byte hasAreaMarker;
+    FSkip(3);
+    unsigned int areaRegionId <format=hex>;
+    unsigned int areaUnit;
+    PlacementPath areaPlacementID;
+    int areaElevation;
+    float areaCoordinateX;
+    float areaCoordinateY;
+    float areaInstanceZ;
+    float areaMarkerScale;
+    unsigned int mapRevealGroupID <format=hex>;
+    FSkip(4);
+    Ref mapRevealGroupIDsRef;
+    unsigned int mapRevealGroupIDsCount;
+    if (CanSeekTo(mapRevealGroupIDsRef))
+    {
+        SeekToRef(mapRevealGroupIDsRef);
+        unsigned int mapRevealGroupIDs[mapRevealGroupIDsCount];
+        ReturnFromRef();
+    }
+    byte mapRevealAsKnown;
+    FSkip(3);
+    unsigned int revealedObjectUnit;
+    PlacementPath revealedObjectPlacementID;
+    FSkip(4);
+    uquad selectedDescription;
+    byte doNotShowOnMap;
+    FSkip(7);
+    Ref mapMarkerIconRef;
+    if (CanSeekTo(mapMarkerIconRef))
+    {
+        SeekToRef(mapMarkerIconRef);
+        string mapMarkerIcon;
+        ReturnFromRef();
+    }
+} NonStoryCollectibleItem <optimize=false, read=metricName>;
+
+typedef struct
+{
+    int groupType;
+    byte isDLC;
+    FSkip(3);
+    unsigned int dlcHash <format=hex>;
+    FSkip(4);
+    Ref collectiblesRef;
+    unsigned int collectiblesCount;
+    if (CanSeekTo(collectiblesRef))
+    {
+        SeekToRef(collectiblesRef);
+        NonStoryCollectibleItem collectibles[collectiblesCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+} NonStoryCollectibleGroup <optimize=false>;
+
+typedef struct
+{
+    Ref singlePlayerRef;
+    unsigned int singlePlayerCount;
+    if (CanSeekTo(singlePlayerRef))
+    {
+        SeekToRef(singlePlayerRef);
+        NonStoryCollectibleGroup singlePlayer[singlePlayerCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref multiPlayerRef;
+    unsigned int multiPlayerCount;
+    if (CanSeekTo(multiPlayerRef))
+    {
+        SeekToRef(multiPlayerRef);
+        NonStoryCollectibleGroup multiPlayer[multiPlayerCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+} NonStoryCollectibleCollection <optimize=false>;
+
+typedef struct
+{
+    ushort tombHintTrait;
+    ushort relicHintTrait;
+    ushort containerTaggingTrait;
+    FSkip(2);
+    Ref miniGamePadshockRef;
+    if (CanSeekTo(miniGamePadshockRef))
+    {
+        SeekToRef(miniGamePadshockRef);
+        string miniGamePadshock;
+        ReturnFromRef();
+    }
+    ushort itemRevealedSymbol;
+    ushort itemPointOfInterestSymbol;
+    FSkip(4);
+} CollectibleMisc <optimize=false>;
+
+typedef struct
+{
+    unsigned int theme;
+    int themeWeight;
+} OutfitThemes <optimize=false>;
+
+typedef struct
+{
+    Ref setPiecesRef;
+    unsigned int setPiecesCount;
+    if (CanSeekTo(setPiecesRef))
+    {
+        SeekToRef(setPiecesRef);
+        unsigned int collectibleId[setPiecesCount] <format=hex>;
+        ReturnFromRef();
+    }
+} Set <optimize=false>;
+
+typedef struct
+{
+    unsigned int id <format=hex>;
+    FSkip(4);
+    Ref metricNameRef;
+    if (CanSeekTo(metricNameRef))
+    {
+        SeekToRef(metricNameRef);
+        string metricName;
+        ReturnFromRef();
+    }
+    int type;
+    FSkip(4);
+    Ref typeAdditionalDataRef;
+    if (CanSeekTo(typeAdditionalDataRef))
+    {
+        SeekToRef(typeAdditionalDataRef);
+        byte typeAdditionalData;
+        ReturnFromRef();
+    }
+    unsigned int regionId <format=hex>;
+    unsigned int unit;
+    PlacementPath placementID;
+    int elevation;
+    float coordinateX;
+    float coordinateY;
+    float instanceZ;
+    byte hasAreaMarker;
+    FSkip(3);
+    unsigned int areaRegionId <format=hex>;
+    unsigned int areaUnit;
+    PlacementPath areaPlacementID;
+    int areaElevation;
+    float areaCoordinateX;
+    float areaCoordinateY;
+    float areaInstanceZ;
+    float areaMarkerScale;
+    unsigned int mapRevealGroupID <format=hex>;
+    FSkip(4);
+    Ref mapRevealGroupIDsRef;
+    unsigned int mapRevealGroupIDsCount;
+    if (CanSeekTo(mapRevealGroupIDsRef))
+    {
+        SeekToRef(mapRevealGroupIDsRef);
+        unsigned int mapRevealGroupIDs[mapRevealGroupIDsCount];
+        ReturnFromRef();
+    }
+    byte mapRevealAsKnown;
+    FSkip(3);
+    unsigned int revealedObjectUnit;
+    PlacementPath revealedObjectPlacementID;
+    FSkip(4);
+    uquad selectedDescription;
+    byte doNotShowOnMap;
+    FSkip(7);
+    Ref mapMarkerIconRef;
+    if (CanSeekTo(mapMarkerIconRef))
+    {
+        SeekToRef(mapMarkerIconRef);
+        string mapMarkerIcon;
+        ReturnFromRef();
+    }
+    int collectibleOutfitType;
+    FSkip(4);
+    Ref outfitThemesRef;
+    unsigned int outfitThemesCount;
+    if (CanSeekTo(outfitThemesRef))
+    {
+        SeekToRef(outfitThemesRef);
+        OutfitThemes outfitThemes[outfitThemesCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref traitsRewardRef;
+    unsigned int traitsRewardCount;
+    if (CanSeekTo(traitsRewardRef))
+    {
+        SeekToRef(traitsRewardRef);
+        ushort traitsReward[traitsRewardCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    uquad localizedName <format=hex>;
+    uquad localizedDescription <format=hex>;
+    uquad localizedBonusDescription <format=hex>;
+    Ref collectibleOutfitsDataRef;
+    if (CanSeekTo(collectibleOutfitsDataRef))
+    {
+        SeekToRef(collectibleOutfitsDataRef);
+        Set collectibleOutfitsData;
+        ReturnFromRef();
+    }
+    ImagePath renderedIconImagePath;
+    ImagePath highresImagePath;
+    byte isDLC;
+    byte isVisibleInOutfitScreen;
+    FSkip(2);
+    unsigned int dlcHash <format=hex>;
+    //byte isTutorialItem;
+    //byte copyToNewGamePlus;
+    FSkip(4);
+    byte toggles[4];
     byte photoModeFaceChooserDisabled;
     byte photoModeMuscleSliderDisabled;
-    FSkip(0x1E0 - 0x1DA);
-} Outfit <read=name, optimize=false>;
+    FSkip(6);
+} OutfitsCollectibleItem <optimize=false, read=Str("%08X %s - visible %d - isDLC %d - toggles %d, %d, %d, %d", id, metricName, isVisibleInOutfitScreen, isDLC, toggles[0], toggles[1], toggles[2], toggles[3])>;
 
 typedef struct
 {
-    int type;
-    int field_4;
-    int field_8 <format=hex>;
-    int field_C;
-    Ref outfitsRef;
-    int numOutfits;
+    int groupType;
+    byte isDLC;
+    FSkip(3);
+    unsigned int dlcHash <format=hex>;
+    unsigned int piecesListLocation;
+    Ref collectiblesRef;
+    unsigned int collectiblesCount;
+    if (CanSeekTo(collectiblesRef))
+    {
+        SeekToRef(collectiblesRef);
+        OutfitsCollectibleItem collectibles[collectiblesCount];
+        ReturnFromRef();
+    }
     FSkip(4);
-    
-    if (CanSeekTo(outfitsRef))
-    {
-        SeekToRef(outfitsRef);
-        Outfit outfits[numOutfits];
-        ReturnFromRef();
-    }
-} OutfitSet <optimize=false>;
+} OutfitsCollectibleGroup <optimize=false>;
 
 typedef struct
 {
-    Ref set1sRef;
-    int numSet1s;
-    if (CanSeekTo(set1sRef))
+    uquad localizedName <format=hex>;
+    Ref iconRef;
+    if (CanSeekTo(iconRef))
     {
-        SeekToRef(set1sRef);
-        CollectibleSet1 set1s[numSet1s];
+        SeekToRef(iconRef);
+        string icon;
         ReturnFromRef();
     }
-    
-    FSkip(0x20 - 0xC);
-    Ref set2sRef;
-    int numSet2s;
-    if (CanSeekTo(set2sRef))
+    unsigned int color <format=hex>;
+    FSkip(4);
+    Ref colorFrameRef;
+    if (CanSeekTo(colorFrameRef))
     {
-        SeekToRef(set2sRef);
-        CollectibleSet2 set2s[numSet2s];
+        SeekToRef(colorFrameRef);
+        string colorFrame;
         ReturnFromRef();
     }
-    
-    FSkip(0x58 - 0x2C);
-    Ref outfitSetsRef;
-    int numOutfitSets;
-    
-    if (CanSeekTo(outfitSetsRef))
+    int order;
+    FSkip(4);
+} OutfitTheme <optimize=false, read=colorFrame>;
+
+typedef struct
+{
+    Ref singlePlayerRef;
+    unsigned int singlePlayerCount;
+    if (CanSeekTo(singlePlayerRef))
     {
-        SeekToRef(outfitSetsRef);
-        OutfitSet outfitSets[numOutfitSets];
+        SeekToRef(singlePlayerRef);
+        OutfitsCollectibleGroup singlePlayer[singlePlayerCount];
         ReturnFromRef();
     }
-} Root;
+    FSkip(4);
+    Ref multiPlayerRef;
+    unsigned int multiPlayerCount;
+    if (CanSeekTo(multiPlayerRef))
+    {
+        SeekToRef(multiPlayerRef);
+        OutfitsCollectibleGroup multiPlayer[multiPlayerCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref themesRef;
+    unsigned int themesCount;
+    if (CanSeekTo(themesRef))
+    {
+        SeekToRef(themesRef);
+        OutfitTheme themes[themesCount];
+        ReturnFromRef();
+    }
+} OutfitsCollectibleCollection <optimize=false>;
+
+typedef struct
+{
+    uquad cultureLevelTitle <format=hex>;
+    Ref cultureLevelTitleTextRef;
+    if (CanSeekTo(cultureLevelTitleTextRef))
+    {
+        SeekToRef(cultureLevelTitleTextRef);
+        string cultureLevelTitleText;
+        ReturnFromRef();
+    }
+    uquad cultureLevelDescriptionText <format=hex>;
+    Ref cultureLevelFlashIconRef;
+    if (CanSeekTo(cultureLevelFlashIconRef))
+    {
+        SeekToRef(cultureLevelFlashIconRef);
+        string cultureLevelFlashIcon;
+        ReturnFromRef();
+    }
+    unsigned int cultureLevelFromAmount;
+    FSkip(4);
+} CollectibleCultureLevel <optimize=false, read=cultureLevelTitleText>;
+
+typedef struct
+{
+    uquad cultureTitleText <format=hex>;
+    uquad cultureDescriptionText <format=hex>;
+    uquad cultureNotificationTitle <format=hex>;
+    unsigned int cultureCollectibleRewardAmount;
+    FSkip(4);
+    Ref cultureLevelsRef;
+    unsigned int cultureLevelCount;
+    if (CanSeekTo(cultureLevelsRef))
+    {
+        SeekToRef(cultureLevelsRef);
+        CollectibleCultureLevel cultureLevels[cultureLevelCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+} CollectibleCulture <optimize=false>;
+
+typedef struct
+{
+    unsigned int incaHook;
+    unsigned int aztecHook;
+    unsigned int mayaHook;
+} CollectibleCultureMetricHooks <optimize=false>;
+
+typedef struct
+{
+    unsigned int maxCultures;
+    FSkip(4);
+    Ref collectibleCulturesListRef;
+    unsigned int collectibleCulturesCount;
+    if (CanSeekTo(collectibleCulturesListRef))
+    {
+        SeekToRef(collectibleCulturesListRef);
+        CollectibleCulture collectibleCulturesList[collectibleCulturesCount];
+        ReturnFromRef();
+    }
+    CollectibleCultureMetricHooks collectibleCultureMetricHooks;
+} CollectibleCultureCollection <optimize=false>;
+
+typedef struct
+{
+    CollectibleStoryCollection collectibleStories;
+    FSkip(4);
+    NonStoryCollectibleCollection nonStoryCollectibles;
+    CollectibleMisc collectibleMisc;
+    OutfitsCollectibleCollection outfitsCollectibles;
+    FSkip(4);
+    CollectibleCultureCollection collectibleCultures;
+} GlobalCollectibleInfo <optimize=false>;
 
 RefDefinitions refDefinitions;
 Ref rootRef;
 if (CanSeekTo(rootRef))
 {
     SeekToRef(rootRef);
-    Root root <open=true>;
+    GlobalCollectibleInfo root <open=true>;
     ReturnFromRef();
 }

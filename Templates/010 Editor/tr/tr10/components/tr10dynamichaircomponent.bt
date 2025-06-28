@@ -27,7 +27,7 @@ typedef struct
 {
     unsigned int simulationProfileDtpId;
     HAIRGROUP groupNameHash;
-} HairSimulationProfileGroup <read=Str("%s -> %d.tr11dtp", EnumToString(groupNameHash), simulationProfileDtpId), optimize=false>;
+} HairSimulationProfileGroup <read=Str("%s -> %d.tr10dtp", EnumToString(groupNameHash), simulationProfileDtpId), optimize=false>;
 
 typedef struct
 {
@@ -110,7 +110,7 @@ typedef struct
 
 typedef struct
 {
-    float fTickness;
+    float thickness;
     float shapeCurve[8];
     float alphaCurve[8];
     float noiseFrequency;

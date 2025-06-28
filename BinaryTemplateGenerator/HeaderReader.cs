@@ -1,5 +1,4 @@
-﻿using System;
-using System.Globalization;
+﻿using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -9,12 +8,12 @@ namespace TrRebootTools.BinaryTemplateGenerator
     internal class HeaderReader
     {
         private const string AnnotationsRegex = "(?:(?: __[^ ]+)|(?: /\\*.*?\\*/))*";
-        private const string TypeRegex = @"(?:unsigned )?(?:long )?(?:(?<open><)|(?<-open>>)|(?(open)[^<>])|[^ <>,])+(?: \*+)?";
+        private const string TypeRegex = @"(?:const )?(?:unsigned )?(?:long )?(?:(?<open><)|(?<-open>>)|(?(open)[^<>])|[^ <>,])+(?: \*+)?";
 
-        public static readonly Regex DeclarationRegex = new Regex(@$"^(?<keyword>struct|union|enum){AnnotationsRegex} (?<name>{TypeRegex})(?: : (?:(?=.)(?<baseTypes>{TypeRegex})(?:, |$))+)?$", RegexOptions.Compiled);
+        public static readonly Regex DeclarationRegex = new Regex(@$"^(?<keyword>struct|union|enum)(?<annotations>{AnnotationsRegex}) (?<name>{TypeRegex})(?: : (?:(?=.)(?<baseTypes>{TypeRegex})(?:, |$))+)?$", RegexOptions.Compiled);
         private static readonly Regex TypedefRegex = new Regex($@"^typedef (?<source>{TypeRegex}) (?<target>{TypeRegex});$", RegexOptions.Compiled);
-        private static readonly Regex FieldRegex = new Regex(@$"^  (?<type>{TypeRegex}) *(?<name>[<>\w]+)(?: : (?<bitLength>\d+))?(?:\[(?<arrayDimensions>\d*)\])*(?: */\*.*?\*/)?;$", RegexOptions.Compiled);
-        private static readonly Regex EnumValueRegex = new Regex(@"^  (?<name>\w+) = 0x(?<value>\w+),$", RegexOptions.Compiled);
+        private static readonly Regex FieldRegex = new Regex(@$"^  (?<type>{TypeRegex}) *(?<name>[<>\w]+)(?: : (?<bitLength>\d+))?(?:\[(?<arrayDimensions>\d*)\])*(?: */\*.*?\*/)?(?: +__(?:hex|udec))?;$", RegexOptions.Compiled);
+        private static readonly Regex EnumValueRegex = new Regex(@"^  (?<name>\w+) = (?<sign>-)?0x(?<value>\w+?)L*,$", RegexOptions.Compiled);
         private static readonly Regex IgnoredKeywordsRegex = new Regex(@"\b(?:const|volatile|(?!^)(?<!^const )(?<!^volatile )struct|__ptr32|__ptr64) ", RegexOptions.Compiled);
 
         private readonly TextReader _reader;
@@ -74,12 +73,13 @@ namespace TrRebootTools.BinaryTemplateGenerator
                     if (match.Success)
                     {
                         string keyword = match.Groups["keyword"].Value;
+                        string annotations = match.Groups["annotations"].Value;
                         string name = match.Groups["name"].Value;
                         string[] baseTypes = match.Groups["baseTypes"].Success ? match.Groups["baseTypes"].Captures.Cast<Capture>().Select(c => c.Value).ToArray() : [];
                         switch (keyword)
                         {
                             case "struct":
-                                currentComposite = new CStructure(name, baseTypes);
+                                currentComposite = new CStructure(name, baseTypes, annotations.Contains("__cppobj"));
                                 lib.Add(currentComposite);
                                 break;
 
@@ -135,6 +135,9 @@ namespace TrRebootTools.BinaryTemplateGenerator
 
                     string name = match.Groups["name"].Value;
                     int value = int.Parse(match.Groups["value"].Value, NumberStyles.AllowHexSpecifier);
+                    if (match.Groups["sign"].Success)
+                        value = -value;
+
                     currentEnum.Values.Add(name, value);
                     continue;
                 }

@@ -3,49 +3,75 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using TrRebootTools.BinaryTemplateGenerator.Util;
 
 namespace TrRebootTools.BinaryTemplateGenerator
 {
     internal class BinaryTemplateWriter
     {
-        private readonly TextWriter _writer;
-        private readonly string[] TypesToSkip = [ "Instance" ];
+        private static readonly string[] TypesToSkip = ["Instance", "cdc::IMaterial", "cdc::TextureMap", "cdc::RenderMesh", "cdc::ResolveObject"];
+        private static readonly string[] ReservedNames = [
+            "bool",
+            "byte",
+            "int",
+            "uint32",
+            "float",
+            "string",
+            "struct",
+            "union",
 
-        public BinaryTemplateWriter(TextWriter writer, int trVersion)
+            "if",
+            "while",
+            "continue",
+            "break",
+            "switch",
+            "case",
+            "default"
+        ];
+
+        private readonly TypeLibrary _lib;
+        private readonly TextWriter _writer;
+
+        private readonly HashSet<CType> _writtenTypes = new();
+
+        public BinaryTemplateWriter(TypeLibrary lib, TextWriter writer)
         {
+            _lib = lib;
             _writer = writer;
+        }
+
+        public void WriteRootType(string typeName, int trVersion)
+        {
             _writer.WriteLine($"#define TR_VERSION {trVersion}");
             _writer.WriteLine("#include \"../trcommon.bt\"");
             _writer.WriteLine();
-        }
 
-        public void WriteType(string typeName, TypeLibrary lib)
-        {
-            WriteType(lib.Types[typeName], lib, new HashSet<CType>());
+            WriteType(_lib.Types[typeName]);
+
             _writer.WriteLine("RefDefinitions refDefinitions;");
             _writer.Write($"{CleanTypeName(typeName)} root <open=true>;");
         }
 
-        private void WriteType(CType type, TypeLibrary lib, HashSet<CType> visitedTypes)
+        public void WriteType(CType type)
         {
-            if (type is CPrimitive || !visitedTypes.Add(type))
+            if (type is CPrimitive || !_writtenTypes.Add(type))
                 return;
 
-            foreach (CType referencedType in GetReferencedTypes(type, lib))
+            foreach (CType referencedType in GetReferencedTypes(type))
             {
                 if (TypesToSkip.Contains(referencedType.Name))
                     continue;
 
-                if (referencedType is CStructure struc && struc.Fields.Any(f => f.Name == "__vftable"))
-                    continue;
+                //if (referencedType is CStructure { IsCppObj: true } && !referencedType.Name.StartsWith("dtp::"))
+                //    continue;
 
-                WriteType(referencedType, lib, visitedTypes);
+                WriteType(referencedType);
             }
 
             switch (type)
             {
                 case CStructure structure:
-                    WriteStructure(structure, lib);
+                    WriteStructure(structure);
                     break;
 
                 case CUnion union:
@@ -58,7 +84,7 @@ namespace TrRebootTools.BinaryTemplateGenerator
             }
         }
 
-        private void WriteStructure(CStructure structure, TypeLibrary lib)
+        private void WriteStructure(CStructure structure)
         {
             _writer.WriteLine("typedef struct");
             _writer.WriteLine("{");
@@ -66,7 +92,7 @@ namespace TrRebootTools.BinaryTemplateGenerator
             int byteOffset = 0;
             int bitOffset = 0;
             int baseTypeIdx = 1;
-            foreach (CType baseType in structure.BaseTypes.Select(n => lib.Types[n]))
+            foreach (CType baseType in structure.BaseTypes.Select(n => _lib.Types[n]))
             {
                 CField field = new CField(baseType.Name, "__parent" + (baseTypeIdx > 1 ? baseTypeIdx : ""), null, [])
                                {
@@ -183,9 +209,17 @@ namespace TrRebootTools.BinaryTemplateGenerator
         private void WriteField(CField field, bool followRef = true)
         {
             string name = CleanFieldName(field);
-            bool makeRef = field.Type.EndsWith("*");
+            bool isRef = field.Type.EndsWith("*");
+            string pointerlessTypeName = field.Type.TrimEnd('*').Trim();
 
-            if (makeRef)
+            if (isRef && followRef)
+            {
+                CType fieldType = _lib.Types.GetOrDefault(pointerlessTypeName);
+                if (fieldType == null || (fieldType is not CPrimitive && !_writtenTypes.Contains(fieldType)))
+                    followRef = false;
+            }
+
+            if (isRef)
             {
                 _writer.WriteLine($"    Ref {name}Ref;");
                 if (!followRef)
@@ -197,14 +231,14 @@ namespace TrRebootTools.BinaryTemplateGenerator
                 _writer.Write("    ");
             }
 
-            _writer.Write($"    {(field.Type == "char *" ? "string" : CleanTypeName(field.Type.TrimEnd('*').Trim()))} {name}");
+            _writer.Write($"    {(field.Type is "char *" or "const char *" ? "string" : CleanTypeName(pointerlessTypeName))} {name}");
             if (field.BitLength != null)
                 _writer.Write($" : {field.BitLength}");
 
             _writer.Write(string.Join("", field.ArrayDimensions.Select(d => $"[{Math.Max(d, 1)}]")));
             _writer.WriteLine(";");
 
-            if (makeRef)
+            if (isRef)
             {
                 _writer.WriteLine($"        ReturnFromRef();");
                 _writer.WriteLine($"    }}");
@@ -249,11 +283,11 @@ namespace TrRebootTools.BinaryTemplateGenerator
             }
         }
 
-        private IEnumerable<CType> GetReferencedTypes(CType type, TypeLibrary lib)
+        private IEnumerable<CType> GetReferencedTypes(CType type)
         {
             foreach (string baseTypeName in type.BaseTypes)
             {
-                yield return lib.Types[baseTypeName];
+                yield return _lib.Types[baseTypeName];
             }
 
             if (type is CCompositeType compositeType)
@@ -261,7 +295,7 @@ namespace TrRebootTools.BinaryTemplateGenerator
                 IEnumerable<CField> fields = compositeType.Fields.Where(f => f.Name != "__vftable");
                 foreach (CField field in fields)
                 {
-                    if (lib.Types.TryGetValue(field.Type.TrimEnd('*').Trim(), out CType fieldType))
+                    if (_lib.Types.TryGetValue(field.Type.TrimEnd('*').Trim(), out CType fieldType))
                         yield return fieldType;
                 }
             }
@@ -275,6 +309,7 @@ namespace TrRebootTools.BinaryTemplateGenerator
             {
                 "void" => "byte",
                 "bool" => "byte",
+                "_BYTE" => "byte",
                 "__int8" => "byte",
                 "unsigned __int8" => "ubyte",
                 "__int16" => "short",
@@ -302,6 +337,9 @@ namespace TrRebootTools.BinaryTemplateGenerator
                 name = name.Substring(0, 1).ToLower() + name.Substring(1);
 
             name = Regex.Replace(name, @"_([a-zA-Z])", m => m.Groups[1].Value.ToUpper());
+
+            if (ReservedNames.Contains(name) || Regex.IsMatch(name, @"^\d"))
+                name = "_" + name;
 
             return name;
         }

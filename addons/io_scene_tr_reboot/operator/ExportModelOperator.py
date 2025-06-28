@@ -1,11 +1,12 @@
 import os
 import shutil
-from typing import TYPE_CHECKING, Annotated, Iterable, Protocol, Sequence
+from typing import TYPE_CHECKING, Annotated, Protocol, Sequence
 import bpy
 from bpy.types import Context, Event
 from io_scene_tr_reboot.BlenderHelper import BlenderHelper
-from io_scene_tr_reboot.BlenderNaming import BlenderNaming
+from io_scene_tr_reboot.BlenderNaming import BlenderCollisionMeshIdSet, BlenderCollisionModelIdSet, BlenderHairStrandGroupIdSet, BlenderMeshIdSet, BlenderModelIdSet, BlenderNaming
 from io_scene_tr_reboot.exchange.ClothExporter import ClothExporter
+from io_scene_tr_reboot.exchange.CollisionModelExporter import CollisionModelExporter
 from io_scene_tr_reboot.exchange.HairExporter import HairExporter
 from io_scene_tr_reboot.exchange.ModelExporter import ModelExporter
 from io_scene_tr_reboot.ModelSplitter import ModelSplitter
@@ -16,12 +17,10 @@ from io_scene_tr_reboot.exchange.tr2013.Tr2013ModelExporter import Tr2013ModelEx
 from io_scene_tr_reboot.exchange.tr2013.Tr2013SkeletonExporter import Tr2013SkeletonExporter
 from io_scene_tr_reboot.operator.BlenderOperatorBase import ExportOperatorBase, ExportOperatorProperties
 from io_scene_tr_reboot.operator.HairWeightPaintingOperator import HairWeightPaintingOperator
-from io_scene_tr_reboot.operator.OperatorCommon import OperatorCommon
 from io_scene_tr_reboot.operator.OperatorContext import OperatorContext
 from io_scene_tr_reboot.properties.BlenderPropertyGroup import Prop
 from io_scene_tr_reboot.properties.SceneProperties import SceneProperties
 from io_scene_tr_reboot.tr.Enumerations import CdcGame
-from io_scene_tr_reboot.util.DictionaryExtensions import DictionaryExtensions
 from io_scene_tr_reboot.util.Enumerable import Enumerable
 
 if TYPE_CHECKING:
@@ -32,7 +31,8 @@ else:
 class _Properties(ExportOperatorProperties, Protocol):
     export_skeleton: Annotated[bool, Prop("Export skeleton")]
     export_cloth: Annotated[bool, Prop("Export cloth")]
-    export_all_tr2013_lara_duplicates: Annotated[bool, Prop("Export all Lara duplicates", default = False)]
+    export_all_models_of_collection: Annotated[bool, Prop("Export all models of DRM")]
+    export_all_tr2013_lara_duplicates: Annotated[bool, Prop("Export all Lara duplicates")]
 
 class ExportModelOperator(ExportOperatorBase[_Properties]):
     bl_idname = "export_scene.trmodel"
@@ -47,8 +47,9 @@ class ExportModelOperator(ExportOperatorBase[_Properties]):
 
         with OperatorContext.begin(self):
             bl_mesh_objs = self.get_mesh_objects_to_export(context, False)
+            bl_collision_mesh_objs = self.get_collision_mesh_objects_to_export(context)
             bl_hair_objs = self.get_hair_strand_group_objects_to_export(context, False)
-            if len(bl_mesh_objs) == 0 and len(bl_hair_objs) == 0:
+            if len(bl_mesh_objs) == 0 and len(bl_collision_mesh_objs) == 0 and len(bl_hair_objs) == 0:
                 OperatorContext.log_error("Nothing selected to export.")
                 return { "CANCELLED" }
 
@@ -62,8 +63,11 @@ class ExportModelOperator(ExportOperatorBase[_Properties]):
 
             export_id: int
             if len(bl_mesh_objs) > 0:
-                export_id = BlenderNaming.parse_mesh_name(Enumerable(bl_mesh_objs).first().name).model_data_id
+                export_id = BlenderNaming.parse_model_name(Enumerable(bl_mesh_objs).first().name).model_data_id
                 ExportModelOperator.filename_ext = f".tr{game}modeldata"
+            elif len(bl_collision_mesh_objs) > 0:
+                export_id = BlenderNaming.parse_collision_model_name(Enumerable(bl_collision_mesh_objs).first().name).model_id
+                ExportModelOperator.filename_ext = f".tr{game}dtp"
             else:
                 export_ids = BlenderNaming.parse_hair_strand_group_name(Enumerable(bl_hair_objs).first().name)
                 export_id = export_ids.hair_data_id
@@ -79,11 +83,16 @@ class ExportModelOperator(ExportOperatorBase[_Properties]):
             return
 
         game = SceneProperties.get_game()
-        if not self.requires_skeleton_export(game):
-            self.layout.prop(self.properties, "export_skeleton")
 
-        if not self.requires_cloth_export(game):
-            self.layout.prop(self.properties, "export_cloth")
+        if Enumerable(context.selected_objects).any(lambda o: self.is_armature(self.get_collection_wrapper_object(o))):
+            if not self.requires_skeleton_export(game):
+                self.layout.prop(self.properties, "export_skeleton")
+
+            if not self.requires_cloth_export(game):
+                self.layout.prop(self.properties, "export_cloth")
+
+        if Enumerable(context.selected_objects).any(lambda o: self.is_static_mesh_collection(self.get_collection_wrapper_object(o))):
+            self.layout.prop(self.properties, "export_all_models_of_collection")
 
         if game == CdcGame.TR2013:
             self.layout.prop(self.properties, "export_all_tr2013_lara_duplicates")
@@ -106,10 +115,11 @@ class ExportModelOperator(ExportOperatorBase[_Properties]):
 
             folder_path = os.path.split(self.properties.filepath)[0]
             bl_hair_strand_group_objs = self.get_hair_strand_group_objects_to_export(context, True)
+            bl_collision_mesh_objs = self.get_collision_mesh_objects_to_export(context)
             bl_unsplit_mesh_objs = self.get_mesh_objects_to_export(context, False)
             bl_split_mesh_objs = self.get_mesh_objects_to_export(context, True)
 
-            self.export(context, folder_path, bl_unsplit_mesh_objs, bl_split_mesh_objs, bl_hair_strand_group_objs, game)
+            self.export(context, folder_path, bl_unsplit_mesh_objs, bl_split_mesh_objs, bl_collision_mesh_objs, bl_hair_strand_group_objs, game)
 
             if bl_local_collection is not None:
                 bl_local_collection.exclude = was_local_collection_excluded
@@ -125,8 +135,19 @@ class ExportModelOperator(ExportOperatorBase[_Properties]):
 
             return { "FINISHED" }
 
-    def export(self, context: bpy.types.Context, folder_path: str, bl_unsplit_mesh_objs: set[bpy.types.Object], bl_split_mesh_objs: set[bpy.types.Object], bl_hair_strand_group_objs: set[bpy.types.Object], game: CdcGame):
-        model_exporter = self.create_model_exporter(OperatorCommon.scale_factor, game)
+    def export(
+        self,
+        context: bpy.types.Context,
+        folder_path: str,
+        bl_unsplit_mesh_objs: list[bpy.types.Object],
+        bl_split_mesh_objs: list[bpy.types.Object],
+        bl_collision_mesh_objs: list[bpy.types.Object],
+        bl_hair_strand_group_objs: list[bpy.types.Object],
+        game: CdcGame
+    ):
+        scale_factor = SceneProperties.get_scale_factor()
+
+        model_exporter = self.create_model_exporter(scale_factor, game)
         for model_id_set, bl_mesh_objs_of_model in Enumerable(bl_split_mesh_objs).group_by(lambda o: BlenderNaming.parse_model_name(o.name)).items():
             bl_armature_obj = bl_mesh_objs_of_model[0].parent
             if bl_armature_obj is not None and not isinstance(bl_armature_obj.data, bpy.types.Armature):
@@ -134,82 +155,108 @@ class ExportModelOperator(ExportOperatorBase[_Properties]):
 
             model_exporter.export_model(folder_path, model_id_set, bl_mesh_objs_of_model, bl_armature_obj)
 
-        hair_exporter = self.create_hair_exporter(OperatorCommon.scale_factor, game)
+        collision_model_exporter = self.create_collision_model_exporter(scale_factor, game)
+        for model_id_set, bl_mesh_objs_of_model in Enumerable(bl_collision_mesh_objs).group_by(lambda o: BlenderNaming.parse_collision_model_name(o.name)).items():
+            collision_model_exporter.export_model(folder_path, model_id_set, bl_mesh_objs_of_model)
+
+        hair_exporter = self.create_hair_exporter(scale_factor, game)
         for bl_strand_group_objs_of_hair in Enumerable(bl_hair_strand_group_objs).group_by(lambda o: BlenderNaming.parse_hair_strand_group_name(o.name).hair_data_id).values():
             hair_exporter.export_hair(folder_path, bl_strand_group_objs_of_hair)
 
         if self.properties.export_cloth or self.requires_cloth_export(game):
-            for bl_armature_obj in Enumerable(bl_unsplit_mesh_objs).concat(bl_hair_strand_group_objs) \
-                                                                   .select(lambda o: o.parent) \
-                                                                   .of_type(bpy.types.Object) \
-                                                                   .distinct() \
+            for bl_armature_obj in Enumerable(bl_unsplit_mesh_objs).concat(bl_hair_strand_group_objs)           \
+                                                                   .select(self.get_collection_wrapper_object)  \
+                                                                   .of_type(bpy.types.Object)                   \
+                                                                   .distinct()                                  \
                                                                    .where(lambda o: isinstance(o.data, bpy.types.Armature)):
-                cloth_exporter = self.create_cloth_exporter(OperatorCommon.scale_factor, game)
+                cloth_exporter = self.create_cloth_exporter(scale_factor, game)
                 cloth_exporter.export_cloths(folder_path, bl_armature_obj, self.get_local_armatures(context))
 
         if self.properties.export_skeleton or self.requires_skeleton_export(game):
-            skeleton_exporter = self.create_skeleton_exporter(OperatorCommon.scale_factor, game)
-            for bl_armature_obj in Enumerable(bl_split_mesh_objs).concat(bl_hair_strand_group_objs) \
-                                                                 .select(lambda o: o.parent) \
-                                                                 .of_type(bpy.types.Object) \
-                                                                 .where(lambda o: isinstance(o.data, bpy.types.Armature)) \
+            skeleton_exporter = self.create_skeleton_exporter(scale_factor, game)
+            for bl_armature_obj in Enumerable(bl_split_mesh_objs).concat(bl_hair_strand_group_objs)                         \
+                                                                 .select(lambda o: o.parent)                                \
+                                                                 .of_type(bpy.types.Object)                                 \
+                                                                 .where(lambda o: isinstance(o.data, bpy.types.Armature))   \
                                                                  .distinct():
                 skeleton_exporter.export(folder_path, bl_armature_obj)
 
-    def get_mesh_objects_to_export(self, context: bpy.types.Context, split_global_meshes: bool) -> set[bpy.types.Object]:
+    def get_mesh_objects_to_export(self, context: bpy.types.Context, split_global_meshes: bool) -> list[bpy.types.Object]:
         if context.scene is None:
-            return set()
+            return []
 
-        bl_mesh_objs_by_model_id: dict[int, list[bpy.types.Object]] = {}
-        for bl_obj in Enumerable(context.scene.objects).where(lambda o: isinstance(o.data, bpy.types.Mesh)):
-            mesh_id_set = BlenderNaming.try_parse_mesh_name(bl_obj.name)
-            if mesh_id_set is not None and not self.is_in_local_collection(bl_obj):
-                DictionaryExtensions.get_or_add(bl_mesh_objs_by_model_id, mesh_id_set.model_id, lambda: []).append(bl_obj)
+        mesh_obj_names = dict[BlenderMeshIdSet, str]()
+        for selected_object_name in Enumerable(context.selected_objects).where(lambda o: not self.is_in_local_collection(o) and not self.is_collision_mesh(o)).select(lambda o: o.name).to_list():
+            bl_collection_obj = self.get_collection_wrapper_object(bpy.data.objects[selected_object_name])
+            if bl_collection_obj is None:
+                continue
 
-        bl_mesh_objs_to_export: set[bpy.types.Object] = set()
-        bl_visited_armature_objs: set[bpy.types.Object] = set()
-        for object_name in Enumerable(context.selected_objects).where(lambda o: not self.is_in_local_collection(o)).select(lambda o: o.name).to_list():
-            bl_obj = bpy.data.objects[object_name]
+            bl_parent_objs: list[bpy.types.Object] = [bl_collection_obj]
+            if split_global_meshes and self.is_global_armature(bl_collection_obj):
+                bl_parent_objs = ModelSplitter().split(bl_collection_obj)
 
-            if isinstance(bl_obj.data, bpy.types.Mesh):
-                mesh_id_set = BlenderNaming.try_parse_mesh_name(bl_obj.name)
-                if mesh_id_set is not None:
-                    bl_mesh_objs_to_export.update(bl_mesh_objs_by_model_id[mesh_id_set.model_id])
+            only_model_id_set: BlenderModelIdSet | None = None
+            if self.is_static_mesh_collection(bl_collection_obj) and not self.properties.export_all_models_of_collection:
+                only_model_id_set = BlenderNaming.try_parse_model_name(selected_object_name)
 
-            while bl_obj.parent is not None:
-                bl_obj = bl_obj.parent
+            for bl_mesh_obj in Enumerable(bl_parent_objs).select_many(lambda o: o.children).where(lambda o: isinstance(o.data, bpy.types.Mesh)):
+                mesh_id_set = BlenderNaming.try_parse_mesh_name(bl_mesh_obj.name)
+                if mesh_id_set is None or mesh_id_set in mesh_obj_names:
+                    continue
 
-            if isinstance(bl_obj.data, bpy.types.Armature) and bl_obj not in bl_visited_armature_objs:
-                bl_visited_armature_objs.add(bl_obj)
-                bl_armature_objs: list[bpy.types.Object] = [bl_obj]
-                if BlenderNaming.is_global_armature_name(bl_obj.data.name) and split_global_meshes:
-                    bl_armature_objs = ModelSplitter().split(bl_obj)
+                if only_model_id_set is not None and BlenderModelIdSet(mesh_id_set.object_id, mesh_id_set.model_id, mesh_id_set.model_data_id) != only_model_id_set:
+                    continue
 
-                bl_mesh_objs_to_export.update(Enumerable(bl_armature_objs).select_many(self.get_mesh_children_of_armature))
+                mesh_obj_names[mesh_id_set] = bl_mesh_obj.name
 
-        return bl_mesh_objs_to_export
+        bl_mesh_objs = Enumerable(mesh_obj_names.values()).select(lambda n: bpy.data.objects[n]).to_list()
+        return bl_mesh_objs
 
-    def is_in_local_collection(self, bl_obj: bpy.types.Object) -> bool:
-        return Enumerable(bl_obj.users_collection).any(lambda c: c.name == BlenderNaming.local_collection_name)
+    def get_collision_mesh_objects_to_export(self, context: bpy.types.Context) -> list[bpy.types.Object]:
+        bl_mesh_objs = dict[BlenderCollisionMeshIdSet, bpy.types.Object]()
 
-    def get_mesh_children_of_armature(self, bl_armature_obj: bpy.types.Object) -> Iterable[bpy.types.Object]:
-        return Enumerable(bl_armature_obj.children).where(
-            lambda o: isinstance(o.data, bpy.types.Mesh) and BlenderNaming.try_parse_mesh_name(o.name) is not None)
+        for bl_selected_obj in Enumerable(context.selected_objects).where(lambda o: isinstance(o.data, bpy.types.Mesh)):
+            selected_model_id_set = BlenderNaming.try_parse_collision_model_name(bl_selected_obj.name)
+            if selected_model_id_set is None:
+                continue
 
-    def get_hair_strand_group_objects_to_export(self, context: bpy.types.Context, exit_weight_paint_mode: bool) -> set[bpy.types.Object]:
-        bl_hair_objects = set[bpy.types.Object]()
-        for bl_obj in context.selected_objects:
-            if self.is_hair_strand_group_object(bl_obj):
-                bl_hair_objects.add(bl_obj)
-                while bl_obj.parent is not None:
-                    bl_obj = bl_obj.parent
+            bl_collection_obj = self.get_collection_wrapper_object(bl_selected_obj)
+            if bl_collection_obj is None:
+                continue
 
-            if bl_obj.data is None or isinstance(bl_obj.data, bpy.types.Armature):
-                bl_hair_objects.update(Enumerable(bl_obj.children_recursive).where(self.is_hair_strand_group_object))
+            bl_collision_empty = Enumerable(bl_collection_obj.children).first_or_none(lambda o: o.data is None and BlenderNaming.is_collision_empty_name(o.name))
+            if bl_collision_empty is None:
+                continue
 
-        hair_object_names = Enumerable(bl_hair_objects).select(lambda o: o.name).to_list()
-        for i in range(len(hair_object_names) - 1, -1, -1):
-            bl_obj = bpy.data.objects[hair_object_names[i]]
+            for bl_mesh_obj in Enumerable(bl_collision_empty.children).where(lambda o: isinstance(o.data, bpy.types.Mesh)):
+                mesh_id_set = BlenderNaming.try_parse_collision_mesh_name(bl_mesh_obj.name)
+                if mesh_id_set is None or mesh_id_set in bl_mesh_objs:
+                    continue
+
+                if not self.properties.export_all_models_of_collection and BlenderCollisionModelIdSet(mesh_id_set.object_id, mesh_id_set.model_id) != selected_model_id_set:
+                    continue
+
+                bl_mesh_objs[mesh_id_set] = bl_mesh_obj
+
+        return list(bl_mesh_objs.values())
+
+    def get_hair_strand_group_objects_to_export(self, context: bpy.types.Context, exit_weight_paint_mode: bool) -> list[bpy.types.Object]:
+        hair_obj_name_dict = dict[BlenderHairStrandGroupIdSet, str]()
+        for bl_obj in Enumerable(context.selected_objects):
+            bl_collection_obj = self.get_collection_wrapper_object(bl_obj)
+            if bl_collection_obj is None:
+                continue
+
+            for bl_child_obj in bl_collection_obj.children_recursive:
+                hair_id_set = BlenderNaming.try_parse_hair_strand_group_name(bl_child_obj.name)
+                if hair_id_set is None or hair_id_set in hair_obj_name_dict:
+                    continue
+
+                hair_obj_name_dict[hair_id_set] = bl_child_obj.name
+
+        hair_obj_names = list(hair_obj_name_dict.values())
+        for i in range(len(hair_obj_names) - 1, -1, -1):
+            bl_obj = bpy.data.objects[hair_obj_names[i]]
             if isinstance(bl_obj.data, bpy.types.Curves):
                 continue
 
@@ -220,12 +267,33 @@ class ExportModelOperator(ExportOperatorBase[_Properties]):
 
                 continue
 
-            hair_object_names.pop(i)
+            hair_obj_names.pop(i)
 
-        return Enumerable(hair_object_names).select(lambda n: bpy.data.objects[n]).to_set()
+        return Enumerable(hair_obj_names).select(lambda n: bpy.data.objects[n]).to_list()
 
-    def is_hair_strand_group_object(self, bl_obj: bpy.types.Object) -> bool:
-        return BlenderNaming.try_parse_hair_strand_group_name(bl_obj.name) is not None
+    def get_collection_wrapper_object(self, bl_obj: bpy.types.Object | None) -> bpy.types.Object | None:
+        while bl_obj is not None:
+            if self.is_collection_empty(bl_obj) or self.is_global_armature(bl_obj) or self.is_local_armature(bl_obj):
+                return bl_obj
+
+            bl_obj = bl_obj.parent
+
+        return None
+
+    def is_static_mesh_collection(self, bl_collection_obj: bpy.types.Object | None) -> bool:
+        return bl_collection_obj is not None and bl_collection_obj.data is None and Enumerable(bl_collection_obj.children).any(self.is_mesh)
+
+    def is_collection_empty(self, bl_obj: bpy.types.Object) -> bool:
+        return bl_obj.data is None and BlenderNaming.try_parse_collection_empty_name(bl_obj.name) is not None
+
+    def is_armature(self, bl_obj: bpy.types.Object | None) -> bool:
+        return bl_obj is not None and (self.is_global_armature(bl_obj) or self.is_local_armature(bl_obj))
+
+    def is_global_armature(self, bl_obj: bpy.types.Object) -> bool:
+        return isinstance(bl_obj.data, bpy.types.Armature) and BlenderNaming.try_parse_global_armature_name(bl_obj.data.name) is not None
+
+    def is_local_armature(self, bl_obj: bpy.types.Object) -> bool:
+        return isinstance(bl_obj.data, bpy.types.Armature) and BlenderNaming.try_parse_local_armature_name(bl_obj.data.name) is not None
 
     def get_local_armatures(self, context: bpy.types.Context) -> dict[int, bpy.types.Object]:
         if context.scene is None:
@@ -233,6 +301,18 @@ class ExportModelOperator(ExportOperatorBase[_Properties]):
 
         return Enumerable(context.scene.objects).where(lambda o: isinstance(o.data, bpy.types.Armature) and self.is_in_local_collection(o)) \
                                                 .to_dict(lambda o: BlenderNaming.parse_local_armature_name(o.name))
+
+    def is_in_local_collection(self, bl_obj: bpy.types.Object) -> bool:
+        return Enumerable(bl_obj.users_collection).any(lambda c: c.name == BlenderNaming.local_collection_name)
+
+    def is_mesh(self, bl_obj: bpy.types.Object) -> bool:
+        return isinstance(bl_obj.data, bpy.types.Mesh) and BlenderNaming.try_parse_mesh_name(bl_obj.name) is not None
+
+    def is_collision_mesh(self, bl_obj: bpy.types.Object) -> bool:
+        return isinstance(bl_obj.data, bpy.types.Mesh) and BlenderNaming.try_parse_collision_mesh_name(bl_obj.name) is not None
+
+    def is_hair_strand_group_object(self, bl_obj: bpy.types.Object) -> bool:
+        return BlenderNaming.try_parse_hair_strand_group_name(bl_obj.name) is not None
 
     def create_model_exporter(self, scale_factor: float, game: CdcGame) -> ModelExporter:
         match game:
@@ -242,6 +322,9 @@ class ExportModelOperator(ExportOperatorBase[_Properties]):
                 return ShadowModelExporter(scale_factor)
             case _:
                 return ModelExporter(scale_factor, game)
+
+    def create_collision_model_exporter(self, scale_factor: float, game: CdcGame) -> CollisionModelExporter:
+        return CollisionModelExporter(scale_factor, game)
 
     def requires_skeleton_export(self, game: CdcGame) -> bool:
         return game == CdcGame.TR2013

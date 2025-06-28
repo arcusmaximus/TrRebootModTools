@@ -53,6 +53,7 @@ namespace TrRebootTools.ModManager
             this._pnlToolbar.Controls.Add(this._btnAddFromZip, 0, 0);
             this._pnlToolbar.Controls.Add(this._btnAddFromFolder, 1, 0);
             this._pnlToolbar.Dock = System.Windows.Forms.DockStyle.Top;
+            this._pnlToolbar.GrowStyle = System.Windows.Forms.TableLayoutPanelGrowStyle.FixedSize;
             this._pnlToolbar.Location = new System.Drawing.Point(0, 0);
             this._pnlToolbar.Name = "_pnlToolbar";
             this._pnlToolbar.RowCount = 1;
@@ -62,7 +63,7 @@ namespace TrRebootTools.ModManager
             // 
             // _btnSelectGame
             // 
-            this._btnSelectGame.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this._btnSelectGame.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
             this._btnSelectGame.Dock = System.Windows.Forms.DockStyle.Fill;
             this._btnSelectGame.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this._btnSelectGame.Location = new System.Drawing.Point(564, 3);

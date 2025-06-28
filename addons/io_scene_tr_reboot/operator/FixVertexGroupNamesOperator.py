@@ -26,7 +26,7 @@ class FixVertexGroupNamesOperator(BlenderOperatorBase[BlenderPropertyGroup]):
                BlenderNaming.try_parse_mesh_name(bl_obj.name) is not None and \
                bl_obj.parent is not None and \
                isinstance(bl_obj.parent.data, bpy.types.Armature) and \
-               (BlenderNaming.is_global_armature_name(bl_obj.parent.name) or \
+               (BlenderNaming.try_parse_global_armature_name(bl_obj.parent.name) is not None or \
                 BlenderNaming.try_parse_local_armature_name(bl_obj.parent.name) is not None)
 
     def execute(self, context: bpy.types.Context | None) -> set[OperatorReturnItems]:
@@ -38,7 +38,7 @@ class FixVertexGroupNamesOperator(BlenderOperatorBase[BlenderPropertyGroup]):
         if bl_armature_obj is None:
             return { "CANCELLED" }
 
-        if BlenderNaming.is_global_armature_name(bl_armature_obj.name):
+        if BlenderNaming.try_parse_global_armature_name(bl_armature_obj.name) is not None:
             self.rename_for_global_armature(bl_mesh_obj)
         else:
             self.rename_for_local_armature(bl_mesh_obj, bl_armature_obj)

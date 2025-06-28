@@ -33,8 +33,8 @@ namespace TrRebootTools.Shared.Controls
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FileTreeViewBase));
-            TrRebootTools.Shared.Controls.VirtualTreeView.MiscOptionHelper miscOptionHelper2 = new TrRebootTools.Shared.Controls.VirtualTreeView.MiscOptionHelper();
-            TrRebootTools.Shared.Controls.VirtualTreeView.PaintOptionHelper paintOptionHelper2 = new TrRebootTools.Shared.Controls.VirtualTreeView.PaintOptionHelper();
+            TrRebootTools.Shared.Controls.VirtualTreeView.MiscOptionHelper miscOptionHelper1 = new TrRebootTools.Shared.Controls.VirtualTreeView.MiscOptionHelper();
+            TrRebootTools.Shared.Controls.VirtualTreeView.PaintOptionHelper paintOptionHelper1 = new TrRebootTools.Shared.Controls.VirtualTreeView.PaintOptionHelper();
             this._tvFiles = new TrRebootTools.Shared.Controls.VirtualTreeView.VirtualTreeView();
             this._txtSearch = new System.Windows.Forms.TextBox();
             this._pbSearch = new System.Windows.Forms.PictureBox();
@@ -59,16 +59,16 @@ namespace TrRebootTools.Shared.Controls
             this._tvFiles.LineWidth = 1F;
             this._tvFiles.Location = new System.Drawing.Point(0, 32);
             this._tvFiles.Name = "_tvFiles";
-            miscOptionHelper2.Editable = false;
-            miscOptionHelper2.MultiSelect = true;
-            this._tvFiles.Options.Misc = miscOptionHelper2;
-            paintOptionHelper2.Back2Color = false;
-            paintOptionHelper2.FullVertGridLines = false;
-            paintOptionHelper2.ShowButtons = true;
-            paintOptionHelper2.ShowHorzGridLines = false;
-            this._tvFiles.Options.Paint = paintOptionHelper2;
+            miscOptionHelper1.Editable = false;
+            miscOptionHelper1.MultiSelect = true;
+            this._tvFiles.Options.Misc = miscOptionHelper1;
+            paintOptionHelper1.Back2Color = false;
+            paintOptionHelper1.FullVertGridLines = false;
+            paintOptionHelper1.ShowButtons = true;
+            paintOptionHelper1.ShowHorzGridLines = false;
+            this._tvFiles.Options.Paint = paintOptionHelper1;
             this._tvFiles.ShowHint = true;
-            this._tvFiles.Size = new System.Drawing.Size(329, 158);
+            this._tvFiles.Size = new System.Drawing.Size(467, 296);
             this._tvFiles.TabIndex = 1;
             // 
             // _txtSearch
@@ -76,7 +76,7 @@ namespace TrRebootTools.Shared.Controls
             this._txtSearch.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this._txtSearch.Location = new System.Drawing.Point(31, 6);
             this._txtSearch.Name = "_txtSearch";
-            this._txtSearch.Size = new System.Drawing.Size(294, 19);
+            this._txtSearch.Size = new System.Drawing.Size(432, 19);
             this._txtSearch.TabIndex = 0;
             // 
             // _pbSearch
@@ -96,7 +96,7 @@ namespace TrRebootTools.Shared.Controls
             this._pnlSearch.Dock = System.Windows.Forms.DockStyle.Top;
             this._pnlSearch.Location = new System.Drawing.Point(0, 0);
             this._pnlSearch.Name = "_pnlSearch";
-            this._pnlSearch.Size = new System.Drawing.Size(329, 32);
+            this._pnlSearch.Size = new System.Drawing.Size(467, 32);
             this._pnlSearch.TabIndex = 2;
             // 
             // FileTreeViewBase
@@ -105,8 +105,9 @@ namespace TrRebootTools.Shared.Controls
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.Controls.Add(this._tvFiles);
             this.Controls.Add(this._pnlSearch);
+            this.MinimumSize = new System.Drawing.Size(100, 100);
             this.Name = "FileTreeViewBase";
-            this.Size = new System.Drawing.Size(329, 190);
+            this.Size = new System.Drawing.Size(467, 328);
             ((System.ComponentModel.ISupportInitialize)(this._pbSearch)).EndInit();
             this._pnlSearch.ResumeLayout(false);
             this._pnlSearch.PerformLayout();

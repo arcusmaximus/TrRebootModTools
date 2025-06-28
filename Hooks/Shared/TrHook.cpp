@@ -25,6 +25,12 @@ extern "C"
 
     void TrHandler_RequestFile(const TigerArchiveFileEntry* pEntry, const char* pszPath)
     {
+        for (const char* pChar = pszPath; *pChar != '\0'; pChar++)
+        {
+            if (!isprint(*pChar))
+                return;
+        }
+
 #if TR_VERSION == 11
         static unordered_set<QWORD> notifiedWemNameHashes;
         int len = strlen(pszPath);
@@ -50,6 +56,7 @@ extern "C"
     void TrHandler_MSFileSystemFile_dtor(MSFileSystemFile* pFile)
     {
         // Close file handles that the game would otherwise leave open
+        Debug::Log("Closing archive {}", pFile->GetPath());
         pFile->Close();
     }
 }

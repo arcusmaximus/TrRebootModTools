@@ -3,12 +3,13 @@ from mathutils import Vector
 from io_scene_tr_reboot.tr.Enumerations import ResourceType
 from io_scene_tr_reboot.tr.Hashes import Hashes
 from io_scene_tr_reboot.tr.MeshPart import IMeshPart
-from io_scene_tr_reboot.tr.Model import Model
+from io_scene_tr_reboot.tr.Model import ILodLevel, Model
 from io_scene_tr_reboot.tr.IModelDataHeader import IModelDataHeader
 from io_scene_tr_reboot.tr.ModelReferences import ModelReferences
 from io_scene_tr_reboot.tr.ResourceBuilder import ResourceBuilder
 from io_scene_tr_reboot.tr.ResourceReader import ResourceReader
 from io_scene_tr_reboot.tr.ResourceReference import ResourceReference
+from io_scene_tr_reboot.tr.tr2013.Tr2013LodLevel import Tr2013LodLevel
 from io_scene_tr_reboot.tr.tr2013.Tr2013Mesh import ITr2013Mesh, Tr2013Mesh
 from io_scene_tr_reboot.tr.tr2013.Tr2013MeshPart import Tr2013MeshPart
 from io_scene_tr_reboot.tr.tr2013.Tr2013ModelDataHeader import Tr2013ModelDataHeader
@@ -18,9 +19,10 @@ from io_scene_tr_reboot.util.Enumerable import Enumerable
 
 TModelReferences = TypeVar("TModelReferences", bound = ModelReferences)
 TModelDataHeader = TypeVar("TModelDataHeader", bound = IModelDataHeader)
+TLodLevel = TypeVar("TLodLevel", bound = ILodLevel)
 TMesh = TypeVar("TMesh", bound = ITr2013Mesh)
 TMeshPart = TypeVar("TMeshPart", bound = IMeshPart)
-class Tr2013ModelBase(Model[TModelReferences, TModelDataHeader, TMesh, TMeshPart]):
+class Tr2013ModelBase(Model[TModelReferences, TModelDataHeader, TLodLevel, TMesh, TMeshPart]):
     def read(self, reader: ResourceReader) -> None:
         self.refs.read(reader)
         if self.refs.model_data_resource is None:
@@ -29,6 +31,9 @@ class Tr2013ModelBase(Model[TModelReferences, TModelDataHeader, TMesh, TMeshPart
         reader.seek(self.refs.model_data_resource)
         model_data_header_pos = reader.position
         self.header = self.read_header(reader)
+
+        reader.position = model_data_header_pos + self.header.lod_levels_offset
+        self.lod_levels = self.read_lod_levels(reader, self.header.num_lod_levels)
 
         blend_shape_names: list[str] | None = None
         if self.header.blend_shape_names_offset != 0:
@@ -58,6 +63,8 @@ class Tr2013ModelBase(Model[TModelReferences, TModelDataHeader, TMesh, TMeshPart
     def create_mesh(self) -> TMesh: ...
 
     def read_header(self, reader: ResourceReader) -> TModelDataHeader: ...
+
+    def read_lod_levels(self, reader: ResourceReader, count: int) -> list[TLodLevel]: ...
 
     def read_blend_shape_names(self, reader: ResourceReader, num_blend_shapes: int) -> list[str]:
         blend_shape_names: list[str] = []
@@ -146,7 +153,7 @@ class Tr2013ModelBase(Model[TModelReferences, TModelDataHeader, TMesh, TMeshPart
         writer.align(0x20)
         writer.write_struct(cast(CStruct, self.header))
 
-class Tr2013Model(Tr2013ModelBase[Tr2013ModelReferences, Tr2013ModelDataHeader, Tr2013Mesh, Tr2013MeshPart]):
+class Tr2013Model(Tr2013ModelBase[Tr2013ModelReferences, Tr2013ModelDataHeader, Tr2013LodLevel, Tr2013Mesh, Tr2013MeshPart]):
     def __init__(self, model_id: int, model_data_id: int) -> None:
         super().__init__(model_id, Tr2013ModelReferences(model_data_id))
         self.header = Tr2013ModelDataHeader()
@@ -165,6 +172,9 @@ class Tr2013Model(Tr2013ModelBase[Tr2013ModelReferences, Tr2013ModelDataHeader, 
         header.num_blend_shapes = 0
         header.blend_shape_names_offset = 0
         return header
+
+    def read_lod_levels(self, reader: ResourceReader, count: int) -> list[Tr2013LodLevel]:
+        return reader.read_struct_list(Tr2013LodLevel, count)
 
     def read_mesh_part(self, reader: ResourceReader) -> Tr2013MeshPart:
         mesh_part = reader.read_struct(Tr2013MeshPart)

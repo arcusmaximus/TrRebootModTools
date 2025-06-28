@@ -11,6 +11,7 @@ namespace TrRebootTools.Shared.Cdc.Shadow
                 { (ResourceType.AnimationLib, 0), [".tr11animlib"] },
                 { (ResourceType.CollisionMesh, 0), [".tr11cmesh"] },
                 { (ResourceType.Dtp, 0), [".tr11dtp"] },
+                { (ResourceType.Dtp, ResourceSubType.StreamLayer), [".tr11layer"] },
                 { (ResourceType.GlobalContentReference, 0), [".tr11contentref"] },
                 { (ResourceType.Material, 0), [".tr11material"] },
                 { (ResourceType.Model, ResourceSubType.CubeLut), [".tr11cubelut"] },

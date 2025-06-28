@@ -32,6 +32,10 @@ void TrHook::InstallGameSpecificHooks()
 
 void TrHook::ApplyGameSpecificPatches()
 {
+    // Skip launcher. We *could* of course just pass the -nolauncher command line argument instead,
+    // but ironically, that may result in a safety warning from Steam.
+    *(BYTE*)(Game::ImageBase + 0xFDFE0D) = 0xEB;
+
     // Bugfix: The function that loads new archives raises a fatal error if it didn't load bigfile.000.tiger,
     // but this also gets triggered if the archive was already loaded previously. Skip this check.
     *(WORD*)(Game::ImageBase + 0x619CB7) = 0x7FEB;

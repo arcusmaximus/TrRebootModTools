@@ -1,10 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using TrRebootTools.Shared.Cdc;
+using TrRebootTools.Shared.Controls;
 using TrRebootTools.Shared.Forms;
 
 namespace TrRebootTools.Extractor
@@ -29,6 +32,7 @@ namespace TrRebootTools.Extractor
 
             _archiveSet = ArchiveSet.Open(gameFolderPath, true, false, game);
             _resourceUsages = new ResourceUsageCache();
+            _tvFiles.FileDoubleClicked += _tvFiles_FileDoubleClicked;
         }
 
         public bool GameSelectionRequested
@@ -53,6 +57,12 @@ namespace TrRebootTools.Extractor
         private void _tvFiles_SelectionChanged(object sender, EventArgs e)
         {
             _btnExtract.Enabled = _tvFiles.SelectedFiles.Count > 0;
+        }
+
+        private void _tvFiles_FileDoubleClicked(object sender, FileTreeView<ArchiveFileReference>.FileEventArgs e)
+        {
+            if (_btnExtract.Enabled)
+                _btnExtract_Click(_btnExtract, EventArgs.Empty);
         }
 
         private async void _btnExtract_Click(object sender, EventArgs e)

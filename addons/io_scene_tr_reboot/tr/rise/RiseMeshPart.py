@@ -12,12 +12,13 @@ class RiseMeshPart(CStruct64, IMeshPart if TYPE_CHECKING else object):
     flags: CInt
     draw_group_id: CInt
     order: CInt
-    actual_pg: CInt
+    actual_mesh_part: CInt
     lod_level: CShort
     field_2E: CShort
     material_idx: CLong
     texture_indices: CArray[CLong, Literal[5]]              # type: ignore
 
+    is_shadow                = CFlag("flags", 1)            # type: ignore
     is_hair                  = CFlag("flags", 0x200)        # type: ignore
     has_8_weights_per_vertex = CFlag("flags", 0x8000)       # type: ignore
     has_16bit_skin_indices   = CFlag("flags", 0x10000)      # type: ignore

@@ -1,5 +1,5 @@
 import base64
-from typing import Annotated
+from typing import Annotated, ClassVar
 import bpy
 from io_scene_tr_reboot.properties.BlenderPropertyGroup import BlenderAttachedPropertyGroup, BlenderPropertyGroup, BlenderPropertyGroupCollection, EnumProp, EnumPropItem, Prop
 from io_scene_tr_reboot.tr.Enumerations import CdcGame
@@ -10,6 +10,9 @@ class SceneFileProperties(BlenderPropertyGroup):
     data: Annotated[str, Prop("File data")]
 
 class SceneProperties(BlenderAttachedPropertyGroup[bpy.types.Scene]):
+    MIN_SCALE_FACTOR: ClassVar[float] = 0.001
+    DEFAULT_SCALE_FACTOR: ClassVar[float] = 0.1
+
     property_name = "tr11_properties"
 
     game: Annotated[
@@ -24,6 +27,7 @@ class SceneProperties(BlenderAttachedPropertyGroup[bpy.types.Scene]):
             default = CdcGame.SOTTR
         )
     ]
+    scale_factor: Annotated[float, Prop("Scale Factor", default = DEFAULT_SCALE_FACTOR, min = MIN_SCALE_FACTOR)]
     files: Annotated[BlenderPropertyGroupCollection[SceneFileProperties], Prop("Files")]
 
     @staticmethod
@@ -41,6 +45,21 @@ class SceneProperties(BlenderAttachedPropertyGroup[bpy.types.Scene]):
 
         props = SceneProperties.get_instance(bpy.context.scene)
         props.game = game.name
+
+    @staticmethod
+    def get_scale_factor() -> float:
+        if bpy.context.scene is None:
+            return SceneProperties.DEFAULT_SCALE_FACTOR
+
+        return SceneProperties.get_instance(bpy.context.scene).scale_factor
+
+    @staticmethod
+    def set_scale_factor(scale_factor: float) -> None:
+        if bpy.context.scene is None:
+            return
+
+        props = SceneProperties.get_instance(bpy.context.scene)
+        props.scale_factor = scale_factor
 
     @staticmethod
     def get_file(id: int) -> bytes | None:

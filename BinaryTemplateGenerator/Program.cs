@@ -9,6 +9,9 @@ namespace TrRebootTools.BinaryTemplateGenerator
     {
         public static void Main(string[] args)
         {
+            //ExtractActionGraphNodeArgs();
+            //return;
+
             if (!TryParseArgs(args, out string structName, out int trVersion))
             {
                 string assemblyName = Assembly.GetEntryAssembly()!.GetName().Name!;
@@ -39,7 +42,7 @@ namespace TrRebootTools.BinaryTemplateGenerator
                 lib.CalculateAlignmentsAndSizes(structName);
                 using (StreamWriter writer = new StreamWriter(templateFilePath))
                 {
-                    new BinaryTemplateWriter(writer, trVersion).WriteType(structName, lib);
+                    new BinaryTemplateWriter(lib, writer).WriteRootType(structName, trVersion);
                 }
             }
             catch (Exception ex)
@@ -58,6 +61,25 @@ namespace TrRebootTools.BinaryTemplateGenerator
 
             structName = args[0];
             return int.TryParse(args[1], out trVersion) && trVersion >= 9 && trVersion <= 11;
+        }
+
+        private static void ExtractActionGraphNodeArgs()
+        {
+            TypeLibrary lib;
+            using (StreamReader reader = new StreamReader(@"D:\Projects\TrRebootModTools\Build\Release\TR11.h"))
+            {
+                lib = new HeaderReader(reader, 8).Read();
+            }
+
+            var extractor = new ActionGraphNodeExtractor(lib);
+            using (StreamWriter writer = new StreamWriter(@"D:\Projects\TrRebootModTools\Templates\tr11actiongraph-dispatch.bt"))
+            {
+                extractor.WriteCaseStatements(writer);
+            }
+            using (StreamWriter writer = new StreamWriter(@"D:\Projects\TrRebootModTools\Templates\tr11actiongraph-nodes.bt"))
+            {
+                extractor.WriteArgTypes(writer);
+            }
         }
     }
 }

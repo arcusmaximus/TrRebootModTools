@@ -4,7 +4,7 @@
     <ProjectView>ProjectFiles</ProjectView>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
-    <StartArguments>dtp::LightInstance 10</StartArguments>
+    <StartArguments>dtp::CollisionType 11</StartArguments>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
     <StartArguments>pure::hair::HairAsset 11</StartArguments>

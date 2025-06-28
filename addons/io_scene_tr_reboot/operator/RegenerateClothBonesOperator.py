@@ -87,6 +87,10 @@ class RegenerateClothBonesOperator(BlenderOperatorBase[BlenderPropertyGroup]):
 
         bl_local_armature_objs = self.get_local_armature_objs(context)
 
+        for bl_cloth_strip_obj in Enumerable(bl_cloth_strip_objs_by_skeleton_id.values()).select_many(lambda l: l):
+            BlenderHelper.select_object(bl_cloth_strip_obj)
+            bpy.ops.object.transform_apply()
+
         bone_groups: dict[str, BlenderBoneGroup]
         with BlenderHelper.enter_edit_mode(bl_armature_obj):
             self.unassign_duplicate_vertex_groups(bl_cloth_strip_objs_by_skeleton_id)
@@ -122,9 +126,15 @@ class RegenerateClothBonesOperator(BlenderOperatorBase[BlenderPropertyGroup]):
 
         used_vertex_group_names: set[str] = set()
         for bl_cloth_obj in Enumerable(bl_cloth_objs_by_skeleton_id.values()).select_many(lambda l: l):
+            clothstrip_used_vertex_group_names: set[str] = set()
             for bl_vertex in cast(bpy.types.Mesh, bl_cloth_obj.data).vertices:
                 for bl_weight in bl_vertex.groups:
-                    used_vertex_group_names.add(bl_cloth_obj.vertex_groups[bl_weight.group].name)
+                    clothstrip_used_vertex_group_names.add(bl_cloth_obj.vertex_groups[bl_weight.group].name)
+
+            for vertex_group_name in Enumerable(bl_cloth_obj.vertex_groups).select(lambda g: g.name).to_set().difference(clothstrip_used_vertex_group_names):
+                bl_cloth_obj.vertex_groups.remove(bl_cloth_obj.vertex_groups[vertex_group_name])
+
+            used_vertex_group_names.update(clothstrip_used_vertex_group_names)
 
         for bone_name in available_cloth_bone_names.difference(used_vertex_group_names):
             bl_armature.edit_bones.remove(bl_armature.edit_bones[bone_name])
@@ -155,20 +165,20 @@ class RegenerateClothBonesOperator(BlenderOperatorBase[BlenderPropertyGroup]):
 
                 next_new_local_bone_id = Enumerable(cast(bpy.types.Armature, bl_local_armature_obj.data).bones).count(lambda b: BlenderNaming.parse_bone_name(b.name).global_id is not None)
 
-            for bone_id_set in Enumerable(bone_id_sets).order_by(lambda ids: ids.local_id):
-                if bone_id_set.global_id is None and bone_id_set.local_id is not None:
-                    if bone_id_set.local_id != next_new_local_bone_id:
-                        old_bone_name = BlenderNaming.make_bone_name(bone_id_set.skeleton_id, None, bone_id_set.local_id)
-                        new_bone_name = BlenderNaming.make_bone_name(bone_id_set.skeleton_id, None, next_new_local_bone_id)
-                        old_to_new_bone_name_mapping[old_bone_name] = new_bone_name
+            for bone_id_set in Enumerable(bone_id_sets).where(lambda ids: ids.global_id is None and ids.local_id is not None) \
+                                                       .order_by(lambda ids: ids.local_id):
+                if bone_id_set.local_id != next_new_local_bone_id:
+                    old_bone_name = BlenderNaming.make_bone_name(bone_id_set.skeleton_id, None, bone_id_set.local_id)
+                    new_bone_name = BlenderNaming.make_bone_name(bone_id_set.skeleton_id, None, next_new_local_bone_id)
+                    old_to_new_bone_name_mapping[old_bone_name] = new_bone_name
 
-                    next_new_local_bone_id += 1
+                next_new_local_bone_id += 1
 
         for old_bone_name, new_bone_name in old_to_new_bone_name_mapping.items():
             bl_armature.edit_bones[old_bone_name].name = new_bone_name
 
     def move_existing_and_add_missing(self, bl_armature_obj: bpy.types.Object, bl_cloth_strip_objs_by_skeleton_id: dict[int, list[bpy.types.Object]]) -> dict[str, BlenderBoneGroup]:
-        is_global_armature = BlenderNaming.is_global_armature_name(bl_armature_obj.name)
+        is_global_armature = BlenderNaming.try_parse_global_armature_name(bl_armature_obj.name) is not None
         bl_armature = cast(bpy.types.Armature, bl_armature_obj.data)
         bone_id_sets_by_skeleton_id = Enumerable(bl_armature.edit_bones).select(lambda b: BlenderNaming.parse_bone_name(b.name)) \
                                                                         .group_by(lambda ids: ids.skeleton_id)

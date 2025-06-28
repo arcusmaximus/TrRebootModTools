@@ -43,6 +43,11 @@ namespace TrRebootTools.ModManager
         private async void MainForm_Load(object sender, EventArgs e)
         {
             MainForm_Resize(sender, e);
+            foreach (ColumnStyle column in _pnlToolbar.ColumnStyles)
+            {
+                if (column.SizeType == SizeType.Absolute)
+                    column.Width = _pnlToolbar.Height;
+            }
 
             _lvMods.CheckedMember = nameof(InstalledMod.Enabled);
             _lvMods.DisplayMember = nameof(InstalledMod.Name);

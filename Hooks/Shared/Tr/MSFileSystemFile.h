@@ -6,6 +6,11 @@ namespace Tr
     {
     public:
         virtual void* CreateRequest(void* pReceiver, const char* pszPath, DWORD filePos) = 0;
+
+        const char* GetPath() const
+        {
+            return szPath;
+        }
         
         void Close()
         {

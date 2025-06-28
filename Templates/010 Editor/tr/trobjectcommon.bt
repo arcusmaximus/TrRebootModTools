@@ -6,6 +6,9 @@
 //   Purpose: Common structures for parsing object metadata
 //------------------------------------------------
 
+#ifndef TR_OBJECT_COMMON
+#define TR_OBJECT_COMMON
+
 enum TypeNameHash
 {
     _NONE = 0,
@@ -233,7 +236,7 @@ typedef struct
     TypeNameHash type <read=EnumToString(this)>;
     FSkip(4);
     Ref reference;
-} SimpleComponent <read=EnumToString(type), optimize=false>;
+} Component <read=EnumToString(type), optimize=false>;
 
 typedef struct
 {
@@ -273,27 +276,27 @@ typedef struct
         Ref propertiesRef;
     }
     FSkip(8);
-} TransformedComponent <read=(exists(uiName) && uiName != "?" ? uiName : Str("%016LX", hash)), optimize=false>;
+} SceneItem <read=(exists(uiName) && uiName != "?" ? uiName : Str("%016LX", hash)), optimize=false>;
 
 typedef struct
 {
     TypeNameHash type <read=EnumToString(this)>;
     int count;
-    Ref componentsRef;
+    Ref sceneItemsRef;
     
-    if (CanSeekTo(componentsRef))
+    if (CanSeekTo(sceneItemsRef))
     {
-        SeekToRef(componentsRef);
-        TransformedComponent components[count];
+        SeekToRef(sceneItemsRef);
+        SceneItem sceneItems[count];
         ReturnFromRef();
     }
-} TransformedComponentsOfType <read=EnumToString(type), optimize=false>;
+} SceneItemsOfType <read=EnumToString(type), optimize=false>;
 
 typedef struct
 {
     TypeNameHash type <read=EnumToString(this)>;
     int count;
-} TransformedComponentCount <read=Str("%s = %d", EnumToString(type), count)>;
+} SceneItemCount <read=Str("%s = %d", EnumToString(type), count)>;
 
 typedef struct
 {
@@ -313,32 +316,32 @@ typedef struct
     Ref baseZoneIdsRef;
     Ref propertiesRef;
     
-    int numSimpleComponents;
+    int numComponents;
     FSkip(4);
-    Ref simpleComponentsRef;
-    if (CanSeekTo(simpleComponentsRef))
+    Ref componentsRef;
+    if (CanSeekTo(componentsRef))
     {
-        SeekToRef(simpleComponentsRef);
-        SimpleComponent simpleComponents[numSimpleComponents];
+        SeekToRef(componentsRef);
+        Component components[numComponents];
         ReturnFromRef();
     }
     
-    int numTransformedComponentTypes;
+    int numSceneItemTypes;
     FSkip(4);
-    Ref transformedComponentsByTypeRef;
-    if (CanSeekTo(transformedComponentsByTypeRef))
+    Ref sceneItemsByTypeRef;
+    if (CanSeekTo(sceneItemsByTypeRef))
     {
-        SeekToRef(transformedComponentsByTypeRef);
-        TransformedComponentsOfType transformedComponentsByType[numTransformedComponentTypes];
+        SeekToRef(sceneItemsByTypeRef);
+        SceneItemsOfType sceneItemsByType[numSceneItemTypes];
         ReturnFromRef();
     }
         
-    quad numTransformedComponentCounts;
-    Ref transformedComponentCountsRef;
-    if (CanSeekTo(transformedComponentCountsRef))
+    quad numSceneItemCounts;
+    Ref sceneItemCountsRef;
+    if (CanSeekTo(sceneItemCountsRef))
     {
-        SeekToRef(transformedComponentCountsRef);
-        TransformedComponentCount transformedComponentCounts[numTransformedComponentCounts];
+        SeekToRef(sceneItemCountsRef);
+        SceneItemCount sceneItemCounts[numSceneItemCounts];
         ReturnFromRef();
     }
     
@@ -352,8 +355,27 @@ typedef struct
     Ref poseSpaceDeformersRef;
     Ref clothDefinitionRef;
     Ref hairDataRef;
-    Ref objectZoneDbRef;
+    Ref streamLayerListRef;
 } Object;
 
-RefDefinitions refDefinitions;
-Object object <open=true>;
+typedef struct
+{
+    TypeNameHash listType <format=hex>;
+    int zoneId;
+    uquad id0 <format=hex>;
+    uquad id1 <format=hex>;
+    Ref moreIdsRef;
+    if (CanSeekTo(moreIdsRef))
+    {
+        SeekToRef(moreIdsRef);
+        uquad moreIds;
+        ReturnFromRef();
+    }
+} PlacementPath <optimize=false>;
+
+#ifndef TR_OBJECT_NO_INSTANTIATE
+    RefDefinitions refDefinitions;
+    Object object <open=true>;
+#endif
+
+#endif

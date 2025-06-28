@@ -22,9 +22,6 @@ class BlenderOperatorMetaClass(type(bpy.types.Operator)):
                     annotations.update(property_class.__annotations__)
                     property_class = Enumerable(property_class.__bases__).first_or_none(BlenderOperatorMetaClass.is_property_group_type)
 
-                if Enumerable(bases).any(lambda b: b.__name__ == "ImportOperatorBase" or b.__name__ == "ExportOperatorBase"):
-                    annotations["filter_glob"] = Annotated[str, Prop("Filter", default = "*" + namespace["filename_ext"], options = { "HIDDEN" })]
-
                 namespace["__annotations__"] = BlenderPropertyGroup.convert_annotations(class_name, annotations)
 
         return cast(type, super()).__new__(cls, class_name, bases, namespace)
@@ -42,15 +39,13 @@ class BlenderOperatorBase(Generic[TProperties], bpy.types.Operator, metaclass = 
     properties: TProperties                                                                                     # type: ignore
 
 
-
 class BlenderMenuOperatorBase(Generic[TProperties], BlenderOperatorBase[TProperties], Protocol if TYPE_CHECKING else object):    # type: ignore
     bl_menu: bpy.types.Menu
     bl_menu_item_name: str
 
 
-
 class ImportOperatorProperties(BlenderPropertyGroup, Protocol):
-    filepath: Annotated[str, Prop("File path")] #, subtype = "FILE_PATH")]
+    filepath: Annotated[str, Prop("File path")]
     filter_glob: Annotated[str, Prop("Filter", options = { "HIDDEN" })]
 
 TImportProperties = TypeVar("TImportProperties", bound = ImportOperatorProperties)

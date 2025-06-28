@@ -1,3 +1,12 @@
+//------------------------------------------------
+//--- 010 Editor v14.0 Binary Template
+//
+//      File: tr11dynamichaircomponent.bt
+//   Authors: arc_
+//   Purpose: Parse .tr11dtp files storing DYNAMICHAIR components
+//  Category: SOTTR
+//------------------------------------------------
+
 #define TR_VERSION 11
 #include "../../trcommon.bt"
 
@@ -121,7 +130,7 @@ typedef struct
 
 typedef struct
 {
-    float fTickness;
+    float thickness;
     float shapeCurve[8];
     float alphaCurve[8];
     float noiseFrequency;

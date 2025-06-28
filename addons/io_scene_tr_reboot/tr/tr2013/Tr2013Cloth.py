@@ -2,11 +2,11 @@ from ctypes import sizeof
 from typing import TYPE_CHECKING, Sequence, cast
 from mathutils import Vector
 from io_scene_tr_reboot.tr.Cloth import Cloth, ClothFeatureSupport, ClothMass, ClothMassAnchorBone, ClothMassSpringVector, ClothSpring, ClothStrip, IClothDef, IClothDefAnchorBone, IClothDefMass, IClothDefSpring, IClothDefStrip, IClothTune, IClothTuneCollisionGroup, IClothTuneConfig, IClothTuneStripGroup
-from io_scene_tr_reboot.tr.Collision import Collision, CollisionKey
+from io_scene_tr_reboot.tr.CollisionShape import CollisionShape, CollisionShapeKey
 from io_scene_tr_reboot.tr.ResourceBuilder import ResourceBuilder
 from io_scene_tr_reboot.tr.ResourceReader import ResourceReader
 from io_scene_tr_reboot.tr.ResourceReference import ResourceReference
-from io_scene_tr_reboot.tr.tr2013.Tr2013Collision import Tr2013Collision
+from io_scene_tr_reboot.tr.tr2013.Tr2013CollisionShape import Tr2013CollisionShape
 from io_scene_tr_reboot.util.CStruct import CFloat, CInt, CLong, CShort, CStruct, CStruct32
 from io_scene_tr_reboot.util.Enumerable import Enumerable
 
@@ -172,10 +172,10 @@ class Tr2013Cloth(Cloth):
         self.tune_id = tune_id
         self.strips = []
 
-    def read(self, definition_reader: ResourceReader, tune_reader: ResourceReader | None, global_bone_ids: list[int | None], external_collisions: list[Collision]) -> None:
+    def read(self, definition_reader: ResourceReader, tune_reader: ResourceReader | None, skeleton_id: int, global_bone_ids: list[int | None], external_collisions: list[CollisionShape]) -> None:
         self.read_definition(definition_reader)
         if tune_reader is not None:
-            self.read_tune(tune_reader, global_bone_ids, { CollisionKey(collision.type, collision.hash): collision for collision in external_collisions })
+            self.read_tune(tune_reader, skeleton_id, global_bone_ids, { CollisionShapeKey(collision.type, skeleton_id, collision.hash): collision for collision in external_collisions })
 
     def read_definition(self, reader: ResourceReader) -> None:
         dtp_def = self.read_definition_header(reader)
@@ -217,21 +217,21 @@ class Tr2013Cloth(Cloth):
 
             self.strips.append(strip)
 
-    def read_tune(self, reader: ResourceReader, global_bone_ids: list[int | None], external_collisions: dict[CollisionKey, Collision]) -> None:
+    def read_tune(self, reader: ResourceReader, skeleton_id: int, global_bone_ids: list[int | None], external_collisions: dict[CollisionShapeKey, CollisionShape]) -> None:
         dtp_tune = self.read_tune_header(reader)
         if dtp_tune.strip_groups_ref is None or \
            dtp_tune.collision_groups_ref is None:
             raise Exception()
 
         reader.seek(dtp_tune.collision_groups_ref)
-        collision_groups: list[Sequence[Collision]] = []
+        collision_groups: list[Sequence[CollisionShape]] = []
         collision_base_idx = 0
         for dtp_collision_group in self.read_tune_collision_groups(reader, dtp_tune.num_collision_groups):
             if dtp_collision_group.items_ref is None:
                 raise Exception()
 
             reader.seek(dtp_collision_group.items_ref)
-            collision_groups.append(self.read_tune_collisions(reader, collision_base_idx, dtp_collision_group.count, global_bone_ids, external_collisions))
+            collision_groups.append(self.read_tune_collisions(reader, collision_base_idx, dtp_collision_group.count, skeleton_id, global_bone_ids, external_collisions))
             collision_base_idx += dtp_collision_group.count
 
         reader.seek(dtp_tune.strip_groups_ref)
@@ -239,7 +239,7 @@ class Tr2013Cloth(Cloth):
             if dtp_strip_group.collision_group_indices_ref is None or dtp_strip_group.strip_ids_ref is None:
                 raise Exception()
 
-            strip_group_collisions: list[Collision] = []
+            strip_group_collisions: list[CollisionShape] = []
             reader.seek(dtp_strip_group.collision_group_indices_ref)
             for collision_set_idx in reader.read_uint32_list(dtp_strip_group.num_collision_group_indices):
                 if collision_set_idx < len(collision_groups):
@@ -367,7 +367,12 @@ class Tr2013Cloth(Cloth):
         dtp.inner_distance = 5000
         dtp.outer_distance = 20000
         dtp.configs_ref = writer.make_internal_ref()
-        dtp.num_configs = 1
+
+        # For the vast majority of cases we only need one config, but there *might* be an action graph that selects
+        # a different one (AGInstanceSwitchClothConfig) - and of course, the game doesn't check whether the requested
+        # config exists and just crashes. As such, we export the same config multiple times as a safety measure.
+        dtp.num_configs = 8
+
         dtp.strip_groups_ref = writer.make_internal_ref()
         dtp.num_strip_groups = len(self.strips)
         dtp.collision_groups_ref = writer.make_internal_ref()
@@ -377,13 +382,19 @@ class Tr2013Cloth(Cloth):
         writer.align(0x10)
 
         dtp.configs_ref.offset = writer.position
-        dtp_config = self.create_tune_config()
-        dtp_config.num_strip_group_indices = len(self.strips)
-        dtp_config.strip_group_indices_ref = writer.make_internal_ref()
-        writer.write_struct(cast(CStruct, dtp_config))
+        dtp_configs: list[IClothTuneConfig] = []
+        for _ in range(dtp.num_configs):
+            dtp_config = self.create_tune_config()
+            dtp_config.num_strip_group_indices = len(self.strips)
+            dtp_config.strip_group_indices_ref = writer.make_internal_ref()
+            writer.write_struct(cast(CStruct, dtp_config))
+            dtp_configs.append(dtp_config)
+
         writer.align(0x10)
 
-        dtp_config.strip_group_indices_ref.offset = writer.position
+        for dtp_config in dtp_configs:
+            cast(ResourceReference, dtp_config.strip_group_indices_ref).offset = writer.position
+
         for i in range(len(self.strips)):
             writer.write_uint32(i)
 
@@ -480,10 +491,18 @@ class Tr2013Cloth(Cloth):
     def read_tune_collision_groups(self, reader: ResourceReader, count: int) -> Sequence[IClothTuneCollisionGroup]:
         return reader.read_struct_list(_ClothTuneCollisionGroup, count)
 
-    def read_tune_collisions(self, reader: ResourceReader, base_idx: int, count: int, global_bone_ids: list[int | None], external_collisions: dict[CollisionKey, Collision]) -> Sequence[Collision]:
-        collisions: list[Collision] = []
+    def read_tune_collisions(
+        self,
+        reader: ResourceReader,
+        base_idx: int,
+        count: int,
+        skeleton_id: int,
+        global_bone_ids: list[int | None],
+        external_collisions: dict[CollisionShapeKey, CollisionShape]
+    ) -> Sequence[CollisionShape]:
+        collisions: list[CollisionShape] = []
         for i in range(count):
-            collisions.append(Tr2013Collision.read(reader, base_idx + i, global_bone_ids))
+            collisions.append(Tr2013CollisionShape.read(reader, base_idx + i, skeleton_id, global_bone_ids))
 
         return collisions
 
@@ -531,5 +550,5 @@ class Tr2013Cloth(Cloth):
     def create_tune_collision_group(self) -> IClothTuneCollisionGroup:
         return _ClothTuneCollisionGroup()
 
-    def create_tune_collision(self, collision: Collision, global_bone_ids: list[int | None]) -> CStruct:
-        return Tr2013Collision.to_struct(collision, global_bone_ids)
+    def create_tune_collision(self, collision: CollisionShape, global_bone_ids: list[int | None]) -> CStruct:
+        return Tr2013CollisionShape.to_struct(collision, global_bone_ids)

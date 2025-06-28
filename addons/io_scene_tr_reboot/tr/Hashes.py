@@ -30,9 +30,11 @@ class Hashes:
     thickness           = Crc32.calculate(b"Thickness")
 
     cloth                               = _Hashes__hash_simple(b"cloth")
+    collisionmarker                     = _Hashes__hash_simple(b"collisionmarker")
     genericboxshapelist                 = _Hashes__hash_simple(b"genericboxshapelist")
     genericcapsuleshapelist             = _Hashes__hash_simple(b"genericcapsuleshapelist")
     genericdoubleradiicapsuleshapelist  = _Hashes__hash_simple(b"genericdoubleradiicapsuleshapelist")
     genericsphereshapelist              = _Hashes__hash_simple(b"genericsphereshapelist")
     meshref                             = _Hashes__hash_simple(b"meshref")
     modelhost                           = _Hashes__hash_simple(b"modelhost")
+    objectref                           = _Hashes__hash_simple(b"objectref")

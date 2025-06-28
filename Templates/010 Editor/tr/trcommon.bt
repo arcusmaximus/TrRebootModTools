@@ -6,6 +6,9 @@
 //   Purpose: Common structures and functions for parsing TR Reboot files
 //------------------------------------------------
 
+#ifndef TR_COMMON_BT
+#define TR_COMMON_BT
+
 typedef struct
 {
     float x, y;
@@ -77,8 +80,8 @@ gResourceTypeExtensions[RESOURCETYPE_COLLISIONMESH].value     = Str(".tr%dcmesh"
 gResourceTypeExtensions[RESOURCETYPE_OBJECTREF].value         = Str(".tr%dobjectref",   TR_VERSION);
 gResourceTypeExtensions[RESOURCETYPE_ANIMLIB].value           = Str(".tr%danimlib",     TR_VERSION);
 
-local RefType gRefTypeByFilePos[FileSize() / 4];
-local int gRefIndexByFilePos[FileSize() / 4];
+local RefType gRefTypeByFilePos[FileSize() / 4 + 1];
+local int gRefIndexByFilePos[FileSize() / 4 + 1];
 local int gResourceBodyPos;
 
 typedef struct
@@ -145,7 +148,8 @@ string ReadRef(Ref& ref)
     {
         ResourceType resourceType = ref.pointer >> 24;
         int resourceId = ref.pointer & 0x00FFFFFF;
-        return Str("%d%s at offset %X", resourceId, gResourceTypeExtensions[resourceType].value, refDefinitions.wideExternalRefs[ref.index].resourceOffset);
+        string extension = resourceType < 16 ? gResourceTypeExtensions[resourceType].value : Str(".tr%d", resourceType);
+        return Str("%d%s at offset %Xh", resourceId, extension, refDefinitions.wideExternalRefs[ref.index].resourceOffset);
     }
     
     if (ref.type == REFTYPE_PACKED_EXTERNAL)
@@ -245,3 +249,5 @@ void ReturnFromRef()
 {
     FSeek(gFilePosStack[--gFilePosStackIdx]);
 }
+
+#endif

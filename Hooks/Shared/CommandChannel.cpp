@@ -55,10 +55,12 @@ void CommandChannel::HandlePendingCommand()
     switch (type)
     {
         case CommandType::LoadNewArchives:
+            Debug::Log("Loading new archives");
             ArchiveSet::GetInstance()->LoadNewArchivesAsync();
             break;
 
         case CommandType::UnloadMissingArchives:
+            Debug::Log("Unloading missing archives");
             ArchiveSet::GetInstance()->UnloadMissingArchivesAsync();
             break;
 

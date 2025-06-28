@@ -43,6 +43,11 @@ namespace TrRebootTools.Shared.Cdc
             get;
         }
 
+        public abstract ResourceReference MainResourceReference
+        {
+            get;
+        }
+
         public abstract IReadOnlyList<ResourceReference> ResourceReferences { get; }
 
         public abstract int AddResourceReference(ResourceCollection otherCollection, int otherResourceId);
@@ -94,6 +99,11 @@ namespace TrRebootTools.Shared.Cdc
         protected abstract int HeaderVersion { get; }
 
         protected abstract int HeaderLocaleSize { get; }
+
+        public override ResourceReference MainResourceReference
+        {
+            get => _header.MainResourceIndex >= 0 ? ResourceReferences[_header.MainResourceIndex] : null;
+        }
 
         public override IReadOnlyList<ResourceReference> ResourceReferences
         {

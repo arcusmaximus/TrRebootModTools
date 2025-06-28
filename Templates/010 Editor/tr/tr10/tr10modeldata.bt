@@ -94,6 +94,21 @@ typedef struct
 
 typedef struct
 {
+    Vector3 relativePivot;
+    int numChildren;
+    int subTreeSize;
+    float min;
+    float max;
+    float minFade;
+    float maxFade;
+    float invMinDelta;
+    float invMaxDelta;
+    ubyte m_flags;
+    FSkip(3);
+} ModelLodLevel <optimize=true>;
+
+typedef struct
+{
     Vertex vertices[parentof(this).numVertices];
 } VertexBuffer <optimize=false>;
 
@@ -167,6 +182,9 @@ typedef struct
 typedef struct
 {
     ModelDataHeader header;
+    
+    FSeek(startof(this) + header.lodLevelsPos);
+    ModelLodLevel lodLevels[header.numLodLevels] <style=sData>;
     
     FSeek(startof(this) + header.boneMappingsPos);
     int boneMappings[header.numBoneMappings] <style=sData>;

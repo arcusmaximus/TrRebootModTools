@@ -16,22 +16,26 @@ class HairImporter:
     DEFAULT_HAIR_TIP_COLOR  = (1, 1, 1, 1)
 
     scale_factor: float
+    bl_target_collection: bpy.types.Collection | None
 
-    def __init__(self, scale_factor: float) -> None:
+    def __init__(self, scale_factor: float, bl_target_collection: bpy.types.Collection | None = None) -> None:
         self.scale_factor = scale_factor
+        self.bl_target_collection = bl_target_collection
 
-    def import_from_collection(self, tr_collection: Collection, bl_armature_objs: dict[ResourceKey, bpy.types.Object]) -> list[bpy.types.Object]:
+    def import_from_collection(self, tr_collection: Collection, bl_collection_obj: bpy.types.Object | None, bl_armature_objs: dict[ResourceKey, bpy.types.Object]) -> list[bpy.types.Object]:
         bl_hair_part_objs: list[bpy.types.Object] = []
 
-        for hair_resource_set in tr_collection.get_hair_resource_sets():
+        for hair_resource_set in tr_collection.get_hair_resources():
             tr_hair = tr_collection.get_hair(hair_resource_set.hair_resource)
             if tr_hair is None:
                 continue
 
-            bl_parent_obj = bl_armature_objs.get(hair_resource_set.skeleton_resource) if hair_resource_set.skeleton_resource is not None else None
+            bl_parent_obj: bpy.types.Object | None = None
+            if hair_resource_set.skeleton_resource is not None:
+                bl_parent_obj = bl_armature_objs.get(hair_resource_set.skeleton_resource)
+
             if bl_parent_obj is None:
-                empty_name = BlenderNaming.make_hair_asset_name(tr_collection.name, tr_hair.model_id, tr_hair.hair_data_id)
-                bl_parent_obj = bpy.data.objects.get(empty_name) or BlenderHelper.create_object(None, empty_name)
+                bl_parent_obj = bl_collection_obj
 
             bl_hair_part_objs.extend(self.import_hair(tr_collection, tr_hair, bl_parent_obj))
 
@@ -64,17 +68,19 @@ class HairImporter:
             return None
 
         strand_group_name = BlenderNaming.make_hair_strand_group_name(tr_collection.name, tr_hair.model_id, tr_hair.hair_data_id, tr_hair_part.name, is_master)
-        bl_strand_group = bpy.data.hair_curves.new(strand_group_name)
+        bl_strand_group = bpy.data.hair_curves.get(strand_group_name)
+        if bl_strand_group is None:
+            bl_strand_group = bpy.data.hair_curves.new(strand_group_name)
 
-        bl_strand_group.add_curves(tr_strand_group.strand_point_counts)
-        self.apply_point_positions(bl_strand_group, tr_strand_group)
-        self.apply_point_weights(bl_strand_group, tr_strand_group)
+            bl_strand_group.add_curves(tr_strand_group.strand_point_counts)
+            self.apply_point_positions(bl_strand_group, tr_strand_group)
+            self.apply_point_weights(bl_strand_group, tr_strand_group)
 
-        if tr_hair.supports_strand_thickness:
-            self.apply_point_thicknesses(bl_strand_group, tr_strand_group)
+            if tr_hair.supports_strand_thickness:
+                self.apply_point_thicknesses(bl_strand_group, tr_strand_group)
 
-        material_name = BlenderNaming.make_hair_strand_group_material_name(tr_hair.material_id, is_master)
-        bl_strand_group.materials.append(self.get_or_create_material(material_name, is_master))
+            material_name = BlenderNaming.make_hair_strand_group_material_name(tr_hair.material_id, is_master)
+            bl_strand_group.materials.append(self.get_or_create_material(material_name, is_master))
 
         bl_strand_group_obj = BlenderHelper.create_object(bl_strand_group)
         if is_master:
@@ -82,6 +88,7 @@ class HairImporter:
         else:
             self.add_point_factor_modifier(bl_strand_group_obj)
 
+        BlenderHelper.move_object_to_collection(bl_strand_group_obj, self.bl_target_collection)
         return bl_strand_group_obj
 
     def apply_point_positions(self, bl_strand_group: bpy.types.Curves, tr_strand_group: HairStrandGroup) -> None:

@@ -93,7 +93,7 @@ namespace TrRebootTools.HookTool
         {
             IntPtr hProcess = DllInjector.CreateProcessWithDll(
                 _exePath,
-                "-nolauncher",
+                null,
                 Path.GetDirectoryName(_exePath),
                 GetHookDllPath(_hookInfo)
             );
