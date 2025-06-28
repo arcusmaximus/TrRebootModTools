@@ -1,0 +1,232 @@
+#define TR_VERSION 11
+#include "../../trcommon.bt"
+
+#define TR_COMPONENT_NO_INSTANTIATE
+#include "../components/tr11objectnetdatacomponent.bt"
+#include "../components/tr11physicsattachcomponent.bt"
+
+#define TR_OBJECT_NO_INSTANTIATE
+#include "../../trobjectcommon.bt"
+
+#include "../lists/tr11zones.bt"
+
+typedef union
+{
+    short byUserDefinedIndex;
+    ushort byBoneIndex;
+    short byBoneID;
+    ushort byMarkerIndex;
+    ushort byMarkerID;
+} ModelBoneOrMarkerRefData;
+
+typedef struct
+{
+    ubyte refType;
+    FSkip(1);
+    ModelBoneOrMarkerRefData refData;
+} ModelBoneOrMarkerReference <optimize=false>;
+
+typedef struct
+{
+    ModelBoneOrMarkerReference bindFrom;
+    ModelBoneOrMarkerReference bindTo;
+} ParentBindParams <optimize=false>;
+
+typedef union
+{
+    ParentBindParams bindParent;
+} BindParams;
+
+typedef struct
+{
+    ushort unit;
+    ushort streamLayer;
+} StreamLayerRef <optimize=false>;
+
+typedef struct
+{
+    float introductionDistance;
+    float introductionRemoveSlack;
+    float introductionFadeRange;
+} ManualRadialIntroduction <optimize=false>;
+
+typedef struct
+{
+    float introductionDistance;
+    float introductionRemoveSlack;
+} RadialIntroductionProperties <optimize=false>;
+
+typedef struct
+{
+    byte overrideRadialPriority;
+    FSkip(3);
+    unsigned int context;
+    float introductionDistance;
+    unsigned int refSlack;
+    float introductionRemoveSlack;
+} OverrideRadialPriority <optimize=false>;
+
+typedef struct
+{
+    RadialIntroductionProperties radialIntroductionProperties;
+    OverrideRadialPriority overrideRadialPriority;
+} AutomaticRadialIntroduction <optimize=false>;
+
+typedef union
+{
+    ManualRadialIntroduction manual;
+    AutomaticRadialIntroduction automatic;
+} RadialIntroductionUnion;
+
+typedef struct
+{
+    int radialIntroductionType;
+    RadialIntroductionUnion radialIntroductionUnion;
+} RadialIntroduction <optimize=false>;
+
+typedef struct
+{
+    float min;
+    float minOpaque;
+    float maxOpaque;
+    float max;
+    float maxScreenSize;
+    float maxOpaqueScreenSize;
+    float minOpaqueScreenSize;
+    float minScreenSize;
+} LODLevel <optimize=false>;
+
+typedef struct
+{
+    Vector3 relativePivot;
+    LODLevel levels[5];
+    ubyte enabledLevels;
+    ubyte flags;
+    ubyte lodMode;
+} LODLevels <optimize=false>;
+
+typedef struct
+{
+    int vvRemoveDist;
+    int removeDist;
+    RadialIntroduction radialIntroduction;
+    LODLevels lodLevels;
+} PropertiesInherited <optimize=false>;
+
+typedef struct
+{
+    Ref fxLibRef;
+} FxLibOverride <optimize=false>;
+
+typedef struct
+{
+    TypeNameHash type <format=hex>;
+    FSkip(4);
+    Ref propertiesRef;
+    
+    if (CanSeekTo(propertiesRef))
+    {
+        SeekToRef(propertiesRef);
+        switch (type)
+        {
+            case OBJECTNETDATA:
+                ObjectNetDataComponent properties;
+                break;
+            case PHYSICSATTACH:
+                PhysicsAttachComponent properties;
+                break;
+        }
+        ReturnFromRef();
+    }
+} ComponentOverrideData <optimize=false>;
+
+typedef struct
+{
+    int cellUniqueID;
+} CellOverride <optimize=false>;
+
+typedef struct
+{
+    byte canMoveToNewUnit : 1;
+    byte bNestedOverride;
+    FSkip(6);
+    Ref envMaterialOverrideTableRef;
+    byte isUnitObjectRef;
+    FSkip(7);
+    Ref debugNameRef;
+    if (CanSeekTo(debugNameRef))
+    {
+        SeekToRef(debugNameRef);
+        string debugName;
+        ReturnFromRef();
+    }
+    unsigned int zoneId <read=Str("%s (%d)", GetZoneName(this), this)>;
+    int instanceType;
+    BindParams bindParams;
+    Ref streamLayersRef;
+    unsigned int streamLayerCount;
+    if (CanSeekTo(streamLayersRef))
+    {
+        SeekToRef(streamLayersRef);
+        StreamLayerRef streamLayers[streamLayerCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref propertiesInheritedRef;
+    if (CanSeekTo(propertiesInheritedRef))
+    {
+        SeekToRef(propertiesInheritedRef);
+        PropertiesInherited propertiesInherited;
+        ReturnFromRef();
+    }
+    unsigned int fxaOverride;
+    int fxOverride;
+    Ref fxliboverrideDynamicitemRef;
+    if (CanSeekTo(fxliboverrideDynamicitemRef))
+    {
+        SeekToRef(fxliboverrideDynamicitemRef);
+        FxLibOverride fxliboverrideDynamicitem;
+        ReturnFromRef();
+    }
+    byte isDelayedBirth;
+    byte isNetworked;
+    byte isNetSyncFX;
+    byte cinematicNoKill : 1;
+    byte overrideSaveSettings : 1;
+    byte doNotSave : 1;
+    byte neverDeadDead : 1;
+    unsigned int numComponents;
+    Ref componentsRef;
+    if (CanSeekTo(componentsRef))
+    {
+        SeekToRef(componentsRef);
+        ComponentOverrideData components[numComponents];
+        ReturnFromRef();
+    }
+    FSkip(8);
+    Matrix matrix;
+    byte placeInExteriorCell : 1;
+    FSkip(3);
+    CellOverride cellOverride;
+    char lodLevelStart;
+    char lodLevelEnd;
+    FSkip(2);
+    float instanceLodBias;
+    float instanceLodScale;
+    uint increasedLoadPriority : 1;
+    byte canCastShadows;
+    byte usePlacementDependencies;
+    FSkip(6);
+    Ref placementDependenciesRef;
+    unsigned int placementDependencyCount;
+    if (CanSeekTo(placementDependenciesRef))
+    {
+        SeekToRef(placementDependenciesRef);
+        PlacementPath placementDependencies[placementDependencyCount];
+        ReturnFromRef();
+    }
+    char sortBehaviour;
+} ObjectRef <optimize=false>;
+
+RefDefinitions refDefinitions;
+ObjectRef root <open=true>;

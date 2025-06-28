@@ -1,0 +1,242 @@
+#define TR_VERSION 9
+#include "../trcommon.bt"
+
+
+typedef union
+{
+    short byUserDefinedIndex;
+    ushort byBoneIndex;
+    ushort byMarkerIndex;
+} ModelBoneOrMarkerReferenceWithContext__ModelBoneOrMarkerRefData;
+
+typedef struct
+{
+    ubyte refType;
+    FSkip(1);
+    ModelBoneOrMarkerReferenceWithContext__ModelBoneOrMarkerRefData refData;
+} ModelBoneOrMarkerReferenceWithContext <optimize=false>;
+
+typedef struct
+{
+    Matrix fixedTransform;
+    Vector4 bboxScale;
+} IMFRef__FixedMatrix <optimize=false>;
+
+typedef struct
+{
+    float instanceParam0[2];
+    float instanceParam1[4];
+    float instanceParam2[4];
+    float instanceParam3[4];
+} IMFRef__InstanceParams <optimize=false>;
+
+typedef struct
+{
+    float uvScale[2];
+    float uvOffset[2];
+    Ref textureRef;
+} LightMapProps <optimize=false>;
+
+typedef struct
+{
+    unsigned int sourceMaterialID;
+    Ref destMaterialRef;
+    unsigned int streamLayer;
+} IMFRef__MaterialOverride <optimize=false>;
+
+enum <int> IMFType
+{
+    IMFType_Embedded = 0,
+    IMFType_TerrainInstance = 1,
+    IMFType_ModelInstance = 2,
+    IMFType_HierarchyTreeInstance = 3
+};
+
+typedef struct
+{
+    IMFType type;
+    byte dirty;
+} IMFRefRuntimeInstanceBase <optimize=false>;
+
+typedef struct
+{
+    Matrix transform;
+    Ref fixedTransformRef;
+    if (CanSeekTo(fixedTransformRef))
+    {
+        SeekToRef(fixedTransformRef);
+        IMFRef__FixedMatrix fixedTransform;
+        ReturnFromRef();
+    }
+    Ref debugNameRef;
+    if (CanSeekTo(debugNameRef))
+    {
+        SeekToRef(debugNameRef);
+        string debugName;
+        ReturnFromRef();
+    }
+    Ref parentImfRefRef;
+    unsigned int imfId;
+    Ref imfDRMNameRef;
+    if (CanSeekTo(imfDRMNameRef))
+    {
+        SeekToRef(imfDRMNameRef);
+        string imfDRMName;
+        ReturnFromRef();
+    }
+    char lodLevelStart;
+    char lodLevelEnd;
+    byte bForceEmbedded : 1;
+    byte placeInExteriorCell : 1;
+    byte bCanCastShadows : 1;
+    byte bCanRenderInReflection : 1;
+    byte disableCollision : 1;
+    byte disableNavMesh : 1;
+    byte collisionTerrainGroupEnabled : 1;
+    byte streamOverride : 1;
+    byte siEnabled : 1;
+    float instanceLodBias;
+    float instanceLodScale;
+    Ref texture0Ref;
+    Ref texture1Ref;
+    Ref texture2Ref;
+    Ref texture3Ref;
+    Ref instanceParamsRef;
+    if (CanSeekTo(instanceParamsRef))
+    {
+        SeekToRef(instanceParamsRef);
+        IMFRef__InstanceParams instanceParams;
+        ReturnFromRef();
+    }
+    LightMapProps lightMapProperties;
+    unsigned int numOverrideMaterials;
+    Ref overrideMaterialsRef;
+    if (CanSeekTo(overrideMaterialsRef))
+    {
+        SeekToRef(overrideMaterialsRef);
+        IMFRef__MaterialOverride overrideMaterials[numOverrideMaterials];
+        ReturnFromRef();
+    }
+    unsigned int lightMask;
+    float reflectionLODBias;
+    int collisionTypeOverride;
+    int collisionTerrainGroupId;
+    Ref dataRef;
+    if (CanSeekTo(dataRef))
+    {
+        SeekToRef(dataRef);
+        IMFRefRuntimeInstanceBase data;
+        ReturnFromRef();
+    }
+    Ref resolveObjectRef;
+    Ref meshInstancesRef;
+    float introductionDistance;
+    int streamLayer;
+    Ref siMaterialRef;
+    unsigned int index;
+} IMFRef <optimize=false>;
+
+typedef struct
+{
+    int count;
+    Ref refsRef;
+    if (CanSeekTo(refsRef))
+    {
+        SeekToRef(refsRef);
+        Ref refs[count];
+        ReturnFromRef();
+        
+        local int i = 0;
+        for (i = 0; i < count; i++)
+        {
+            if (CanSeekTo(refs[i]))
+            {
+                SeekToRef(refs[i]);
+                IMFRef imf;
+                ReturnFromRef();
+            }
+        }
+    }
+} IMFRefList;
+
+typedef struct
+{
+    unsigned int oldLightInstanceCount;
+    Ref ppOldLightInstancesRef;
+    Ref cdcRenderLightInstancesRef;
+    int numLightInstances;
+    Ref lightInstanceRefsRef;
+    int numIntros;
+    Ref introsRef;
+    unsigned int markerCount;
+    Ref markersRef;
+    unsigned int markupCount;
+    Ref markup2RefsRef;
+    unsigned int measureCount;
+    Ref measureRefsRef;
+    Ref measureListRef;
+    unsigned int jumpHelperCount;
+    Ref jumpHelperRefsRef;
+    Ref jumpHelperListRef;
+    unsigned int streamSignalCount;
+    Ref streamSignalListRef;
+    unsigned int terrainGroupCount;
+    Ref terrainGroupsRef;
+    unsigned int sfxMarkerCount;
+    Ref sfxMarkerRefsRef;
+    Ref sfxMarkersRef;
+    unsigned int sampleMeshCount;
+    Ref sampleMeshesRef;
+    unsigned int waypointSetCount;
+    Ref waypointSetsRef;
+    unsigned int fxPointSetCount;
+    Ref fxPointSetsRef;
+    unsigned int numPlannerObstacles;
+    Ref plannerObstacleListRef;
+    unsigned int numPlannerVolumes;
+    Ref plannerVolumeListRef;
+    unsigned int numSpatialVolumes;
+    Ref spatialVolumeListRef;
+    unsigned int cameraSplineCount;
+    Ref cameraSplinesRef;
+    unsigned int waterCurrentSplineCount;
+    Ref waterCurrentSplinesRef;
+    unsigned int cellCount;
+    Ref cellsRef;
+    unsigned int portalCount;
+    Ref portalsRef;
+    IMFRefList imfRefs;
+    unsigned int captureToolMarkerCount;
+    Ref captureToolMarkersRef;
+    unsigned int editableTypeExampleCount;
+    Ref editableTypeExampleListRef;
+    unsigned int cameraBookmarkCount;
+    ushort streamLayerTerrainGroupsCount;
+    FSkip(2);
+    Ref streamLayerTerrainGroupsRef;
+    unsigned int spawnPointCount;
+    Ref spawnPointsRef;
+    unsigned int coverPointCount;
+    Ref coverPointsRef;
+    unsigned int gatherPointCount;
+    Ref gatherPointsRef;
+    unsigned int chokePointCount;
+    Ref chokePointsRef;
+    unsigned int cosmeticHelperCount;
+    Ref cosmeticHelpersRef;
+    unsigned int numCameraAnchors;
+    Ref cameraAnchorListRef;
+    unsigned int numCameraTargets;
+    Ref cameraTargetListRef;
+    unsigned int numFollowSplines;
+    Ref followSplineListRef;
+    unsigned int numFocusPoints;
+    Ref focusPointListRef;
+    unsigned int numOrbitMagnets;
+    Ref orbitMagnetListRef;
+    unsigned int numUnderWaterRays;
+    Ref underwaterRayListRef;
+} ADMD <optimize=false>;
+
+RefDefinitions refDefinitions;
+ADMD root <open=true>;

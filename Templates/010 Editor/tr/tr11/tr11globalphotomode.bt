@@ -1,0 +1,1787 @@
+#define TR_VERSION 11
+//#define TR_REVEAL_REFS
+#include "../trcommon.bt"
+
+typedef struct
+{
+    Ref gameLogoLabelRef;
+    if (CanSeekTo(gameLogoLabelRef))
+    {
+        SeekToRef(gameLogoLabelRef);
+        string gameLogoLabel;
+        ReturnFromRef();
+    }
+    Ref defaultBorderLabelRef;
+    if (CanSeekTo(defaultBorderLabelRef))
+    {
+        SeekToRef(defaultBorderLabelRef);
+        string defaultBorderLabel;
+        ReturnFromRef();
+    }
+    float logoMinScaleRatio;
+    float logoMaxScaleRatio;
+    float textMinScaleRatio;
+    float textMaxScaleRatio;
+    float overlayMinScaleRatio;
+    float overlayMaxScaleRatio;
+} PhotoModeGeneralSettings <optimize=false>;
+
+typedef struct
+{
+    int optionSettingOptionDisplay;
+    FSkip(4);
+    uquad optionSettingName <format=hex>;
+    int field_10;
+    int optionSettingWidgetType;
+    int optionSliderNumStep;
+    FSkip(4);
+} PhotoModeOptionInfo <optimize=false>;
+
+typedef struct
+{
+    byte isVisible;
+    byte disabledIfBlockedCamera;
+    FSkip(6);
+    uquad name <format=hex>;
+    Ref labelRef;
+    if (CanSeekTo(labelRef))
+    {
+        SeekToRef(labelRef);
+        string label;
+        ReturnFromRef();
+    }
+    byte ignoreResetToDefaultCommand;
+    FSkip(7);
+    Ref optionListItemRef;
+    unsigned int optionListItemCount;
+    if (CanSeekTo(optionListItemRef))
+    {
+        SeekToRef(optionListItemRef);
+        PhotoModeOptionInfo optionListItem[optionListItemCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+} PhotoModeOptionPage <optimize=false, read=label>;
+
+typedef struct
+{
+    Ref labelRef;
+    if (CanSeekTo(labelRef))
+    {
+        SeekToRef(labelRef);
+        string label;
+        ReturnFromRef();
+    }
+} PhotoModeBorderData <optimize=false>;
+
+typedef struct
+{
+    uquad name <format=hex>;
+} PhotoModeAnchorData <optimize=false>;
+
+typedef struct
+{
+    uquad name <format=hex>;
+    Ref labelRef;
+    if (CanSeekTo(labelRef))
+    {
+        SeekToRef(labelRef);
+        string label;
+        ReturnFromRef();
+    }
+} PhotoModeTextInputData <optimize=false, read=label>;
+
+typedef struct
+{
+    Ref labelRef;
+    if (CanSeekTo(labelRef))
+    {
+        SeekToRef(labelRef);
+        string label;
+        ReturnFromRef();
+    }
+    uquad name <format=hex>;
+} PhotoModeDecorationData <optimize=false, read=label>;
+
+typedef struct
+{
+    uquad name <format=hex>;
+    Ref labelRef;
+    if (CanSeekTo(labelRef))
+    {
+        SeekToRef(labelRef);
+        string label;
+        ReturnFromRef();
+    }
+    byte resetOtherLayerEffects;
+    byte displayLogo;
+    FSkip(6);
+} PhotoModeNationalGeographicSettings <optimize=false, read=label>;
+
+typedef struct
+{
+    uquad name <format=hex>;
+    Ref labelRef;
+    if (CanSeekTo(labelRef))
+    {
+        SeekToRef(labelRef);
+        string label;
+        ReturnFromRef();
+    }
+} PhotoModeUnknownItem;
+
+typedef struct
+{
+    PhotoModeGeneralSettings generalSettings;
+    Ref optionPagesRef;
+    unsigned int numOptionsPages;
+    if (CanSeekTo(optionPagesRef))
+    {
+        SeekToRef(optionPagesRef);
+        PhotoModeOptionPage optionPages[numOptionsPages];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref bordersRef;
+    unsigned int numBorders;
+    if (CanSeekTo(bordersRef))
+    {
+        SeekToRef(bordersRef);
+        PhotoModeBorderData borders[numBorders];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref anchorsRef;
+    unsigned int numAnchors;
+    if (CanSeekTo(anchorsRef))
+    {
+        SeekToRef(anchorsRef);
+        PhotoModeAnchorData anchors[numAnchors];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref textInputsRef;
+    unsigned int numTextInputs;
+    if (CanSeekTo(textInputsRef))
+    {
+        SeekToRef(textInputsRef);
+        PhotoModeTextInputData textInputs[numTextInputs];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref decorationsRef;
+    unsigned int numDecorations;
+    if (CanSeekTo(decorationsRef))
+    {
+        SeekToRef(decorationsRef);
+        PhotoModeDecorationData decorations[numDecorations];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref decorationsRef2;
+    unsigned int numDecorations2;
+    if (CanSeekTo(decorationsRef2))
+    {
+        SeekToRef(decorationsRef2);
+        PhotoModeTextInputData decorations2[numDecorations2];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref nationalGeographicSettingsRef;
+    unsigned int numNationalGeographicSettings;
+    if (CanSeekTo(nationalGeographicSettingsRef))
+    {
+        SeekToRef(nationalGeographicSettingsRef);
+        PhotoModeNationalGeographicSettings nationalGeographicSettings[numNationalGeographicSettings];
+        ReturnFromRef();
+    }
+    FSkip(4);
+} PhotoModeUIData <optimize=false>;
+
+typedef struct
+{
+    unsigned int targetSegmentID;
+    byte blurEnabled;
+    FSkip(3);
+    float focusDistance;
+    float nearBlurStrength;
+    float nearBlendDistance;
+    float nearFocusRange;
+    float farBlurStrength;
+    float farBlendDistance;
+    float farFocusRange;
+    byte enableBokeh;
+    byte hexagonalBokeh;
+    byte useLensParameters;
+    FSkip(1);
+    float lensFocusDistance;
+    float lensFStop;
+} DepthOfFieldData <optimize=false>;
+
+typedef struct
+{
+    float distanceMin;
+    float distanceMax;
+    float intensityMin;
+    float intensityMax;
+} PhotoModeDepthOfField__DepthOfFieldOptionValues <optimize=false>;
+
+typedef struct
+{
+    DepthOfFieldData params;
+    PhotoModeDepthOfField__DepthOfFieldOptionValues optionValues;
+} PhotoModeDepthOfField <optimize=false>;
+
+typedef struct
+{
+    float brightness;
+    float brightnessMin;
+    float brightnessMax;
+    float saturation;
+    float saturationMin;
+    float saturationMax;
+} PhotoModePictureSettings <optimize=false>;
+
+typedef struct
+{
+    int gradingMethod;
+    FSkip(4);
+    Ref lutTextureRef;
+} ColorGradingData <optimize=false>;
+
+typedef struct
+{
+    ColorGradingData colorGrading;
+    FSkip(8);
+    Ref nameRef;
+    if (CanSeekTo(nameRef))
+    {
+        SeekToRef(nameRef);
+        string name;
+        ReturnFromRef();
+    }
+} PhotoModeFilter <optimize=false, read=name>;
+
+typedef struct
+{
+    Ref filtersRef;
+    unsigned int numFilters;
+    if (CanSeekTo(filtersRef))
+    {
+        SeekToRef(filtersRef);
+        PhotoModeFilter filters[numFilters];
+        ReturnFromRef();
+    }
+    FSkip(4);
+} PhotoModeFilterList <optimize=false>;
+
+typedef struct
+{
+    PhotoModeDepthOfField depthOfField;
+    PhotoModePictureSettings pictureSettings;
+    FSkip(0x10);
+    PhotoModeFilterList filterList;
+} PhotoModeGraphicsData <optimize=false>;
+
+typedef struct
+{
+    float dolly;
+    float truck[3];
+    float pitch;
+    float pitchOffset;
+    float yaw;
+    float yawOffset;
+    float roll;
+    float zoom;
+} SimpleCamController__InitialValues <optimize=false>;
+
+typedef struct
+{
+    float dollyCoeff;
+    float dollyMax;
+    float dollyMin;
+    float truckHorizCoeff;
+    float truckHorizMax;
+    float truckHorizMin;
+    float truckVertCoeff;
+    float truckVertMax;
+    float truckVertMin;
+    float pitchCoeff;
+    float pitchMax;
+    float pitchMin;
+    float yawCoeff;
+    float zoomCoeff;
+    float zoomMax;
+    float zoomMin;
+} SimpleCamController__InputAdjustmentValues <optimize=false>;
+
+typedef struct
+{
+    byte enableDolly;
+    byte enableHorizTruck;
+    byte enableVertTruck;
+    byte enablePitch;
+    byte enableYaw;
+    byte enableZoom;
+} SimpleCamController__InputEnableValues <optimize=false>;
+
+typedef struct
+{
+    byte enable;
+    FSkip(3);
+    float radius;
+    float probeOffset;
+    int lowSegment;
+    int medSegment;
+    int highSegment;
+} SimpleCamController__CameraCollision <optimize=false>;
+
+typedef struct
+{
+    byte invertYaw;
+    byte invertPitch;
+} SimpleCamController__InvertInputValues <optimize=false>;
+
+typedef struct
+{
+    byte enable;
+    FSkip(3);
+    float maxDist;
+    float maxSpeed;
+} SimpleCamController__CombatLockOn <optimize=false>;
+
+typedef struct
+{
+    int segment;
+    SimpleCamController__InitialValues initializers;
+    SimpleCamController__InputAdjustmentValues inputCoefficients;
+    SimpleCamController__InputEnableValues enableInputs;
+    SimpleCamController__CameraCollision collision;
+    SimpleCamController__InvertInputValues invertControls;
+    SimpleCamController__CombatLockOn combatLockOn;
+} SimpleCamController <optimize=false>;
+
+typedef struct
+{
+    float truck[3];
+    float dolly;
+    float dollyYaw;
+    float dollyPitch;
+    float yaw;
+    float pitch;
+    float minFOV;
+    float maxFOV;
+    float horizontalFOVInterpStart;
+    float horizontalFOVInterpEnd;
+    float verticalFOVInterpStart;
+    float verticalFOVInterpEnd;
+    float maxHorizontalPlayerSeparation;
+    float maxVerticalPlayerSeparation;
+    float focusDampeningControl;
+    float attractionWeight;
+    float attractionMaxLength;
+    float offsetDampeningControl;
+} IsoCamController__InitialValues <optimize=false>;
+
+typedef struct
+{
+    int segment;
+    float fOVLimit;
+    IsoCamController__InitialValues initializers;
+} IsoCamController <optimize=false>;
+
+typedef struct
+{
+    float focusPos[3];
+    float truck[3];
+    float dolly;
+    float dollyYaw;
+    float dollyPitch;
+    float yaw;
+    float pitch;
+    float fov;
+    float horizontalFOVInterpStart;
+    float horizontalFOVInterpEnd;
+    float verticalFOVInterpStart;
+    float verticalFOVInterpEnd;
+    float maxHorizontalPlayerSeparation;
+    float maxVerticalPlayerSeparation;
+    float focusDampeningControl;
+} MapViewCamController__MapViewValues <optimize=false>;
+
+typedef struct
+{
+    MapViewCamController__MapViewValues mapViewValues;
+} MapViewCamController <optimize=false>;
+
+typedef struct
+{
+} FreeCamController <optimize=false>;
+
+typedef struct
+{
+    float dolly;
+    float truck[3];
+    float pitch;
+    float yaw;
+    float roll;
+    float zoom;
+} ModelviewCamController__InitialValues <optimize=false>;
+
+typedef struct
+{
+    float dollyCoeff;
+    float truckHorizCoeff;
+    float truckVertCoeff;
+    float pitchCoeff;
+    float yawCoeff;
+    float zoomCoeff;
+} ModelviewCamController__InputAdjustmentValues <optimize=false>;
+
+typedef struct
+{
+    byte invertYaw;
+    byte invertPitch;
+} ModelviewCamController__InvertInputValues <optimize=false>;
+
+typedef struct
+{
+    int segment;
+    ModelviewCamController__InitialValues initializers;
+    ModelviewCamController__InputAdjustmentValues inputCoefficients;
+    ModelviewCamController__InvertInputValues invertControls;
+} ModelviewCamController <optimize=false>;
+
+typedef struct
+{
+    float dolly;
+    float truck[2];
+    float pitch;
+    float yaw;
+    float roll;
+    float zoom;
+    float focalLength;
+    float targetPosDampFreq;
+    float targetPosDampRatio;
+    byte useInitialPos;
+    byte useInitialRot;
+    byte useWorldRelative;
+    byte trackSelf;
+    byte useInitialCamPos;
+    byte useCumulativeRot;
+} AnchoredCamController__InitialValues <optimize=false>;
+
+typedef struct
+{
+    float dollyCoeff;
+    float dollyMax;
+    float dollyMin;
+    float truckHorizCoeff;
+    float truckHorizMax;
+    float truckHorizMin;
+    float truckVertCoeff;
+    float truckVertMax;
+    float truckVertMin;
+    float pitchCoeff;
+    float pitchMax;
+    float pitchMin;
+    float yawCoeff;
+    byte limitYaw;
+    byte limitTilt;
+    FSkip(2);
+    float yawMin;
+    float yawMax;
+    float zoomCoeff;
+    float zoomMax;
+    float zoomMin;
+} AnchoredCamController__InputAdjustmentValues <optimize=false>;
+
+typedef struct
+{
+    byte enableDolly;
+    byte enableHorizTruck;
+    byte enableVertTruck;
+    byte enablePitch;
+    byte enableYaw;
+    byte enableZoom;
+} AnchoredCamController__InputEnableValues <optimize=false>;
+
+typedef struct
+{
+    byte invertYaw;
+    byte invertPitch;
+} AnchoredCamController__InvertInputValues <optimize=false>;
+
+typedef struct
+{
+    byte enabled;
+    byte useSpring;
+    FSkip(2);
+    float delay;
+    float time;
+    int easeType;
+    float maxVel;
+    float damp;
+    float freq;
+    float mass;
+} AnchoredCamController__ReturnToCenter <optimize=false>;
+
+typedef struct
+{
+    int settingType;
+    float filmApertureX;
+    float filmApertureY;
+} CameraViewAngleSetting <optimize=false>;
+
+typedef struct
+{
+    int segment;
+    AnchoredCamController__InitialValues initializers;
+    FSkip(2);
+    AnchoredCamController__InputAdjustmentValues inputCoefficients;
+    AnchoredCamController__InputEnableValues enableInputs;
+    AnchoredCamController__InvertInputValues invertControls;
+    AnchoredCamController__ReturnToCenter returnToCenter;
+    CameraViewAngleSetting viewAngleSetting;
+} AnchoredCamController <optimize=false>;
+
+typedef struct
+{
+    float max;
+    float min;
+    float inputCoeff;
+    float restitution;
+    byte enableInput;
+    byte invertInput;
+    byte useRelLimits;
+} InputConfig <optimize=false>;
+
+typedef struct
+{
+    float leftLimit;
+    float rightLimit;
+    float ratio;
+} SplineCamController__LateralOffset <optimize=false>;
+
+typedef struct
+{
+    byte enabled;
+    byte useSpring;
+    FSkip(2);
+    float delay;
+    float time;
+    int easeType;
+    float maxVel;
+    float damp;
+    float freq;
+    float mass;
+} ReturnToCenter <optimize=false>;
+
+typedef struct
+{
+    InputConfig panConfig;
+    FSkip(1);
+    InputConfig tiltConfig;
+    FSkip(1);
+    CameraViewAngleSetting viewAngleSetting;
+    float focusOffset[3];
+    float dolly;
+    float pan;
+    float tilt;
+    float roll;
+    float zoom;
+    float focalLength;
+    float orientationInterpRate;
+    int segmentID;
+    float rodDist;
+    float dampening;
+    float frequency;
+    float mass;
+    byte enableFollowPosdampening;
+    FSkip(3);
+    float collisionRadius;
+    byte lookAtPlayer;
+    byte useLateralDistance;
+    FSkip(2);
+    SplineCamController__LateralOffset lateralOffset;
+    byte useScootBack;
+    FSkip(3);
+    float scootBackDist;
+    float scootBackTime;
+    float scootBackWaitTime;
+    ReturnToCenter returnToCenter;
+} SplineCamController <optimize=false>;
+
+typedef struct
+{
+    float dolly;
+    float truck[3];
+    float pitch;
+    float pitchOffset;
+    float yaw;
+    float yawOffset;
+    float roll;
+    float zoom;
+} HmdCamController__InitialValues <optimize=false>;
+
+typedef struct
+{
+    float dollyCoeff;
+    float dollyMax;
+    float dollyMin;
+    float truckHorizCoeff;
+    float truckHorizMax;
+    float truckHorizMin;
+    float truckVertCoeff;
+    float truckVertMax;
+    float truckVertMin;
+    float pitchCoeff;
+    float pitchMax;
+    float pitchMin;
+    float yawCoeff;
+    float zoomCoeff;
+    float zoomMax;
+    float zoomMin;
+} HmdCamController__InputAdjustmentValues <optimize=false>;
+
+typedef struct
+{
+    byte enableDolly;
+    byte enableHorizTruck;
+    byte enableVertTruck;
+    byte enablePitch;
+    byte enableYaw;
+    byte enableZoom;
+} HmdCamController__InputEnableValues <optimize=false>;
+
+typedef struct
+{
+    byte enable;
+    FSkip(3);
+    float radius;
+    float probeOffset;
+    int lowSegment;
+    int medSegment;
+    int highSegment;
+} HmdCamController__CameraCollision <optimize=false>;
+
+typedef struct
+{
+    byte invertYaw;
+    byte invertPitch;
+} HmdCamController__InvertInputValues <optimize=false>;
+
+typedef struct
+{
+    byte enable;
+    FSkip(3);
+    float maxDist;
+    float maxSpeed;
+} HmdCamController__CombatLockOn <optimize=false>;
+
+typedef struct
+{
+    int segment;
+    HmdCamController__InitialValues initializers;
+    HmdCamController__InputAdjustmentValues inputCoefficients;
+    HmdCamController__InputEnableValues enableInputs;
+    HmdCamController__CameraCollision collision;
+    HmdCamController__InvertInputValues invertControls;
+    HmdCamController__CombatLockOn combatLockOn;
+} HmdCamController <optimize=false>;
+
+typedef struct
+{
+} ForceCamController <optimize=false>;
+
+typedef union
+{
+    short byUserDefinedIndex;
+    ushort byBoneIndex;
+    short byBoneID;
+    ushort byMarkerIndex;
+    ushort byMarkerID;
+} ModelBoneOrMarkerReference__ModelBoneOrMarkerRefData;
+
+typedef struct
+{
+    ubyte refType;
+    FSkip(1);
+    ModelBoneOrMarkerReference__ModelBoneOrMarkerRefData refData;
+} ModelBoneOrMarkerReference <optimize=false>;
+
+typedef struct
+{
+    ModelBoneOrMarkerReference segment;
+    float zoom;
+    byte useZoomFromCameraJointScale;
+    FSkip(3);
+    float axis[3];
+    float angle;
+    byte doCutDetection;
+    FSkip(3);
+    float cutAngleThreshold;
+    float cutDistThreshold;
+    byte enableInputModifiers;
+    FSkip(3);
+    InputConfig tiltConfig;
+    ReturnToCenter returnToCenter;
+} CameraBoneCamController <optimize=false>;
+
+typedef struct
+{
+    float pitch;
+    float dolly;
+    float truck[3];
+    float tilt;
+    float pan;
+    float roll;
+    float zoom;
+    float focalLength;
+} ExplorationCamController__ValueSet <optimize=false>;
+
+typedef struct
+{
+    float dolly;
+    float truck[3];
+    float zoom;
+    float focalLength;
+} ExplorationCamController__ModifiedCrouchValueSet <optimize=false>;
+
+typedef struct
+{
+    float dolly;
+    float truck[3];
+    float roll;
+} ExplorationCamController__ModifiedTreePitonValueSet <optimize=false>;
+
+typedef struct
+{
+    float defaultPitch;
+    float defaultYaw;
+    byte defaultToBestCoverTarget;
+    FSkip(3);
+    ExplorationCamController__ValueSet high;
+    ExplorationCamController__ValueSet mid;
+    ExplorationCamController__ValueSet low;
+    byte useCrouch3ptModifiers;
+    FSkip(3);
+    float crouch3ptModifierInterpTimeIn;
+    float crouch3ptModifierInterpTimeOut;
+    ExplorationCamController__ModifiedCrouchValueSet crouchHigh;
+    ExplorationCamController__ModifiedCrouchValueSet crouchMid;
+    ExplorationCamController__ModifiedCrouchValueSet crouchLow;
+    ExplorationCamController__ModifiedCrouchValueSet camouflageCrouchHigh;
+    ExplorationCamController__ModifiedCrouchValueSet camouflageCrouchMid;
+    ExplorationCamController__ModifiedCrouchValueSet camouflageCrouchLow;
+    ExplorationCamController__ModifiedCrouchValueSet concealedCrouchHigh;
+    ExplorationCamController__ModifiedCrouchValueSet concealedCrouchMid;
+    ExplorationCamController__ModifiedCrouchValueSet concealedCrouchLow;
+    byte useTreePiton3ptModifiers;
+    FSkip(3);
+    ExplorationCamController__ModifiedTreePitonValueSet treePitonHigh;
+    ExplorationCamController__ModifiedTreePitonValueSet treePitonMid;
+    ExplorationCamController__ModifiedTreePitonValueSet treePitonLow;
+    ubyte treePiton3PtModWeightCurve[16];
+    byte useStandingConcealment3ptModifiers;
+    FSkip(3);
+    ExplorationCamController__ModifiedTreePitonValueSet standingConcealmentHigh;
+    ExplorationCamController__ModifiedTreePitonValueSet standingConcealmentMid;
+    ExplorationCamController__ModifiedTreePitonValueSet standingConcealmentLow;
+    ubyte standingConcealment3PtModWeightCurve[16];
+    float standCovTruckOffset;
+    float standCovYawToBeginOffset;
+    float standCovYawToMaxOffset;
+    float standCovTruckOffsetDampFreq;
+    float standCovTruckOffsetDampRatio;
+    ubyte blendCurve_3ptInterpHighToMid[8];
+    ubyte blendCurve_3ptInterpMidToLow[8];
+} ExplorationCamController__InitialValues <optimize=false>;
+
+typedef struct
+{
+    byte enable;
+    byte enableAvoidance;
+    FSkip(2);
+    float minSpeed;
+    float minDistance;
+    float forTolerance;
+    float bakTolerance;
+    float maxVelocity;
+    float velocityScalar;
+    float sideVelocityScalar;
+    byte enableFollowYaw3DTracking;
+    FSkip(3);
+    float delayBeforeFollow;
+    float inMaxVelocity;
+    float inDampening;
+    float outMaxVelocity;
+    float outDampening;
+    float maxVelAngle;
+    byte pitchEnable;
+    byte dontPitchUpInAir;
+    byte followAvoidRisingWater;
+    FSkip(1);
+    float pitchMaxVelocity;
+    float pitchVelScalar;
+    byte usePitchSpecificMinSpeed;
+    FSkip(3);
+    float pitchSpecificMinSpeed;
+    byte useYawSpecificMinSpeed;
+    FSkip(3);
+    float yawSpecificMinSpeed;
+} ExplorationCamController__FollowCamValues <optimize=false>;
+
+typedef struct
+{
+    float pitch;
+    float yaw;
+    float dolly;
+    float dollyStick;
+    float truck[2];
+    float tilt;
+    float pan;
+    float roll;
+    float zoom;
+    float focalLength;
+} ExplorationCamController__InputMultipliers <optimize=false>;
+
+typedef struct
+{
+    float pitch;
+    float yaw;
+    float dolly;
+    float truck[3];
+    float tilt;
+    float pan;
+    float roll;
+    float zoom;
+    float focalLength;
+} ExplorationCamController__MinimumValues <optimize=false>;
+
+typedef struct
+{
+    float pitch;
+    float yaw;
+    float dolly;
+    float truck[3];
+    float tilt;
+    float pan;
+    float roll;
+    float zoom;
+    float focalLength;
+} ExplorationCamController__MaximumValues <optimize=false>;
+
+typedef struct
+{
+    byte doAltMaxPitchInLowCeiling;
+    FSkip(3);
+    float maxPitchInLowCeiling;
+    float lowCeilingPitchDampInFreq;
+    float lowCeilingPitchDampInRatio;
+    float lowCeilingPitchDampOutFreq;
+    float lowCeilingPitchDampOutRatio;
+    int lowCeilingProbeInstanceSegment;
+    byte lowCeilingProbeUseInstanceSegmentOffset;
+    FSkip(3);
+    float lowCeilingProbeInstanceSegmentOffset[3];
+    short lowCeilingProbeInstanceSegmentOffsetOrientation;
+    FSkip(2);
+    float lowCeilingProbeVector[3];
+    byte lowCeilingProbeDebugDraw;
+} ExplorationCamController__AltMaxPitchInLowCeilingParams <optimize=false>;
+
+typedef struct
+{
+    byte doCameraSwitchAtLimits;
+    FSkip(3);
+    float triggerTime;
+    float triggerMinInputStick;
+    float triggerRangePitchMin;
+    float triggerRangePitchMax;
+    float transitionAngVelMin;
+    float transitionAngVelMax;
+    float transitionVelMin;
+    float transitionVelMax;
+    unsigned int cameraComponentID;
+} ExplorationCamController__CameraSwitchAtLimitsParams <optimize=false>;
+
+typedef struct
+{
+    ExplorationCamController__InputMultipliers modifiers;
+    ExplorationCamController__MinimumValues minValues;
+    ExplorationCamController__MaximumValues maxValues;
+    ubyte blendWeightDampening[16];
+    ubyte nearYawLimitDampening[16];
+    unsigned int pitchStickResponseIndex;
+    float pitchDampening;
+    float pitchStickDiagScale;
+    unsigned int yawStickResponseIndex;
+    float yawDampening;
+    float yawStickDiagScale;
+    byte yawLimitsDisable;
+    byte yawRelativeToFacing;
+    byte yawLimitOnlyOnSync;
+    ExplorationCamController__AltMaxPitchInLowCeilingParams lowCeilingParams;
+    ExplorationCamController__CameraSwitchAtLimitsParams cameraSwitchAtLimitsParams;
+} ExplorationCamController__InputAdjustmentValues <optimize=false>;
+
+typedef struct
+{
+    byte enableDolly : 1;
+    byte enableHorizTruck : 1;
+    byte enableVertTruck : 1;
+    byte enablePitch : 1;
+    byte enableYaw : 1;
+    byte enableZoom : 1;
+    byte _Bitfieldpadding0 : 2;
+    FSkip(3);
+    unsigned int actionDollyForward;
+    unsigned int actionDollyBack;
+    unsigned int actionDollyStick;
+    unsigned int actionHorizTruck;
+    unsigned int actionVertTruck;
+    unsigned int actionPitch;
+    unsigned int actionYaw;
+    unsigned int actionZoomIn;
+    unsigned int actionZoomOut;
+} ExplorationCamController__InputEnableValues <optimize=false>;
+
+typedef struct
+{
+    byte enable;
+    byte disableFocusCollision;
+    byte enableWaterVolumeCollision;
+    byte enableCollisionPrediction;
+    byte enableKeepLowestDollyWhenInputAfterCollision;
+    FSkip(3);
+    float radius;
+    float probeOffset;
+    float probeOffsetFromCamPos;
+    short lowSegment;
+    short medSegment;
+    short highSegment;
+    byte enableSegmentAvoidanceZOffset;
+    FSkip(1);
+    short aboveHeadSeg;
+    short aboveHeadSegmentOffset;
+    short aboveHeadCloseCollideStart;
+    short aboveHeadCloseCollideMax;
+    byte doHandHearHeadCheck;
+    FSkip(1);
+    short handNearHeadSeg;
+    short handNearHeadSegmentOffset;
+    short handNearHeadCloseCollideStart;
+    short handNearHeadCloseCollideMax;
+    byte doBowNearHeadCheck;
+    FSkip(1);
+    short bowNearHeadSeg;
+    short bowNearHeadSegmentOffset;
+    short bowNearHeadCloseCollideStart;
+    short bowNearHeadCloseCollideMax;
+    float orbitMaxVelocity;
+    float orbitDampeningControlOut;
+    float orbitDampeningControlIn;
+    float orbitDampeningControlInFast;
+    byte useDollyOutSettings;
+    FSkip(3);
+    float dollyOutSettingsBlendOutDuration;
+    float dollyOutMaxVelocity;
+    float dollyOutDampeningControl;
+} ExplorationCamController__CameraCollision <optimize=false>;
+
+typedef struct
+{
+    byte invertYaw;
+    byte invertPitch;
+} ExplorationCamController__InvertInputValues <optimize=false>;
+
+typedef struct
+{
+    byte enable;
+    FSkip(3);
+    float tolerance;
+    float time;
+} ExplorationCamController__TankCamValues <optimize=false>;
+
+typedef struct
+{
+    float minSpeed;
+    float minDistance;
+    float maxVelocity;
+    float inMaxVelocity;
+    float inDampening;
+    float outMaxVelocity;
+    float outDampening;
+} ExplorationCamController__ClimbFollowCamParameters <optimize=false>;
+
+typedef struct
+{
+    byte enable;
+    byte usePlayerPitchRelativeTargetPitch;
+    FSkip(2);
+    float moveUpTargetPitch;
+    ExplorationCamController__ClimbFollowCamParameters moveUpParams;
+    float moveDownTargetPitch;
+    ExplorationCamController__ClimbFollowCamParameters moveDownParams;
+    float moveLRTargetYaw;
+    ExplorationCamController__ClimbFollowCamParameters moveLRParams;
+    byte moveLREnabled;
+} ExplorationCamController__ClimbFollowCamValues <optimize=false>;
+
+typedef struct
+{
+    int segment;
+    byte useInstanceSegmentOffset;
+    FSkip(3);
+    float segmentOffset[3];
+    short segmentOffsetOrientationType;
+    byte overrideFollowCameraInstanceSegment;
+    FSkip(1);
+    int followCameraInstanceSegmentOverride;
+    ExplorationCamController__InitialValues initVals;
+    ExplorationCamController__FollowCamValues followCam;
+    ExplorationCamController__InputAdjustmentValues limits;
+    ExplorationCamController__InputEnableValues enableInputs;
+    ExplorationCamController__CameraCollision collision;
+    ExplorationCamController__InvertInputValues invertControls;
+    FSkip(2);
+    CameraViewAngleSetting viewAngleSetting;
+    ExplorationCamController__TankCamValues tankCam;
+    ExplorationCamController__ClimbFollowCamValues climbFollowCam;
+    byte doFocusDampening;
+    FSkip(2);
+    float xYDampFreq;
+    float xYDampRatio;
+    float zDampFreq;
+    float zDampRatio;
+    int zLowPassDelay;
+    int zLowPassCycle;
+    byte useFocusAlternativeXYDampening;
+    FSkip(3);
+    float altXYDampeningMaxVelocity;
+    float altXYDampeningControl;
+    byte bYawFromFacing;
+    FSkip(3);
+    float fYawFromFacingInterp;
+} ExplorationCamController <optimize=false>;
+
+typedef struct
+{
+    ushort trait;
+    FSkip(2);
+    int not;
+} PlayerTraitListIndexComparison <optimize=false>;
+
+typedef struct
+{
+    Ref traitsRequiredRef;
+    unsigned int traitsRequiredCount;
+    if (CanSeekTo(traitsRequiredRef))
+    {
+        SeekToRef(traitsRequiredRef);
+        PlayerTraitListIndexComparison traitsRequired[traitsRequiredCount];
+        ReturnFromRef();
+    }
+    float zoomMultiplier;
+} AimCamController__InitialValues__ZoomMultiplier <optimize=false>;
+
+typedef struct
+{
+    float pitchDefault;
+    float yawDefault;
+    float pitchMid;
+    float dollyMid;
+    float truckMid[3];
+    float tiltMid;
+    float panMid;
+    float rollMid;
+    float zoomMid;
+    float focalLengthMid;
+    float pitchLow;
+    float dollyLow;
+    float truckLow[3];
+    float tiltLow;
+    float panLow;
+    float rollLow;
+    float zoomLow;
+    float focalLengthLow;
+    float pitchHigh;
+    float dollyHigh;
+    float truckHigh[3];
+    float tiltHigh;
+    float panHigh;
+    float rollHigh;
+    float zoomHigh;
+    float focalLengthHigh;
+    Ref zoomMultipliersRef;
+    unsigned int zoomMultipliersCount;
+    if (CanSeekTo(zoomMultipliersRef))
+    {
+        SeekToRef(zoomMultipliersRef);
+        AimCamController__InitialValues__ZoomMultiplier zoomMultipliers[zoomMultipliersCount];
+        ReturnFromRef();
+    }
+    ubyte blendCurve_3ptInterpHighToMid[8];
+    ubyte blendCurve_3ptInterpMidToLow[8];
+} AimCamController__InitialValues <optimize=false>;
+
+typedef struct
+{
+    byte enable;
+    FSkip(3);
+    float yawToleranceAngle;
+    float pitchToleranceAngle;
+    float minInputRate;
+} AimCamController__InputMovementTolerance <optimize=false>;
+
+typedef struct
+{
+    float dollyCoeff;
+    float dollyMax;
+    float dollyMin;
+    float truckHorizCoeff;
+    float truckHorizMax;
+    float truckHorizMin;
+    float truckVertCoeff;
+    float truckVertMax;
+    float truckVertMin;
+    float pitchBaseSpeed;
+    float pitchMaxSpeed;
+    float pitchTimeToMaxSpeed;
+    float pitchInputCircleToSquareScale;
+    float pitchMax;
+    float pitchMin;
+    float yawBaseSpeed;
+    float yawMaxSpeed;
+    float yawTimeToMaxSpeed;
+    float yawInputCircleToSquareScale;
+    byte limitYaw;
+    FSkip(3);
+    float yawMax;
+    float yawMin;
+    byte yawRelativeToFacing;
+    FSkip(3);
+    float zoomCoeff;
+    float zoomMax;
+    float zoomMin;
+    ubyte yawInputCurve[32];
+    ubyte yawAccCurve[32];
+    ubyte yawMaxAccCurve[32];
+    ubyte pitchInputCurve[32];
+    ubyte pitchAccCurve[32];
+    ubyte pitchMaxAccCurve[32];
+    ubyte pitchNearLimitInputDampening[16];
+    ubyte yawNearLimitInputDampening[16];
+    float stickOffYawDampeningFreq;
+    float stickOffYawDampeningRatio;
+    float stickOffPitchDampeningFreq;
+    float stickOffPitchDampeningRatio;
+    int inputDataType;
+} AimCamController__InputAdjustmentValues <optimize=false>;
+
+typedef struct
+{
+    float minRange;
+    float maxRange;
+    float lateralMovementModifier;
+    float inputMovementModifier;
+    ubyte centerednessAccelerationCurve[32];
+    float timer;
+} AimCamController__AimAssistValues <optimize=false>;
+
+typedef struct
+{
+    byte enableDolly;
+    byte enableHorizTruck;
+    byte enableVertTruck;
+    byte enablePitch;
+    byte enableYaw;
+    byte enableZoom;
+} AimCamController__InputEnableValues <optimize=false>;
+
+typedef struct
+{
+    byte enable;
+    FSkip(3);
+    float radius;
+    float probeOffset;
+    int lowSegment;
+    int medSegment;
+    int highSegment;
+    float collideDollyInMaxSpeed;
+    float collideDollyInDampening;
+    float collideDollyOutMaxSpeed;
+    float collideDollyOutDampening;
+    byte bUseTruckCollideScales;
+    FSkip(3);
+    float truckCollideScales[3];
+} AimCamController__CameraCollision <optimize=false>;
+
+typedef struct
+{
+    byte invertYaw;
+    byte invertPitch;
+} AimCamController__InvertInputValues <optimize=false>;
+
+typedef struct
+{
+    byte enable;
+    FSkip(3);
+    float maxDist;
+    float maxSpeed;
+} AimCamController__CombatLockOn <optimize=false>;
+
+typedef struct
+{
+    byte useBaseRotations;
+    FSkip(3);
+    float baseYaw;
+    float basePitch;
+    float baseRoll;
+} AimCamController__BaseRotation <optimize=false>;
+
+typedef struct
+{
+    unsigned int defaultModeInputAdjustIndex;
+    unsigned int frictionModeInputAdjustIndex;
+    unsigned int highGearModeInputAdjustIndex;
+    ubyte blendCurveInputAdjust[16];
+} AimCamController__InputAdjustmentBlending <optimize=false>;
+
+typedef struct
+{
+    int segment;
+    AimCamController__InitialValues initializers;
+    AimCamController__InputMovementTolerance inputMovementTolerance;
+    AimCamController__InputAdjustmentValues inputCoefficients;
+    AimCamController__AimAssistValues assistModifiers;
+    AimCamController__InputEnableValues enableInputs;
+    AimCamController__CameraCollision collision;
+    AimCamController__InvertInputValues invertControls;
+    AimCamController__CombatLockOn combatLockOn;
+    CameraViewAngleSetting viewAngleSetting;
+    AimCamController__BaseRotation baseRotations;
+    byte enableFade;
+    FSkip(3);
+    AimCamController__InputAdjustmentBlending inputAdjustBlending;
+    unsigned int inputAdjustMemberListCount;
+    FSkip(4);
+    Ref inputAdjustMemberListRef;
+    if (CanSeekTo(inputAdjustMemberListRef))
+    {
+        SeekToRef(inputAdjustMemberListRef);
+        AimCamController__InputAdjustmentValues inputAdjustMemberList[inputAdjustMemberListCount];
+        ReturnFromRef();
+    }
+} AimCamController <optimize=false>;
+
+typedef struct
+{
+    float pitch;
+    float dolly;
+    float truck[3];
+    float tilt;
+    float pan;
+    float roll;
+    float zoom;
+} StealthCamController__ValueSet <optimize=false>;
+
+typedef struct
+{
+    float defaultPitch;
+    float defaultYaw;
+    float keepAimThreshold;
+    StealthCamController__ValueSet high;
+    StealthCamController__ValueSet mid;
+    StealthCamController__ValueSet low;
+    ubyte blendCurve_3ptInterpHighToMid[8];
+    ubyte blendCurve_3ptInterpMidToLow[8];
+} StealthCamController__InitialValues <optimize=false>;
+
+typedef struct
+{
+    byte enable;
+    byte enableAvoidance;
+    FSkip(2);
+    float minSpeed;
+    float minDistance;
+    float forTolerance;
+    float bakTolerance;
+    float maxVelocity;
+    float velocityScalar;
+    float delayBeforeFollow;
+    float inMaxVelocity;
+    float inDampening;
+    float outMaxVelocity;
+    float outDampening;
+    float maxVelAngle;
+    byte pitchEnable;
+    byte dontPitchUpInAir;
+    FSkip(2);
+    float pitchMaxVelocity;
+    float pitchVelScalar;
+    byte usePitchSpecificMinSpeed;
+    FSkip(3);
+    float pitchSpecificMinSpeed;
+    byte useYawSpecificMinSpeed;
+    FSkip(3);
+    float yawSpecificMinSpeed;
+} StealthCamController__FollowCamValues <optimize=false>;
+
+typedef struct
+{
+    float pitch;
+    float yaw;
+    float dolly;
+    float truck[2];
+    float tilt;
+    float pan;
+    float roll;
+    float zoom;
+} StealthCamController__InputMultipliers <optimize=false>;
+
+typedef struct
+{
+    float pitch;
+    float yaw;
+    float dolly;
+    float truck[3];
+    float tilt;
+    float pan;
+    float roll;
+    float zoom;
+} StealthCamController__MinimumValues <optimize=false>;
+
+typedef struct
+{
+    float pitch;
+    float yaw;
+    float dolly;
+    float truck[3];
+    float tilt;
+    float pan;
+    float roll;
+    float zoom;
+} StealthCamController__MaximumValues <optimize=false>;
+
+typedef struct
+{
+    StealthCamController__InputMultipliers modifiers;
+    StealthCamController__MinimumValues minValues;
+    StealthCamController__MaximumValues maxValues;
+    ubyte blendWeightDampening[16];
+    ubyte nearYawLimitDampening[16];
+    byte yawLimitsDisable;
+    byte yawRelativeToFacing;
+    byte yawLimitOnlyOnSync;
+} StealthCamController__InputAdjustmentValues <optimize=false>;
+
+typedef struct
+{
+    float minRange;
+    float maxRange;
+    float lateralMovementModifier;
+    float inputMovementModifier;
+    ubyte centerednessAccelerationCurve[32];
+    float timer;
+} StealthCamController__AimAssistValues <optimize=false>;
+
+typedef struct
+{
+    byte enableDolly : 1;
+    byte enableHorizTruck : 1;
+    byte enableVertTruck : 1;
+    byte enablePitch : 1;
+    byte enableYaw : 1;
+    byte enableZoom : 1;
+    byte pcUiMouseLook : 1;
+    byte _Bitfieldpadding0 : 1;
+    FSkip(3);
+    unsigned int actionDollyForward;
+    unsigned int actionDollyBack;
+    unsigned int actionHorizTruck;
+    unsigned int actionVertTruck;
+    unsigned int actionPitch;
+    unsigned int actionYaw;
+    unsigned int actionZoomIn;
+    unsigned int actionZoomOut;
+} StealthCamController__InputEnableValues <optimize=false>;
+
+typedef struct
+{
+    byte enable;
+    byte disableFocusCollision;
+    FSkip(2);
+    float radius;
+    float probeOffset;
+    int lowSegment;
+    int medSegment;
+    int highSegment;
+    int aboveHeadSeg;
+    int aboveHeadSegmentOffset;
+    int closeCollisionStart;
+    int closeCollisionMax;
+} StealthCamController__CameraCollision <optimize=false>;
+
+typedef struct
+{
+    byte invertYaw;
+    byte invertPitch;
+} StealthCamController__InvertInputValues <optimize=false>;
+
+typedef struct
+{
+    byte enable;
+    FSkip(3);
+    float maxDist;
+    float maxSpeed;
+} StealthCamController__CombatLockOn <optimize=false>;
+
+typedef struct
+{
+    byte enable;
+    FSkip(3);
+    float tolerance;
+    float idealYawOffset;
+    float idealTruckOffset;
+    float time;
+    byte allowPlayerControl;
+} StealthCamController__MeleeCamValues <optimize=false>;
+
+typedef struct
+{
+    byte enable;
+    FSkip(3);
+    float tolerance;
+    float time;
+} StealthCamController__TankCamValues <optimize=false>;
+
+typedef struct
+{
+    float minSpeed;
+    float minDistance;
+    float maxVelocity;
+    float inMaxVelocity;
+    float inDampening;
+    float outMaxVelocity;
+    float outDampening;
+} StealthCamController__ClimbFollowCamParameters <optimize=false>;
+
+typedef struct
+{
+    byte enable;
+    FSkip(3);
+    float moveUpTargetPitch;
+    StealthCamController__ClimbFollowCamParameters moveUpParams;
+    float moveDownTargetPitch;
+    StealthCamController__ClimbFollowCamParameters moveDownParams;
+    float moveLRTargetYaw;
+    StealthCamController__ClimbFollowCamParameters moveLRParams;
+} StealthCamController__ClimbFollowCamValues <optimize=false>;
+
+typedef struct
+{
+    float yawBaseSpeed;
+    float yawMaxSpeed;
+    float yawTimeToMaxSpeed;
+    ubyte yawInputCurve[32];
+    ubyte yawAccCurve[32];
+    float yawInputCircleToSquareScale;
+    float pitchBaseSpeed;
+    float pitchMaxSpeed;
+    float pitchTimeToMaxSpeed;
+    ubyte pitchInputCurve[32];
+    ubyte pitchAccCurve[32];
+    float pitchInputCircleToSquareScale;
+    float stickOffYawDampeningFreq;
+    float stickOffYawDampeningRatio;
+    float stickOffPitchDampeningFreq;
+    float stickOffPitchDampeningRatio;
+} StealthCamController__AccelerationAdjustmentValues <optimize=false>;
+
+typedef struct
+{
+    ushort segmentObjectID;
+    short segment;
+    float segmentOffset[3];
+    StealthCamController__InitialValues initializers;
+    StealthCamController__FollowCamValues followCam;
+    StealthCamController__InputAdjustmentValues limits;
+    FSkip(1);
+    StealthCamController__AimAssistValues assistModifiers;
+    StealthCamController__InputEnableValues enableInputs;
+    StealthCamController__CameraCollision collision;
+    StealthCamController__InvertInputValues invertControls;
+    StealthCamController__CombatLockOn combatLockOn;
+    StealthCamController__MeleeCamValues meleeCam;
+    StealthCamController__TankCamValues tankCam;
+    StealthCamController__ClimbFollowCamValues climbFollowCam;
+    byte enableFocusSmoothing : 1;
+    byte _Bitfieldpadding15 : 7;
+    float xYDampFreq;
+    float xYDampRatio;
+    float zDampFreq;
+    float zDampRatio;
+    int zLowPassDelay;
+    int zLowPassCycle;
+    StealthCamController__AccelerationAdjustmentValues inputAccelerationMods;
+} StealthCamController <optimize=false>;
+
+typedef struct
+{
+    float yawSpeed;
+    float pitchSpeed;
+    float pitchMin;
+    float pitchMax;
+    float rollSpeed;
+    float rollMin;
+    float rollMax;
+    float dollySpeed;
+    float dollyMin;
+    float dollyMax;
+    float truckSpeed;
+    float truckMin;
+    float truckMax;
+    float craneSpeed;
+    float craneMin;
+    float craneMax;
+    float zoomSpeed;
+    float zoomMin;
+    float zoomMax;
+    byte zoomLimit;
+} PhotoModeCamController__InputAdjustmentValues <optimize=false>;
+
+typedef struct
+{
+    byte enableDolly;
+    byte enableTruck;
+    byte enableCrane;
+    byte enablePitch;
+    byte enableRoll;
+    byte enableYaw;
+    byte enableZoom;
+} PhotoModeCamController__InputEnableValues <optimize=false>;
+
+typedef struct
+{
+    byte enable;
+    FSkip(3);
+    float radius;
+    int lowSegment;
+    int medSegment;
+    int highSegment;
+} PhotoModeCamController__CameraCollision <optimize=false>;
+
+typedef struct
+{
+    int segment;
+    PhotoModeCamController__InputAdjustmentValues inputAdjustments;
+    PhotoModeCamController__InputEnableValues enableInputs;
+    PhotoModeCamController__CameraCollision collision;
+    byte enableFade;
+} PhotoModeCamController <optimize=false>;
+
+typedef union
+{
+    SimpleCamController simpleCamController;
+    IsoCamController isoCamController;
+    MapViewCamController mapViewCamController;
+    FreeCamController freeCamController;
+    ModelviewCamController modelviewCamController;
+    AnchoredCamController anchoredCamController;
+    SplineCamController splineCamController;
+    HmdCamController hmdCamController;
+    ForceCamController forceCamController;
+    CameraBoneCamController cameraBoneCamController;
+    ExplorationCamController explorationCamController;
+    AimCamController aimCamController;
+    StealthCamController stealthCamController;
+    PhotoModeCamController photoModeCamController;
+} CameraControllerData;
+
+typedef struct
+{
+    byte collideWithCloth;
+    FSkip(3);
+    float firstRadiusForCloth;
+    float secondRadiusForCloth;
+    float distanceToPlayerRatioForCloth;
+    byte collideWithVegetation;
+    FSkip(3);
+    float firstRadiusForTrees;
+    float secondRadiusForTrees;
+    float distanceToPlayerRatioForTrees;
+    float heightOverCamera;
+    float forceImpactRatio;
+    byte collideWithObjects;
+    FSkip(3);
+    float radiusForObjects;
+    float distanceToPlayerRatioForObjects;
+} CameraCollisionPhysics <optimize=false>;
+
+typedef struct
+{
+    byte bStartActive;
+    byte bIgnorePlayerOverrides;
+    byte bDelayCreateTilActivated;
+    FSkip(1);
+    float dilationPercent;
+    int screenID;
+    int inputControllerID;
+    int inputControllerSource;
+    byte bInputStartsEnabled;
+    FSkip(3);
+    int cameraType;
+    unsigned int categoryHash;
+    CameraControllerData cameraData;
+    CameraCollisionPhysics collisionPhysics;
+} Camera <optimize=false>;
+
+typedef struct
+{
+    Camera cameraController;
+} CameraComponent <optimize=false>;
+
+typedef struct
+{
+    int setting;
+    CameraComponent component;
+} PhotoModeCamera <optimize=false>;
+
+typedef struct
+{
+    Ref camerasRef;
+    unsigned int numCameras;
+    if (CanSeekTo(camerasRef))
+    {
+        SeekToRef(camerasRef);
+        PhotoModeCamera cameras[numCameras];
+        ReturnFromRef();
+    }
+} PhotoModeCameraList <optimize=false>;
+
+typedef struct
+{
+    int segmentID;
+    float offset[3];
+    float direction[3];
+} PhotoModeCameraSafeShotSettings <optimize=false>;
+
+typedef struct
+{
+    PhotoModeCameraList cameraSettings;
+    PhotoModeCameraSafeShotSettings safeShotSettings;
+} PhotoModeCameraData <optimize=false>;
+
+typedef struct
+{
+    uquad name <format=hex>;
+    Ref labelRef;
+    if (CanSeekTo(labelRef))
+    {
+        SeekToRef(labelRef);
+        string label;
+        ReturnFromRef();
+    }
+} PhotoModeFacePose <optimize=false, read=label>;
+
+typedef struct
+{
+    Ref posesRef;
+    unsigned int numPoses;
+    if (CanSeekTo(posesRef))
+    {
+        SeekToRef(posesRef);
+        PhotoModeFacePose facePoses[numPoses];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref poseLibNameRef;
+    if (CanSeekTo(poseLibNameRef))
+    {
+        SeekToRef(poseLibNameRef);
+        string poseLibName;
+        ReturnFromRef();
+    }
+} PhotoModeFacePoseLib <optimize=false, read=poseLibName>;
+
+typedef struct
+{
+    uquad name <format=hex>;
+    Ref labelRef;
+    if (CanSeekTo(labelRef))
+    {
+        SeekToRef(labelRef);
+        string label;
+        ReturnFromRef();
+    }
+    uquad field_10;
+} PhotoModeBodyPose <optimize=false, read=label>;
+
+typedef struct
+{
+    Ref posesRef;
+    unsigned int numPoses;
+    if (CanSeekTo(posesRef))
+    {
+        SeekToRef(posesRef);
+        PhotoModeBodyPose facePoses[numPoses];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref poseLibNameRef;
+    if (CanSeekTo(poseLibNameRef))
+    {
+        SeekToRef(poseLibNameRef);
+        string poseLibName;
+        ReturnFromRef();
+    }
+} PhotoModeBodyPoseLib <optimize=false, read=poseLibName>;
+
+typedef struct
+{
+    PhotoModeFacePoseLib facePoses;
+    PhotoModeBodyPoseLib bodyPoses;
+    Ref relaxationPhotoModeRef;
+    if (CanSeekTo(relaxationPhotoModeRef))
+    {
+        SeekToRef(relaxationPhotoModeRef);
+        string relaxationPhotoMode;
+        ReturnFromRef();
+    }
+    int llamaZoneId;
+    FSkip(4);
+    Ref photoModeHashtagRef;
+    if (CanSeekTo(photoModeHashtagRef))
+    {
+        SeekToRef(photoModeHashtagRef);
+        string photoModeHashtag;
+        ReturnFromRef();
+    }
+    Ref photoContestHashtagRef;
+    if (CanSeekTo(photoContestHashtagRef))
+    {
+        SeekToRef(photoContestHashtagRef);
+        string photoContestHashtag;
+        ReturnFromRef();
+    }
+} PhotoModePoses;
+
+typedef struct
+{
+    PhotoModeUIData uiData;
+    PhotoModeGraphicsData graphicsData;
+    //PhotoModeCameraData cameraData;
+    FSkip(0x150-0x110);
+    PhotoModePoses poses;
+} GlobalPhotoMode <optimize=false>;
+
+RefDefinitions refDefinitions;
+Ref rootRef;
+if (CanSeekTo(rootRef))
+{
+    SeekToRef(rootRef);
+    GlobalPhotoMode root <open=true>;
+    ReturnFromRef();
+}

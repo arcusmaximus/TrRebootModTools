@@ -1,0 +1,64 @@
+#define TR_VERSION 9
+#include "../trcommon.bt"
+
+typedef struct
+{
+    char tolevelname[128];
+    short toSignalID;
+    short mSignalID;
+    short streamID;
+    short streamIndex;
+    float activeDistance;
+    Ref toStreamUnitRef;
+    Vector4 min;
+    Vector4 max;
+    Vector4 quad_[4];
+    Vector4 normal;
+} StreamUnitPortal <read=tolevelname, optimize=false>;
+
+typedef struct
+{
+    Ref terrainRef;
+    float waterZLevel;
+    Ref worldNameRef;
+    if (CanSeekTo(worldNameRef))
+    {
+        SeekToRef(worldNameRef);
+        string worldName;
+        ReturnFromRef();
+    }
+    Ref signalIDListRef;
+    if (CanSeekTo(signalIDListRef))
+    {
+        SeekToRef(signalIDListRef);
+        local int numSignals = 0;
+        while (ReadShort(FTell() + numSignals * 2) != 0)
+        {
+            numSignals++;
+        }
+        short signalIDList[numSignals];
+        ReturnFromRef();
+    }
+    unsigned int versionNumber <format=hex>;
+    unsigned int guiID <format=hex>;
+    int streamUnitID;
+    Ref weatherHeightmapDataRef;
+    Ref cdcPlannerDataRef;
+    Ref volumetricPlannerDataRef;
+    Ref soundSpatialDataRef;
+    Ref unitDataRef;
+    Ref admdDataRef;
+    FSkip(0xC);
+    Vector4 sceneCenterOffset;
+    Ref sceneDataRef;
+} Level <optimize=false>;
+
+RefDefinitions refDefinitions;
+Level level <open=true>;
+
+FSeek(startof(level.signalIDList) + sizeof(level.signalIDList));
+FSeek(gResourceBodyPos + (((FTell() - gResourceBodyPos) + 0xF) & ~0xF));
+while (FTell() < FileSize())
+{
+    StreamUnitPortal portal;
+}

@@ -1,0 +1,756 @@
+#define TR_VERSION 11
+#include "../trcommon.bt"
+
+typedef struct
+{
+    int sessionType;
+    int collectibleGroup;
+    ushort collectibleGroupIndex;
+    ushort collectibleItemIndex;
+    unsigned int collectibleId <format=hex>;
+} ChooseSet <optimize=false>;
+
+typedef struct
+{
+    unsigned int minimumGlobalProgressLevel;
+    ChooseSet defaultSet;
+} SetOverride <optimize=false>;
+
+typedef struct
+{
+    int sessionType;
+    int collectibleGroup;
+    ushort collectibleGroupIndex;
+    ushort collectibleItemIndex;
+    unsigned int collectibleId <format=hex>;
+} ChoosePiece <optimize=false>;
+
+typedef struct
+{
+    unsigned int imageRes;
+    FSkip(4);
+    Ref filepathRef;
+    if (CanSeekTo(filepathRef))
+    {
+        SeekToRef(filepathRef);
+        string filepath;
+        ReturnFromRef();
+    }
+    int offSetX;
+    int offSetY;
+    int width;
+    int height;
+    Ref actionRef;
+    if (CanSeekTo(actionRef))
+    {
+        SeekToRef(actionRef);
+        string action;
+        ReturnFromRef();
+    }
+    unsigned int imageResVR;
+    FSkip(4);
+    Ref filepathVRRef;
+    if (CanSeekTo(filepathVRRef))
+    {
+        SeekToRef(filepathVRRef);
+        string filepathVR;
+        ReturnFromRef();
+    }
+    int offSetXVR;
+    int offSetYVR;
+    int widthVR;
+    int heightVR;
+} ImagePath <optimize=false>;
+
+typedef struct
+{
+    unsigned int regionId;
+    unsigned int unit;
+    PlacementPath placementID;
+    float coordinateX;
+    float coordinateY;
+    float instanceZ;
+    FSkip(4);
+    Ref mapMarkerIconRef;
+    if (CanSeekTo(mapMarkerIconRef))
+    {
+        SeekToRef(mapMarkerIconRef);
+        string mapMarkerIcon;
+        ReturnFromRef();
+    }
+} MarkerData <optimize=false>;
+
+typedef struct
+{
+    unsigned int campsiteID <format=hex>;
+    unsigned int campsiteUnit;
+    PlacementPath campsitePlacementID;
+    PlacementPath campsiteCheckpointPlacementPath;
+    ushort fastTravelTargetUnit;
+    FSkip(2);
+    int fastTravelTargetPlacementID;
+    Ref outfitLocksRef;
+    unsigned int outfitLocksCount;
+    if (CanSeekTo(outfitLocksRef))
+    {
+        SeekToRef(outfitLocksRef);
+        ushort outfitLocks[outfitLocksCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref defaultSetsForFastTravelRef;
+    unsigned int numDefaultSetsForFastTravel;
+    if (CanSeekTo(defaultSetsForFastTravelRef))
+    {
+        SeekToRef(defaultSetsForFastTravelRef);
+        SetOverride defaultSetsForFastTravel[numDefaultSetsForFastTravel];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref defaultPiecesRef;
+    unsigned int numDefaultPieces;
+    if (CanSeekTo(defaultPiecesRef))
+    {
+        SeekToRef(defaultPiecesRef);
+        ChoosePiece defaultPieces[numDefaultPieces];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    uquad name <format=hex>;
+    uquad description <format=hex>;
+    Ref latitudeCoordinateRef;
+    if (CanSeekTo(latitudeCoordinateRef))
+    {
+        SeekToRef(latitudeCoordinateRef);
+        string latitudeCoordinate;
+        ReturnFromRef();
+    }
+    Ref longitudeCoordinateRef;
+    if (CanSeekTo(longitudeCoordinateRef))
+    {
+        SeekToRef(longitudeCoordinateRef);
+        string longitudeCoordinate;
+        ReturnFromRef();
+    }
+    int discoveryXP;
+    FSkip(4);
+    ImagePath imagePath;
+    float coordinateX;
+    float coordinateY;
+    float instanceZ;
+    int initState;
+    byte isTomb;
+    FSkip(7);
+    MarkerData tombEntranceMarkerData;
+    int dlcType;
+    byte isFastTravelCamp;
+    byte devOnly;
+    FSkip(2);
+    unsigned int dlcRef <format=hex>;
+    int progressionIndex;
+    int elevation;
+    FSkip(4);
+} Campsite <optimize=false>;
+
+typedef struct
+{
+    unsigned int unitMapHashedString;
+    int uiUnitID;
+    int progressionOrder;
+    ushort markerUnit;
+    FSkip(2);
+    PlacementPath northWestMarkerObject;
+    PlacementPath southEastMarkerObject;
+    byte showByDefault;
+    byte devOnly;
+    FSkip(6);
+    ImagePath mapImagePath;
+    ImagePath mapFoWImagePath;
+    unsigned int primaryRegion <format=hex>;
+    unsigned int numSecondaryRegions;
+    FSkip(4);
+    Ref secondaryRegionListRef;
+    if (CanSeekTo(secondaryRegionListRef))
+    {
+        SeekToRef(secondaryRegionListRef);
+        unsigned int secondaryRegionList[numSecondaryRegions] <format=hex>;
+        ReturnFromRef();
+    }
+    Ref debugNameRef;
+    if (CanSeekTo(debugNameRef))
+    {
+        SeekToRef(debugNameRef);
+        string debugName;
+        ReturnFromRef();
+    }
+    Ref visibleStoriesRef;
+    unsigned int numVisibleStories;
+    if (CanSeekTo(visibleStoriesRef))
+    {
+        SeekToRef(visibleStoriesRef);
+        unsigned int visibleStories[numVisibleStories];
+        ReturnFromRef();
+    }
+} MapData <optimize=false, read=mapImagePath.filepath>;
+
+typedef struct
+{
+    unsigned int hash;
+    FSkip(4);
+    Ref _stringRef;
+    if (CanSeekTo(_stringRef))
+    {
+        SeekToRef(_stringRef);
+        string _string;
+        ReturnFromRef();
+    }
+} CorpseGroupID <optimize=false>;
+
+typedef struct
+{
+    ushort disabled : 1;
+    ushort forSquads : 1;
+    ushort bDebugDraw : 1;
+    ushort bSearchLocation : 1;
+    ushort bIsCorpse : 1;
+    short _Bitfieldpadding1 : 11;
+    FSkip(2);
+    float gatherPointRadius;
+    float minGatherDuration;
+    float maxGatherDuration;
+    float minDistanceToNextGatherPoint;
+    float minTimeBetweenGathersHere;
+    char teamID;
+    FSkip(3);
+    int groupID;
+    int dietGroup;
+} GatherPoint <optimize=false>;
+
+typedef struct
+{
+    CorpseGroupID corpseGroupID;
+    float timeFactor;
+    float distanceFactor;
+    float unseenScorePerSecond;
+    float maxUnseenPenalty;
+    float eatenScore;
+    float lootScore;
+    float minScoreForRemoval;
+    int startRemovingQuantity;
+    int forceRemovalQuantity;
+    float frameRateLow;
+    float frameRateAverageTime;
+    int memoryLow;
+    int startRemovingQuantityLow;
+    int forceRemovalQuantityLow;
+    float minTimeBeforeRemoval;
+    GatherPoint gatherPoint;
+} CorpseGroup <optimize=false, read=corpseGroupID._string>;
+
+typedef struct
+{
+    uquad levelName;
+    int xp;
+    int skillPointsToAward;
+} PlayerExperienceLevelItem <optimize=false>;
+
+typedef struct
+{
+    unsigned int numLevels;
+    FSkip(4);
+    Ref levelsListRef;
+    if (CanSeekTo(levelsListRef))
+    {
+        SeekToRef(levelsListRef);
+        PlayerExperienceLevelItem levelsList[numLevels];
+        ReturnFromRef();
+    }
+    int maxPrestige;
+} PlayerExperienceTable <optimize=false>;
+
+typedef struct
+{
+    ushort trait;
+    FSkip(2);
+    int not;
+} PlayerTraitListIndexComparison <optimize=false>;
+
+typedef struct
+{
+    float xpMultiplier;
+    FSkip(4);
+    Ref traitRef;
+    if (CanSeekTo(traitRef))
+    {
+        SeekToRef(traitRef);
+        PlayerTraitListIndexComparison trait;
+        ReturnFromRef();
+    }
+} ExperienceMultiplierByTrait <optimize=false>;
+
+typedef struct
+{
+    int xpBonus;
+    int maxBonusCount;
+    unsigned int numTraitMultipliers;
+    FSkip(4);
+    Ref traitMultiplierListRef;
+    if (CanSeekTo(traitMultiplierListRef))
+    {
+        SeekToRef(traitMultiplierListRef);
+        ExperienceMultiplierByTrait traitMultiplierList[numTraitMultipliers];
+        ReturnFromRef();
+    }
+} PlayerExperienceChainType <optimize=false>;
+
+typedef struct
+{
+    PlayerExperienceChainType headshotChaining;
+    PlayerExperienceChainType stealthKillChaining;
+    PlayerExperienceChainType finisherChaining;
+} PlayerExperienceChainData <optimize=false>;
+
+typedef struct
+{
+    int xp;
+    ushort trait;
+} ExperienceByTrait <optimize=false>;
+
+typedef struct
+{
+    ushort uWeaponID;
+    FSkip(2);
+    unsigned int uWeaponLoadoutIdx;
+    int quantity;
+} WeaponDefItem <optimize=false>;
+
+typedef struct
+{
+    int inventoryType;
+    unsigned int weaponDefListCount;
+    Ref weaponDefListRef;
+    if (CanSeekTo(weaponDefListRef))
+    {
+        SeekToRef(weaponDefListRef);
+        WeaponDefItem weaponDefList[weaponDefListCount];
+        ReturnFromRef();
+    }
+} InventoryTypeData <optimize=false>;
+
+typedef struct
+{
+    unsigned int inventoryDefListCount;
+    FSkip(4);
+    Ref inventoryDefListRef;
+    if (CanSeekTo(inventoryDefListRef))
+    {
+        SeekToRef(inventoryDefListRef);
+        InventoryTypeData inventoryDefList[inventoryDefListCount];
+        ReturnFromRef();
+    }
+} WeaponLoadoutData <optimize=false>;
+
+typedef struct
+{
+    ushort objectID;
+    FSkip(2);
+    WeaponLoadoutData weaponLevels;
+} GameFlow__CharacterLoadoutData <optimize=false>;
+
+typedef struct
+{
+    int type;
+    FSkip(4);
+    PlayerExperienceTable xpTable;
+    FSkip(4);
+    PlayerExperienceChainData xpChainBonuses;
+    Ref xpChallengeCountBonusListRef;
+    unsigned int xpChallengeCountBonusListCount;
+    if (CanSeekTo(xpChallengeCountBonusListRef))
+    {
+        SeekToRef(xpChallengeCountBonusListRef);
+        ExperienceByTrait xpChallengeCountBonusList[xpChallengeCountBonusListCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref xpChallengeCompletionBonusListRef;
+    unsigned int xpChallengeCompletionBonusListCount;
+    if (CanSeekTo(xpChallengeCompletionBonusListRef))
+    {
+        SeekToRef(xpChallengeCompletionBonusListRef);
+        ExperienceByTrait xpChallengeCompletionBonusList[xpChallengeCompletionBonusListCount];
+        ReturnFromRef();
+    }
+    ushort ruleIndex;
+    byte bUseLevelLoadout;
+    byte bAllowFriendlyFire;
+    byte bShowReticleForFriendlyFire;
+    FSkip(3);
+    unsigned int numCharacterLoadouts;
+    Ref characterLoadoutListRef;
+    if (CanSeekTo(characterLoadoutListRef))
+    {
+        SeekToRef(characterLoadoutListRef);
+        GameFlow__CharacterLoadoutData characterLoadoutList[numCharacterLoadouts];
+        ReturnFromRef();
+    }
+} GameFlow__GameMode <optimize=false>;
+
+typedef struct
+{
+    unsigned int ammoType;
+    int quantity;
+    int opportunities;
+} RegionalBrokenWeapon <optimize=false>;
+
+typedef struct
+{
+    unsigned int objectiveId;
+    unsigned int subObjectiveId;
+} ScriptObjective <optimize=false>;
+
+typedef struct
+{
+    int regionState;
+    int fastTravelState;
+    int progressionOverrideIndex;
+    int timeOfDay;
+    int maxSalvageFromHunting;
+    int maxSalvageFromEnemies;
+    int maxXPFromHunting;
+    int allowBrokenWeaponsUpTo;
+} RegionState <optimize=false>;
+
+typedef struct
+{
+    unsigned int regionID <format=hex>;
+    FSkip(4);
+    Ref regionDebugNameRef;
+    if (CanSeekTo(regionDebugNameRef))
+    {
+        SeekToRef(regionDebugNameRef);
+        string regionDebugName;
+        ReturnFromRef();
+    }
+    int regionProgressionIndex;
+    FSkip(4);
+    uquad regionLocalName <format=hex>;
+    uquad regionOverrideName <format=hex>;
+    byte isRetraversable;
+    byte countsTowardPercentComplete;
+    FSkip(2);
+    int regionHitTestIndex;
+    byte hideOnMap;
+    byte allowStateDowngrades;
+    byte isAChallengeTomb;
+    byte isAMainPathChallengeTomb;
+    byte isDLC;
+    FSkip(3);
+    unsigned int dlcHash <format=hex>;
+    float coordinateX;
+    float coordinateY;
+    int uiUnitID;
+    ImagePath imagePath;
+    int smallSalvageAmount;
+    int mediumSalvageAmount;
+    int largeSalvageAmount;
+    int regionWeather;
+    Ref brokenWeaponsRef;
+    unsigned int brokenWeaponCount;
+    if (CanSeekTo(brokenWeaponsRef))
+    {
+        SeekToRef(brokenWeaponsRef);
+        RegionalBrokenWeapon brokenWeapons[brokenWeaponCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref challengeTombsRef;
+    unsigned int challengeTombCount;
+    if (CanSeekTo(challengeTombsRef))
+    {
+        SeekToRef(challengeTombsRef);
+        unsigned int challengeTombs[challengeTombCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref campsitesRef;
+    unsigned int campsiteCount;
+    if (CanSeekTo(campsitesRef))
+    {
+        SeekToRef(campsitesRef);
+        unsigned int campsites[campsiteCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref challengesRef;
+    unsigned int challengeCount;
+    if (CanSeekTo(challengesRef))
+    {
+        SeekToRef(challengesRef);
+        ScriptObjective challenges[challengeCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref missionsRef;
+    unsigned int missionCount;
+    if (CanSeekTo(missionsRef))
+    {
+        SeekToRef(missionsRef);
+        ScriptObjective missions[missionCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref regionStatesRef;
+    unsigned int regionStateCount;
+    if (CanSeekTo(regionStatesRef))
+    {
+        SeekToRef(regionStatesRef);
+        RegionState regionStates[regionStateCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+} RegionData <optimize=false>;
+
+typedef struct
+{
+    Ref nameRef;
+    if (CanSeekTo(nameRef))
+    {
+        SeekToRef(nameRef);
+        string name;
+        ReturnFromRef();
+    }
+    int priority;
+    byte setTimeOfDay;
+    ubyte timeOfDay;
+    byte setWeather;
+    byte fogActive;
+    int fogDesiredLevel;
+    byte fogShouldTransition;
+    FSkip(3);
+    float fogIntensity;
+    float fogTransitionTime;
+    byte precipitationActive;
+    FSkip(3);
+    int precipitationDesiredLevel;
+    byte precipitationShouldTransition;
+    FSkip(3);
+    float precipitationIntensity;
+    float precipitationTransitionTime;
+} GameFlow__GlobalProgressItem <optimize=false>;
+
+typedef struct
+{
+    float chance;
+    byte active;
+    FSkip(3);
+    int precipitationDesiredLevel;
+    float intensity;
+} RegionWeather__RandomPrecipitation <optimize=false>;
+
+typedef struct
+{
+    int timeOfDay;
+    unsigned int numPrecipitation;
+    Ref precipitationRef;
+    if (CanSeekTo(precipitationRef))
+    {
+        SeekToRef(precipitationRef);
+        RegionWeather__RandomPrecipitation precipitation[numPrecipitation];
+        ReturnFromRef();
+    }
+    unsigned int numFog;
+    FSkip(4);
+    Ref fogRef;
+    if (CanSeekTo(fogRef))
+    {
+        SeekToRef(fogRef);
+        RegionWeather__RandomPrecipitation fog[numFog];
+        ReturnFromRef();
+    }
+} RegionWeather <optimize=false>;
+
+typedef struct
+{
+    Ref regionWeatherListRef;
+    unsigned int regionWeatherListCount;
+    if (CanSeekTo(regionWeatherListRef))
+    {
+        SeekToRef(regionWeatherListRef);
+        RegionWeather regionWeatherList[regionWeatherListCount];
+        ReturnFromRef();
+    }
+} RegionWeatherTODList <optimize=false>;
+
+typedef struct
+{
+    unsigned int ammoType;
+    ushort count;
+} AmmoRequirementListItem <optimize=false>;
+
+typedef union
+{
+    ushort inventory;
+    ushort trait;
+    AmmoRequirementListItem ammo;
+    ushort experience;
+} LootItemInfo;
+
+typedef struct
+{
+    int itemType;
+    LootItemInfo itemInfo;
+} ScheduledLootItem <optimize=false>;
+
+typedef struct
+{
+    Ref lootItemsRef;
+    unsigned int numLootItems;
+    if (CanSeekTo(lootItemsRef))
+    {
+        SeekToRef(lootItemsRef);
+        ScheduledLootItem lootItems[numLootItems];
+        ReturnFromRef();
+    }
+} ScheduledLootList <optimize=false>;
+
+typedef struct
+{
+    int actionToPerformOnFinish;
+    FSkip(4);
+    Ref lootListsRef;
+    unsigned int numLootLists;
+    if (CanSeekTo(lootListsRef))
+    {
+        SeekToRef(lootListsRef);
+        ScheduledLootList lootLists[numLootLists];
+        ReturnFromRef();
+    }
+} ScheduledLoot <optimize=false>;
+
+typedef struct
+{
+    unsigned int globalProgressIndex;
+    FSkip(4);
+    Ref inventoryRef;
+    if (CanSeekTo(inventoryRef))
+    {
+        SeekToRef(inventoryRef);
+        byte inventory;
+        ReturnFromRef();
+    }
+    Ref playerStateRef;
+    if (CanSeekTo(playerStateRef))
+    {
+        SeekToRef(playerStateRef);
+        byte playerState;
+        ReturnFromRef();
+    }
+} GameFlow__InitialPlayerData <optimize=false>;
+
+typedef struct
+{
+    Ref nameRef;
+    if (CanSeekTo(nameRef))
+    {
+        SeekToRef(nameRef);
+        string name;
+        ReturnFromRef();
+    }
+    unsigned int numInitialPlayerData;
+    GameFlow__InitialPlayerData initialPlayerDataList[1];
+} GameFlow__InitialPlayerDataTemplate <optimize=false>;
+
+typedef struct
+{
+    unsigned int numCampsites;
+    FSkip(4);
+    Ref campsitesListRef;
+    if (CanSeekTo(campsitesListRef))
+    {
+        SeekToRef(campsitesListRef);
+        Campsite campsitesList[numCampsites];
+        ReturnFromRef();
+    }
+    unsigned int numUnitMaps;
+    FSkip(4);
+    Ref unitMapsRef;
+    if (CanSeekTo(unitMapsRef))
+    {
+        SeekToRef(unitMapsRef);
+        MapData unitMaps[numUnitMaps];
+        ReturnFromRef();
+    }
+    unsigned int numCorpseGroups;
+    FSkip(4);
+    Ref corpseGroupListRef;
+    if (CanSeekTo(corpseGroupListRef))
+    {
+        SeekToRef(corpseGroupListRef);
+        CorpseGroup corpseGroupList[numCorpseGroups];
+        ReturnFromRef();
+    }
+    unsigned int numGameModes;
+    FSkip(4);
+    Ref gameModesListRef;
+    if (CanSeekTo(gameModesListRef))
+    {
+        SeekToRef(gameModesListRef);
+        GameFlow__GameMode gameModesList[numGameModes];
+        ReturnFromRef();
+    }
+    unsigned int numRegions;
+    FSkip(4);
+    Ref regionListRef;
+    if (CanSeekTo(regionListRef))
+    {
+        SeekToRef(regionListRef);
+        RegionData regionList[numRegions];
+        ReturnFromRef();
+    }
+    unsigned int numGlobalProgress;
+    FSkip(4);
+    Ref globalProgressRef;
+    if (CanSeekTo(globalProgressRef))
+    {
+        SeekToRef(globalProgressRef);
+        GameFlow__GlobalProgressItem globalProgress[numGlobalProgress];
+        ReturnFromRef();
+    }
+    unsigned int numRegionWeather;
+    FSkip(4);
+    Ref regionWeatherRef;
+    if (CanSeekTo(regionWeatherRef))
+    {
+        SeekToRef(regionWeatherRef);
+        RegionWeatherTODList regionWeather[numRegionWeather];
+        ReturnFromRef();
+    }
+    unsigned int numScheduledLootItems;
+    FSkip(4);
+    Ref scheduledLootListRef;
+    if (CanSeekTo(scheduledLootListRef))
+    {
+        SeekToRef(scheduledLootListRef);
+        ScheduledLoot scheduledLootList;
+        ReturnFromRef();
+    }
+    unsigned int numInitialPlayerDataTemplates;
+    FSkip(4);
+    Ref initialPlayerDataTemplateListRef;
+    if (CanSeekTo(initialPlayerDataTemplateListRef))
+    {
+        SeekToRef(initialPlayerDataTemplateListRef);
+        GameFlow__InitialPlayerDataTemplate initialPlayerDataTemplateList[numInitialPlayerDataTemplates];
+        ReturnFromRef();
+    }
+} GameFlow <optimize=false>;
+
+RefDefinitions refDefinitions;
+Ref rootRef;
+if (CanSeekTo(rootRef))
+{
+    SeekToRef(rootRef);
+    GameFlow root <open=true>;
+    ReturnFromRef();
+}

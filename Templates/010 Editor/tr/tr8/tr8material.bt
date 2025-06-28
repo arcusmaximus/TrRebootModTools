@@ -1,0 +1,85 @@
+#define TR_REVEAL_REFS
+#include "tr8common.bt"
+
+enum <byte> TextureType
+{
+    Diffuse = 1,
+    Normal = 3,
+    AmbientOcclusion = 7,
+    Detail = 5,
+    DetailAO = 2,
+    Mask = 0,
+    Reflection = 4,
+};
+
+typedef struct
+{    
+    Ref textureRef;
+    FSkip(4);
+    TextureType type;
+    FSkip(4);
+    ubyte slot;
+    ushort filter;
+} ShaderTexture <optimize=false, read=Str("%s (%s)", ReadRef(textureRef), EnumToString(type))>;
+
+typedef struct
+{
+    int field_0;
+    int field_4;
+    int field_8;
+    int field_C;
+    VertexAttributeName attr <format=hex>;
+    int field_14;
+    int field_18;
+} VertexAttribute <read=EnumToString(attr)>;
+
+typedef struct
+{
+    Ref formatRef;
+    if (CanSeekTo(formatRef))
+    {
+        SeekToRef(formatRef);
+        VertexAttribute attributes[9];
+        float floats[5];
+        ReturnFromRef();
+    }
+} VertexFormatRef <optimize=false>;
+
+typedef struct
+{
+    ushort field_0 <format=hex>;
+    ushort numTextures;
+    Ref texturesRef;
+    if (CanSeekTo(texturesRef))
+    {
+        SeekToRef(texturesRef);
+        ShaderTexture textures[numTextures];
+        ReturnFromRef();
+    }
+    
+    int numConstants;
+    Ref constantsRef;
+    if (CanSeekTo(constantsRef))
+    {
+        SeekToRef(constantsRef);
+        Vector4 constants[numConstants];
+        ReturnFromRef();
+    }
+} Pass <optimize=false, open=true>;
+
+typedef struct
+{
+    short version;
+    short id;
+    FSkip(4);
+    VertexFormatRef vertexFormatRefs[3];
+    
+    FSkip(0x14);
+    Ref shaderLibRefs[4];
+    int unknownNumbers[6] <format=hex>;
+    
+    Pass passes[2];
+} Material <optimize=false>;
+
+SectionHeader sectionHeader;
+Material material <open=true>;

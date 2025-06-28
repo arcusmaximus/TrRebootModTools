@@ -1,9 +1,7 @@
-from glob import glob
 from typing import TYPE_CHECKING, Annotated, Protocol
 import bpy
 import os
 import re
-from mathutils import Matrix
 from bpy.types import Context
 from io_scene_tr_reboot.BlenderHelper import BlenderHelper
 from io_scene_tr_reboot.BlenderNaming import BlenderNaming
@@ -45,7 +43,7 @@ class _Properties(ImportOperatorProperties, Protocol):
 class ImportObjectOperator(ImportOperatorBase[_Properties]):
     bl_idname = "import_scene.trobjectref"
     bl_menu_item_name = "Tomb Raider Reboot object (.trXobjectref)"
-    filename_ext = ".tr9objectref;*.tr9level;.tr10objectref;.tr10layer;.tr11objectref;.tr11layer;.tr11model;.tr11dtp"
+    filename_ext = ".tr9objectref;*.tr9level;.tr10objectref;.tr10layer;.tr11objectref;.tr11layer"
 
     def invoke(self, context: bpy.types.Context | None, event: bpy.types.Event) -> set[OperatorReturnItems]:
         self.properties.scale_factor = SceneProperties.get_scale_factor()
@@ -88,14 +86,6 @@ class ImportObjectOperator(ImportOperatorBase[_Properties]):
         if bpy.context.scene is None:
             return
 
-        if re.search(r"\.tr\d+model$", file_path) is not None:
-            self.import_isolated_model(file_path, game)
-            return
-
-        if re.search(r"\.tr\d+dtp$", file_path) is not None:
-            self.import_isolated_collision_model(file_path, game)
-            return
-
         if self.properties.import_referenced_objects:
             bl_temp_collection = BlenderHelper.get_or_create_collection("__temp")
             BlenderHelper.set_collection_excluded(bl_temp_collection, True)
@@ -113,93 +103,6 @@ class ImportObjectOperator(ImportOperatorBase[_Properties]):
             self.import_collection(file_path, None, None, game, context)
 
         CollisionModelImporter.assign_material_colors()
-
-    def import_isolated_collision_model(self, file_path: str, game: CdcGame) -> None:
-        model_resource = Collection.try_parse_resource_file_path(file_path, game)
-        if model_resource is None:
-            return
-
-        model_folder_path = os.path.dirname(file_path)
-        if os.path.basename(model_folder_path) != "Dtp":
-            return
-
-        drm_folder_path = os.path.dirname(model_folder_path)
-        if not drm_folder_path.endswith(".drm"):
-            return
-
-        collection_name = os.path.splitext(os.path.basename(drm_folder_path))[0]
-        collection_file_paths = glob(os.path.join(drm_folder_path, collection_name + ".tr*"))
-        if len(collection_file_paths) == 0:
-            collection_file_paths = glob(os.path.join(drm_folder_path, "*.tr*layer"))
-            if len(collection_file_paths) == 0:
-                return
-
-        tr_collection = Factories.get(game).open_collection(collection_file_paths[0])
-        tr_instance = Enumerable(tr_collection.get_model_instances()).first_or_none(lambda i: i.collision_model_resource == model_resource)
-        if tr_instance is None:
-            return
-
-        tr_instance = Collection.ModelInstance(
-            tr_instance.skeleton_resource,
-            tr_instance.model_resource,
-            tr_instance.collision_model_resource,
-            Matrix.Identity(4)
-        )
-
-        collection_empty_name = BlenderNaming.make_collection_empty_name(tr_collection.name, tr_collection.id)
-        bl_collection_obj = BlenderHelper.create_object(None, collection_empty_name)
-
-        importer = self.create_collision_model_importer(self.properties.scale_factor, None, game)
-        importer.import_model_instance(tr_collection, tr_instance, bl_collection_obj)
-        return
-
-    def import_isolated_model(self, file_path: str, game: CdcGame) -> None:
-        model_resource = Collection.try_parse_resource_file_path(file_path, game)
-        if model_resource is None:
-            return
-
-        model_folder_path = os.path.dirname(file_path)
-        if os.path.basename(model_folder_path) != "Model":
-            return
-
-        drm_folder_path = os.path.dirname(model_folder_path)
-        if not drm_folder_path.endswith(".drm"):
-            return
-
-        collection_name = os.path.splitext(os.path.basename(drm_folder_path))[0]
-        collection_file_paths = glob(os.path.join(drm_folder_path, collection_name + ".tr*"))
-        if len(collection_file_paths) == 0:
-            collection_file_paths = glob(os.path.join(drm_folder_path, "*.tr*layer"))
-            if len(collection_file_paths) == 0:
-                return
-
-        tr_collection = Factories.get(game).open_collection(collection_file_paths[0])
-
-        material_importer = MaterialImporter()
-        material_importer.import_from_collection(tr_collection)
-
-        model_importer = self.create_model_importer(
-            self.properties.scale_factor,
-            self.properties.import_lods,
-            self.properties.split_into_parts,
-            None,
-            game
-        )
-        tr_instance = Enumerable(tr_collection.get_model_instances()).first_or_none(lambda i: i.model_resource == model_resource)
-        if tr_instance is not None:
-            collection_empty_name = BlenderNaming.make_collection_empty_name(tr_collection.name, tr_collection.id)
-            bl_collection_obj = BlenderHelper.create_object(None, collection_empty_name)
-            tr_instance = Collection.ModelInstance(
-                tr_instance.skeleton_resource,
-                tr_instance.model_resource,
-                tr_instance.collision_model_resource,
-                Matrix.Identity(4)
-            )
-            model_importer.import_model_instance(tr_collection, tr_instance, bl_collection_obj, {})
-        else:
-            tr_model = tr_collection.get_model(model_resource)
-            if tr_model is not None:
-                model_importer.import_model(tr_collection, tr_model, None)
 
     def import_collection_recursive(
         self,

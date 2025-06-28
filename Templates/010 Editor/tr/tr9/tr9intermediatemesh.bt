@@ -1,0 +1,91 @@
+#define TR_VERSION 9
+#include "../trcommon.bt"
+
+enum IMFType
+{
+    IMFType_Embedded = 0x0,
+    IMFType_TerrainInstance = 0x1,
+    IMFType_ModelInstance = 0x2,
+    IMFType_HierarchyTreeInstance = 0x3,
+};
+
+typedef struct
+{
+    Ref terrainRef;
+    unsigned int flags;
+    unsigned int lightMask;
+    Ref userDataRef;
+    if (CanSeekTo(userDataRef))
+    {
+        SeekToRef(userDataRef);
+        byte userData;
+        ReturnFromRef();
+    }
+} CellTerrainData <optimize=false>;
+
+typedef struct
+{
+    Ref cellNameRef;
+    if (CanSeekTo(cellNameRef))
+    {
+        SeekToRef(cellNameRef);
+        string cellName;
+        ReturnFromRef();
+    }
+    unsigned int numTerrainGroups;
+    Ref terrainDataRef;
+    if (CanSeekTo(terrainDataRef))
+    {
+        SeekToRef(terrainDataRef);
+        CellTerrainData terrainData;
+        ReturnFromRef();
+    }
+} CellIMFData <optimize=false>;
+
+typedef struct
+{
+    unsigned int numCells;
+    CellIMFData imfData[1];
+} CellIMFDataList <optimize=false>;
+
+typedef struct
+{
+    float min;
+    float minOpaque;
+    float maxOpaque;
+    float max;
+} LODLevel <optimize=false>;
+
+typedef struct
+{
+    Vector4 relativePivot;
+    LODLevel levels[5];
+    ubyte enabledLevels;
+    ubyte flags;
+} LODLevels <optimize=false>;
+
+typedef struct
+{
+    IMFType type;
+    switch (type)
+    {
+        case IMFType_ModelInstance:
+            Ref renderModelRef;
+            break;
+        default:
+            Ref cellImfDataListRef;
+            break;
+    }
+    Ref colMeshRef;
+    byte stream;
+    FSkip(3);
+    float introductionDistance;
+    int defaultChunkSize;
+    byte instanceCollision;
+    byte useDistanceToBoundaryForLOD;
+    FSkip(6);
+    LODLevels lodLevels;
+} IntermediateMesh <optimize=false>;
+
+RefDefinitions refDefinitions;
+IntermediateMesh root <open=true>;

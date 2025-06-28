@@ -1,0 +1,240 @@
+#define TR_VERSION 11
+#include "../../trcommon.bt"
+
+typedef struct
+{
+    byte terrain : 1;
+    byte player : 1;
+    byte npc : 1;
+    byte enemy : 1;
+    byte object : 1;
+    byte shard : 1;
+    byte camera : 1;
+    byte cloth : 1;
+    byte incidental : 1;
+    byte gear : 1;
+    byte thrownProjectile : 1;
+    byte arrow : 1;
+    byte clutter : 1;
+    byte cameraLineOfSight : 1;
+    byte interact : 1;
+    byte npcPlayerStopper : 1;
+} CollisionTypesBitfield <optimize=false>;
+
+typedef struct
+{
+    CollisionTypesBitfield collideWith;
+    CollisionTypesBitfield collideNotWith;
+    CollisionTypesBitfield collideAs;
+    FSkip(2);
+    int collideGroup;
+} CollisionCategory <optimize=false>;
+
+typedef struct
+{
+    int penaltyMultiplayer;
+    unsigned int numLayers;
+    Ref layersExceptionListRef;
+    if (CanSeekTo(layersExceptionListRef))
+    {
+        SeekToRef(layersExceptionListRef);
+        int layersExceptionList;
+        ReturnFromRef();
+    }
+} ObstacleData <optimize=false>;
+
+typedef struct
+{
+    float additionalRadius;
+    float innerCushion;
+    float outerCushion;
+} RepulsorData <optimize=false>;
+
+typedef union
+{
+    byte none;
+    ObstacleData blocker;
+    RepulsorData repulsor;
+} PlannerBlockerData;
+
+typedef union
+{
+    ubyte rigidBody;
+    ubyte vegetation;
+    ubyte revolute;
+    ubyte cylindrical;
+    ubyte prismatic;
+    ubyte planar;
+    ubyte universal;
+    ubyte swing;
+    ubyte cartesian;
+    ubyte spherical;
+    ubyte pointMotor;
+    ubyte pulley;
+    ubyte rope;
+} JointDegreesOfFreedomUnion;
+
+typedef struct
+{
+    JointDegreesOfFreedomUnion clampingParameter;
+    FSkip(3);
+    unsigned int wwiseRTPC;
+    byte mustLog;
+    byte useAbsoluteValue;
+    FSkip(2);
+    float minThreshold;
+    float maxThreshold;
+} SoundClamping <optimize=false>;
+
+typedef struct
+{
+    JointDegreesOfFreedomUnion postEventParameter;
+    FSkip(3);
+    int soundThresholdCondition;
+    float conditionValue;
+    byte useAbsoluteValue;
+} PostEventCondition <optimize=false>;
+
+typedef struct
+{
+    unsigned int sound;
+    byte postOnStart;
+    byte autoStop;
+    FSkip(2);
+    Ref eventConditionsRef;
+    ubyte eventConditionsCount;
+    if (CanSeekTo(eventConditionsRef))
+    {
+        SeekToRef(eventConditionsRef);
+        PostEventCondition eventConditions[eventConditionsCount];
+        ReturnFromRef();
+    }
+} SoundEventCondition <optimize=false>;
+
+typedef struct
+{
+    unsigned int groupID;
+    unsigned int iD;
+} WwiseSwitchOverride <optimize=false>;
+
+typedef struct
+{
+    byte enableOcclusionObstruction;
+    byte useRadialActivation;
+    FSkip(2);
+    float soundActivationDistance;
+    float soundActivationRemovalSlack;
+    byte useGameObjectTimeOut;
+    FSkip(3);
+    float gameObjectTimeOut;
+    FSkip(4);
+    Ref switchOverridesListRef;
+    ushort numSwitchOverrides;
+    if (CanSeekTo(switchOverridesListRef))
+    {
+        SeekToRef(switchOverridesListRef);
+        WwiseSwitchOverride switchOverridesList[numSwitchOverrides];
+        ReturnFromRef();
+    }
+} GameObjectActivation <optimize=false>;
+
+typedef struct
+{
+    int type;
+    FSkip(4);
+    Ref clampingValuesRef;
+    ubyte clampingValuesCount;
+    if (CanSeekTo(clampingValuesRef))
+    {
+        SeekToRef(clampingValuesRef);
+        SoundClamping clampingValues[clampingValuesCount];
+        ReturnFromRef();
+    }
+    FSkip(7);
+    Ref eventConditionsRef;
+    ubyte eventConditionsCount;
+    if (CanSeekTo(eventConditionsRef))
+    {
+        SeekToRef(eventConditionsRef);
+        SoundEventCondition eventConditions[eventConditionsCount];
+        ReturnFromRef();
+    }
+    FSkip(7);
+    GameObjectActivation rigidBodySoundLocation;
+} RigidBodySoundData <optimize=false>;
+
+typedef struct
+{
+    float restitution;
+    float friction;
+    float linearDrag;
+    float angularDrag;
+    float sleepLinearThreshold;
+    float sleepAngularThreshold;
+    int sleepDelay;
+    int contactRank;
+    float windScale;
+    float gravityScale;
+    float buoyancyMultiplier;
+    float forceFieldMultiplier;
+    ushort autoSleepFlag : 1;
+    ushort startSleepingFlag : 1;
+    ushort checkGeomTunnel : 1;
+    ushort checkMeshTunnel : 1;
+    ushort immuneToTimeQuake : 1;
+    ushort doContactCallBack : 1;
+    ushort unusedFlag06 : 1;
+    ushort unusedFlag07 : 1;
+    ushort unusedFlag08 : 1;
+    ushort unusedFlag09 : 1;
+    ushort unusedFlag10 : 1;
+    ushort unusedFlag11 : 1;
+    ushort unusedFlag12 : 1;
+    ushort unusedFlag13 : 1;
+    ushort unusedFlag14 : 1;
+    ushort unusedFlag15 : 1;
+    FSkip(6);
+    RigidBodySoundData rigidBodySoundData;
+    FSkip(6);
+} rigidbody <optimize=false>;
+
+typedef struct
+{
+    byte canPush;
+    FSkip(3);
+    int pushFrom;
+} PushPullModifiers <optimize=false>;
+
+typedef struct
+{
+    CollisionCategory category;
+    int plannerType;
+    int plannerSizeOption;
+    unsigned int plannerGroup;
+    PlannerBlockerData plannerData;
+    int rigidBodyDisabledPlannerType;
+    int rigidBodyDisabledPlannerSizeOption;
+    unsigned int rigidBodyDisabledPlannerGroup;
+    FSkip(4);
+    PlannerBlockerData rigidBodyDisabledPlannerData;
+    rigidbody rigidBodyProp;
+    byte triggerVolumes : 1;
+    byte rigidbodySimulation : 1;
+    byte rigidbodyEnable : 1;
+    byte rigidBodyPropsUseList : 1;
+    FSkip(7);
+    Ref alternateCollisionCategoriesRef;
+    unsigned int alternateCollisionCategoriesCount;
+    if (CanSeekTo(alternateCollisionCategoriesRef))
+    {
+        SeekToRef(alternateCollisionCategoriesRef);
+        CollisionCategory alternateCollisionCategories[alternateCollisionCategoriesCount];
+        ReturnFromRef();
+    }
+    PushPullModifiers pushPullMods;
+    byte allowProjectilePersistence;
+    byte applyPlayerWeight;
+} PhysicalComponent <optimize=false>;
+
+RefDefinitions refDefinitions;
+PhysicalComponent root <open=true>;

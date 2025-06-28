@@ -1,0 +1,96 @@
+#define TR_VERSION 9
+#include "../trcommon.bt"
+
+typedef struct
+{
+    Vector4 bMin;
+    Vector4 bMax;
+} BBox <optimize=false>;
+
+typedef struct
+{
+    unsigned int i0;
+    unsigned int i1;
+    unsigned int i2;
+    ubyte adjacencyFlags;
+    ubyte collisionFlags;
+    ushort clientFlags;
+    unsigned int materialType;
+} IndexedFace <optimize=false>;
+
+typedef struct
+{
+    float min[3];
+    float max[3];
+    uint numFaces : 8;
+    uint index : 24;
+} AABBNode <optimize=false>;
+
+typedef struct
+{
+    BBox box;
+    Ref verticesRef;
+    if (CanSeekTo(verticesRef))
+    {
+        SeekToRef(verticesRef);
+        byte vertices;
+        ReturnFromRef();
+    }
+    Ref facesRef;
+    if (CanSeekTo(facesRef))
+    {
+        SeekToRef(facesRef);
+        IndexedFace faces;
+        ReturnFromRef();
+    }
+    Ref rootRef;
+    if (CanSeekTo(rootRef))
+    {
+        SeekToRef(rootRef);
+        AABBNode root;
+        ReturnFromRef();
+    }
+    unsigned int numNodes;
+    unsigned int numFaces;
+    unsigned int numVertices;
+    unsigned int numDegenerateFaces;
+    unsigned int numNonManifoldEdges;
+    ushort vertexType;
+    ushort height;
+} Mesh <optimize=false>;
+
+typedef struct
+{
+    Matrix transformation;
+    Vector4 streamOffset;
+    BBox bbox;
+    Ref clientDataRef;
+    if (CanSeekTo(clientDataRef))
+    {
+        SeekToRef(clientDataRef);
+        byte clientData;
+        ReturnFromRef();
+    }
+    Ref internalClientDataRef;
+    if (CanSeekTo(internalClientDataRef))
+    {
+        SeekToRef(internalClientDataRef);
+        byte internalClientData;
+        ReturnFromRef();
+    }
+    Ref meshRef;
+    if (CanSeekTo(meshRef))
+    {
+        SeekToRef(meshRef);
+        Mesh mesh;
+        ReturnFromRef();
+    }
+    Ref collisionScenePrevRef;
+    Ref collisionSceneNextRef;
+    ushort flags;
+    FSkip(0xA);
+} MeshInstance <optimize=false>;
+
+RefDefinitions refDefinitions;
+FSkip(0xBB0);
+MeshInstance instance[44];

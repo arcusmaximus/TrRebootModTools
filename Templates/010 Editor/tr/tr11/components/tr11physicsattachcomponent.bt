@@ -1,0 +1,32 @@
+#define TR_VERSION 11
+#include "../../trcommon.bt"
+
+typedef struct
+{
+    PlacementPath attachPlacement;
+    ubyte refType;
+    FSkip(1);
+    short boneId;
+    byte disableCollision;
+    FSkip(3);
+    float maxMotorForce;
+    float overrideMass;
+    float overrideRadius;
+    byte useOverrides;
+    byte allowZRotation;
+    byte restrictRotation;
+    byte followBoneRotation;
+    Ref collisionListRef;
+    unsigned int collisionListCount;
+    if (CanSeekTo(collisionListRef))
+    {
+        SeekToRef(collisionListRef);
+        PlacementPath collisionList[collisionListCount];
+        ReturnFromRef();
+    }
+} PhysicsAttachComponent <optimize=false>;
+
+#ifndef TR_COMPONENT_NO_INSTANTIATE
+    RefDefinitions refDefinitions;
+    PhysicsAttachComponent root <open=true>;
+#endif

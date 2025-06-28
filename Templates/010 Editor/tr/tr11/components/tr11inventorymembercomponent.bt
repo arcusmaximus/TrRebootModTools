@@ -1,0 +1,305 @@
+#define TR_VERSION 11
+#include "../../trcommon.bt"
+#include "../lists/tr11events.bt"
+
+enum <uint> InventoryState
+{
+    Cinematic_Torch_Visible = 0x1A94D294,
+    Cinematic_NoPistol = 0xB01A0BC4,
+    Cinematic = 0x41BBE4FC,
+    Normal = 0xA530EE3D,
+    HideWeaponsOnBack = 0x8DB15124,
+    PistolOnly = 0x48F368E7,
+    SpectatorMode = 0xD569FA97,
+    Hide_NPC_All = 0xDF2CA026,
+    Show_NPC_All = 0x6CFCA9F1,
+    NothingButBow = 0x0C262F6E,
+    NoWeapons_NoGear = 0x6F29AC16,
+    NoPistol = 0xAD27512E,
+    Campsite_Hide_Gun = 0xD55B0DF5,
+    VillageHub_RothCine_Custom_Gear_Hide = 0x200FE44F,
+    ShotgunSlide = 0xC056211A,
+    Hands_Tied_No_Weapons = 0x84E72BE9,
+    PistolOnlyProcessAndRender = 0x520BBA4B,
+    Prying = 0xB435B184,
+    Hide_Pistol_Bow_SMG_Shotgun = 0x91002C97,
+    Sickle_Only_NPC = 0x08EDF1F5,
+    Ledge = 0x05D041CE,
+    NothingButBowAndTorch = 0xF6E255EC,
+    NoCharacterCollide_NoDraw = 0xF5782BDA,
+    NoCharacterCollide = 0x82DC656A,
+    HideAxe = 0x78707DFC,
+    ShowAxe = 0x11584469,
+    ForcePistol = 0x5F6CBC0C,
+    Cinematic_ShowBow = 0x91F844F5,
+    NoWalkieTalkie = 0x4E2F56BC,
+    EverythingButBow = 0xA42D4F93,
+    ForceRenderQuiver = 0x51D67FC4,
+    Squeeze_HideGears = 0x692C6CA0,
+    Underwater = 0xC728DA59,
+    DoNothing = 0x044DC2CC,
+    HideKnife = 0xC6C4C454,
+    HideWeaponsOnBack_NoPistol = 0x6F00D2FD
+};
+
+typedef struct
+{
+    byte gap0[4];
+} InvItemAnimSet <optimize=false>;
+
+typedef struct
+{
+    ushort timerType;
+    FSkip(2);
+    int frames;
+} HostedSCTimer <optimize=false>;
+
+typedef struct
+{
+    byte ranged;
+    byte thrown;
+    byte melee;
+} InventoryClassification <optimize=false>;
+
+typedef struct
+{
+    ushort id;
+} Symbol <optimize=false>;
+
+typedef struct
+{
+    Symbol countSymbol;
+} InventorySymbolGroup <optimize=false>;
+
+typedef struct
+{
+    unsigned int numInventoryRequirements;
+    FSkip(4);
+    Ref inventoryRequirementsRef;
+    if (CanSeekTo(inventoryRequirementsRef))
+    {
+        SeekToRef(inventoryRequirementsRef);
+        int inventoryRequirements[numInventoryRequirements];
+        ReturnFromRef();
+    }
+} InvRequirementsSet <optimize=false>;
+
+typedef struct
+{
+    unsigned int boneMarkerID;
+    FSkip(4);
+    InvRequirementsSet inventoryRequirements;
+} ItemAttachProfile <optimize=false>;
+
+typedef struct
+{
+    byte bUsePrimaryAttach;
+    byte bUseSecondaryAttach;
+    FSkip(6);
+    ItemAttachProfile primaryAttach;
+    ItemAttachProfile secondaryAttach;
+} ItemAttachProfileSet <optimize=false>;
+
+typedef struct
+{
+    InventoryState state;
+    uint onEnter <read=Str("%s (%08Xh)", GetEventName(this), this)>;
+    uint onExit  <read=Str("%s (%08Xh)", GetEventName(this), this)>;
+    byte bRender;
+    byte bCollide;
+    byte bHideIfNoAmmo;
+    byte bHideIfNotPostCombat;
+    byte bKeepAmmoRendered;
+    FSkip(7);
+    ItemAttachProfileSet attachDataOverride;
+    unsigned int priority;
+    int alternateCollisionCategory;
+    byte bDeactivated;
+    byte bInUse;
+    FSkip(6);
+} InventoryMemberStateInfo <optimize=false>;
+
+typedef struct
+{
+    InvItemAnimSet invItemAnims;
+    InvItemAnimSet invItemUnderwaterAnims;
+    Ref hostedSCTimerListRef;
+    unsigned int iHostedSCTimerListCount;
+    if (CanSeekTo(hostedSCTimerListRef))
+    {
+        SeekToRef(hostedSCTimerListRef);
+        HostedSCTimer hostedSCTimerList[iHostedSCTimerListCount];
+        ReturnFromRef();
+    }
+    int attachType;
+    byte bManageAttachment;
+    FSkip(3);
+    unsigned int iReadyAttachR;
+    unsigned int iAwayAttachR;
+    unsigned int iReadyAttachL;
+    unsigned int iAwayAttachL;
+    unsigned int objectAttachBoneMarker;
+    char iReadyAttachToSection;
+    char iAwayAttachToSection;
+    FSkip(2);
+    int eProjectileAttachHand;
+    unsigned int iProjectileMarkerAttach;
+    FSkip(4);
+    Ref iProjectileAttachRef;
+    unsigned int iProjectileAttachCount;
+    if (CanSeekTo(iProjectileAttachRef))
+    {
+        SeekToRef(iProjectileAttachRef);
+        unsigned int iProjectileAttach[iProjectileAttachCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref iProjectileHandAttachRef;
+    unsigned int iProjectileHandAttachCount;
+    if (CanSeekTo(iProjectileHandAttachRef))
+    {
+        SeekToRef(iProjectileHandAttachRef);
+        unsigned int iProjectileHandAttach[iProjectileHandAttachCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref iProjectileRapidFireHandAttachRef;
+    unsigned int iProjectileRapidFireHandAttachCount;
+    if (CanSeekTo(iProjectileRapidFireHandAttachRef))
+    {
+        SeekToRef(iProjectileRapidFireHandAttachRef);
+        unsigned int iProjectileRapidFireHandAttach[iProjectileRapidFireHandAttachCount];
+        ReturnFromRef();
+    }
+    float fLength;
+    float fFadeTime;
+    char iDropSound;
+    FSkip(3);
+    int type;
+    FSkip(4);
+    Ref additionalInventoryTypesRef;
+    unsigned int additionalInventoryTypesCount;
+    if (CanSeekTo(additionalInventoryTypesRef))
+    {
+        SeekToRef(additionalInventoryTypesRef);
+        int additionalInventoryTypes[additionalInventoryTypesCount];
+        ReturnFromRef();
+    }
+    InventoryClassification properties;
+    FSkip(1);
+    int pickupBehaviorDuplicateObject;
+    int pickupBehavior;
+    int attachmentOverrides;
+    byte preventStateResetWhenNormalInventoryStateUsed;
+    byte excludeFromInventorySave;
+    byte copyToNewGamePlus;
+    FSkip(1);
+    float equipPriority;
+    int equipSlot;
+    Ref sInventoryLabelRef;
+    if (CanSeekTo(sInventoryLabelRef))
+    {
+        SeekToRef(sInventoryLabelRef);
+        string sInventoryLabel;
+        ReturnFromRef();
+    }
+    InventorySymbolGroup symbols;
+    FSkip(2);
+    int sMenuSlot;
+    byte bDisableMPCover;
+    FSkip(3);
+    unsigned int inventorySelectionTexture;
+    byte bAllowItemSelection;
+    FSkip(7);
+    InventoryMemberStateInfo readyState;
+    InventoryMemberStateInfo awayState;
+    InventoryMemberStateInfo stowedState;
+    byte supportsStowed;
+    FSkip(3);
+    int associateWithItemType;
+    byte bCineHACKLimitAnimatedBones;
+    FSkip(3);
+    int nCineHACKLimitAnimatedBoneCount;
+    unsigned int inventoryExtraStatesCount;
+    FSkip(4);
+    Ref inventoryExtraStatesRef;
+    if (CanSeekTo(inventoryExtraStatesRef))
+    {
+        SeekToRef(inventoryExtraStatesRef);
+        InventoryMemberStateInfo inventoryExtraStates[inventoryExtraStatesCount];
+        ReturnFromRef();
+    }
+    byte makeReadyOnPickup;
+    FSkip(3);
+    uint onGive <read=Str("%s (%08Xh)", GetEventName(this), this)>;
+    uint onRemove <read=Str("%s (%08Xh)", GetEventName(this), this)>;
+} InvItemProp <optimize=false>;
+
+typedef struct
+{
+    unsigned int ammoType;
+    ushort count;
+    ushort trait;
+} AmmoListItem <optimize=false>;
+
+typedef struct
+{
+    InvItemProp inventory;
+    FSkip(4);
+    unsigned int numRequirements;
+    FSkip(4);
+    Ref requirementsRef;
+    if (CanSeekTo(requirementsRef))
+    {
+        SeekToRef(requirementsRef);
+        int requirements[numRequirements];
+        ReturnFromRef();
+    }
+    Ref requiredTraitsRef;
+    unsigned int requiredTraitsListCount;
+    if (CanSeekTo(requiredTraitsRef))
+    {
+        SeekToRef(requiredTraitsRef);
+        ushort requiredTraits[requiredTraitsListCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref maxAmmoBoostListRef;
+    unsigned int maxAmmoBoostListCount;
+    if (CanSeekTo(maxAmmoBoostListRef))
+    {
+        SeekToRef(maxAmmoBoostListRef);
+        AmmoListItem maxAmmoBoostList[maxAmmoBoostListCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref traitsRef;
+    unsigned int traitsListCount;
+    if (CanSeekTo(traitsRef))
+    {
+        SeekToRef(traitsRef);
+        ushort traits[traitsListCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref permanentTraitsRef;
+    unsigned int permanentTraitsListCount;
+    if (CanSeekTo(permanentTraitsRef))
+    {
+        SeekToRef(permanentTraitsRef);
+        ushort permanentTraits[permanentTraitsListCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref readyTraitsRef;
+    unsigned int readyTraitsListCount;
+    if (CanSeekTo(readyTraitsRef))
+    {
+        SeekToRef(readyTraitsRef);
+        ushort readyTraits[readyTraitsListCount];
+        ReturnFromRef();
+    }
+} InventoryMemberComponent <optimize=false>;
+
+RefDefinitions refDefinitions;
+InventoryMemberComponent root <open=true>;

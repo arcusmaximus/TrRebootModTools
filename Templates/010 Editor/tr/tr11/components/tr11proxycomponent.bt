@@ -1,0 +1,113 @@
+#define TR_VERSION 11
+#include "../../trcommon.bt"
+
+typedef struct
+{
+    ubyte refType;
+    FSkip(1);
+    short boneID;
+} ModelBoneOrMarkerReference <optimize=false>;
+
+typedef struct
+{
+    float orientation[3];
+    float offsetX;
+    float offsetY;
+    float offsetZ;
+    float length;
+    float radius;
+    float maxForce;
+    float interpScale;
+    ModelBoneOrMarkerReference attachRef;
+    byte useAttachSegmentPosition;
+    byte useAttachSegmentPositionNoSegmentZ;
+    byte useAttachSegmentRotation;
+    byte enableExtraAttachSegment;
+    ModelBoneOrMarkerReference extraAttachRef;
+    byte useExtraAttachSegmentPosition;
+    byte useExtraAttachSegmentRotation;
+    FSkip(2);
+    Ref debugNameRef;
+    if (CanSeekTo(debugNameRef))
+    {
+        SeekToRef(debugNameRef);
+        string debugName;
+        ReturnFromRef();
+    }
+} ProxyShape <optimize=false>;
+
+typedef struct
+{
+    int mbCategory;
+    float mass;
+    float maxTouchForce;
+    float maxForce;
+    float bendyForceMult;
+    float velTouchForce;
+    float velSqTouchForce;
+    unsigned int surfaceMaterial;
+    int contactRank;
+    float dynamicTreeContactForce;
+    float dynamicTreeElongationFactor;
+} ProxyComponent__ProxyPhysicsData <optimize=false>;
+
+typedef struct
+{
+    byte gap0[4];
+} ProxyComponent__NoneData <optimize=false>;
+
+typedef struct
+{
+    float enableDist;
+    float disableDist;
+} ProxyComponent__NpcData <optimize=false>;
+
+typedef union
+{
+    ProxyComponent__NoneData ground;
+    ProxyComponent__NoneData static;
+    ProxyComponent__NoneData physob;
+    ProxyComponent__NoneData water;
+    ProxyComponent__NoneData ragdoll;
+    ProxyComponent__NoneData player;
+    ProxyComponent__NpcData enemy;
+    ProxyComponent__NoneData bendie;
+    ProxyComponent__NoneData cloth;
+    ProxyComponent__NoneData vehicle;
+    ProxyComponent__NoneData projectile;
+} ProxyComponent__ProxyUserData;
+
+typedef struct
+{
+    int type;
+    FSkip(4);
+    Ref shapeRef;
+    if (CanSeekTo(shapeRef))
+    {
+        SeekToRef(shapeRef);
+        ProxyShape shape;
+        ReturnFromRef();
+    }
+    byte bCollideWithProjectile;
+    byte bCollideWithPortable;
+    byte bCollideWithOffensiveCollision;
+    byte bCollideWithCameraCollision;
+    byte bIgnoreExplosion;
+    byte bEnableCorpseProxy;
+    byte bEnableDebug;
+    byte bUseHostPhysicsData;
+    byte bUseHostPhysicalComponentCollisionFlags;
+    FSkip(3);
+    ProxyComponent__ProxyPhysicsData physicsData;
+    ProxyComponent__ProxyUserData userData;
+    Ref proxyShapeListRef;
+    if (CanSeekTo(proxyShapeListRef))
+    {
+        SeekToRef(proxyShapeListRef);
+        ProxyShape proxyShapeList;
+        ReturnFromRef();
+    }
+} ProxyComponent <optimize=false>;
+
+RefDefinitions refDefinitions;
+ProxyComponent root <open=true>;

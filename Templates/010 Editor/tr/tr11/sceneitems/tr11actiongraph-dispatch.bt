@@ -1,0 +1,3125 @@
+case NT_FXATimelinePlayNode:
+{
+    FXATimelinePlay args;
+    break;
+}
+case NT_MiscTriggerGroupNode:
+{
+    MiscTriggerGroupNode args;
+    break;
+}
+case NT_GameObjectiveNode:
+{
+    GameObjectiveNode args;
+    break;
+}
+case NT_GameTutorialStep:
+{
+    GameTutorialStepNode args;
+    break;
+}
+case NT_AGGenerator_Status:
+{
+    GeneratorStatusNode args;
+    break;
+}
+case NT_AGScriptableNode:
+{
+    ScriptableNode args;
+    break;
+}
+case NT_AGInstanceNetSendEventNode:
+{
+    InstanceNetSendEventNode args;
+    break;
+}
+case NT_AGInstanceNetSyncNode:
+{
+    InstanceNetSyncNode args;
+    break;
+}
+case NT_AGWeatherIntensityChangesNode:
+{
+    WeatherIntensityChangesNode args;
+    break;
+}
+case NT_AGWeatherEventsNode:
+{
+    WeatherEventsNode args;
+    break;
+}
+case NT_AGWeatherInfoNode:
+{
+    WeatherInfoNode args;
+    break;
+}
+case NT_AGTimeOfDayEventsNode:
+{
+    TimeOfDayEventsNode args;
+    break;
+}
+case NT_AGTimeOfDayInfoNode:
+{
+    TimeOfDayInfoNode args;
+    break;
+}
+case NT_AGDialogueDialogueNode:
+{
+    DialogueDialogueNode args;
+    break;
+}
+case NT_LevelObjectiveNode:
+{
+    LevelObjectiveNode args;
+    break;
+}
+case NT_GameWorldQuerySecurityLevelNode:
+{
+    AGQuerySecurityLevelNode args;
+    break;
+}
+case NT_AGDebugDrawText:
+{
+    DebugDrawText args;
+    break;
+}
+case NT_AGSubGraphNode:
+{
+    SubGraphNode args;
+    break;
+}
+case NT_AGInstance_SpawnedPlacementNode:
+{
+    InstanceSpawnedPlacementNode args;
+    break;
+}
+case NT_AGInstance_PlacementNode:
+{
+    InstancePlacementNode args;
+    break;
+}
+case NT_AGInstance_ActionGraphInstanceNode:
+{
+    ActionGraphInstanceNode args;
+    break;
+}
+case NT_AGObjectNode:
+{
+    ObjectNode args;
+    break;
+}
+case NT_AGDBarkGetStatusNode:
+{
+    BarkGetStatus args;
+    break;
+}
+case NT_AGDBarkOverrideNode:
+{
+    BarkOverride args;
+    break;
+}
+case NT_CampsiteEvents:
+{
+    CampsiteEvents args;
+    break;
+}
+case NT_Campsite_Tutorials:
+{
+    Campsite_Tutorials args;
+    break;
+}
+case NT_AGLogPrintMultiData:
+{
+    AGLogPrintMultiData args;
+    break;
+}
+case NT_AGMultiplayerLogPrintData:
+{
+    MultiplayerLogPrintDataNode args;
+    break;
+}
+case NT_AGFrameTriggerNode:
+{
+    FrameTriggerNode args;
+    break;
+}
+case NT_AGFrameTriggerNode_:
+{
+    FrameTriggerNode args;
+    break;
+}
+case NT_AGStartNode:
+{
+    StartNode args;
+    break;
+}
+case NT_Misc_RegisterExtraFingerOfGod:
+{
+    Misc_RegisterExtraFingerOfGod args;
+    break;
+}
+case NT_Misc_MapRevealUnit:
+{
+    Misc_MapRevealUnit args;
+    break;
+}
+case NT_AGMiscControllerNode:
+{
+    MiscControllerNode args;
+    break;
+}
+case NT_MiscGetNamedValue:
+{
+    MiscGetNamedValue args;
+    break;
+}
+case NT_MiscSetNamedValue:
+{
+    MiscSetNamedValue args;
+    break;
+}
+case NT_MiscPersistentDataNode:
+{
+    MiscPersistentDataNode args;
+    break;
+}
+case NT_MiscClearNamedValue:
+{
+    MiscClearNamedValue args;
+    break;
+}
+case NT_Misc_PadShock:
+{
+    Misc_PadShock args;
+    break;
+}
+case NT_MiscSetInputActionTracking:
+{
+    Misc_SetInputActionTracking args;
+    break;
+}
+case NT_MiscInputAction:
+{
+    MiscInputAction args;
+    break;
+}
+case NT_MiscPatchCheckpointSave:
+{
+    PatchCheckpointSave args;
+    break;
+}
+case NT_AGTriggerNextFrameNode:
+{
+    TriggerNextFrameNode args;
+    break;
+}
+case NT_AGColorFromColorNode:
+{
+    FromColorNode args;
+    break;
+}
+case NT_AGColorToColorNode:
+{
+    ToColorNode args;
+    break;
+}
+case NT_AGDebugAssertNode:
+{
+    Debug_AssertNode args;
+    break;
+}
+case NT_Debug_SetDebugNpc:
+{
+    Debug_AssertNode args;
+    break;
+}
+case NT_AG_Misc_InputSwitch:
+{
+    AG_Misc_InputSwitch args;
+    break;
+}
+case NT_AG_Misc_InputSwitch_:
+{
+    AG_Misc_InputSwitch args;
+    break;
+}
+case NT_MiscTriggerStreamSignalNode:
+{
+    MiscTriggerStreamSignal args;
+    break;
+}
+case NT_MiscTriggerStreamStatesNode:
+{
+    MiscTriggerStreamStates args;
+    break;
+}
+case NT_UiMenuStateNode:
+{
+    UiMenuStateNode args;
+    break;
+}
+case NT_UiIsCurrentMenuStateNode:
+{
+    UiIsCurrentMenuStateNode args;
+    break;
+}
+case NT_UiMenuStateSetNode:
+{
+    UiMenuStateSetNode args;
+    break;
+}
+case NT_CampsiteOpen:
+{
+    Campsite_Open args;
+    break;
+}
+case NT_UICollectionLoadOrUnload:
+{
+    UiCollection_Load_Unload args;
+    break;
+}
+case NT_UIQuickTimeEvent:
+{
+    Ui_QuickTimeEvent args;
+    break;
+}
+case NT_RelocateNode:
+{
+    RelocateNode args;
+    break;
+}
+case NT_AGDMiscAddSubtitleNode:
+{
+    MiscAddSubtitleNode args;
+    break;
+}
+case NT_AGBattleConductor_Status:
+{
+    BCStatusNode args;
+    break;
+}
+case NT_AGBattleConductor_Spawn:
+{
+    BCSpawnNode args;
+    break;
+}
+case NT_AGBattleConductor_GetNumIndividuals:
+{
+    BCGetNumIndividualsNode args;
+    break;
+}
+case NT_AGBattleConductor_DespawnNPCs:
+{
+    BCDespawnNPCsNode args;
+    break;
+}
+case NT_AGBattleConductor_GetGroupMembers:
+{
+    BCGetGroupMembersNode args;
+    break;
+}
+case NT_AGBattleConductor_GetClosestEnemy:
+{
+    BCGetClosestEnemyNode args;
+    break;
+}
+case NT_AGBattleConductor_SetDynamicDifficulty:
+{
+    BCSetDynamicDifficultyNode args;
+    break;
+}
+case NT_AGBattleConductor_ForceNpcAwarenessOfInstanceNode:
+{
+    BCForceNpcAwarenessOfInstanceNode args;
+    break;
+}
+case NT_AGBattleConductor_GetNPCTypeCount:
+{
+    AGBattleConductor_GetNPCTypeCount args;
+    break;
+}
+case NT_AGBattleConductor_GroupUseCover:
+{
+    AGBattleConductor_GroupUseCover args;
+    break;
+}
+case NT_AGBattleConductor_BroadcastNpcEventNode:
+{
+    BCBroadcastNpcEventNode args;
+    break;
+}
+case NT_AGBattleConductor_BroadcastSoundEventNode:
+{
+    BCBroadcastSoundEventNode args;
+    break;
+}
+case NT_AGBattleConductor_SetAttackCooldownNode:
+{
+    BCSetAttackCooldownNode args;
+    break;
+}
+case NT_AGBattleConductor_ChangeSettingsNode:
+{
+    BCChangeSettingsNode args;
+    break;
+}
+case NT_AGBattleConductor_SetMaxAssaultModeAttackersNode:
+{
+    BCSetMaxAssaultModeAttackersNode args;
+    break;
+}
+case NT_AGBattleConductor_SuppressionControl:
+{
+    BCSuppressionControlNode args;
+    break;
+}
+case NT_AGBattleConductor_WaypointSet:
+{
+    BCWaypointSetNode args;
+    break;
+}
+case NT_AGCameraShake:
+{
+    CameraShakeNode args;
+    break;
+}
+case NT_CameraSplineNode:
+{
+    CameraSplineNode args;
+    break;
+}
+case NT_Camera_ResourceID:
+{
+    Camera_ResourceID args;
+    break;
+}
+case NT_Shake_ResourceID:
+{
+    Shake_ResourceID args;
+    break;
+}
+case NT_CameraEnableCategory:
+{
+    CameraEnableCategory args;
+    break;
+}
+case NT_CameraGetScreenPos:
+{
+    CameraGetScreenPosNode args;
+    break;
+}
+case NT_AGCameraEvalCamSpline:
+{
+    Camera_EvaluateCameraSpline args;
+    break;
+}
+case NT_AGCameraEvalCamSplineBySpeed:
+{
+    Camera_EvaluateCameraSplineBySpeed args;
+    break;
+}
+case NT_WaveShakeNode:
+{
+    WaveShake args;
+    break;
+}
+case NT_AGCamera_GetCurrentResourceID:
+{
+    Camera_GetCurrentResourceID args;
+    break;
+}
+case NT_AGCamera_GetCurrentStack:
+{
+    Camera_GetCurrentStack args;
+    break;
+}
+case NT_AGCamera_Is_Facing:
+{
+    AGCamera_Is_Facing args;
+    break;
+}
+case NT_AGCamera_SwitchToSplineCam:
+{
+    Camera_SwitchToSplineCam args;
+    break;
+}
+case NT_AGCamera_ClimbSplineLogic:
+{
+    Camera_ClimbSplineLogic args;
+    break;
+}
+case NT_AGCamera_Switch:
+{
+    Camera_Switch args;
+    break;
+}
+case NT_AGCamera_ChangeOrResetStack:
+{
+    Camera_ChangeOrResetStack args;
+    break;
+}
+case NT_AGCameraGetActiveCameraIDNode:
+{
+    CameraGetActiveCameraIDNode args;
+    break;
+}
+case NT_AGCameraGetPropertiesNode:
+{
+    CameraGetPropertiesNode args;
+    break;
+}
+case NT_AGCameraResetToDefaultsNode:
+{
+    CameraResetToDefaultsNode args;
+    break;
+}
+case NT_AGCameraSetZoomNode:
+{
+    CameraSetZoomNode args;
+    break;
+}
+case NT_AGCamera_ReplaceResource:
+{
+    Camera_ReplaceResource args;
+    break;
+}
+case NT_AGCamera_SetProperty:
+{
+    CameraSetPropertyNode args;
+    break;
+}
+case NT_ChallengeTombTriggeredEmoteNode:
+{
+    ChallengeTombTriggerEmote args;
+    break;
+}
+case NT_ChallengeTombDisplayStatusIcon:
+{
+    ChallengeTombDisplayStatusIcon args;
+    break;
+}
+case NT_AGArrayNode:
+{
+    AGArrayNode args;
+    break;
+}
+case NT_AGSelectorNode:
+{
+    AGSelectorNode args;
+    break;
+}
+case NT_DebugDrawVector:
+{
+    DebugDrawVector args;
+    break;
+}
+case NT_AGDialogueActorAssignmentNode:
+{
+    DialogueActorAssignmentNode args;
+    break;
+}
+case NT_AGDialoguePlayLineNode:
+{
+    DialoguePlayLineNode args;
+    break;
+}
+case NT_AGQueryVOImmersionModeNode:
+{
+    QueryVOImmersionModeNode args;
+    break;
+}
+case NT_AGEnumValueNode:
+{
+    Misc_EnumValue args;
+    break;
+}
+case NT_AGEnumSelectorNode:
+{
+    Misc_EnumSelector args;
+    break;
+}
+case NT_AGValueConvertorNode:
+{
+    Misc_ValueConvertor args;
+    break;
+}
+case NT_GiveExperienceAward:
+{
+    GiveExperienceAward args;
+    break;
+}
+case NT_GiveXP:
+{
+    GiveXP args;
+    break;
+}
+case NT_GiveSkillPoints:
+{
+    GiveSkillPoints args;
+    break;
+}
+case NT_Experience_Adrenaline:
+{
+    Experience_AdrenalineNode args;
+    break;
+}
+case NT_ExperienceAdjustMaxHealth:
+{
+    ExperienceAdjustMaxHealth args;
+    break;
+}
+case NT_AGHasTraitNode:
+{
+    HasTraitNode args;
+    break;
+}
+case NT_AGAddTraitNode:
+{
+    AGAddTraitNode args;
+    break;
+}
+case NT_AGRevealSkillNode:
+{
+    AGRevealSkillNode args;
+    break;
+}
+case NT_Experience_ToggleAutoXpAward:
+{
+    Experience_ToggleAutoXpAward args;
+    break;
+}
+case NT_AGRemoveTraitNode:
+{
+    AGRemoveTraitNode args;
+    break;
+}
+case NT_AGPlaystylePathNode:
+{
+    AGPlaystylePathNode args;
+    break;
+}
+case NT_FxModifierNode:
+{
+    FXLib args;
+    break;
+}
+case NT_FxWindUnitEnabler:
+{
+    FxWindUnitEnabler args;
+    break;
+}
+case NT_FxWindSplineModifier:
+{
+    FxWindSplineModifier args;
+    break;
+}
+case NT_FxWindUnit:
+{
+    FxWindUnit args;
+    break;
+}
+case NT_FxWindPointNode:
+{
+    FxWindPointNode args;
+    break;
+}
+case NT_AGGameRulesInstanceNode:
+{
+    GameRulesInstance args;
+    break;
+}
+case NT_AGGameRulesMarkerNode:
+{
+    GameRulesMarker args;
+    break;
+}
+case NT_ObjectiveProgressionNode:
+{
+    ObjectiveProgression args;
+    break;
+}
+case NT_GameObjectiveNagNode:
+{
+    GameObjectiveNagNode args;
+    break;
+}
+case NT_AGNoticeableActionNode:
+{
+    NoticeableActionNode args;
+    break;
+}
+case NT_AGCurrentModeType:
+{
+    CurrentModeType args;
+    break;
+}
+case NT_AGProgressionRank:
+{
+    ProgressionRank args;
+    break;
+}
+case NT_AGMultiplayerAdaptationNode:
+{
+    MultiplayerAdaptationNode args;
+    break;
+}
+case NT_AGNewGamePlusNode:
+{
+    NewGamePlus args;
+    break;
+}
+case NT_GameWorldPlayerClassTotalsNode:
+{
+    AGPlayerClassTotalsNode args;
+    break;
+}
+case NT_GameWorldSetTensionNode:
+{
+    AGSetTensionNode args;
+    break;
+}
+case NT_GameWorldSecuritySystemNode:
+{
+    AGSecuritySystemNode args;
+    break;
+}
+case NT_AGGameWorld_GetDifficultyNode:
+{
+    GameWorld_GetDifficulty args;
+    break;
+}
+case NT_AGGameWorld_OnDifficultyChanged:
+{
+    GameWorld_OnDifficultyChanged args;
+    break;
+}
+case NT_AGGenChangeSettings:
+{
+    GeneratorChangeSettingsNode args;
+    break;
+}
+case NT_AGObjectHelicopterSetWaypoint:
+{
+    HelicopterSetWaypointNode args;
+    break;
+}
+case NT_AGHelicopterSetLookAtTarget:
+{
+    HelicopterSetLookAtTargetNode args;
+    break;
+}
+case NT_AGHuntManager_GiveInstance:
+{
+    HMGiveInstanceNode args;
+    break;
+}
+case NT_AGHuntManager_TakeInstance:
+{
+    HMTakeInstanceNode args;
+    break;
+}
+case NT_AGHuntManager_HowMany:
+{
+    HMHowManyNode args;
+    break;
+}
+case NT_AGHuntManager_ScareAndDisable:
+{
+    HMScareAndDisableNode args;
+    break;
+}
+case NT_DeviceRouter:
+{
+    DeviceRouter args;
+    break;
+}
+case NT_StickToWorld:
+{
+    StickToWorld args;
+    break;
+}
+case NT_StickZone:
+{
+    StickZone args;
+    break;
+}
+case NT_CheckAnyButtonPressed:
+{
+    Input_CheckAnyButtonPressed args;
+    break;
+}
+case NT_SetAction:
+{
+    SetAction args;
+    break;
+}
+case NT_AGInput_StickRotateTracker:
+{
+    Input_StickRotateTracker args;
+    break;
+}
+case NT_AGInput_CheckRequestedInputAction:
+{
+    Input_CheckRequestedInputAction args;
+    break;
+}
+case NT_AGInputDisableInputActionTypesNode:
+{
+    Input_DisableInputActionTypes args;
+    break;
+}
+case NT_Input_IsInputActionEnabled:
+{
+    Input_IsInputActionEnabled args;
+    break;
+}
+case NT_AGInputGetActionNode:
+{
+    Input_GetAction args;
+    break;
+}
+case NT_AGInputDisableActionNode:
+{
+    Input_DisableAction args;
+    break;
+}
+case NT_AGInstance1stLocalPlayerNode:
+{
+    Instance1stLocalPlayerIDNode args;
+    break;
+}
+case NT_AGInstanceHasAuthorityNode:
+{
+    Instance_HasAuthority args;
+    break;
+}
+case NT_AGInstanceFXNode:
+{
+    InstanceFXNode args;
+    break;
+}
+case NT_AGInstanceCheckCharacterClass:
+{
+    Instance_CheckCharacterClass args;
+    break;
+}
+case NT_AGInstanceSetUniformScale:
+{
+    InstanceSetUniformScaleNode args;
+    break;
+}
+case NT_AGInstanceSetNonuniformScale:
+{
+    InstanceSetNonuniformScaleNode args;
+    break;
+}
+case NT_AGInstancePlacementIDNode:
+{
+    InstancePlacementIDNode args;
+    break;
+}
+case NT_AGInstanceComparePlacementIDs:
+{
+    Instance_ComparePlacementIDsNode args;
+    break;
+}
+case NT_AGInstancePosNode:
+{
+    InstancePosNode args;
+    break;
+}
+case NT_AGInstanceGetPosNode:
+{
+    InstanceGetPosNode args;
+    break;
+}
+case NT_AGInstanceGetAxis:
+{
+    AGInstanceGetAxis args;
+    break;
+}
+case NT_AGInstance_GetOffset:
+{
+    AGInstance_GetOffset args;
+    break;
+}
+case NT_GetHeadingToOtherInstanceNode:
+{
+    GetHeadingToOtherInstanceNode args;
+    break;
+}
+case NT_AGInstanceTeleportNode:
+{
+    InstanceTeleportNode args;
+    break;
+}
+case NT_AGInstanceAlignToPoint:
+{
+    InstanceAlignToPointNode args;
+    break;
+}
+case NT_AGInstanceClothControl:
+{
+    InstanceClothControlNode args;
+    break;
+}
+case NT_AGInstanceSwitchClothConfig:
+{
+    InstanceSwitchClothConfigNode args;
+    break;
+}
+case NT_AGInstanceResetCloth:
+{
+    InstanceResetClothNode args;
+    break;
+}
+case NT_AGInstanceWarpAttachNode:
+{
+    InstanceWarpAttachNode args;
+    break;
+}
+case NT_AGInstanceWarpDetachNode:
+{
+    InstanceWarpDetachNode args;
+    break;
+}
+case NT_AGInstanceSkeletonBindNode:
+{
+    InstanceSkeletonBindNode args;
+    break;
+}
+case NT_AGInstanceFollowTargetNode:
+{
+    InstanceFollowTargetNode args;
+    break;
+}
+case NT_AGInstanceSetAnimGoalNode:
+{
+    InstanceSetAnimGoal args;
+    break;
+}
+case NT_AGInstanceOwnerPlayerNode:
+{
+    InstanceOwnerPlayerNode args;
+    break;
+}
+case NT_AGInstanceCoordinatesNode:
+{
+    InstanceCoordinatesNode args;
+    break;
+}
+case NT_AGInstanceCheckCharacter:
+{
+    Instance_CheckCharacter args;
+    break;
+}
+case NT_AGInstanceAllInRangeNode:
+{
+    InstanceAllInRangeNode args;
+    break;
+}
+case NT_AGInstanceDebugNameNode:
+{
+    InstanceDebugNameNode args;
+    break;
+}
+case NT_AGInstanceObjectNameNode:
+{
+    InstanceObjectNameNode args;
+    break;
+}
+case NT_AGUnitInstanceIDNode:
+{
+    UnitInstanceIDNode args;
+    break;
+}
+case NT_AGInstanceFadeOut:
+{
+    FadeOutNode args;
+    break;
+}
+case NT_AGInstanceDestroy:
+{
+    DestroyNode args;
+    break;
+}
+case NT_AGInstanceSetModel:
+{
+    AGInstanceSetModel args;
+    break;
+}
+case NT_AGHealthAndDamageNode:
+{
+    HealthAndDamageNode args;
+    break;
+}
+case NT_Instance_HealthState:
+{
+    Instance_HealthState args;
+    break;
+}
+case NT_AGInstanceGiveBirth:
+{
+    AGInstanceGiveBirth args;
+    break;
+}
+case NT_AGInstanceHideUnhide:
+{
+    AGInstanceHideUnhide args;
+    break;
+}
+case NT_AGInstancePaperdoll:
+{
+    AGInstancePaperdoll args;
+    break;
+}
+case NT_AGInstanceReset:
+{
+    AGInstanceReset args;
+    break;
+}
+case NT_AGInstanceDrawGroups:
+{
+    AGInstanceDrawGroups args;
+    break;
+}
+case NT_AGCollisionIDNode:
+{
+    CollisionIDNode args;
+    break;
+}
+case NT_AGCollisionRefNode:
+{
+    CollisionRefNode args;
+    break;
+}
+case NT_AGCollisionScaleNode:
+{
+    CollisionScaleNode args;
+    break;
+}
+case NT_AGInstanceFlammableNode:
+{
+    InstanceFlammableNode args;
+    break;
+}
+case NT_AGInstanceFlammableProps:
+{
+    InstanceFlammablePropsNode args;
+    break;
+}
+case NT_AGInstanceSetFlammableProps:
+{
+    InstanceSetFlammablePropsNode args;
+    break;
+}
+case NT_AGInstanceBoneParamNode:
+{
+    InstanceBoneParamNode args;
+    break;
+}
+case NT_InstanceIsAnimGoal:
+{
+    InstanceIsAnimGoal args;
+    break;
+}
+case NT_InstanceAnimGoalChanged:
+{
+    InstanceAnimGoalChanged args;
+    break;
+}
+case NT_InstanceWaitUntilAlive:
+{
+    InstanceWaitUntilAlive args;
+    break;
+}
+case NT_AGInteractiveSequenceToggle:
+{
+    HostedAnimation args;
+    break;
+}
+case NT_AGInstanceDynamicLightNode:
+{
+    InstanceDynamicLightNode args;
+    break;
+}
+case NT_SetMaterialParams:
+{
+    SetMaterialParams args;
+    break;
+}
+case NT_SetMaterialTextureParam:
+{
+    SetMaterialTextureParam args;
+    break;
+}
+case NT_SetVCacheParams:
+{
+    SetVCacheParams args;
+    break;
+}
+case NT_GetTargetScreenPos:
+{
+    GetTargetScreenPos args;
+    break;
+}
+case NT_AGInstanceAnimTimeScale:
+{
+    AGInstanceAnimTimeScale args;
+    break;
+}
+case NT_AGInstanceMaterialSwap:
+{
+    Instance_MaterialSwap args;
+    break;
+}
+case NT_AGInstanceMaterialSwapCO:
+{
+    Instance_MaterialSwapCO args;
+    break;
+}
+case NT_AGInstanceSwapMaterial:
+{
+    Instance_SwapMaterial args;
+    break;
+}
+case NT_EnableAdrenaline:
+{
+    Instance_EnableAdrenaline args;
+    break;
+}
+case NT_DisableAdrenaline:
+{
+    Instance_DisableAdrenaline args;
+    break;
+}
+case NT_AGInstance_ForceProjectileCelebrationNode:
+{
+    Instance_ForceProjectileCelebration args;
+    break;
+}
+case NT_AGInstanceSensibleNode:
+{
+    AGInstanceSensibleNode args;
+    break;
+}
+case NT_InstanceContainerNode:
+{
+    InstanceContainerNode args;
+    break;
+}
+case NT_AGInstanceIsObjectID:
+{
+    Instance_IsObjectID args;
+    break;
+}
+case NT_AGInstanceIsPlayerID:
+{
+    Instance_IsPlayerID args;
+    break;
+}
+case NT_AGInstanceIsDynamicMarkupUsed:
+{
+    Instance_IsDynamicMarkupUsed args;
+    break;
+}
+case NT_Instance_DamageData:
+{
+    Instance_DamageData args;
+    break;
+}
+case NT_Projectile_GetInfo:
+{
+    Projectile_GetInfo args;
+    break;
+}
+case NT_AGInstanceCheckProximityToOtherInstanceNode:
+{
+    AGInstanceCheckProximityToOtherInstanceNode args;
+    break;
+}
+case NT_Instance_GetClosestBone:
+{
+    InstanceGetClosestBoneNode args;
+    break;
+}
+case NT_Instance_StateControlCondition:
+{
+    Instance_StateControlCondition args;
+    break;
+}
+case NT_Instance_StateControlProperty:
+{
+    Instance_StateControlProperty args;
+    break;
+}
+case NT_FireWeaponNode:
+{
+    FireWeaponNode args;
+    break;
+}
+case NT_AGInstanceIsFacing:
+{
+    AGInstanceIsFacing args;
+    break;
+}
+case NT_InstanceMarkerPos:
+{
+    InstanceMarkerPos args;
+    break;
+}
+case NT_Instance_ProjectileOwnerNotify:
+{
+    Instance_ProjectileOwnerNotify args;
+    break;
+}
+case NT_AGInstanceDynamicMarkupComponentNode:
+{
+    Instance_DynamicMarkupComponentNode args;
+    break;
+}
+case NT_AGInstanceDynamicMarkupOverrideNode:
+{
+    Instance_DynamicMarkupOverrideNode args;
+    break;
+}
+case NT_AGInstanceIsVisible:
+{
+    AGInstanceIsVisible args;
+    break;
+}
+case NT_Instance_ActivateReticule:
+{
+    Instance_ActivateReticule args;
+    break;
+}
+case NT_AG_Instance_IsValid:
+{
+    AG_Instance_IsValid args;
+    break;
+}
+case NT_AG_Instance_MovesetProfile:
+{
+    Instance_MovesetProfile args;
+    break;
+}
+case NT_AGInstanceQueryLookAtTarget:
+{
+    QueryLookAtTargetNode args;
+    break;
+}
+case NT_AGInstanceTeamCheck:
+{
+    InstanceTeamCheck args;
+    break;
+}
+case NT_AGInstanceTrackTarget:
+{
+    InstanceTrackTargetNode args;
+    break;
+}
+case NT_AGInstancePowerMeterEventsNode:
+{
+    PowerMeterEvents args;
+    break;
+}
+case NT_AGInstancePhysicsAttachComponentNode:
+{
+    Instance_PhysicsAttachComponentNode args;
+    break;
+}
+case NT_AGInstanceSetDeactivationDistancesNode:
+{
+    InstanceSetDeactivationDistancesNode args;
+    break;
+}
+case NT_AGInstanceKeepAlive:
+{
+    Instance_KeepAlive args;
+    break;
+}
+case NT_AGInterpCurveResourceID:
+{
+    Interp_CurveResourceID args;
+    break;
+}
+case NT_AGInventoryNode:
+{
+    PlayerInventoryNode args;
+    break;
+}
+case NT_InventoryGetOwnerNode:
+{
+    InventoryGetOwnerNode args;
+    break;
+}
+case NT_InventoryGetOwnerNode_:
+{
+    InventoryGetOwnerNode args;
+    break;
+}
+case NT_AGLighting_LightGroupNode:
+{
+    Lighting_LightGroups args;
+    break;
+}
+case NT_AGLightingLightInstanceNode:
+{
+    LightingLightInstanceNode args;
+    break;
+}
+case NT_AGLoadoutHasWeaponForItemInLoadoutNode:
+{
+    Loadout_HasWeaponForItemInLoadout args;
+    break;
+}
+case NT_AGLogicAnyNode:
+{
+    LogicAnyNode args;
+    break;
+}
+case NT_AGLogicAnyNode_:
+{
+    LogicAnyNode args;
+    break;
+}
+case NT_AGLogicOnceNode:
+{
+    LogicOnceNode args;
+    break;
+}
+case NT_AGLogicConditionNode:
+{
+    LogicConditionNode args;
+    break;
+}
+case NT_AGLogicConditionalRouteNode:
+{
+    LogicConditionalRouteNode args;
+    break;
+}
+case NT_AGLogicRouteNode:
+{
+    LogicRouteNode args;
+    break;
+}
+case NT_AGLogicBlockerNode:
+{
+    LogicBlockerNode args;
+    break;
+}
+case NT_AGLogicOnChangeNode:
+{
+    LogicOnChangeNode args;
+    break;
+}
+case NT_AGLogicOnStartedOnStoppedNode:
+{
+    LogicOnStartedOnStoppedNode args;
+    break;
+}
+case NT_AGLogicNOTNode:
+{
+    LogicNOTNode args;
+    break;
+}
+case NT_AGLogicBooleanOpNode:
+{
+    LogicBooleanOpNode args;
+    break;
+}
+case NT_AGLogicBooleanOpMultiNode:
+{
+    LogicBooleanOpMultiNode args;
+    break;
+}
+case NT_AGLogicBooleanOpWithTriggerNode:
+{
+    LogicBooleanOpWithTriggerNode args;
+    break;
+}
+case NT_Logic_PassThrough:
+{
+    Logic_PassThrough args;
+    break;
+}
+case NT_AGLogicHoldUntilAllInputsNode:
+{
+    LogicHoldUntilAllInputsNode args;
+    break;
+}
+case NT_AGLogicHoldUntilAllInputsNode_:
+{
+    LogicHoldUntilAllInputsNode args;
+    break;
+}
+case NT_AGSwitchSelect:
+{
+    AGSwitchSelect args;
+    break;
+}
+case NT_UnitMarkupNode:
+{
+    UnitMarkupNode args;
+    break;
+}
+case NT_AGMathComparisonNodeVer2:
+{
+    Math_ComparisonNodeVer2 args;
+    break;
+}
+case NT_AGMathRandomSelect:
+{
+    Math_RandomSelect args;
+    break;
+}
+case NT_AGMathRandomSequence:
+{
+    Math_RandomSequence args;
+    break;
+}
+case NT_AGMathArithmeticNodeVer2:
+{
+    Math_ArithmeticNodeVer2 args;
+    break;
+}
+case NT_AGMathSetBitFlags:
+{
+    AGMathSetBitFlags args;
+    break;
+}
+case NT_AGMathBitOperation:
+{
+    AGMathBitOperation args;
+    break;
+}
+case NT_Math_RandomStickPos:
+{
+    Math_RandomStickPos args;
+    break;
+}
+case NT_AGMathSpringMassDamper:
+{
+    SpringMassDamperNode args;
+    break;
+}
+case NT_AGRandomChanceNode:
+{
+    AGRandomChanceNode args;
+    break;
+}
+case NT_AGRandomTriggerNode:
+{
+    AGRandomTriggerNode args;
+    break;
+}
+case NT_AGMathDrawParabola:
+{
+    DrawParabolaNode args;
+    break;
+}
+case NT_AGMathClampNode:
+{
+    MathClampNode args;
+    break;
+}
+case NT_AGMathAverageWithPrevValuesNode:
+{
+    Math_AverageWithPrevValues args;
+    break;
+}
+case NT_AGMathAverageMinMax:
+{
+    Math_AverageMinMax args;
+    break;
+}
+case NT_MeshPlacementNode:
+{
+    MeshPlacementNode args;
+    break;
+}
+case NT_AGMessageSendNode:
+{
+    MessageSendNode args;
+    break;
+}
+case NT_AGMessageReceiveNode:
+{
+    MessageReceiveNode args;
+    break;
+}
+case NT_AGMessageReceiveCollisionNode:
+{
+    MessageReceiveCollisionNode args;
+    break;
+}
+case NT_AGMessageReceivePushPullNode:
+{
+    MessageReceivePushPullNode args;
+    break;
+}
+case NT_AGMessageReceivePlayerNode:
+{
+    MessageReceivePlayerNode args;
+    break;
+}
+case NT_Message_ReceiveDamage:
+{
+    Message_ReceiveDamage args;
+    break;
+}
+case NT_DLCLicenseCheck:
+{
+    DLC_LicenseCheck args;
+    break;
+}
+case NT_DLCLicenseToggle:
+{
+    DLC_LicenseToggle args;
+    break;
+}
+case NT_AGTimeMult:
+{
+    TimeMult args;
+    break;
+}
+case NT_AGGetAspectRatio:
+{
+    GetAspectRatio args;
+    break;
+}
+case NT_GenerateUniqueIDNode:
+{
+    GenerateUniqueIDNode args;
+    break;
+}
+case NT_MiscIsInFastTravelNode:
+{
+    GenerateUniqueIDNode args;
+    break;
+}
+case NT_SendMetricsNode:
+{
+    SendMetrics args;
+    break;
+}
+case NT_GenericLiveNode:
+{
+    GenericLive args;
+    break;
+}
+case NT_AGMiscUTSurveyPrompt:
+{
+    Misc_UTSurveyPrompt args;
+    break;
+}
+case NT_Movie_PlayScaleformMovieNode:
+{
+    Movie_PlayScaleformMovie args;
+    break;
+}
+case NT_Movie_PlayBinkMovieNode:
+{
+    Movie_PlayBinkMovie args;
+    break;
+}
+case NT_Movie_StopMovieNode:
+{
+    Movie_StopMovie args;
+    break;
+}
+case NT_Movie_SlaveMovieNode:
+{
+    Movie_SlaveMovie args;
+    break;
+}
+case NT_Movie_UnSlaveMovieNode:
+{
+    Movie_UnSlaveMovie args;
+    break;
+}
+case NT_AGNPCStatus:
+{
+    NPCStatusNode args;
+    break;
+}
+case NT_AGNPCAwareness:
+{
+    NPCAwarenessNode args;
+    break;
+}
+case NT_AGNPCSetWaypointSet:
+{
+    NPCSetWaypointSetNode args;
+    break;
+}
+case NT_AGNPCSetGoapSettings:
+{
+    NPCSetGoapSettingsNode args;
+    break;
+}
+case NT_AGNPCEnableGoal:
+{
+    NPCEnableGoalNode args;
+    break;
+}
+case NT_AGNPCEnableAction:
+{
+    NPCEnableActionNode args;
+    break;
+}
+case NT_AGNPCEnableAltRangedAttacks:
+{
+    NPCEnableAltRangedAttacksNode args;
+    break;
+}
+case NT_AGNPCEnableMeleeAttack:
+{
+    NPCEnableMeleeAttackNode args;
+    break;
+}
+case NT_AGNPCSetForcedCombatTarget:
+{
+    NPCSetForcedCombatTargetNode args;
+    break;
+}
+case NT_AGNPCFollow:
+{
+    NPCFollowNode args;
+    break;
+}
+case NT_AGNPCForceTargetForNextAttack:
+{
+    NPCForceTargetForNextAttackNode args;
+    break;
+}
+case NT_AGNPCSetForcedFleeTarget:
+{
+    NPCSetForcedFleeTargetNode args;
+    break;
+}
+case NT_AGNPCSetLookAtTarget:
+{
+    NPCSetLookAtTargetNode args;
+    break;
+}
+case NT_AGNPCSetForcedInstanceAwareness:
+{
+    NPCSetForcedInstanceAwarenessNode args;
+    break;
+}
+case NT_AGNPCSetForcedMovementStyle:
+{
+    NPCSetForcedMovementStyleNode args;
+    break;
+}
+case NT_AGNPCSetPathSharingPenalty:
+{
+    NPCSetPathSharingPenaltyNode args;
+    break;
+}
+case NT_AGNPCSetTargetOffset:
+{
+    NPCSetTargetOffsetNode args;
+    break;
+}
+case NT_AGNPCSetRepulsor:
+{
+    NPCSetRepulsorNode args;
+    break;
+}
+case NT_AGNPCSetMoverFlags:
+{
+    NPCSetMoverFlagsNode args;
+    break;
+}
+case NT_AGNPCPause:
+{
+    NPCPauseNode args;
+    break;
+}
+case NT_AGNPCSetAmbushMode:
+{
+    NPCSetAmbushModeNode args;
+    break;
+}
+case NT_AGNPCTeam:
+{
+    NPCSetTeamNode args;
+    break;
+}
+case NT_AGNPCSetGuardMode:
+{
+    NPCSetGuardModeNode args;
+    break;
+}
+case NT_AGNPCSetAssignedLocation:
+{
+    NPCSetAssignedLocationNode args;
+    break;
+}
+case NT_AGNPCSetNextCoverPoint:
+{
+    NPCSetNextCoverPointNode args;
+    break;
+}
+case NT_AGNPCDespawn:
+{
+    NPCDespawnNode args;
+    break;
+}
+case NT_AGNPCHeldObject:
+{
+    NPCHeldObjectNode args;
+    break;
+}
+case NT_AGNPCSelectAltProjectile:
+{
+    NPCSelectAltProjectileNode args;
+    break;
+}
+case NT_AGNPCUseObject:
+{
+    NPCUseObjectNode args;
+    break;
+}
+case NT_AGNPCIsAware:
+{
+    NPC_IsAware args;
+    break;
+}
+case NT_AGNPCIsGuarding:
+{
+    AGNPC_IsGuarding args;
+    break;
+}
+case NT_AGNPCGetCurrentTarget:
+{
+    AGNPCGetCurrentTarget args;
+    break;
+}
+case NT_AGNPCSetSenseCones:
+{
+    NPCSetSenseConesNode args;
+    break;
+}
+case NT_AGNPCPuppetMode:
+{
+    NPCPuppetModeNode args;
+    break;
+}
+case NT_AGNPCCrowNode:
+{
+    NPCCrowNode args;
+    break;
+}
+case NT_AGNPCGetWeapon:
+{
+    AGNPC_GetWeapon args;
+    break;
+}
+case NT_AGNPCSetPlanLayer:
+{
+    NPC_SetPlanLayer args;
+    break;
+}
+case NT_AGNPCThreaten:
+{
+    NPCThreatenNode args;
+    break;
+}
+case NT_AGNPCTurretHoldFire:
+{
+    AGNPC_TurretHoldFire args;
+    break;
+}
+case NT_AGNPCCorpseManager:
+{
+    AGNPC_CorpseManager args;
+    break;
+}
+case NT_AGNPCPlannerObstacle:
+{
+    NPCPlannerObstacle args;
+    break;
+}
+case NT_AGNPCPlannerCheckGoal:
+{
+    NPCPlannerCheckGoalNode args;
+    break;
+}
+case NT_AGNPCCallForHelp:
+{
+    NPCCallForHelpNode args;
+    break;
+}
+case NT_AGNPCTeamCheck:
+{
+    NPCTeamCheckNode args;
+    break;
+}
+case NT_AGNPCAssaultMode:
+{
+    NPCAssaultModeNode args;
+    break;
+}
+case NT_AGNPCAlertLevel:
+{
+    NPCAlertLevelNode args;
+    break;
+}
+case NT_AGNPCNeeds:
+{
+    NPCNeedsNode args;
+    break;
+}
+case NT_AGNPCGesture:
+{
+    NPCGestureNode args;
+    break;
+}
+case NT_AGNPCGetEventInfo:
+{
+    NPCGetEventInfoNode args;
+    break;
+}
+case NT_AGNPCCollisionReaction:
+{
+    NPCCollisionReaction args;
+    break;
+}
+case NT_AGNPCStairHelper:
+{
+    NPCStairHelper args;
+    break;
+}
+case NT_AGNPCUpdateAccuracySettings:
+{
+    NPCUpdateAccuracySettings args;
+    break;
+}
+case NT_ScaleformMovieNode:
+{
+    ScaleformMovieNode args;
+    break;
+}
+case NT_AGRopeVisualOnly:
+{
+    RopeVisualOnly args;
+    break;
+}
+case NT_AGRopeVisualOnlyV2:
+{
+    RopeVisualOnlyV2 args;
+    break;
+}
+case NT_AGRopeWithCollision:
+{
+    RopeWithCollision args;
+    break;
+}
+case NT_AGZoneID:
+{
+    ZoneIDNode args;
+    break;
+}
+case NT_AGObjectHasComponent:
+{
+    ObjectHasComponent args;
+    break;
+}
+case NT_AGObjectEnableComponent:
+{
+    ObjectEnableComponent args;
+    break;
+}
+case NT_AGObjectDisableComponent:
+{
+    ObjectDisableComponent args;
+    break;
+}
+case NT_AGObjectInstanceID:
+{
+    ObjectInstanceIDNode args;
+    break;
+}
+case NT_AGObjectArmorNode:
+{
+    ObjectArmorNode args;
+    break;
+}
+case NT_AGObjectDamageNode:
+{
+    ObjectDamageNode args;
+    break;
+}
+case NT_AGSpawn:
+{
+    SpawnNode args;
+    break;
+}
+case NT_AGSpawnObject:
+{
+    SpawnObjectNode args;
+    break;
+}
+case NT_AGSpawnObjectSelectable:
+{
+    SpawnObjectSelectableNode args;
+    break;
+}
+case NT_AGSpawnSquib:
+{
+    SpawnSquibNode args;
+    break;
+}
+case NT_AGObjectDestruct:
+{
+    ObjectDestructNode args;
+    break;
+}
+case NT_Projectile_SetStateNode:
+{
+    Projectile_SetStateNode args;
+    break;
+}
+case NT_Interact_Set:
+{
+    Interact_Set args;
+    break;
+}
+case NT_AGObjectGetComponentProperties:
+{
+    ObjectGetComponentProperties args;
+    break;
+}
+case NT_AGObjectEnableNPCInteraction:
+{
+    ObjectEnableInteraction args;
+    break;
+}
+case NT_AGObjectInteractForceStart:
+{
+    AGObjectInteractForceStart args;
+    break;
+}
+case NT_AGObjectInteractForceEnd:
+{
+    AGObjectInteractForceEnd args;
+    break;
+}
+case NT_AGObjectInteractForceComplete:
+{
+    AGObjectInteractForceComplete args;
+    break;
+}
+case NT_AGObjectInteractForceAbort:
+{
+    AGObjectInteractForceAbort args;
+    break;
+}
+case NT_AGObjectInteractProfileEnable:
+{
+    AGObjectInteractProfileEnable args;
+    break;
+}
+case NT_AGObjectInteractPushPull:
+{
+    AGObjectInteractPushPull args;
+    break;
+}
+case NT_AGObjectInteractSuppressUI:
+{
+    AGObjectInteractSuppressUI args;
+    break;
+}
+case NT_AGObjectFluidContainerSetProperties:
+{
+    AGObjectFluidContainerSetProperties args;
+    break;
+}
+case NT_AGObjectInteractEvent:
+{
+    AGObjectInteractEvent args;
+    break;
+}
+case NT_AGObjectInteractGlobalUI:
+{
+    AGObjectInteractGlobalUI args;
+    break;
+}
+case NT_AGObjectInteractCondition:
+{
+    AGObjectInteractCondition args;
+    break;
+}
+case NT_SurvivalInstinctNode:
+{
+    SurvivalInstinctNode args;
+    break;
+}
+case NT_SurvivalInstinctSurveyNode:
+{
+    SurvivalInstinctSurveyNode args;
+    break;
+}
+case NT_AGObjectAdvertiseEvent:
+{
+    AGObjectAdvertiseEvent args;
+    break;
+}
+case NT_AGObjectAdvertiseProfileEnable:
+{
+    AGObjectAdvertiseProfileEnable args;
+    break;
+}
+case NT_AGObjectAdvertiseRequestStart:
+{
+    AGObjectAdvertiseRequestStart args;
+    break;
+}
+case NT_AGObjectAdvertiseRequestStop:
+{
+    AGObjectAdvertiseRequestStop args;
+    break;
+}
+case NT_AGLiveSpawnerRelay:
+{
+    LiveSpawnerRelayNode args;
+    break;
+}
+case NT_AGBuffActivateNode:
+{
+    BuffActivateNode args;
+    break;
+}
+case NT_AGObjectInputsNode:
+{
+    ObjectInputsNode args;
+    break;
+}
+case NT_AGObjectOutputsNode:
+{
+    ObjectOutputsNode args;
+    break;
+}
+case NT_ActionGraphInstanceInputsNode:
+{
+    ActionGraphInstanceInputsNode args;
+    break;
+}
+case NT_ActionGraphInstanceOutputsNode:
+{
+    ActionGraphInstanceOutputsNode args;
+    break;
+}
+case NT_AGObjectTransitionNode:
+{
+    ObjectTransitionNode args;
+    break;
+}
+case NT_AGObjectArmorTransitionNode:
+{
+    ObjectArmorTransition args;
+    break;
+}
+case NT_AGObjectShardSpawnedNode:
+{
+    ObjectShardSpawned args;
+    break;
+}
+case NT_AGPACGenerateSpawnList:
+{
+    GenerateSpawnListNode args;
+    break;
+}
+case NT_AGPACSetTier:
+{
+    PACSetTierNode args;
+    break;
+}
+case NT_AGPerformanceSetParamsNode:
+{
+    Performance_SetParams args;
+    break;
+}
+case NT_AGPhysicsGetWindNode:
+{
+    PhysicsGetWindNode args;
+    break;
+}
+case NT_AGPhysicsGravityNode:
+{
+    PhysicsGravityNode args;
+    break;
+}
+case NT_AGPhysicsRBProperties:
+{
+    PhysicsPropertiesNode args;
+    break;
+}
+case NT_AGPhysicsApplyPhysicsNode:
+{
+    PhysicsApplyPhysicsNode args;
+    break;
+}
+case NT_AGPhysicsMoveToNode:
+{
+    PhysicsMoveToNode args;
+    break;
+}
+case NT_AGPhysicsLineProbeNode:
+{
+    PhysicsLineProbeNode args;
+    break;
+}
+case NT_AGPhysicsRagdollJointDataNode:
+{
+    PhysicsRagdollJointData args;
+    break;
+}
+case NT_AGPhysicsTimeQuake:
+{
+    PhysicsTimeQuakeNode args;
+    break;
+}
+case NT_AGPhysicsGlobalJoints:
+{
+    GlobalJointNode args;
+    break;
+}
+case NT_AGPhysicsJointCreate:
+{
+    PhysicsJointCreateNode args;
+    break;
+}
+case NT_AGPhysicsJointDestroy:
+{
+    PhysicsJointDestroyNode args;
+    break;
+}
+case NT_AGPhysicsJointRopeLength:
+{
+    PhysicsJointRopeLength args;
+    break;
+}
+case NT_AGPhysicsJointRopeVisibility:
+{
+    PhysicsJointSetRopeVisibilityNode args;
+    break;
+}
+case NT_AGPhysicsJointLink:
+{
+    PhysicsJointLinkNode args;
+    break;
+}
+case NT_AGPhysicsJointMotor:
+{
+    PhysicsJointMotorNode args;
+    break;
+}
+case NT_AGPhysicsJointRange:
+{
+    PhysicsJointRangeNode args;
+    break;
+}
+case NT_AGPhysicsJointLimit:
+{
+    PhysicsJointLimitNode args;
+    break;
+}
+case NT_AGPhysicsJointState:
+{
+    PhysicsJointStateNode args;
+    break;
+}
+case NT_AGPhysicsTargetJointMotor:
+{
+    PhysicsJointTargetMotorNode args;
+    break;
+}
+case NT_AGPhysicsVelocityOverride:
+{
+    PhysicsVelocityOverrideNode args;
+    break;
+}
+case NT_AGPhysicsCollisionGroupOverride:
+{
+    PhysicsCollisionGroupOverrideNode args;
+    break;
+}
+case NT_AGPhysicsSpatialAwarenessProbeNode:
+{
+    PhysicsSpatialAwarenessProbeNode args;
+    break;
+}
+case NT_AGPlayerHostedOverlayToggle:
+{
+    HostedAnimation args;
+    break;
+}
+case NT_AGPlayerAmmoMenuNode:
+{
+    PlayerAmmoMenuNode args;
+    break;
+}
+case NT_AGPlayerAmmoNode:
+{
+    PlayerAmmoNode args;
+    break;
+}
+case NT_AGPlayerSeizeNode:
+{
+    PlayerSeizeNode args;
+    break;
+}
+case NT_AGPlayerRespawnNode:
+{
+    PlayerRespawnNode args;
+    break;
+}
+case NT_AGPlayerGetSenseTargetNode:
+{
+    PlayerGetSenseTargetNode args;
+    break;
+}
+case NT_AGPlayerForceSenseTargetNode:
+{
+    PlayerForceSenseTargetNode args;
+    break;
+}
+case NT_AGPlayerGetProxyInfoNode:
+{
+    PlayerGetProxyInfoNode args;
+    break;
+}
+case NT_Player_SnapToRangedSenseTarget:
+{
+    Player_SnapToRangedSenseTarget args;
+    break;
+}
+case NT_Player_SnapToCachedTarget:
+{
+    Player_SnapToCachedTarget args;
+    break;
+}
+case NT_AGGetTargetUnderReticle:
+{
+    AGGetTargetUnderReticle args;
+    break;
+}
+case NT_Player_UnitChecksNode:
+{
+    Player_UnitChecks args;
+    break;
+}
+case NT_AGPlayerOnSetAnimGoalNode:
+{
+    PlayerOnSetAnimGoalNode args;
+    break;
+}
+case NT_AGPlayerAnimGraphSetGHOST:
+{
+    Player_AnimGraphSetGHOST args;
+    break;
+}
+case NT_AGPlayerAnimGraphSetCustomMovesetHost:
+{
+    Player_AnimGraphSetGHOST args;
+    break;
+}
+case NT_AGPlayerAnimGraphSetDialogueOverlayHost:
+{
+    Player_AnimGraphSetDialogueOverlayHost args;
+    break;
+}
+case NT_PlayerProcessSwingNode:
+{
+    PlayerProcessSwingNode args;
+    break;
+}
+case NT_Player_DeathOptions:
+{
+    Player_DeathOptions args;
+    break;
+}
+case NT_AGGetPlayerID:
+{
+    Player_GetPlayerID args;
+    break;
+}
+case NT_AGPlayerAttachToMarkup:
+{
+    Player_AttachToMarkup args;
+    break;
+}
+case NT_AGPlayerDetachFromMarkup:
+{
+    Player_DetachFromMarkup args;
+    break;
+}
+case NT_AGPlayerGetAttachedMarkup:
+{
+    Player_GetAttachedMarkup args;
+    break;
+}
+case NT_AGPlayerSetJumpTarget:
+{
+    Player_SetJumpTarget args;
+    break;
+}
+case NT_AGPlayerSteering:
+{
+    Player_Steering args;
+    break;
+}
+case NT_AGPlayer_InteractChangeType:
+{
+    Player_InteractChangeType args;
+    break;
+}
+case NT_AGPlayerGetTeamID:
+{
+    Player_GetTeamID args;
+    break;
+}
+case NT_AGPlayerTeam:
+{
+    Player_Team args;
+    break;
+}
+case NT_AGPlayerSetLookAtTargetNode:
+{
+    Player_SetCameraLookAtTarget args;
+    break;
+}
+case NT_AGPlayerSetHeadTrackLookAtTargetNode:
+{
+    Player_SetHeadTrackLookAtTarget args;
+    break;
+}
+case NT_AGPlayerGiveLootNode:
+{
+    PlayerGiveLootNode args;
+    break;
+}
+case NT_AGPlayerGetLootQuantityNode:
+{
+    PlayerGetLootQuantityNode args;
+    break;
+}
+case NT_AGPlayerGiveCollectibleNode:
+{
+    PlayerGiveCollectibleNode args;
+    break;
+}
+case NT_AGPlayerHasCollectibleNode:
+{
+    PlayerHasCollectibleNode args;
+    break;
+}
+case NT_AGPlayerCultureKnowledgeNode:
+{
+    AGPlayerCultureKnowledgeNode args;
+    break;
+}
+case NT_AGPlayerEquipOutfitPieceNode:
+{
+    PlayerEquipOutfitPieceNode args;
+    break;
+}
+case NT_AGPlayerRepairBrokenOutfitPieceNode:
+{
+    PlayerRepairBrokenOutfitPieceNode args;
+    break;
+}
+case NT_AGOutfitPieceEquippedNode:
+{
+    Player_OutfitPieceEquipped args;
+    break;
+}
+case NT_AGPlayerUnlockContentNode:
+{
+    PlayerUnlockContentNode args;
+    break;
+}
+case NT_AGPlayerHasContentUnlockedNode:
+{
+    PlayerHasContentUnlockedNode args;
+    break;
+}
+case NT_AGPlayerSEMStatsNode:
+{
+    PlayerSEMStatsNode args;
+    break;
+}
+case NT_AGPlayerGetSEMStatsNode:
+{
+    PlayerGetSEMStatsNode args;
+    break;
+}
+case NT_AGPlayerStatNotifications:
+{
+    PlayerStatNotificationNode args;
+    break;
+}
+case NT_AGPlayerDefaultCostumeZoneID:
+{
+    PlayerDefaultCostumeZoneID args;
+    break;
+}
+case NT_AGPlayerCurrentCostumeZoneID:
+{
+    PlayerCurrentCostumeZoneID args;
+    break;
+}
+case NT_AG_Player_IsConcealed:
+{
+    AG_Player_IsConcealed args;
+    break;
+}
+case NT_AG_Player_MeleeMove:
+{
+    AG_Player_MeleeMove args;
+    break;
+}
+case NT_AG_Player_MeleeMove_GetCurrentTarget:
+{
+    AG_Player_MeleeMove_GetCurrentTarget args;
+    break;
+}
+case NT_AGPlayer_SetCombatEncounterState:
+{
+    Player_SetCombatEncounterState args;
+    break;
+}
+case NT_AGPlayer_DBND_Indicator:
+{
+    Player_DBNDIndicator args;
+    break;
+}
+case NT_AGPlayerFreeCrafting:
+{
+    CraftingRecipe args;
+    break;
+}
+case NT_AGPlayer_CombatStatus_Override:
+{
+    Player_CombatStatus_Override args;
+    break;
+}
+case NT_AGPlayer_CombatStatus_GetStealthLoopState:
+{
+    Player_CombatStatus_GetStealthLoopState args;
+    break;
+}
+case NT_AGPlayer_RappelRopeControl:
+{
+    Player_RappelRopeControl args;
+    break;
+}
+case NT_AGObjectProgressionStateRefresh:
+{
+    ProgressionStateRefreshNode args;
+    break;
+}
+case NT_AGRagdollWeldRootNode:
+{
+    RagdollWeldRootNode args;
+    break;
+}
+case NT_AGRagdollGetPosNode:
+{
+    RagdollGetPosNode args;
+    break;
+}
+case NT_AGRagdollSetParamsNode:
+{
+    RagdollSetParamsNode args;
+    break;
+}
+case NT_AGGraphicsOverrideNode:
+{
+    Render_GraphicsOverride args;
+    break;
+}
+case NT_AGGraphicsOverridePercentNode:
+{
+    Render_GraphicsOverridePercent args;
+    break;
+}
+case NT_AGReleaseGraphicsOverrideNode:
+{
+    Render_ReleaseGraphicsOverride args;
+    break;
+}
+case NT_AGOverrideShadowSplitsNode:
+{
+    Render_OverrideShadowSplits args;
+    break;
+}
+case NT_AGCollectibleRenderNode:
+{
+    Render_CollectibleRender args;
+    break;
+}
+case NT_AGRotateCollectible:
+{
+    Render_RotateCollectibleOnStick args;
+    break;
+}
+case NT_AGDrawableAddModelToSlot:
+{
+    Drawable_AddModelToSlot args;
+    break;
+}
+case NT_AGDrawableRemoveModelFromSlot:
+{
+    Drawable_RemoveModelFromSlot args;
+    break;
+}
+case NT_AGSetHairCollisionPlaneNode:
+{
+    Render_SetHairPlaneCollision args;
+    break;
+}
+case NT_AGSetHairSimulationProfileNode:
+{
+    Render_SetHairSimulationProfile args;
+    break;
+}
+case NT_AGSetHairLODProfileOverrideNode:
+{
+    Render_SetHairLODProfileOverride args;
+    break;
+}
+case NT_AGSetHairRenderProfileNode:
+{
+    Render_SetHairRenderProfile args;
+    break;
+}
+case NT_AGSetHairObjectNode:
+{
+    Render_SetHairObject args;
+    break;
+}
+case NT_AGDeformSnow:
+{
+    AGDeformSnow args;
+    break;
+}
+case NT_AGSetMotionBlur:
+{
+    AGRender_SetMotionBlur args;
+    break;
+}
+case NT_Render_OverrideSnowDeformationComponent:
+{
+    Render_OverrideSnowDeformationComponent args;
+    break;
+}
+case NT_Render_OverrideFogVolume:
+{
+    Render_OverrideFogVolume args;
+    break;
+}
+case NT_AGSetWetness:
+{
+    AGRender_SetWetness args;
+    break;
+}
+case NT_RewardsChooseCollectibleNode:
+{
+    RewardsChooseCollectibleNode args;
+    break;
+}
+case NT_RewardsCollectibleUIMessengerNode:
+{
+    RewardsCollectibleUIMessengerNode args;
+    break;
+}
+case NT_Rewards_CollectibleAGHelper:
+{
+    Rewards_CollectibleAGHelper args;
+    break;
+}
+case NT_AGRewards_ActivateOutcast:
+{
+    Rewards_ActivateOutcast args;
+    break;
+}
+case NT_AGRewards_RevealCollectibleOnMap:
+{
+    Rewards_RevealCollectibleOnMap args;
+    break;
+}
+case NT_ScaleformTextPrompt:
+{
+    ScaleformTextPrompt args;
+    break;
+}
+case NT_ScaleformFunctionCallNode:
+{
+    ScaleformFunctionCallNode args;
+    break;
+}
+case NT_ScaleformISSMovieNode:
+{
+    ScaleformISSMovieNode args;
+    break;
+}
+case NT_ScaleformSetVariableNode:
+{
+    ScaleformSetVariableNode args;
+    break;
+}
+case NT_ScaleformMarkerAttachNode:
+{
+    ScaleformMarkerAttachNode args;
+    break;
+}
+case NT_ScaleformLocalSpaceAttachNode:
+{
+    ScaleformLocalSpaceAttachNode args;
+    break;
+}
+case NT_ScaleformCameraAttachNode:
+{
+    ScaleformCameraAttachNode args;
+    break;
+}
+case NT_ScaleformActionPromptNode:
+{
+    ScaleformActionPromptNode args;
+    break;
+}
+case NT_ScaleformHUDNode:
+{
+    ScaleformHUDNode args;
+    break;
+}
+case NT_UIPlusDangerPrompt:
+{
+    UIPlusDangerPrompt args;
+    break;
+}
+case NT_ImageStreamNode:
+{
+    ImageStreamNode args;
+    break;
+}
+case NT_Scaleform_UILayer:
+{
+    Scaleform_UILayer args;
+    break;
+}
+case NT_Scaleform_ImageResourceID:
+{
+    Scaleform_ImageResourceID args;
+    break;
+}
+case NT_Scaleform_ImageStreamPreloadResource:
+{
+    Scaleform_ImageStreamPreloadResource args;
+    break;
+}
+case NT_Scaleform_ImageStreamLoadIntoMovie:
+{
+    Scaleform_ImageStreamLoadIntoMovie args;
+    break;
+}
+case NT_GetMovieID:
+{
+    GetMovieID args;
+    break;
+}
+case NT_Indicator:
+{
+    ScaleformIndicatorNode args;
+    break;
+}
+case NT_RevealMarkerObject:
+{
+    ScaleformRevealMarkerObjectNode args;
+    break;
+}
+case NT_CompleteMarkerObject:
+{
+    ScaleformCompleteMarkerObjectNode args;
+    break;
+}
+case NT_CampsiteDataNode:
+{
+    CampsiteDataNode args;
+    break;
+}
+case NT_UI_DisplayNotification:
+{
+    UI_DisplayNotification args;
+    break;
+}
+case NT_UI_DisplayObjectiveListNotification:
+{
+    UI_DisplayObjectiveListNotification args;
+    break;
+}
+case NT_GetMarkerRatio:
+{
+    GetMarkerRatio args;
+    break;
+}
+case NT_ScaleformYesNoNotification:
+{
+    ScaleformYesNoNotificationNode args;
+    break;
+}
+case NT_WidgetGroupHideShow:
+{
+    Scaleform_WidgetGroupHideShow args;
+    break;
+}
+case NT_WidgetGroupIsVisible:
+{
+    Scaleform_WidgetGroupIsVisible args;
+    break;
+}
+case NT_UI_SocialEvents:
+{
+    UI_SocialEvents args;
+    break;
+}
+case NT_Tomb_DataNode:
+{
+    Tomb_DataNode args;
+    break;
+}
+case NT_UI_DisplayButton:
+{
+    UI_DisplayButton args;
+    break;
+}
+case NT_UI_DisplayRotationButton:
+{
+    UI_DisplayRotationButton args;
+    break;
+}
+case NT_AGScriptGetVarNode:
+{
+    ScriptGetVarNode args;
+    break;
+}
+case NT_AGScriptSetVarNode:
+{
+    ScriptSetVarNode args;
+    break;
+}
+case NT_AGScriptCallFunctionNode:
+{
+    ScriptCallFunctionNode args;
+    break;
+}
+case NT_AGSensible_SetProfile:
+{
+    Sensible_SetProfileNode args;
+    break;
+}
+case NT_AGSetString:
+{
+    AGSetString args;
+    break;
+}
+case NT_AGStringConcatenate:
+{
+    AGStringConcatenate args;
+    break;
+}
+case NT_AGStringCompare:
+{
+    AGStringCompare args;
+    break;
+}
+case NT_GetLocalString:
+{
+    GetLocalString args;
+    break;
+}
+case NT_AGSystemicMissionStringGenerator:
+{
+    AGSystemicMissionStringGenerator args;
+    break;
+}
+case NT_AGTimeDelayNode:
+{
+    TimeDelayNode args;
+    break;
+}
+case NT_AGTimeFrameDelayNode:
+{
+    TimeFrameDelayNode args;
+    break;
+}
+case NT_AGTimeStopwatch:
+{
+    TimeStopwatchNode args;
+    break;
+}
+case NT_AGTimeQuakeManagerNode:
+{
+    TimeQuakeManagerNode args;
+    break;
+}
+case NT_AGFreezeGame:
+{
+    AGFreezeGame args;
+    break;
+}
+case NT_AGTimePersistentPlaytimeStopwatch:
+{
+    Time_PersistentPlaytimeStopwatch args;
+    break;
+}
+case NT_AGInstanceTriggerNode:
+{
+    Instance_Trigger args;
+    break;
+}
+case NT_AGPlayerTriggerNode:
+{
+    Instance_PlayerTrigger args;
+    break;
+}
+case NT_AGTriggerMasterNode:
+{
+    Instance_TriggerMaster args;
+    break;
+}
+case NT_AGTwitchKeywordListenerNode:
+{
+    Twitch_KeywordListener args;
+    break;
+}
+case NT_AGTwitchTriggerGiftEventNode:
+{
+    Twitch_TriggerGiftEvent args;
+    break;
+}
+case NT_AGTwitchBroadcastListenerNode:
+{
+    Twitch_BroadcastListener args;
+    break;
+}
+case NT_AGZoneMarker:
+{
+    ZoneMarkerNode args;
+    break;
+}
+case NT_AGCellNode:
+{
+    CellNode args;
+    break;
+}
+case NT_AGPortalNode:
+{
+    PortalNode args;
+    break;
+}
+case NT_AGOccluderNode:
+{
+    OccluderNode args;
+    break;
+}
+case NT_AGUnitJumpHelperNode:
+{
+    JumpHelperNode args;
+    break;
+}
+case NT_AGJumpHelperNode:
+{
+    JumpHelperNode2 args;
+    break;
+}
+case NT_AGCoverPointNode:
+{
+    CoverPointNode args;
+    break;
+}
+case NT_AGSpawnPointNode:
+{
+    SpawnPointNode args;
+    break;
+}
+case NT_AGCoverPointStatusNode:
+{
+    CoverPointStatusNode args;
+    break;
+}
+case NT_AGUnitSetAmbientLightNode:
+{
+    UnitSetAmbientLightNode args;
+    break;
+}
+case NT_UnitFireWorldStateNode:
+{
+    UnitFireWorldStateNode args;
+    break;
+}
+case NT_UnitFireTimesOfDayStreamingNode:
+{
+    UnitFireTimesOfDayStreamingNode args;
+    break;
+}
+case NT_UnitStreamLayerNode:
+{
+    UnitStreamLayerNode args;
+    break;
+}
+case NT_GlobalStreamLayerNode:
+{
+    GlobalStreamLayerNode args;
+    break;
+}
+case NT_UnitCustomizationManagerActivateNode:
+{
+    UnitCustomizationManagerActivateNode args;
+    break;
+}
+case NT_UnitCustomizationManagerDeactivateNode:
+{
+    UnitCustomizationManagerDeactivateNode args;
+    break;
+}
+case NT_UnitCustomizationManagerGetInfoNode:
+{
+    UnitCustomizationManagerGetInfoNode args;
+    break;
+}
+case NT_AGUnitDebugNameNode:
+{
+    UnitDebugNameNode args;
+    break;
+}
+case NT_AGUnitIDNode:
+{
+    UnitIDNode args;
+    break;
+}
+case NT_AGLoadUnitNode:
+{
+    LoadUnitNode args;
+    break;
+}
+case NT_AGCheckUnitLoadStatusNode:
+{
+    CheckUnitLoadStatusNode args;
+    break;
+}
+case NT_AGUnloadUnitNode:
+{
+    UnloadUnitNode args;
+    break;
+}
+case NT_AGUnitWaitForStreamingNode:
+{
+    UnitWaitForStreamingNode args;
+    break;
+}
+case NT_AG_Coverpoint_Get_Index:
+{
+    AG_Coverpoint_Get_Index args;
+    break;
+}
+case NT_AGValidInstance:
+{
+    ValidInstanceNode args;
+    break;
+}
+case NT_AGValidPhysicsJoint:
+{
+    ValidPhysicsJointNode args;
+    break;
+}
+case NT_VR_CameraMode_Set:
+{
+    VR_CameraMode_Set args;
+    break;
+}
+case NT_VR_Globals:
+{
+    VR_Globals args;
+    break;
+}
+case NT_VR_SetParabola:
+{
+    VR_SetParabola args;
+    break;
+}
+case NT_VR_Settings:
+{
+    VR_Settings args;
+    break;
+}
+case NT_VR_SetPlayArea:
+{
+    VR_SetPlayArea args;
+    break;
+}
+case NT_AGWaterVolume_Settings:
+{
+    WaterVolume_SettingsNode args;
+    break;
+}
+case NT_AGWaterVolume_Currents:
+{
+    WaterVolume_CurrentsNode args;
+    break;
+}
+case NT_AGWaterVolume_GetWaterLevelForInstance:
+{
+    WaterVolume_GetWaterLevelForInstance args;
+    break;
+}
+case NT_AGWaterVolume_GetWaterLevelForPosition:
+{
+    WaterVolume_GetWaterLevelForPosition args;
+    break;
+}
+case NT_AGWaterVolume_Detection:
+{
+    WaterVolume_DetectionNode args;
+    break;
+}
+case NT_AGWater_Distortion:
+{
+    WaterDistortion args;
+    break;
+}
+case NT_WeaponChangeLoadoutNode:
+{
+    WeaponChangeLoadoutNode args;
+    break;
+}
+case NT_WeaponQueryLoadoutNode:
+{
+    WeaponQueryLoadoutNode args;
+    break;
+}
+case NT_AG_Weapon_Ammo:
+{
+    AG_Weapon_Ammo args;
+    break;
+}
+case NT_AGQueryActiveWeatherNode:
+{
+    QueryActiveWeatherNode args;
+    break;
+}
+case NT_AGSetActiveWeatherNode:
+{
+    SetActiveWeatherNode args;
+    break;
+}
+case NT_AGQueryActiveTimeOfDayNode:
+{
+    QueryActiveTimeOfDayNode args;
+    break;
+}
+case NT_AGSetActiveTimeOfDayNode:
+{
+    SetActiveTimeOfDayNode args;
+    break;
+}
+case NT_AGSetWeatherIntensityNode:
+{
+    SetWeatherIntensityNode args;
+    break;
+}
+case NT_AGGetWeatherIntensityNode:
+{
+    GetWeatherIntensityNode args;
+    break;
+}
+case NT_AGWwiseAmbient:
+{
+    AGWwiseAmbient args;
+    break;
+}
+case NT_AGSoundVocalNode:
+{
+    AGSoundVocalNode args;
+    break;
+}
+case NT_AGSoundConversationNode:
+{
+    SoundConversationNode args;
+    break;
+}
+case NT_AGWwiseEvent:
+{
+    AGWwiseEvent args;
+    break;
+}
+case NT_AGSoundMicrophoneNode:
+{
+    AGSoundMicrophoneNode args;
+    break;
+}
+case NT_AGWwiseRTPC:
+{
+    AGWwiseRTPC args;
+    break;
+}
+case NT_AGWwiseSkeletalComponentNode:
+{
+    AGWwiseSkeletalComponentNode args;
+    break;
+}
+case NT_AGWwiseSpeaker:
+{
+    AGWwiseSpeaker args;
+    break;
+}
+case NT_AGWwiseState:
+{
+    AGWwiseState args;
+    break;
+}
+case NT_AGWwiseSwitch:
+{
+    AGWwiseSwitch args;
+    break;
+}
+case NT_AGWwisePortalObstruction:
+{
+    AGWwisePortalObstruction args;
+    break;
+}
+case NT_AGWwisePortalOcclusion:
+{
+    AGWwisePortalOcclusion args;
+    break;
+}
+case NT_AGObjectNetDataSetNode:
+{
+    NetData_Set args;
+    break;
+}
+case NT_AGObjectNetDataOnChangeNode:
+{
+    NetData_OnChanged args;
+    break;
+}
+case NT_AGObjectNetDataGetNode:
+{
+    NetData_Get args;
+    break;
+}
+case NT_Render_OverrideDecalVolume:
+{
+    Render_OverrideDecalVolume args;
+    break;
+}
+case NT_Render_OverrideWetnessVolume:
+{
+    Render_OverrideWetnessVolume args;
+    break;
+}

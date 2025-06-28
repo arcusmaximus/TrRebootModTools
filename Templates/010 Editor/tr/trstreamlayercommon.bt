@@ -1,0 +1,25 @@
+//------------------------------------------------
+//--- 010 Editor v14.0 Binary Template
+//
+//      File: trstreamlayercommon.bt
+//   Authors: arc_
+//   Purpose: Common structures for parsing stream layers
+//------------------------------------------------
+
+typedef struct
+{
+    int zoneId;
+    int zoneTypeId;
+    int numSceneItemTypes;
+    FSkip(4);
+    Ref sceneItemsByTypeRef;
+    if (CanSeekTo(sceneItemsByTypeRef))
+    {
+        SeekToRef(sceneItemsByTypeRef);
+        SceneItemsOfType sceneItemsByType[numSceneItemTypes];
+        ReturnFromRef();
+    }
+} StreamLayer;
+
+RefDefinitions refDefinitions;
+StreamLayer streamLayer <open=true>;

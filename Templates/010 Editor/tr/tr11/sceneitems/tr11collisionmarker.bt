@@ -1,0 +1,52 @@
+#define TR_VERSION 11
+#include "../../trcommon.bt"
+
+enum <byte> HPrimType
+{
+    HPRIM_NONE = 0x0,
+    HPRIM_HSPHERE = 0x1,
+    HPRIM_TFACE = 0x3,
+    HPRIM_HBOX = 0x5,
+    HPRIM_HMARKER = 0x8,
+    HPRIM_HCAPSULE = 0xA,
+    HPRIM_HGEOM = 0xD
+};
+
+typedef struct
+{
+    Vector4 pos;
+    Quaternion quat;
+    short segment;
+    ushort index;
+    ushort indexInMarkerList;
+} ZoneHMarker <optimize=false>;
+
+typedef struct
+{
+    Ref matrixRef;
+    if (CanSeekTo(matrixRef))
+    {
+        SeekToRef(matrixRef);
+        byte matrix;
+        ReturnFromRef();
+    }
+    ubyte hpFlags;
+    byte enabledByDefault;
+    HPrimType type;
+    FSkip(1);
+    short segment;
+    FSkip(2);
+    if (type == HPRIM_HMARKER)
+    {
+        Ref hmarkerRef;
+        if (CanSeekTo(hmarkerRef))
+        {
+            SeekToRef(hmarkerRef);
+            ZoneHMarker hmarker;
+            ReturnFromRef();
+        }
+    }
+} CollisionMarker <optimize=false>;
+
+RefDefinitions refDefinitions;
+CollisionMarker root <open=true>;

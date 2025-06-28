@@ -1,0 +1,179 @@
+#define TR_VERSION 11
+#include "../../trcommon.bt"
+#include "../lists/tr11inputactions.bt"
+
+enum <int> MoveType
+{
+    MoveType_Permission = 0x0,
+    MoveType_PermissionSCInputAction = 0x1,
+    MoveType_Float = 0x2,
+    MoveType_FloatWithUseFlag = 0x3,
+};
+
+enum <uint> MoveNameHash
+{
+    Move_Jump = 0x14AFC1FD,
+    Move_Roll = 0x14AD7906,
+    Move_Roll_Held = 0x0AEA342E,
+    Move_Aim = 0xC80BDD0C,
+    Move_Move_TurnRateMultiplier = 0x3E596EA2,
+    Move_Move_SpeedMultiplier = 0x958E9E19,
+    Move_Move_TopSpeed = 0x2DA2BC8E,
+    Move_Melee_Push = 0xC4E24DDC,
+    Move_Move_Ground = 0x4B0FA8B1,
+    Move_Health_FallDamageMultiplier = 0x0CC5CD2D,
+    Move_SavingGrab_RandomChance = 0xAF91950A,
+    Move_Drop_Off = 0x8BE3762C,
+    Move_Saving_Grab = 0x64A17A14,
+    Move_Wall_Crawl = 0xF80EA3B1,
+    Move_Craft = 0x1FEC11DF,
+    Move_Takedown = 0xAE87CE66,
+    Move_Takedown_Hold = 0x72341821,
+    Move_Takedown_OnRelease = 0x00D20CB5,
+    Move_Submerge = 0xF9B07354,
+    Move_Axe_GrapplePrepare = 0xDE0D580F,
+    Move_Axe_Arrest = 0xBBDC17FD,
+    Move_Aim_Dodge = 0xA432C6B8,
+    Move_Weapon_Draw = 0xE56DAACE,
+    Move_Camera_Control = 0xCEAB1EC4,
+    Move_Weapon_UI_Select = 0x3FEBFE30,
+    Move_ClimbOver_Hurdle_Pullup = 0xB272AB5D,
+    Move_Alt_Fire_Pull = 0xC9E1A64C,
+    Move_UseHerb = 0xE1F0E1A6,
+    Move_Craft_RT = 0x98FCA960,
+    Move_Sprint = 0xDF037C10,
+    Move_UI_MenuSelect = 0xDA293B62,
+    Move_UI_LS = 0x20D43800,
+    Move_UI_MenuLeft = 0x89191796,
+    Move_UI_MenuRight = 0xEE44E05F,
+    Move_UI_LS_Changed = 0xD2754F55,
+    Move_Cut_Vegetation = 0x577DEE53,
+    Move_AutoAttachLedgeGrab = 0xD305CDE6,
+    Move_SwimBoost = 0xDD7D1E67,
+    Move_SwimBoostSingle = 0xE3709EC9,
+    Move_Use = 0xC80CD325,
+    Move_BowPull = 0x1D7A25C9,
+    Move_Social_Sonar = 0x5FFFFA48,
+    Move_SelectHerb = 0xF49A5D17,
+    Move_GrappleAxe_RappelSwing = 0x029B4912,
+    Move_GrappelAxe_ClimbUpDown = 0xC9282D3A,
+    Move_Primary_Fire = 0xB6915B76,
+    Move_GrappleAxe_WallcrawlToRappelAttach = 0x9811849A,
+    Move_Aim_Social_Space = 0x05BB4770,
+    Move_Reload = 0x927A22BE
+};
+
+void ReadMoveValue(MoveType type)
+{
+    local int endPos = FTell() + 8;
+    switch (type)
+    {
+        case MoveType_Permission:
+            int permission;
+            break;
+        case MoveType_PermissionSCInputAction:
+            int permission;
+            unsigned int sCInputAction <read=GetInputActionName(this)>;
+            break;
+        case MoveType_Float:
+            float value;
+            break;
+        case MoveType_FloatWithUseFlag:
+            float value;
+            byte useFlag;
+            break;
+    }
+    FSeek(endPos);
+}
+
+typedef struct
+{
+    short trait;
+    FSkip(2);
+    int not;
+} PlayerTraitListIndexComparison <optimize=false>;
+
+typedef struct
+{
+    unsigned int moveIndex;
+    ReadMoveValue(parentof(parentof(this)).moves[moveIndex].type);
+    FSkip(4);
+    Ref traitRequirementRef;
+    if (CanSeekTo(traitRequirementRef))
+    {
+        SeekToRef(traitRequirementRef);
+        PlayerTraitListIndexComparison traitRequirement;
+        ReturnFromRef();
+    }
+} MoveModifier <optimize=false, read=EnumToString(parentof(parentof(this)).moves[moveIndex].nameHash)>;
+
+typedef struct
+{
+    unsigned int numMoveModifiers;
+    FSkip(4);
+    Ref moveModifiersRef;
+    if (CanSeekTo(moveModifiersRef))
+    {
+        SeekToRef(moveModifiersRef);
+        MoveModifier moveModifiers[numMoveModifiers];
+        ReturnFromRef();
+    }
+    Ref debugNameRef;
+    if (CanSeekTo(debugNameRef))
+    {
+        SeekToRef(debugNameRef);
+        string debugName;
+        ReturnFromRef();
+    }
+} MovesetProfile <optimize=false>;
+
+typedef struct
+{
+    MoveNameHash nameHash;
+    FSkip(4);
+    Ref enumNameRef;
+    if (CanSeekTo(enumNameRef))
+    {
+        SeekToRef(enumNameRef);
+        string enumName;
+        ReturnFromRef();
+    }
+    MoveType type;
+    short runtimeModifiedByIndex;
+    short runtimeProfilePriority;
+    ReadMoveValue(type);
+} Move <optimize=false, read=EnumToString(nameHash)>;
+
+typedef struct
+{
+    unsigned int numProfiles;
+    FSkip(4);
+    Ref profilesRef;
+    ubyte lightSnowMovesetProfile;
+    ubyte deepSnowMovesetProfile;
+    FSkip(2);
+    float mediumRainThreshold;
+    float heavyRainThreshold;
+    ubyte lightRainMovesetProfile;
+    ubyte mediumRainMovesetProfile;
+    ubyte heavyRainMovesetProfile;
+    FSkip(1);
+    unsigned int numMoves;
+    FSkip(4);
+    Ref movesRef;
+    if (CanSeekTo(movesRef))
+    {
+        SeekToRef(movesRef);
+        Move moves[numMoves];
+        ReturnFromRef();
+    }
+    if (CanSeekTo(profilesRef))
+    {
+        SeekToRef(profilesRef);
+        MovesetProfile profiles[numProfiles];
+        ReturnFromRef();
+    }
+} MovesetProfileComponent <optimize=false>;
+
+RefDefinitions refDefinitions;
+MovesetProfileComponent root <open=true>;

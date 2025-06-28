@@ -1,0 +1,1937 @@
+#define TR_VERSION 11
+#include "../../trcommon.bt"
+#include "../lists/tr11events.bt"
+#include "../lists/tr11statecontrolstateprops.bt";
+
+typedef struct
+{
+    Ref _stringRef;
+    if (CanSeekTo(_stringRef))
+    {
+        SeekToRef(_stringRef);
+        string _string;
+        ReturnFromRef();
+    }
+    unsigned int hash;
+} AnimGraphGoalClusterType <optimize=false>;
+
+typedef struct
+{
+    Ref _stringRef;
+    if (CanSeekTo(_stringRef))
+    {
+        SeekToRef(_stringRef);
+        string _string;
+        ReturnFromRef();
+    }
+    unsigned int hash;
+} AnimGraphGoalMovesetType <optimize=false>;
+
+typedef struct
+{
+    Ref _stringRef;
+    if (CanSeekTo(_stringRef))
+    {
+        SeekToRef(_stringRef);
+        string _string;
+        ReturnFromRef();
+    }
+    unsigned int hash;
+} AnimGraphGoalStateType <optimize=false>;
+
+typedef struct
+{
+    Ref _stringRef;
+    if (CanSeekTo(_stringRef))
+    {
+        SeekToRef(_stringRef);
+        string _string;
+        ReturnFromRef();
+    }
+    unsigned int hash;
+} AnimGraphGoalOverlayType <optimize=false>;
+
+typedef struct
+{
+    Ref _stringRef;
+    if (CanSeekTo(_stringRef))
+    {
+        SeekToRef(_stringRef);
+        string _string;
+        ReturnFromRef();
+    }
+    unsigned int hash;
+} AnimGraphGoalPortableType <optimize=false>;
+
+typedef struct
+{
+    int barkType;
+    unsigned int bark;
+    unsigned int grunt;
+    char subtitleMode;
+    byte enabled;
+    byte doRMScalcForAnim;
+    byte overridePriority;
+    int priority;
+    byte playAfterDeath;
+} VocalRef;
+
+typedef struct
+{
+    unsigned int cameraComponent;
+} CameraSCData;
+
+typedef struct
+{
+    short min;
+    short max;
+} CameraMoveStick;
+
+typedef struct
+{
+    unsigned int hash;
+} InventoryStateEnum;
+
+typedef struct
+{
+    unsigned int hash;
+} EnumPlayNotification;
+
+typedef struct
+{
+    unsigned int hash;
+} EnumCharacterStance;
+
+typedef struct
+{
+    float min;
+    float max;
+} DefaultDATCurveWithLimits__YAxisValue;
+
+typedef struct
+{
+    float min;
+    float max;
+} DefaultDATCurveWithLimits__XAxisValue;
+
+typedef struct
+{
+    float x;
+    float y;
+} DATCurvePoint;
+
+typedef struct
+{
+    DefaultDATCurveWithLimits__YAxisValue xAxis;
+    DefaultDATCurveWithLimits__XAxisValue yAxis;
+    unsigned int numPoints;
+    FSkip(4);
+    Ref pointsRef;
+    if (CanSeekTo(pointsRef))
+    {
+        SeekToRef(pointsRef);
+        DATCurvePoint points[numPoints];
+        ReturnFromRef();
+    }
+} DefaultDATCurveWithLimits <optimize=false>;
+
+typedef struct
+{
+    int threatType;
+    int threatAmount;
+    float threatRadius;
+    float threatDecay;
+    byte threatMemory;
+    FSkip(3);
+    float threatInvestigationRange;
+    Ref threatFalloffRef;
+    if (CanSeekTo(threatFalloffRef))
+    {
+        SeekToRef(threatFalloffRef);
+        DefaultDATCurveWithLimits threatFalloff;
+        ReturnFromRef();
+    }
+    Ref debugNameRef;
+    if (CanSeekTo(debugNameRef))
+    {
+        SeekToRef(debugNameRef);
+        string debugName;
+        ReturnFromRef();
+    }
+} ThreatResourceData <optimize=false>;
+
+typedef struct
+{
+    unsigned int value;
+} WeaponCameraTypeEnum;
+
+typedef struct
+{
+    unsigned int statusMenuState;
+} EnumStatusMenuState;
+
+enum <short> EnumSCPropertyType
+{
+    EnumSCPropertyType_Unknown = 0x0,
+    EnumSCPropertyType_Accuracy = 0x1,
+    EnumSCPropertyType_Action = 0x2,
+    EnumSCPropertyType_ActionType = 0x3,
+    EnumSCPropertyType_AnimGraphDoubleJointProbeData = 0x4,
+    EnumSCPropertyType_AnimGraphGoal = 0x5,
+    EnumSCPropertyType_AnimGraphGoalCluster = 0x6,
+    EnumSCPropertyType_AnimGraphGoalMoveset = 0x7,
+    EnumSCPropertyType_AnimGraphGoalState = 0x8,
+    EnumSCPropertyType_AnimGraphGoalOverlay = 0x9,
+    EnumSCPropertyType_AnimGraphGoalMainhand = 0xA,
+    EnumSCPropertyType_AnimGraphGoalOffhand = 0xB,
+    EnumSCPropertyType_AnimGraphGoalFromInteract = 0xC,
+    EnumSCPropertyType_AnimGraphGoalBBeam_or_TightRope = 0xD,
+    EnumSCPropertyType_AnimGraphTrigger = 0xE,
+    EnumSCPropertyType_Bark = 0xF,
+    EnumSCPropertyType_Boolean = 0x10,
+    EnumSCPropertyType_Calculated = 0x11,
+    EnumSCPropertyType_CameraShake = 0x12,
+    EnumSCPropertyType_CameraComponent = 0x13,
+    EnumSCPropertyType_CameraSyncType = 0x14,
+    EnumSCPropertyType_CameraTransitionType = 0x15,
+    EnumSCPropertyType_CameraMoveStick = 0x16,
+    EnumSCPropertyType_CollisionProfile = 0x17,
+    EnumSCPropertyType_ContactDataType = 0x18,
+    EnumSCPropertyType_ControlMode = 0x19,
+    EnumSCPropertyType_CraftingRecipe = 0x1A,
+    EnumSCPropertyType_DevelopmentProgress = 0x1B,
+    EnumSCPropertyType_EdgeDeflectionSearchType = 0x1C,
+    EnumSCPropertyType_Event = 0x1D,
+    EnumSCPropertyType_EventTarget = 0x1E,
+    EnumSCPropertyType_EventTime = 0x1F,
+    EnumSCPropertyType_FallHeights = 0x20,
+    EnumSCPropertyType_Float = 0x21,
+    EnumSCPropertyType_FloatDistanceCm = 0x22,
+    EnumSCPropertyType_GymnasticsMove = 0x23,
+    EnumSCPropertyType_HitDamageType = 0x24,
+    EnumSCPropertyType_Integer = 0x25,
+    EnumSCPropertyType_IntegerDistanceCm = 0x26,
+    EnumSCPropertyType_InteractAnim = 0x27,
+    EnumSCPropertyType_InteractMode = 0x28,
+    EnumSCPropertyType_InteractProfile = 0x29,
+    EnumSCPropertyType_InventoryGroup = 0x2A,
+    EnumSCPropertyType_InventoryPriority = 0x2B,
+    EnumSCPropertyType_InventoryUrgency = 0x2C,
+    EnumSCPropertyType_InventoryRelease = 0x2D,
+    EnumSCPropertyType_Inventory = 0x2E,
+    EnumSCPropertyType_InventoryState = 0x2F,
+    EnumSCPropertyType_InventoryResourceSet = 0x30,
+    EnumSCPropertyType_InventoryAnim = 0x31,
+    EnumSCPropertyType_InventoryItemAnim = 0x32,
+    EnumSCPropertyType_HostedSCTimer = 0x33,
+    EnumSCPropertyType_JumpDetectionDir = 0x34,
+    EnumSCPropertyType_JumpDetectionVel = 0x35,
+    EnumSCPropertyType_JumpMode = 0x36,
+    EnumSCPropertyType_JumpVelocity = 0x37,
+    EnumSCPropertyType_JumpAirSteerTuneData = 0x38,
+    EnumSCPropertyType_ParaglideTuneData = 0x39,
+    EnumSCPropertyType_LimbLock = 0x3A,
+    EnumSCPropertyType_LimbLockGroups = 0x3B,
+    EnumSCPropertyType_MarkerID = 0x3C,
+    EnumSCPropertyType_MarkupDetectionParams = 0x3D,
+    EnumSCPropertyType_MovesetProfile_MoveType = 0x3E,
+    EnumSCPropertyType_SeizeAttack = 0x3F,
+    EnumSCPropertyType_SeizeAttackNPC = 0x40,
+    EnumSCPropertyType_MeleeMove = 0x41,
+    EnumSCPropertyType_MeleeMoveGroup = 0x42,
+    EnumSCPropertyType_MeleeMoveFromInteract = 0x43,
+    EnumSCPropertyType_Message = 0x44,
+    EnumSCPropertyType_MotionSource = 0x45,
+    EnumSCPropertyType_MovementSafety = 0x46,
+    EnumSCPropertyType_MoveSet = 0x47,
+    EnumSCPropertyType_NetworkContinuityBreak = 0x48,
+    EnumSCPropertyType_NpcMoverMode = 0x49,
+    EnumSCPropertyType_NpcActionStatus = 0x4A,
+    EnumSCPropertyType_NpcProcessTime = 0x4B,
+    EnumSCPropertyType_NpcProxyParams = 0x4C,
+    EnumSCPropertyType_Object = 0x4D,
+    EnumSCPropertyType_Orientation = 0x4E,
+    EnumSCPropertyType_PlayNotification = 0x4F,
+    EnumSCPropertyType_Stance = 0x50,
+    EnumSCPropertyType_PortableAnim = 0x51,
+    EnumSCPropertyType_ProxyParams = 0x52,
+    EnumSCPropertyType_ProxyShiftMethod = 0x53,
+    EnumSCPropertyType_ReactiveDodgeParam = 0x54,
+    EnumSCPropertyType_ReactiveDodgeParamNPC = 0x55,
+    EnumSCPropertyType_SCComparison = 0x56,
+    EnumSCPropertyType_SCStateTag = 0x57,
+    EnumSCPropertyType_SenseProfile = 0x58,
+    EnumSCPropertyType_SensibleProfile = 0x59,
+    EnumSCPropertyType_SenseType = 0x5A,
+    EnumSCPropertyType_SenseUnit = 0x5B,
+    EnumSCPropertyType_SensoryType = 0x5C,
+    EnumSCPropertyType_SpatialProbe = 0x5D,
+    EnumSCPropertyType_SteeringMode = 0x5E,
+    EnumSCPropertyType_SteeringDirection = 0x5F,
+    EnumSCPropertyType_SteeringCurveGeneric = 0x60,
+    EnumSCPropertyType_SteeringCurveCustom = 0x61,
+    EnumSCPropertyType_StatusMenuState = 0x62,
+    EnumSCPropertyType_ThreatProfile = 0x63,
+    EnumSCPropertyType_TuningData = 0x64,
+    EnumSCPropertyType_Unchanged = 0x65,
+    EnumSCPropertyType_UseAgent = 0x66,
+    EnumSCPropertyType_UseParent = 0x67,
+    EnumSCPropertyType_VehicleAnim = 0x68,
+    EnumSCPropertyType_String = 0x69,
+    EnumSCPropertyType_GoapStatus = 0x6A,
+    EnumSCPropertyType_WeaponProjectileType = 0x6B,
+    EnumSCPropertyType_WeaponCameraType = 0x6C,
+    EnumSCPropertyType_WeaponType = 0x6D,
+    EnumSCPropertyType_VisionModeAllowedCustomCodeCheck = 0x6E,
+    EnumSCPropertyType_TurnType = 0x6F,
+    EnumSCPropertyType_CollisionReactionLevel = 0x70,
+    EnumSCPropertyType_CorpseStatus = 0x71,
+    EnumSCPropertyType_UseObjectReaction = 0x72
+};
+
+typedef union
+{
+    byte unknown;
+    int accuracy;
+    unsigned int action;
+    int actionType;
+    AnimGraphGoalClusterType animGraphGoalCluster;
+    AnimGraphGoalMovesetType animGraphGoalMoveset;
+    AnimGraphGoalStateType animGraphGoalState;
+    AnimGraphGoalOverlayType animGraphGoalOverlay;
+    AnimGraphGoalPortableType animGraphGoalMainhand;
+    AnimGraphGoalPortableType animGraphGoalOffhand;
+    byte animGraphGoalFromInteract;
+    char animGraphGoalBBeamOrTightRope;
+    unsigned int animGraphTrigger <read=GetEventName(this)>;
+    Ref barkRef;
+    if (CanSeekTo(barkRef))
+    {
+        SeekToRef(barkRef);
+        VocalRef bark;
+        ReturnFromRef();
+    }
+    byte boolean;
+    int calculated;
+    unsigned int cameraShake;
+    int cameraSyncType;
+    int cameraEase;
+    CameraSCData cameraData;
+    CameraMoveStick cameraMoveStick;
+    int contactDataType;
+    unsigned int controlMode;
+    unsigned int craftingRecipe;
+    int developmentProgress;
+    unsigned int event <read=GetEventName(this)>;
+    unsigned int eventTarget;
+    unsigned int eventTime;
+    unsigned int fallHeights;
+    float _float;
+    float floatDistanceCm;
+    int gymnasticsMove;
+    int hitDamageType;
+    int integer;
+    int integerDistanceCm;
+    short interactAnim;
+    int interactMode;
+    int interactableType;
+    unsigned int interactProfile;
+    unsigned int inventoryGroup;
+    int inventoryPriority;
+    int inventoryUrgency;
+    int inventoryRelease;
+    int inventory;
+    InventoryStateEnum inventoryState;
+    unsigned int inventoryResourceSet;
+    int inventoryAnim;
+    int inventoryItemAnim;
+    ushort hostedSCTimer;
+    int jumpDetectionDir;
+    int jumpDetectionVel;
+    unsigned int markerID;
+    unsigned int limbLock;
+    unsigned int limbLockGroups;
+    unsigned int markupDetectionParams;
+    unsigned int seizeAttack;
+    unsigned int seizeAttackNPC;
+    unsigned int meleeMove;
+    unsigned int meleeMoveGroup;
+    byte meleeMoveFromInteract;
+    int jumpMode;
+    unsigned int jumpVelocity;
+    unsigned int jumpAirSteerTuneData;
+    unsigned int paraglideTuneData;
+    unsigned int message;
+    unsigned int movementSafety;
+    ubyte motionSource;
+    int moveSet;
+    ubyte networkContinuityBreak;
+    int npcMoverMode;
+    int npcProcessTime;
+    short orientation;
+    ushort object;
+    EnumPlayNotification playNotification;
+    EnumCharacterStance stance;
+    int portableAnim;
+    unsigned int npcProxyParams;
+    unsigned int proxyParams;
+    ubyte proxyShiftMethod;
+    unsigned int reactiveDodgeParam;
+    unsigned int reactiveDodgeParamNPC;
+    int sCComparison;
+    int sCStateTag;
+    unsigned int sensibleProfile;
+    unsigned int senseCone;
+    int senseType;
+    unsigned int senseUnit;
+    char sensoryType;
+    unsigned int spatialProbe;
+    int steeringMode;
+    int steeringDirection;
+    int steeringCurveGeneric;
+    unsigned int steeringCurveCustom;
+    Ref _stringRef;
+    if (CanSeekTo(_stringRef))
+    {
+        SeekToRef(_stringRef);
+        string _string;
+        ReturnFromRef();
+    }
+    Ref threatProfileRef;
+    if (CanSeekTo(threatProfileRef))
+    {
+        SeekToRef(threatProfileRef);
+        ThreatResourceData threatProfile;
+        ReturnFromRef();
+    }
+    unsigned int tuningData;
+    byte unchanged;
+    unsigned int useAgent;
+    byte useParent;
+    unsigned int npcActionStatus;
+    int weaponProjectileType;
+    WeaponCameraTypeEnum weaponCameraType;
+    byte visionModeAllowedCustomCodeCheck;
+    EnumStatusMenuState statusMenuState;
+    int edgeDeflectionSearchType;
+    int turnType;
+    ubyte weatherType;
+    unsigned int collisionProfile;
+    int collisionReactionLevel;
+    int corpseStatus;
+    int useObjectReaction;
+} SCPropertyData__SCPropertyValue;
+
+typedef struct
+{
+    short property;
+    EnumSCPropertyType type;
+    FSkip(4);
+    SCPropertyData__SCPropertyValue value;
+    FSkip(4);
+    Ref debugNameRef;
+    if (CanSeekTo(debugNameRef))
+    {
+        SeekToRef(debugNameRef);
+        string debugName;
+        ReturnFromRef();
+    }
+} SCPropertyData <optimize=false, read=GetStateControlStatePropertyName(property)>;
+
+typedef struct
+{
+    unsigned int eventString <read=GetEventName(this)>;
+} SCEventSenderData;
+
+typedef struct
+{
+    short parentStateRef;
+    short ignoreChildSettings;
+    short numProperties;
+    short numActivities;
+    short numTransitions;
+    short numEventHandlers;
+    short numEventSenders;
+    FSkip(2);
+    Ref propertiesRef;
+    if (CanSeekTo(propertiesRef))
+    {
+        SeekToRef(propertiesRef);
+        SCPropertyData properties[numProperties];
+        ReturnFromRef();
+    }
+    Ref activitiesRef;
+    if (CanSeekTo(activitiesRef))
+    {
+        SeekToRef(activitiesRef);
+        short activities[numActivities];
+        ReturnFromRef();
+    }
+    Ref transitionsRef;
+    if (CanSeekTo(transitionsRef))
+    {
+        SeekToRef(transitionsRef);
+        ushort transitions[numTransitions];
+        ReturnFromRef();
+    }
+    Ref eventHandlersRef;
+    if (CanSeekTo(eventHandlersRef))
+    {
+        SeekToRef(eventHandlersRef);
+        ushort eventHandlers[numEventHandlers];
+        ReturnFromRef();
+    }
+    Ref eventSendersRef;
+    if (CanSeekTo(eventSendersRef))
+    {
+        SeekToRef(eventSendersRef);
+        SCEventSenderData eventSenders[numEventSenders];
+        ReturnFromRef();
+    }
+    Ref mpDebugNameRef;
+    if (CanSeekTo(mpDebugNameRef))
+    {
+        SeekToRef(mpDebugNameRef);
+        string mpDebugName;
+        ReturnFromRef();
+    }
+} SCStateData <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestUnrestricted;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestNumeric;
+
+typedef struct
+{
+    int miProperty;
+    ushort miComparison;
+    short pad;
+    byte miNot : 1;
+    byte _Bitfieldpadding3 : 7;
+} SCConditionTestNumericHosted;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestPhysics;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestPushPull;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestPortable;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestPortableAnimType;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestPortableUsageType;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestJumpMode;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestInternal;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestEngagement;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestEngagementStatus;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestEngagementObject;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestInteract;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestInteractRequestRequirement;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestInteractEndsInstantly;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestInteractMode;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestInteractedType;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestInvestigateTargetType;
+
+typedef struct
+{
+    int miProperty;
+    unsigned int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestAction;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestAnimation;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestAnimationFrames;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestMovement;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestGymnasticsMove;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestEdgeDropType;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestEdgeDropRule;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestEdgeStepRule;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestEdgeDeflection;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestEdgeDeflectionNumeric;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestFooting;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestStatus;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestMarkup;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestMarkupType;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestMarkupMod;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestMarkupAngle;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestMarkupDistance;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestMarkupLookahead;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestMarkupClearance;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestMarkupAttach;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestMarkupMultiOut;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestMarkupHpoleRot;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestMarkupMovement;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestMarkupConcealmentType;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestHurdleOutcome;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestMarkupTargetingTag;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestGrapple;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestParaglide;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestWater;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestNpc;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestNpcProcess;
+
+typedef struct
+{
+    unsigned int hash;
+} EnumThreatMood;
+
+typedef struct
+{
+    int miProperty;
+    EnumThreatMood miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestNpcThreatMood;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestUseObjectState;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+    FSkip(1);
+    short miSource;
+} SCConditionTestUseObjectReaction <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestNpcFearLevel;
+
+typedef struct
+{
+    int miProperty;
+    unsigned int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestSpatialProbe;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestSpatialProbeHitType;
+
+typedef struct
+{
+    int miProperty;
+    unsigned int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestTunedata;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestCombat;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestAwareness;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestCombatNumeric;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestCover;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestCombatStatus;
+
+typedef struct
+{
+    unsigned int hash;
+} EnumAmmoType;
+
+typedef struct
+{
+    int miProperty;
+    EnumAmmoType miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestAmmo;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestInventory;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestInventoryRequirement;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestWeaponLoadoutType;
+
+typedef struct
+{
+    int miProperty;
+    unsigned int category;
+    unsigned int categoryHash;
+    byte miNot : 1;
+    byte _Bitfieldpadding3 : 7;
+} SCConditionTestCameraCategoryEnabled;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestVehicle;
+
+typedef struct
+{
+    int miProperty;
+    EnumPlayNotification miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestPlayNotificationType;
+
+typedef struct
+{
+    int miProperty;
+    EnumCharacterStance miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestStance;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestDamageType;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestHitReactType;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestHitShapeType;
+
+typedef struct
+{
+    ushort mSymbolID;
+    FSkip(2);
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding3 : 7;
+} SCConditionTestNamedValueBool <optimize=false>;
+
+typedef struct
+{
+    ushort mSymbolID;
+    FSkip(2);
+    float miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding3 : 7;
+} SCConditionTestNamedValueScalar <optimize=false>;
+
+typedef struct
+{
+    ushort mSymbolID;
+    ushort mSymbolID2;
+    byte miNot : 1;
+    byte _Bitfieldpadding4 : 7;
+} SCConditionTestNamedVlaueSymbolComp;
+
+typedef struct
+{
+    int miProperty;
+    unsigned int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestObject;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestDetection;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestMultiplayer;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestGameMode;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestProcess;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestProcessNumeric;
+
+typedef struct
+{
+    int miProperty;
+    unsigned int miComparison <read=GetEventName(this)>;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestProcessAnimGraphTrigger;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestProcessInventory;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestPrototype;
+
+typedef struct
+{
+    int miProperty;
+    unsigned int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestPlayerTrait;
+
+typedef struct
+{
+    int miProperty;
+    unsigned int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestSeizeAttack;
+
+typedef struct
+{
+    int miProperty;
+    unsigned int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestMeleeMove;
+
+typedef struct
+{
+    int miProperty;
+    unsigned int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestWeather;
+
+typedef struct
+{
+    unsigned int hash;
+    FSkip(4);
+    Ref enumFileNameRef;
+    if (CanSeekTo(enumFileNameRef))
+    {
+        SeekToRef(enumFileNameRef);
+        string enumFileName;
+        ReturnFromRef();
+    }
+} MovesetProfile_MoveTypeEnum <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    MovesetProfile_MoveTypeEnum miMoveEnum;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestMovesetProfile <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestStateTag;
+
+typedef struct
+{
+    int miProperty;
+    unsigned int hash;
+    byte miNot : 1;
+    byte _Bitfieldpadding3 : 7;
+} SCConditionTestAnimCompleteID;
+
+typedef struct
+{
+    int miProperty;
+    unsigned int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestCraftingRecipe;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestSCPropertyBool;
+
+typedef struct
+{
+    int miProperty;
+    float miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestSCPropertyNumeric;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestSCPropertyConditionNumeric;
+
+typedef struct
+{
+    int miPlatform;
+    byte miNot : 1;
+    byte _Bitfieldpadding1 : 7;
+} SCConditionTestPlatform;
+
+typedef struct
+{
+    int miVrMode;
+    byte miNot : 1;
+    byte _Bitfieldpadding1 : 7;
+} SCConditionTestVrMode;
+
+typedef struct
+{
+    int miProperty;
+} SCConditionTestDebug;
+
+typedef struct
+{
+    int miProperty;
+    float miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestNumericScalar;
+
+enum <int> EnumSCCondContext
+{
+    EnumSCCondContext_Unknown = 0x0,
+    EnumSCCondContext_JumpMode = 0x1,
+    EnumSCCondContext_Numeric = 0x2,
+    EnumSCCondContext_NumericHosted = 0x3,
+    EnumSCCondContext_Internal = 0x4,
+    EnumSCCondContext_Action = 0x5,
+    EnumSCCondContext_Animation = 0x6,
+    EnumSCCondContext_AnimationFrames = 0x7,
+    EnumSCCondContext_AnimCompleteID = 0x8,
+    EnumSCCondContext_CraftingRecipe = 0x9,
+    EnumSCCondContext_Direction = 0xA,
+    EnumSCCondContext_Debug = 0xB,
+    EnumSCCondContext_Misc = 0xC,
+    EnumSCCondContext_Footing = 0xD,
+    EnumSCCondContext_Movement = 0xE,
+    EnumSCCondContext_HurdleOutcome = 0xF,
+    EnumSCCondContext_GymnasticsMoves = 0x10,
+    EnumSCCondContext_EdgeDetDropType = 0x11,
+    EnumSCCondContext_EdgeDetDropRule = 0x12,
+    EnumSCCondContext_EdgeDetStepRule = 0x13,
+    EnumSCCondContext_EdgeDeflection = 0x14,
+    EnumSCCondContext_EdgeDeflectionNumeric = 0x15,
+    EnumSCCondContext_Status = 0x16,
+    EnumSCCondContext_Markup = 0x17,
+    EnumSCCondContext_MarkupType = 0x18,
+    EnumSCCondContext_MarkupMod = 0x19,
+    EnumSCCondContext_MarkupAngle = 0x1A,
+    EnumSCCondContext_MarkupDistance = 0x1B,
+    EnumSCCondContext_MarkupLookahead = 0x1C,
+    EnumSCCondContext_MarkupClearance = 0x1D,
+    EnumSCCondContext_MarkupConcealmentType = 0x1E,
+    EnumSCCondContext_MarkupAttach = 0x1F,
+    EnumSCCondContext_MarkupMultiOut = 0x20,
+    EnumSCCondContext_MarkupAngleRange = 0x21,
+    EnumSCCondContext_MarkupMovement = 0x22,
+    EnumSCCondContext_MarkupBoneAttachTarget = 0x23,
+    EnumSCCondContext_MarkupTag = 0x24,
+    EnumSCCondContext_Paraglide = 0x25,
+    EnumSCCondContext_Grapple = 0x26,
+    EnumSCCondContext_Water = 0x27,
+    EnumSCCondContext_Npc = 0x28,
+    EnumSCCondContext_NpcProcess = 0x29,
+    EnumSCCondContext_NpcThreatMood = 0x2A,
+    EnumSCCondContext_NpcFearLevel = 0x2B,
+    EnumSCCondContext_Tunedata = 0x2C,
+    EnumSCCondContext_Physics = 0x2D,
+    EnumSCCondContext_Engagement = 0x2E,
+    EnumSCCondContext_EngagementStatus = 0x2F,
+    EnumSCCondContext_EngagementObject = 0x30,
+    EnumSCCondContext_Interact = 0x31,
+    EnumSCCondContext_InteractMode = 0x32,
+    EnumSCCondContext_Interacted_Type = 0x33,
+    EnumSCCondContext_InvestigateTargetType = 0x34,
+    EnumSCCondContext_UseObjectState = 0x35,
+    EnumSCCondContext_UseObjectReaction = 0x36,
+    EnumSCCondContext_PushPull = 0x37,
+    EnumSCCondContext_Portable = 0x38,
+    EnumSCCondContext_Portable_AnimType = 0x39,
+    EnumSCCondContext_Portable_UsageType = 0x3A,
+    EnumSCCondContext_SpatialProbe = 0x3B,
+    EnumSCCondContext_SpatialProbeHitType = 0x3C,
+    EnumSCCondContext_Combat = 0x3D,
+    EnumSCCondContext_CombatNumeric = 0x3E,
+    EnumSCCondContext_CombatStatus = 0x3F,
+    EnumSCCondContext_Ammo = 0x40,
+    EnumSCCondContext_Cover = 0x41,
+    EnumSCCondContext_Inventory = 0x42,
+    EnumSCCondContext_Weapon = 0x43,
+    EnumSCCondContext_InventoryRequirement = 0x44,
+    EnumSCCondContext_CameraCategory = 0x45,
+    EnumSCCondContext_Vehicle = 0x46,
+    EnumSCCondContext_DamageType = 0x47,
+    EnumSCCondContext_NamedValue_Boolean = 0x48,
+    EnumSCCondContext_NamedValue_Scalar_EQ = 0x49,
+    EnumSCCondContext_NamedValue_Scalar_GT = 0x4A,
+    EnumSCCondContext_NamedValue_Scalar_GTE = 0x4B,
+    EnumSCCondContext_NamedValue_Symbol_Comp = 0x4C,
+    EnumSCCondContext_Object = 0x4D,
+    EnumSCCondContext_HitReactType = 0x4E,
+    EnumSCCondContext_PlayNotification = 0x4F,
+    EnumSCCondContext_Stance = 0x50,
+    EnumSCCondContext_Experience = 0x51,
+    EnumSCCondContext_SeizeAttack = 0x52,
+    EnumSCCondContext_MeleeMove = 0x53,
+    EnumSCCondContext_HitShapeType = 0x54,
+    EnumSCCondContext_Detection = 0x55,
+    EnumSCCondContext_Multiplayer = 0x56,
+    EnumSCCondContext_GameMode = 0x57,
+    EnumSCCondContext_Process = 0x58,
+    EnumSCCondContext_ProcessNumeric = 0x59,
+    EnumSCCondContext_ProcessAnimGraphTrigger = 0x5A,
+    EnumSCCondContext_ProcessInventory = 0x5B,
+    EnumSCCondContext_Prototype = 0x5C,
+    EnumSCCondContext_Weather = 0x5D,
+    EnumSCCondContext_MovesetProfile = 0x5E,
+    EnumSCCondContext_SCPropertyBool = 0x5F,
+    EnumSCCondContext_SCPropertyNumeric = 0x60,
+    EnumSCCondContext_SCPropertyConditionNumeric = 0x61,
+    EnumSCCondContext_StateTag = 0x62,
+    EnumSCCondContext_Platform = 0x63,
+    EnumSCCondContext_VrMode = 0x64,
+    EnumSCCondContext_Awareness = 0x65,
+    EnumSCCondContext_NumericScalar = 0x66
+};
+
+typedef struct
+{
+    EnumSCCondContext context;
+    FSkip(4);
+    local int endPos = FTell() + 0x20;
+    switch (context)
+    {
+        case EnumSCCondContext_Unknown:
+            SCConditionTestUnrestricted test;
+            break;
+        case EnumSCCondContext_JumpMode:
+            SCConditionTestJumpMode test;
+            break;
+        case EnumSCCondContext_Numeric:
+            SCConditionTestNumeric test;
+            break;
+        case EnumSCCondContext_NumericHosted:
+            SCConditionTestNumericHosted test;
+            break;
+        case EnumSCCondContext_Internal:
+            SCConditionTestInternal test;
+            break;
+        case EnumSCCondContext_Action:
+            SCConditionTestAction test;
+            break;
+        case EnumSCCondContext_Animation:
+            SCConditionTestAnimation test;
+            break;
+        case EnumSCCondContext_AnimationFrames:
+            SCConditionTestAnimationFrames test;
+            break;
+        case EnumSCCondContext_AnimCompleteID:
+            SCConditionTestAnimCompleteID test;
+            break;
+        case EnumSCCondContext_CraftingRecipe:
+            SCConditionTestCraftingRecipe test;
+            break;
+        //case EnumSCCondContext_Direction:
+        //    SCConditionTestDirection test;
+        //    break;
+        case EnumSCCondContext_Debug:
+            SCConditionTestDebug test;
+            break;
+        //case EnumSCCondContext_Misc:
+        //    SCConditionTestMisc test;
+        //    break;
+        case EnumSCCondContext_Footing:
+            SCConditionTestFooting test;
+            break;
+        case EnumSCCondContext_Movement:
+            SCConditionTestMovement test;
+            break;
+        case EnumSCCondContext_HurdleOutcome:
+            SCConditionTestHurdleOutcome test;
+            break;
+        case EnumSCCondContext_GymnasticsMoves:
+            SCConditionTestGymnasticsMove test;
+            break;
+        case EnumSCCondContext_EdgeDetDropType:
+            SCConditionTestEdgeDropType test;
+            break;
+        case EnumSCCondContext_EdgeDetDropRule:
+            SCConditionTestEdgeDropRule test;
+            break;
+        case EnumSCCondContext_EdgeDetStepRule:
+            SCConditionTestEdgeStepRule test;
+            break;
+        case EnumSCCondContext_EdgeDeflection:
+            SCConditionTestEdgeDeflection test;
+            break;
+        case EnumSCCondContext_EdgeDeflectionNumeric:
+            SCConditionTestEdgeDeflectionNumeric test;
+            break;
+        case EnumSCCondContext_Status:
+            SCConditionTestStatus test;
+            break;
+        case EnumSCCondContext_Markup:
+            SCConditionTestMarkup test;
+            break;
+        case EnumSCCondContext_MarkupType:
+            SCConditionTestMarkupType test;
+            break;
+        case EnumSCCondContext_MarkupMod:
+            SCConditionTestMarkupMod test;
+            break;
+        case EnumSCCondContext_MarkupAngle:
+            SCConditionTestMarkupAngle test;
+            break;
+        case EnumSCCondContext_MarkupDistance:
+            SCConditionTestMarkupDistance test;
+            break;
+        case EnumSCCondContext_MarkupLookahead:
+            SCConditionTestMarkupLookahead test;
+            break;
+        case EnumSCCondContext_MarkupClearance:
+            SCConditionTestMarkupClearance test;
+            break;
+        case EnumSCCondContext_MarkupConcealmentType:
+            SCConditionTestMarkupConcealmentType test;
+            break;
+        case EnumSCCondContext_MarkupAttach:
+            SCConditionTestMarkupAttach test;
+            break;
+        case EnumSCCondContext_MarkupMultiOut:
+            SCConditionTestMarkupMultiOut test;
+            break;
+        case EnumSCCondContext_MarkupAngleRange:
+            SCConditionTestMarkupHpoleRot test;
+            break;
+        case EnumSCCondContext_MarkupMovement:
+            SCConditionTestMarkupMovement test;
+            break;
+        case EnumSCCondContext_MarkupBoneAttachTarget:
+            SCConditionTestHurdleOutcome test;
+            break;
+        case EnumSCCondContext_MarkupTag:
+            SCConditionTestMarkupTargetingTag test;
+            break;
+        case EnumSCCondContext_Paraglide:
+            SCConditionTestParaglide test;
+            break;
+        case EnumSCCondContext_Grapple:
+            SCConditionTestGrapple test;
+            break;
+        case EnumSCCondContext_Water:
+            SCConditionTestWater test;
+            break;
+        case EnumSCCondContext_Npc:
+            SCConditionTestNpc test;
+            break;
+        case EnumSCCondContext_NpcProcess:
+            SCConditionTestNpcProcess test;
+            break;
+        case EnumSCCondContext_NpcThreatMood:
+            SCConditionTestNpcThreatMood test;
+            break;
+        case EnumSCCondContext_NpcFearLevel:
+            SCConditionTestNpcFearLevel test;
+            break;
+        case EnumSCCondContext_Tunedata:
+            SCConditionTestTunedata test;
+            break;
+        case EnumSCCondContext_Physics:
+            SCConditionTestPhysics test;
+            break;
+        case EnumSCCondContext_Engagement:
+            SCConditionTestEngagement test;
+            break;
+        case EnumSCCondContext_EngagementStatus:
+            SCConditionTestEngagementStatus test;
+            break;
+        case EnumSCCondContext_EngagementObject:
+            SCConditionTestEngagementObject test;
+            break;
+        case EnumSCCondContext_Interact:
+            SCConditionTestInteract test;
+            break;
+        case EnumSCCondContext_InteractMode:
+            SCConditionTestInteractMode test;
+            break;
+        case EnumSCCondContext_Interacted_Type:
+            SCConditionTestInteractedType test;
+            break;
+        case EnumSCCondContext_InvestigateTargetType:
+            SCConditionTestInvestigateTargetType test;
+            break;
+        case EnumSCCondContext_UseObjectState:
+            SCConditionTestUseObjectState test;
+            break;
+        case EnumSCCondContext_UseObjectReaction:
+            SCConditionTestUseObjectReaction test;
+            break;
+        case EnumSCCondContext_PushPull:
+            SCConditionTestPushPull test;
+            break;
+        case EnumSCCondContext_Portable:
+            SCConditionTestPortable test;
+            break;
+        case EnumSCCondContext_Portable_AnimType:
+            SCConditionTestPortableAnimType test;
+            break;
+        case EnumSCCondContext_Portable_UsageType:
+            SCConditionTestPortableUsageType test;
+            break;
+        case EnumSCCondContext_SpatialProbe:
+            SCConditionTestSpatialProbe test;
+            break;
+        case EnumSCCondContext_SpatialProbeHitType:
+            SCConditionTestSpatialProbeHitType test;
+            break;
+        case EnumSCCondContext_Combat:
+            SCConditionTestCombat test;
+            break;
+        case EnumSCCondContext_CombatNumeric:
+            SCConditionTestCombatNumeric test;
+            break;
+        case EnumSCCondContext_CombatStatus:
+            SCConditionTestCombatStatus test;
+            break;
+        case EnumSCCondContext_Ammo:
+            SCConditionTestAmmo test;
+            break;
+        case EnumSCCondContext_Cover:
+            SCConditionTestCover test;
+            break;
+        case EnumSCCondContext_Inventory:
+            SCConditionTestInventory test;
+            break;
+        case EnumSCCondContext_Weapon:
+            SCConditionTestWeaponLoadoutType test;
+            break;
+        case EnumSCCondContext_InventoryRequirement:
+            SCConditionTestInventoryRequirement test;
+            break;
+        case EnumSCCondContext_CameraCategory:
+            SCConditionTestCameraCategoryEnabled test;
+            break;
+        case EnumSCCondContext_Vehicle:
+            SCConditionTestVehicle test;
+            break;
+        case EnumSCCondContext_DamageType:
+            SCConditionTestDamageType test;
+            break;
+        case EnumSCCondContext_NamedValue_Boolean:
+            SCConditionTestNamedValueBool test;
+            break;
+        case EnumSCCondContext_NamedValue_Scalar_EQ:
+            SCConditionTestNamedValueScalar test;
+            break;
+        case EnumSCCondContext_NamedValue_Scalar_GT:
+            SCConditionTestNamedValueScalar test;
+            break;
+        case EnumSCCondContext_NamedValue_Scalar_GTE:
+            SCConditionTestNamedValueScalar test;
+            break;
+        case EnumSCCondContext_NamedValue_Symbol_Comp:
+            SCConditionTestNamedVlaueSymbolComp test;
+            break;
+        case EnumSCCondContext_Object:
+            SCConditionTestObject test;
+            break;
+        case EnumSCCondContext_HitReactType:
+            SCConditionTestHitReactType test;
+            break;
+        case EnumSCCondContext_PlayNotification:
+            SCConditionTestPlayNotificationType test;
+            break;
+        case EnumSCCondContext_Stance:
+            SCConditionTestStance test;
+            break;
+        case EnumSCCondContext_Experience:
+            SCConditionTestPlayerTrait test;
+            break;
+        case EnumSCCondContext_SeizeAttack:
+            SCConditionTestSeizeAttack test;
+            break;
+        case EnumSCCondContext_MeleeMove:
+            SCConditionTestMeleeMove test;
+            break;
+        case EnumSCCondContext_HitShapeType:
+            SCConditionTestHitShapeType test;
+            break;
+        case EnumSCCondContext_Detection:
+            SCConditionTestDetection test;
+            break;
+        case EnumSCCondContext_Multiplayer:
+            SCConditionTestMultiplayer test;
+            break;
+        case EnumSCCondContext_GameMode:
+            SCConditionTestGameMode test;
+            break;
+        case EnumSCCondContext_Process:
+            SCConditionTestProcess test;
+            break;
+        case EnumSCCondContext_ProcessNumeric:
+            SCConditionTestProcessNumeric test;
+            break;
+        case EnumSCCondContext_ProcessAnimGraphTrigger:
+            SCConditionTestProcessAnimGraphTrigger test;
+            break;
+        case EnumSCCondContext_ProcessInventory:
+            SCConditionTestProcessInventory test;
+            break;
+        case EnumSCCondContext_Prototype:
+            SCConditionTestPrototype test;
+            break;
+        case EnumSCCondContext_Weather:
+            SCConditionTestWeather test;
+            break;
+        case EnumSCCondContext_MovesetProfile:
+            SCConditionTestMovesetProfile test;
+            break;
+        case EnumSCCondContext_SCPropertyBool:
+            SCConditionTestSCPropertyBool test;
+            break;
+        case EnumSCCondContext_SCPropertyNumeric:
+            SCConditionTestSCPropertyNumeric test;
+            break;
+        case EnumSCCondContext_SCPropertyConditionNumeric:
+            SCConditionTestSCPropertyConditionNumeric test;
+            break;
+        case EnumSCCondContext_StateTag:
+            SCConditionTestStateTag test;
+            break;
+        case EnumSCCondContext_Platform:
+            SCConditionTestPlatform test;
+            break;
+        case EnumSCCondContext_VrMode:
+            SCConditionTestVrMode test;
+            break;
+        case EnumSCCondContext_Awareness:
+            SCConditionTestAwareness test;
+            break;
+        case EnumSCCondContext_NumericScalar:
+            SCConditionTestNumericScalar test;
+            break;
+    }
+    FSeek(endPos);
+    byte enabled;
+    FSkip(7);
+} SCConditionData <optimize=false>;
+
+typedef struct
+{
+    ushort desiredState;
+    ushort numModifiers;
+    ushort numConditions;
+    ushort modifierMask;
+    Ref modifiersRef;
+    if (CanSeekTo(modifiersRef))
+    {
+        SeekToRef(modifiersRef);
+        short modifiers[numModifiers];
+        ReturnFromRef();
+    }
+    Ref conditionsRef;
+    if (CanSeekTo(conditionsRef))
+    {
+        SeekToRef(conditionsRef);
+        SCConditionData conditions[numConditions];
+        ReturnFromRef();
+    }
+    Ref debugNameRef;
+    if (CanSeekTo(debugNameRef))
+    {
+        SeekToRef(debugNameRef);
+        string debugName;
+        ReturnFromRef();
+    }
+    byte debugShowPassFail;
+    FSkip(7);
+} SCTransitionData <optimize=false>;
+
+typedef struct
+{
+    unsigned int eventNameHash <format=hex>;
+    unsigned int eventNameHash2 <format=hex>;
+    byte dropThoughOnSuccess;
+    byte dropThoughOnFail;
+    byte recordEventTime;
+    FSkip(1);
+    ushort numTransitions;
+    FSkip(2);
+    Ref transitionsRef;
+    if (CanSeekTo(transitionsRef))
+    {
+        SeekToRef(transitionsRef);
+        unsigned int transitions[numTransitions];
+        ReturnFromRef();
+    }
+    Ref debugNameRef;
+    if (CanSeekTo(debugNameRef))
+    {
+        SeekToRef(debugNameRef);
+        string debugName;
+        ReturnFromRef();
+    }
+} SCEventHandlerData <optimize=false, read=GetEventName(eventNameHash != 0 ? eventNameHash : eventNameHash2)>;
+
+typedef struct
+{
+} SCStateDataList;
+
+typedef struct
+{
+    local int i;
+    
+    ushort defaultState;
+    FSkip(6);
+    Ref parentAgentRef;
+    byte bIndependentAgent;
+    byte bNetwork;
+    FSkip(2);
+    int scAgentID;
+    ushort numStates;
+    ushort numTransitions;
+    ushort numEventHandlers;
+    FSkip(2);
+    Ref stateRefsRef;
+    /*
+    if (CanSeekTo(stateRefsRef))
+    {
+        SeekToRef(stateRefsRef);
+        Ref stateRefs[numStates];
+        ReturnFromRef();
+    }
+    */
+    Ref transitionRefsRef;
+    /*
+    if (CanSeekTo(transitionRefsRef))
+    {
+        SeekToRef(transitionRefsRef);
+        Ref transitionRefs[numTransitions];
+        ReturnFromRef();
+    }
+    */
+    Ref eventHandlerRefsRef;
+    /*
+    if (CanSeekTo(eventHandlerRefsRef))
+    {
+        SeekToRef(eventHandlerRefsRef);
+        Ref eventHandlerRefs[numEventHandlers];
+        ReturnFromRef();
+    }
+    */
+    Ref statesRef;
+    if (CanSeekTo(statesRef))
+    {
+        SeekToRef(statesRef);
+        SCStateData states[numStates];
+        ReturnFromRef();
+    }
+    Ref transitionsRef;
+    if (CanSeekTo(transitionsRef))
+    {
+        SeekToRef(transitionsRef);
+        SCTransitionData transitions[numTransitions];
+        ReturnFromRef();
+    }
+    Ref eventHandlersRef;
+    if (CanSeekTo(eventHandlersRef))
+    {
+        SeekToRef(eventHandlersRef);
+        SCEventHandlerData eventHandlers[numEventHandlers];
+        ReturnFromRef();
+    }
+    Ref debugNameRef;
+    if (CanSeekTo(debugNameRef))
+    {
+        SeekToRef(debugNameRef);
+        string debugName;
+        ReturnFromRef();
+    }
+    uint debugAgentFlag : 1;
+    uint debugActivationFlag : 1;
+    uint debugStateFlag : 1;
+    uint debugStateChangeFlag : 1;
+    uint debugStatePropertiesFlag : 1;
+    uint debugStateActivitiesFlag : 1;
+    uint debugConditionCheckFlag : 1;
+    uint debugConditionPassFlag : 1;
+    uint debugConditionFailFlag : 1;
+    uint debugConditionDetailFlag : 1;
+    uint debugTransitionDetailFlag : 1;
+    uint debugPropertyDetailFlag : 1;
+    uint debugActivityDetailFlag : 1;
+    uint debugEventHandlerPassFlag : 1;
+    uint debugEventHandlerFailFlag : 1;
+    uint debugAgentOnScreenFlag : 1;
+    uint debugScriptSendEvent : 1;
+    int _Bitfieldpadding15 : 15;
+    unsigned int debugEvents;
+    uint debugPad : 15;
+    int _Bitfieldpadding33 : 17;
+    int debugActivityConfirmation;
+    int debugPropertyConfirmation;
+    int debugConditionConfirmation;
+    Ref debugDataFileNameRef;
+    if (CanSeekTo(debugDataFileNameRef))
+    {
+        SeekToRef(debugDataFileNameRef);
+        string debugDataFileName;
+        ReturnFromRef();
+    }
+    Ref debugDataPathRef;
+    if (CanSeekTo(debugDataPathRef))
+    {
+        SeekToRef(debugDataPathRef);
+        string debugDataPath;
+        ReturnFromRef();
+    }
+} SCAgentData <optimize=false>;
+
+typedef struct
+{
+    Ref stateControlAgentListRef;
+    unsigned int stateControlAgentListCount;
+    if (CanSeekTo(stateControlAgentListRef))
+    {
+        SeekToRef(stateControlAgentListRef);
+        SCAgentData stateControlAgentList[stateControlAgentListCount];
+        ReturnFromRef();
+    }
+} StateControlComponent <optimize=false>;
+
+RefDefinitions refDefinitions;
+StateControlComponent root <open=true>;

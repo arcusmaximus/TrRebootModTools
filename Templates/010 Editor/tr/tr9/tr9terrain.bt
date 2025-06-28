@@ -1,0 +1,48 @@
+#define TR_VERSION 9
+#include "../trcommon.bt"
+
+typedef struct
+{
+    Vector3 globalOffset;
+    Vector3 localOffset;
+    int obsolete;
+    int iD;
+    int uniqueID;
+    int splineID;
+    Ref admdTerrainGroupRef;
+    float groupOriginX;
+    float groupOriginY;
+    float groupOriginZ;
+    Ref levelRef;
+    int numMeshInstance;
+    Ref meshInstancesRef;
+} TerrainGroup <optimize=false>;
+
+typedef struct
+{
+    short unitChangeFlags;
+    short numStreamUnitPortals;
+    Ref streamUnitPortalsRef;
+    int numTerrainGroups;
+    Ref terrainGroupsRef;
+    if (CanSeekTo(terrainGroupsRef))
+    {
+        SeekToRef(terrainGroupsRef);
+        TerrainGroup terrainGroups[numTerrainGroups];
+        ReturnFromRef();
+    }
+    Ref signalTerrainGroupRef;
+    if (CanSeekTo(signalTerrainGroupRef))
+    {
+        SeekToRef(signalTerrainGroupRef);
+        TerrainGroup signalTerrainGroup;
+        ReturnFromRef();
+    }
+    int numMeshInstances;
+    Ref meshInstancesRef;
+    int numMeshes;
+    Ref meshesRef;
+} Terrain <optimize=false>;
+
+RefDefinitions refDefinitions;
+Terrain terrain <open=true>;

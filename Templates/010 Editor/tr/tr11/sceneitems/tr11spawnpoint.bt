@@ -1,0 +1,318 @@
+#define TR_VERSION 11
+#include "../../trcommon.bt"
+
+typedef union
+{
+    byte _bool;
+    int _int;
+    float _float;
+    Vector3 vector;
+    Quaternion quaternion;
+} NamedValueDataUnion;
+
+typedef struct
+{
+    Ref namedValueNameRef;
+    if (CanSeekTo(namedValueNameRef))
+    {
+        SeekToRef(namedValueNameRef);
+        string namedValueName;
+        ReturnFromRef();
+    }
+    int namedValueType;
+    int namedValueDataType;
+    NamedValueDataUnion namedValueData;
+} NamedValue_Set <optimize=false>;
+
+typedef struct
+{
+    Matrix transform;
+    unsigned int spawnInputAction;
+    unsigned int despawnInputAction;
+    unsigned int numNamedValues;
+    FSkip(4);
+    Ref namedValuesRef;
+    if (CanSeekTo(namedValuesRef))
+    {
+        SeekToRef(namedValuesRef);
+        NamedValue_Set namedValues[numNamedValues];
+        ReturnFromRef();
+    }
+} CustomSpawnLocation <optimize=false>;
+
+typedef struct
+{
+    unsigned int unitId;
+    FSkip(4);
+    PlacementPath dynamicSpawner;
+} DynamicSpawner <optimize=false>;
+
+struct Condition;
+
+void ReadAndCondition(string& repr)
+{
+    Ref conditionsRef;
+    unsigned int numConditions;
+    if (CanSeekTo(conditionsRef))
+    {
+        SeekToRef(conditionsRef);
+        Condition conditions[numConditions];
+        ReturnFromRef();
+    }
+    
+    repr = "(";
+    local int i;
+    for (i = 0; i < numConditions; i++)
+    {
+        if (i > 0)
+            repr += " && ";
+        
+        repr += conditions[i].repr;
+    }
+    repr += ")";
+}
+
+void ReadOrCondition(string& repr)
+{
+    Ref conditionsRef;
+    unsigned int numConditions;
+    if (CanSeekTo(conditionsRef))
+    {
+        SeekToRef(conditionsRef);
+        Condition conditions[numConditions];
+        ReturnFromRef();
+    }
+    
+    repr = "(";
+    local int i;
+    for (i = 0; i < numConditions; i++)
+    {
+        if (i > 0)
+            repr += " || ";
+        
+        repr += conditions[i].repr;
+    }
+    repr += ")";
+}
+
+enum <int> VariableType
+{
+    GLOBAL_VAR_BOOL,
+    GLOBAL_VAR_INT,
+    GLOBAL_VAR_FLOAT
+};
+
+enum <int> BoolComparisonOperator
+{
+    COMP_TRUE,
+    COMP_FALSE
+};
+
+enum <int> NumberComparisonOperator
+{
+    COMP_EQUAL,
+    COMP_NOT_EQUAL,
+    COMP_GREATER,
+    COMP_GREATER_OR_EQUAL,
+    COMP_LESS,
+    COMP_LESS_OR_EQUAL
+};
+
+void ReadVariableComparison(string& repr, string varNamePrefix)
+{
+    ushort varSymbolId;    // See pcx64-w\symbol.ids
+    FSkip(2);
+    VariableType varType;
+    Ref commentRef;
+    if (CanSeekTo(commentRef))
+    {
+        SeekToRef(commentRef);
+        string comment;
+        ReturnFromRef();
+    }
+    
+    local string varName;
+    local string operandRepr;
+    switch (varType)
+    {
+        case GLOBAL_VAR_BOOL:
+            int defaultValue;
+            BoolComparisonOperator operator;
+            FSkip(4);
+            
+            varName = Str("bool%d", varSymbolId);
+            break;
+        case GLOBAL_VAR_INT:
+            int defaultValue;
+            NumberComparisonOperator operator;
+            int operand;
+            
+            varName = Str("int%d", varSymbolId);
+            operandRepr = Str("%d", operand);
+            break;
+        case GLOBAL_VAR_FLOAT:
+            float defaultValue;
+            NumberComparisonOperator operator;
+            float operand;
+            
+            varName = Str("float%d", varSymbolId);
+            operandRepr = Str("%f", operand);
+            break;
+    }
+    
+    if (varType == GLOBAL_VAR_BOOL)
+    {
+        repr = (operator == COMP_FALSE ? "!" : "") + varName;
+    }
+    else
+    {
+        switch (operator)
+        {
+            case COMP_EQUAL:
+                repr = Str("%s == %s", varName, operandRepr);
+                break;
+            case COMP_NOT_EQUAL:
+                repr = Str("%s != %s", varName, operandRepr);
+                break;
+            case COMP_GREATER:
+                repr = Str("%s > %s", varName, operandRepr);
+                break;
+            case COMP_GREATER_OR_EQUAL:
+                repr = Str("%s >= %s", varName, operandRepr);
+                break;
+            case COMP_LESS:
+                repr = Str("%s < %s", varName, operandRepr);
+                break;
+            case COMP_LESS_OR_EQUAL:
+                repr = Str("%s <= %s", varName, operandRepr);
+                break;
+        }
+    }
+}
+
+void ReadGlobalVariableCondition(string& repr)
+{
+    ReadVariableComparison(repr, "");
+}
+
+void ReadInstanceVariableCondition(string& repr)
+{
+    PlacementPath instancePath;
+    ReadVariableComparison(repr, "instance.");
+}
+
+enum <byte> ConditionType
+{
+    CONDITION_AND,
+    CONDITION_OR,
+    CONDITION_EVAL_GLOBAL,
+    CONDITION_EVAL_INSTANCE,
+    CONDITION_ALWAYS,
+    CONDITION_NEVER
+};
+
+typedef struct
+{
+    local int endPos = FTell() + 0x38;
+    local string repr;
+    
+    ConditionType conditionType;
+    FSkip(7);
+    switch (conditionType)
+    {
+        case CONDITION_AND:
+            ReadAndCondition(repr);
+            break;
+        case CONDITION_OR:
+            ReadOrCondition(repr);
+            break;
+        case CONDITION_EVAL_GLOBAL:
+            ReadGlobalVariableCondition(repr);
+            break;
+        case CONDITION_EVAL_INSTANCE:
+            ReadInstanceVariableCondition(repr);
+            break;
+        case CONDITION_ALWAYS:
+            repr = "true";
+            break;
+        case CONDITION_NEVER:
+            repr = "false";
+            break;
+    }
+    FSeek(endPos);
+} Condition <optimize=false, read=repr>;
+
+typedef struct
+{
+    int uniqueID;
+    int navPlannerLayer;
+    ushort spawnDisabled : 1;
+    ushort despawnEnabled : 1;
+    ushort hidden : 1;
+    ushort alwaysUpright : 1;
+    ushort runOnWaypointSet : 1;
+    FSkip(2);
+    unsigned int spawnInputAction;
+    unsigned int despawnInputAction;
+    PlacementPath spawnForcedUseObject;
+    PlacementPath waypointSetPath;
+    FSkip(4);
+    Ref needSettingsOverrideRef;
+    byte useOnlyObjectsWithNeeds : 1;
+    FSkip(3);
+    int groupIdOverride;
+    byte canScale : 1;
+    FSkip(3);
+    unsigned int numNamedValues;
+    Ref namedValuesRef;
+    if (CanSeekTo(namedValuesRef))
+    {
+        SeekToRef(namedValuesRef);
+        NamedValue_Set namedValues[numNamedValues];
+        ReturnFromRef();
+    }
+    float minTimeBetweenSpawns;
+    float minTimeBetweenSpawnLocationUses;
+    Ref spawnListRef;
+    ushort objectID;
+    byte useLocalZoneId;
+    char teamID;
+    int groupID;
+    ushort numDisabledObjects;
+    FSkip(6);
+    Ref disabledObjectListRef;
+    if (CanSeekTo(disabledObjectListRef))
+    {
+        SeekToRef(disabledObjectListRef);
+        int disabledObjectList[numDisabledObjects];
+        ReturnFromRef();
+    }
+    ushort numCustomSpawnLocations;
+    FSkip(6);
+    Ref customSpawnLocationListRef;
+    if (CanSeekTo(customSpawnLocationListRef))
+    {
+        SeekToRef(customSpawnLocationListRef);
+        CustomSpawnLocation customSpawnLocationList[numCustomSpawnLocations];
+        ReturnFromRef();
+    }
+    byte dynamicSpawnerEnabled;
+    byte mandatorySpawnPointEnabled;
+    ubyte numDynamicSpawner;
+    FSkip(5);
+    Ref dynamicSpawnerListRef;
+    if (CanSeekTo(dynamicSpawnerListRef))
+    {
+        SeekToRef(dynamicSpawnerListRef);
+        DynamicSpawner dynamicSpawnerList[numDynamicSpawner];
+        ReturnFromRef();
+    }
+    Condition mandatoryCondition;
+    Condition spawnCondition;
+    Condition despawnCondition;
+    int priority;
+    byte mandatoryDistanceCheck;
+} SpawnPoint <optimize=false>;
+
+RefDefinitions refDefinitions;
+SpawnPoint root <open=true>;

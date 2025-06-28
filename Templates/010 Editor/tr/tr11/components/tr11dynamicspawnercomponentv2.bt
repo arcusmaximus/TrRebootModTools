@@ -1,0 +1,205 @@
+//------------------------------------------------
+//--- 010 Editor v14.0 Binary Template
+//
+//      File: tr11interactablecomponent.bt
+//   Authors: arc_
+//   Purpose: Parse .tr11dtp files storing DYNAMICSPAWNER components
+//  Category: SOTTR
+//------------------------------------------------
+
+#define TR_VERSION 11
+#include "../../trcommon.bt"
+
+typedef struct
+{
+    float boxHeightOffset;
+    float boxExtents[3];
+} DynamicSpawnerComponentV2__OcclusionBox <optimize=false>;
+
+typedef struct
+{
+    ushort objectZoneID;
+    byte allowChildObjects;
+    FSkip(1);
+} DynamicSpawnerComponentV2__DynamicSpawnerArchetype <optimize=false>;
+
+typedef struct
+{
+    Ref archetypeListRef;
+    unsigned int numArchetypeList;
+    if (CanSeekTo(archetypeListRef))
+    {
+        SeekToRef(archetypeListRef);
+        DynamicSpawnerComponentV2__DynamicSpawnerArchetype archetypeList[numArchetypeList];
+        ReturnFromRef();
+    }
+    FSkip(4);
+} DynamicSpawnerComponentV2__DynamicSpawnerArchetypeFamily <optimize=false>;
+
+typedef struct
+{
+    unsigned int archetypeFamily;
+    float weight;
+} DynamicSpawnerComponentV2__ArchetypeFamilySettings <optimize=false>;
+
+typedef union
+{
+    byte _bool;
+    int _int;
+    float _float;
+} PersistentDataValueUnionRedirect;
+
+typedef struct
+{
+    ushort name;
+    FSkip(2);
+    int type;
+    Ref commentRef;
+    if (CanSeekTo(commentRef))
+    {
+        SeekToRef(commentRef);
+        string comment;
+        ReturnFromRef();
+    }
+    PersistentDataValueUnionRedirect _default;
+} PersistentDataGlobalStruct <optimize=false>;
+
+typedef struct
+{
+    char comparisonOperator;
+    FSkip(3);
+    unsigned int value;
+} DynamicSpawnerComponentV2__ConditionSingleValue <optimize=false>;
+
+typedef struct
+{
+    unsigned int minValue;
+    unsigned int maxValue;
+    byte minExclude;
+    byte maxExclude;
+} DynamicSpawnerComponentV2__ConditionRange <optimize=false>;
+
+typedef union
+{
+    DynamicSpawnerComponentV2__ConditionSingleValue singleValue;
+    DynamicSpawnerComponentV2__ConditionRange range;
+} DynamicSpawnerComponentV2__ConditionTypeUnion;
+
+typedef struct
+{
+    char conditionType;
+    FSkip(3);
+    DynamicSpawnerComponentV2__ConditionTypeUnion condition;
+} DynamicSpawnerComponentV2__PersistentDataCondition <optimize=false>;
+
+typedef struct
+{
+    PlacementPath checkpoint;
+} DynamicSpawnerComponentV2__ConditionCheckpoint <optimize=false>;
+
+typedef struct
+{
+    ushort unitID;
+    FSkip(6);
+    Ref checkpointsRef;
+    unsigned int numCheckpoints;
+    if (CanSeekTo(checkpointsRef))
+    {
+        SeekToRef(checkpointsRef);
+        DynamicSpawnerComponentV2__ConditionCheckpoint checkpoints[numCheckpoints];
+        ReturnFromRef();
+    }
+} DynamicSpawnerComponentV2__ConditionCheckpointSet <optimize=false>;
+
+typedef struct
+{
+    unsigned int globalProgressLevel;
+    PersistentDataGlobalStruct persistentData;
+    Ref persistentConditionsRef;
+    unsigned int numPersistentConditions;
+    if (CanSeekTo(persistentConditionsRef))
+    {
+        SeekToRef(persistentConditionsRef);
+        DynamicSpawnerComponentV2__PersistentDataCondition persistentConditions[numPersistentConditions];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref checkpointSetsRef;
+    unsigned int numCheckpointSets;
+    if (CanSeekTo(checkpointSetsRef))
+    {
+        SeekToRef(checkpointSetsRef);
+        DynamicSpawnerComponentV2__ConditionCheckpointSet checkpointSets[numCheckpointSets];
+        ReturnFromRef();
+    }
+} DynamicSpawnerComponentV2__EnableEntry <optimize=false>;
+
+typedef struct
+{
+    ushort objectZoneID;
+    byte allowChildObjects;
+    FSkip(1);
+    DynamicSpawnerComponentV2__OcclusionBox occlusionBox;
+} DynamicSpawnerComponentV2__OcclusionBoxOverride <optimize=false>;
+
+typedef struct
+{
+    uint disabled : 1;
+    uint recycleInstance : 1;
+    int _Bitfieldpadding0 : 30;
+    float defaultFamilyWeight;
+    DynamicSpawnerComponentV2__OcclusionBox defaultOcclusionBox;
+    float maxChildrenWeight;
+    float maxOperationFrequency;
+    int groupID;
+    float spawnMaxDist;
+    float despawnMinDist;
+    FSkip(4);
+    Ref debugNamePrefixRef;
+    if (CanSeekTo(debugNamePrefixRef))
+    {
+        SeekToRef(debugNamePrefixRef);
+        string debugNamePrefix;
+        ReturnFromRef();
+    }
+    unsigned int occlusionPixelThreshold;
+    FSkip(4);
+    Ref dynamicSpawnerFamiliesRef;
+    unsigned int numDynamicSpawnerFamilies;
+    if (CanSeekTo(dynamicSpawnerFamiliesRef))
+    {
+        SeekToRef(dynamicSpawnerFamiliesRef);
+        DynamicSpawnerComponentV2__DynamicSpawnerArchetypeFamily dynamicSpawnerFamilies[numDynamicSpawnerFamilies];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref archetypeFamilySettingsListRef;
+    if (CanSeekTo(archetypeFamilySettingsListRef))
+    {
+        SeekToRef(archetypeFamilySettingsListRef);
+        DynamicSpawnerComponentV2__ArchetypeFamilySettings archetypeFamilySettingsList;
+        ReturnFromRef();
+    }
+    unsigned int numArchetypeFamilySettingsList;
+    FSkip(4);
+    Ref progressionEntriesRef;
+    unsigned int numProgressionEntries;
+    if (CanSeekTo(progressionEntriesRef))
+    {
+        SeekToRef(progressionEntriesRef);
+        DynamicSpawnerComponentV2__EnableEntry progressionEntries[numProgressionEntries];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref occlusionBoxOverridesRef;
+    unsigned int numOcclusionBoxOverrides;
+    if (CanSeekTo(occlusionBoxOverridesRef))
+    {
+        SeekToRef(occlusionBoxOverridesRef);
+        DynamicSpawnerComponentV2__OcclusionBoxOverride occlusionBoxOverrides[numOcclusionBoxOverrides];
+        ReturnFromRef();
+    }
+} DynamicSpawnerComponentV2 <optimize=false>;
+
+RefDefinitions refDefinitions;
+DynamicSpawnerComponentV2 root <open=true>;

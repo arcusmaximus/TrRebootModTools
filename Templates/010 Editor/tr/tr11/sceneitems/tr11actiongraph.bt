@@ -1,0 +1,86 @@
+//------------------------------------------------
+//--- 010 Editor v14.0 Binary Template
+//
+//      File: tr11actiongraph.bt
+//   Authors: arc_
+//   Purpose: Parse SOTTR action graphs
+//  Category: SOTTR
+//------------------------------------------------
+
+#define TR_VERSION 11
+#define TR_OBJECT_NO_INSTANTIATE
+#include "../../trcommon.bt"
+#include "../../trobjectcommon.bt"
+#include "tr11actiongraph-nodetypes.bt"
+#include "tr11actiongraph-nodes.bt"
+
+typedef struct
+{
+    NodeType type;
+    FSkip(6);
+    Ref argsRef;
+    FSkip(0x10);
+    
+    if (CanSeekTo(argsRef))
+    {
+        SeekToRef(argsRef);
+        switch (type)
+        {
+#include "tr11actiongraph-dispatch.bt"
+        }
+        ReturnFromRef();
+    }
+} Node <read=SubStr(EnumToString(type), 3), optimize=false>;
+
+typedef struct
+{
+    short fromNodeIdx;
+    short toNodeIdx;
+    short fromSlotIdx;
+    short toSlotIdx;
+} Edge <read=Str("%d.%d -> %d.%d", fromNodeIdx, fromSlotIdx, toNodeIdx, toSlotIdx)>;
+
+typedef struct
+{
+    int numNodes;
+    int numEdges;
+    Ref nodesRef;
+    Ref edgesRef;
+    int numInputs;
+    int numOutputs;
+    Ref inputsRef;
+    Ref outputsRef;
+    
+    if (CanSeekTo(nodesRef))
+    {
+        SeekToRef(nodesRef);
+        Node nodes[numNodes];
+        ReturnFromRef();
+    }
+    
+    if (CanSeekTo(edgesRef))
+    {
+        SeekToRef(edgesRef);
+        Edge edges[numEdges];
+        ReturnFromRef();
+    }
+    
+    if (CanSeekTo(inputsRef))
+    {
+        SeekToRef(inputsRef);
+        ScriptableNodeInputSocketHidden inputs[numInputs];
+        ReturnFromRef();
+    }
+    
+    if (CanSeekTo(outputsRef))
+    {
+        SeekToRef(outputsRef);
+        ScriptableNodeOutputSocket outputs[numOutputs];
+        ReturnFromRef();
+    }
+} ActionGraph <optimize=false>;
+
+#ifndef TR_ACTION_GRAPH_NO_INSTANTIATE
+    RefDefinitions refDefinitions;
+    ActionGraph graph <open=true>;
+#endif

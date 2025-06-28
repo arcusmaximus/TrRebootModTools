@@ -1,0 +1,195 @@
+#define TR_VERSION 11
+#include "../../trcommon.bt"
+
+typedef struct
+{
+    int8 terrain : 1;
+    int8 player : 1;
+    int8 npc : 1;
+    int8 enemy : 1;
+    int8 object : 1;
+    int8 shard : 1;
+    int8 camera : 1;
+    int8 cloth : 1;
+    int8 incidental : 1;
+    int8 gear : 1;
+    int8 thrownProjectile : 1;
+    int8 arrow : 1;
+    int8 clutter : 1;
+    int8 cameraLineOfSight : 1;
+    int8 interact : 1;
+    int8 npcPlayerStopper : 1;
+} CollisionTypesBitfield;
+
+typedef struct
+{
+    CollisionTypesBitfield collideWith;
+    CollisionTypesBitfield collideNotWith;
+    CollisionTypesBitfield collideAs;
+    int collideGroup;
+} CollisionCategory;
+
+typedef struct
+{
+    float friction;
+    CollisionCategory collisionCategory;
+    int8 flag_player_respond_trans : 1;
+    int8 flag_particle_trans : 1;
+    int8 flag_bullet_trans : 1;
+    int8 flag_aim_transparent : 1;
+    int8 flag_npcAim_transparent : 1;
+    int8 flag_npc_bullet_trans : 1;
+    int8 flag_shallow_water : 1;
+    int8 flag_jump_collision_trans : 1;
+    int8 flag_grapple_arrow : 1;
+    int8 flag_snow : 1;
+    int8 flag_water_surface : 1;
+    int8 flag_avoid_weapon_clipping : 1;
+    int8 __bitfieldpadding10 : 4;
+} CollisionType;
+
+typedef struct
+{
+    unsigned int originalMaterialID;
+    unsigned int overrideMaterial;
+} CollisionMaterialOverride;
+
+typedef struct
+{
+} IHighlightableResource;
+
+typedef struct
+{
+    IHighlightableResource __parent;
+} IMaterial;
+
+typedef struct
+{
+    unsigned int sourceMaterialID;
+    FSkip(4);
+    Ref destMaterialRef;
+    if (CanSeekTo(destMaterialRef))
+    {
+        SeekToRef(destMaterialRef);
+        IMaterial destMaterial;
+        ReturnFromRef();
+    }
+    unsigned int streamLayer;
+} MaterialOverride;
+
+typedef struct
+{
+    float instanceParam0[4];
+    float instanceParam1[4];
+    float instanceParam2[4];
+    float instanceParam3[4];
+    float instanceWetness;
+} InstanceParams;
+
+typedef struct
+{
+    byte windEnabled;
+    FSkip(3);
+    float windScale;
+} WindParams;
+
+typedef struct
+{
+    unsigned int uint32_;
+} IntroLightMask;
+
+typedef struct
+{
+    unsigned int16 unit;
+    unsigned int16 streamLayer;
+} StreamLayerRef;
+
+typedef struct
+{
+    int cellUniqueID;
+} CellOverride;
+
+typedef struct
+{
+    Ref debugNameRef;
+    if (CanSeekTo(debugNameRef))
+    {
+        SeekToRef(debugNameRef);
+        string debugName;
+        ReturnFromRef();
+    }
+    int instanceType;
+    unsigned int meshRenderID;
+    unsigned int meshCollisionID;
+    FSkip(4);
+    Ref collisionTypeRef;
+    if (CanSeekTo(collisionTypeRef))
+    {
+        SeekToRef(collisionTypeRef);
+        CollisionType collisionType;
+        ReturnFromRef();
+    }
+    unsigned int numCollisionOverrideMaterials;
+    FSkip(4);
+    Ref collisionOverrideMaterialsRef;
+    if (CanSeekTo(collisionOverrideMaterialsRef))
+    {
+        SeekToRef(collisionOverrideMaterialsRef);
+        CollisionMaterialOverride collisionOverrideMaterials;
+        ReturnFromRef();
+    }
+    char lodLevelStart;
+    char lodLevelEnd;
+    FSkip(2);
+    float instanceLodBias;
+    float instanceLodScale;
+    float instanceLodClamp;
+    float instanceLodScreenSizeFadeOverride;
+    unsigned int numOverrideMaterials;
+    Ref overrideMaterialsRef;
+    if (CanSeekTo(overrideMaterialsRef))
+    {
+        SeekToRef(overrideMaterialsRef);
+        MaterialOverride overrideMaterials;
+        ReturnFromRef();
+    }
+    int8 placeInExteriorCell : 1;
+    int8 canRender : 1;
+    int8 bCanCastShadows : 1;
+    int8 bCanRenderInReflection : 1;
+    int8 canCollide : 1;
+    int8 canUseNavMesh : 1;
+    int8 depthPrePass : 1;
+    int8 interiorOnlyPass : 1;
+    int8 collideWithHMD : 1;
+    FSkip(6);
+    Ref instanceParamsRef;
+    if (CanSeekTo(instanceParamsRef))
+    {
+        SeekToRef(instanceParamsRef);
+        InstanceParams instanceParams;
+        ReturnFromRef();
+    }
+    Ref windParamsRef;
+    if (CanSeekTo(windParamsRef))
+    {
+        SeekToRef(windParamsRef);
+        WindParams windParams;
+        ReturnFromRef();
+    }
+    IntroLightMask lightMask;
+    FSkip(4);
+    Ref streamLayersRef;
+    if (CanSeekTo(streamLayersRef))
+    {
+        SeekToRef(streamLayersRef);
+        StreamLayerRef streamLayers;
+        ReturnFromRef();
+    }
+    unsigned int streamLayerCount;
+    CellOverride cellOverride;
+    char sortBehaviour;
+} MeshRef;
+
+RefDefinitions refDefinitions;
+MeshRef root <open=true>;

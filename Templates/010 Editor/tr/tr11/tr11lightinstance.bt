@@ -1,0 +1,250 @@
+#define TR_VERSION 11
+#include "../trcommon.bt"
+
+typedef struct
+{
+    ushort unit;
+    ushort streamLayer;
+} StreamLayerRef <optimize=false>;
+
+typedef struct
+{
+    short unit;
+    short unitLightGroupIdx;
+} UnitLightGroup <optimize=false>;
+
+typedef struct
+{
+    float position[3];
+    float rotation[3];
+} LightTemplateData__ClippingPlaneTransform <optimize=false>;
+
+typedef struct
+{
+    ushort unit;
+    FSkip(2);
+    int occluderId;
+} LightTemplateData__ClippingPlaneOccluder <optimize=false>;
+
+typedef union
+{
+    Ref disabledRef;
+    if (CanSeekTo(disabledRef))
+    {
+        SeekToRef(disabledRef);
+        byte disabled;
+        ReturnFromRef();
+    }
+    LightTemplateData__ClippingPlaneTransform userDefined;
+    LightTemplateData__ClippingPlaneOccluder occluder;
+} LightTemplateData__ClippingPlaneData;
+
+enum <int> LightType
+{
+    LightType_point = 0x0,
+    LightType_capsule = 0x1,
+    LightType_spot = 0x2,
+    LightType_box = 0x4,
+    LightType_directional = 0x5,
+    LightType_count = 0x6
+};
+
+enum <int> LightComplexity
+{
+    LightComplexity_universal = 0x1,
+    LightComplexity_probefill = 0x2,
+    LightComplexity_probelocal = 0x3,
+    LightComplexity_refl = 0x8,
+    LightComplexity_ambi = 0x9
+};
+
+typedef struct
+{
+    float cullLightDistance;
+    float cullLightFadeDistance;
+    float cullLightNearCullingDistance;
+    float cullLightNearFadeLength;
+    float cullLightNearMinIntensityRatio;
+    LightType lightType;
+    LightComplexity lightComplexity;
+    float range;
+    float lightIntensity;
+    float lightIntensityMultiplier;
+    float lightIntensityBounceMultiplier;
+    float intensityDistance;
+    float lightTemperature;
+    ubyte lightColorR;
+    ubyte lightColorG;
+    ubyte lightColorB;
+    FSkip(1);
+    uquad timeStamp;
+    ushort userPriority;
+    FSkip(2);
+    float probeAngAttenDistanceFactor;
+    int probeReflectionParrallaxShape;
+    float probeReflectionParrallaxShapeOffsetX;
+    float probeReflectionParrallaxShapeOffsetY;
+    float probeReflectionParrallaxShapeOffsetZ;
+    float probeReflectionParrallaxSphereRadius;
+    float probeReflectionParrallaxBoxExtentsX;
+    float probeReflectionParrallaxBoxExtentsY;
+    float probeReflectionParrallaxBoxExtentsZ;
+    float probeFalloff;
+    float probeIntensity;
+    float probeBoxExtentsX;
+    float probeBoxExtentsY;
+    float probeBoxExtentsZ;
+    float probeBoxOffsetX;
+    float probeBoxOffsetY;
+    float probeBoxOffsetZ;
+    ushort scriptLightGroup;
+    FSkip(2);
+    UnitLightGroup unitLightGroup;
+    float penumbra;
+    float nearRadius;
+    float nearFadeDistance;
+    float specularSoftness;
+    float extinctionRange;
+    FSkip(4);
+    Ref angularAttenuationRef;
+    if (CanSeekTo(angularAttenuationRef))
+    {
+        SeekToRef(angularAttenuationRef);
+        float angularAttenuation[256];
+        ReturnFromRef();
+    }
+    float intensityVariationSpeed;
+    FSkip(4);
+    Ref intensityVariationRef;
+    if (CanSeekTo(intensityVariationRef))
+    {
+        SeekToRef(intensityVariationRef);
+        ubyte intensityVariation;
+        ReturnFromRef();
+    }
+    Ref modulationTextureRef;
+    Ref ambientCubeMapTextureRef;
+    Ref ambientSHResourceRef;
+    float texScale;
+    float texRotation;
+    float texXScroll;
+    float texYScroll;
+    float shadowConstBias;
+    float shadowSlopeBias;
+    float shadowDistanceBias;
+    int shadowMapSize;
+    byte enableScreenSpaceContactShadows;
+    FSkip(3);
+    float softShadowRadius;
+    int softShadowNumSamples;
+    float softShadowDepthBias;
+    float softShadowNormalOffset;
+    byte enableContactHardening;
+    FSkip(3);
+    float softShadowCHScale;
+    float volumetricLightIntensityMultiplier;
+    float shadowLODDist1;
+    float shadowLODDist2;
+    float shadowLODDist3;
+    float automaticShadowLODMultiplier;
+    float shadowFadeDistance;
+    float shadowCullDistance;
+    byte shadowCullFromPivot : 1;
+    FSkip(3);
+    float shadowNearPlaneOffset;
+    ushort lightGroup;
+    FSkip(2);
+    float animParamsPosX[4];
+    float animParamsPosY[4];
+    float animParamsPosZ[4];
+    float animParamsDirX[4];
+    float animParamsDirY[4];
+    float animParamsDirZ[4];
+    ubyte clippingPlane0Type : 2;
+    ubyte clippingPlane1Type : 2;
+    ubyte clippingPlane2Type : 2;
+    byte _Bitfieldpadding77 : 2;
+    FSkip(3);
+    LightTemplateData__ClippingPlaneData clippingPlane0Data;
+    LightTemplateData__ClippingPlaneData clippingPlane1Data;
+    LightTemplateData__ClippingPlaneData clippingPlane2Data;
+    byte enableLightCulling : 1;
+    byte cullFromPivot : 1;
+    byte invertedLightCulling : 1;
+    byte activeInGameplay : 1;
+    byte activeInCinematics : 1;
+    byte inExteriorCell : 1;
+    byte disablePortalCulling : 1;
+    byte activeForMainPass : 1;
+    byte activeForReflection : 1;
+    byte activeForCapturing : 1;
+    byte enableVariation : 1;
+    byte randomStartVariation : 1;
+    byte enableModulationTexture : 1;
+    byte enableCausticModulation : 1;
+    byte shadowEnabled : 1;
+    byte shadowIncreaseResolution : 1;
+    byte enablePerInstanceShadowBias : 1;
+    byte isReceiverFocus : 1;
+    byte isSoftshadow : 1;
+    byte volumetricLightEnabled : 1;
+    byte volumetricLightNoReprojection : 1;
+    byte volumetricLightMultisample : 1;
+    byte viewIndependentShadowCulling : 1;
+    byte enableShadowLOD : 1;
+    byte enableAutomaticShadowLOD : 1;
+    byte enableShadowDistanceCulling : 1;
+    byte affectsPlayer : 1;
+    byte affectsIntros : 1;
+    byte affectsUnitObjects : 1;
+    byte affectsTerrain : 1;
+    byte affectsGroup1 : 1;
+    byte affectsGroup2 : 1;
+    byte affectsGroup3 : 1;
+    byte affectsGroup4 : 1;
+    byte affectsFX : 1;
+    byte shadowAffectsPlayer : 1;
+    byte shadowAffectsIntros : 1;
+    byte shadowAffectsUnitObjects : 1;
+    byte shadowAffectsTerrain : 1;
+    byte shadowAffectsGroup1 : 1;
+    byte shadowAffectsGroup2 : 1;
+    byte shadowAffectsGroup3 : 1;
+    byte shadowAffectsGroup4 : 1;
+    byte clippingPlanesEnabled : 1;
+    byte probeAffectsInterior : 1;
+    byte probeAffectsExterior : 1;
+    byte probeClipWaterPlane : 1;
+    byte probeCaptureFog : 1;
+    byte simpleAnimEnabled : 1;
+    byte useVFXScalar : 1;
+    byte _Bitfieldpadding132 : 6;
+} LightTemplateData <optimize=false>;
+
+typedef struct
+{
+    int tiedCellID;
+    byte enableParentAttach;
+    FSkip(3);
+    PlacementPath parentPlacement;
+    unsigned int parentMarkerAttach;
+    byte enableParentAttachTranslation;
+    byte enableParentAttachRotation;
+    byte parentRelative;
+    FSkip(1);
+    float translationFromParent[3];
+    float rotationFromParent[3];
+    Ref streamLayersRef;
+    unsigned int streamLayerCount;
+    if (CanSeekTo(streamLayersRef))
+    {
+        SeekToRef(streamLayersRef);
+        StreamLayerRef streamLayers[streamLayerCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    LightTemplateData data;
+} LightInstance <optimize=false>;
+
+RefDefinitions refDefinitions;
+LightInstance root <open=true>;

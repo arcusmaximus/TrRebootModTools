@@ -1,0 +1,52 @@
+#define TR_VERSION 11
+#include "../trcommon.bt"
+
+typedef struct
+{
+    byte terrain : 1;
+    byte player : 1;
+    byte npc : 1;
+    byte enemy : 1;
+    byte object : 1;
+    byte shard : 1;
+    byte camera : 1;
+    byte cloth : 1;
+    byte incidental : 1;
+    byte gear : 1;
+    byte thrownProjectile : 1;
+    byte arrow : 1;
+    byte clutter : 1;
+    byte cameraLineOfSight : 1;
+    byte interact : 1;
+    byte npcPlayerStopper : 1;
+} CollisionTypesBitfield <optimize=false>;
+
+typedef struct
+{
+    CollisionTypesBitfield collideWith;
+    CollisionTypesBitfield collideNotWith;
+    CollisionTypesBitfield collideAs;
+    FSkip(2);
+    int collideGroup;
+} CollisionCategory <optimize=false>;
+
+typedef struct
+{
+    float friction;
+    CollisionCategory collisionCategory;
+    byte flagPlayerRespondTrans : 1;
+    byte flagParticleTrans : 1;
+    byte flagBulletTrans : 1;
+    byte flagAimTransparent : 1;
+    byte flagNpcAimTransparent : 1;
+    byte flagNpcBulletTrans : 1;
+    byte flagShallowWater : 1;
+    byte flagJumpCollisionTrans : 1;
+    byte flagGrappleArrow : 1;
+    byte flagSnow : 1;
+    byte flagWaterSurface : 1;
+    byte flagAvoidWeaponClipping : 1;
+    byte flagNoPlayerStanding : 1;
+} CollisionType <optimize=false>;
+
+CollisionType type <open=true>;

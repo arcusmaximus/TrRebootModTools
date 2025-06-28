@@ -1,0 +1,15 @@
+//------------------------------------------------
+//--- 010 Editor v14.0 Binary Template
+//
+//      File: tr10streamlayer.bt
+//   Authors: arc_
+//   Purpose: Parse ROTTR stream layer files
+//  Category: ROTTR
+// File Mask: *.tr10layer
+//------------------------------------------------
+
+#define TR_VERSION 10
+#define TR_OBJECT_NO_INSTANTIATE
+#include "../trcommon.bt"
+#include "../trobjectcommon.bt"
+#include "../trstreamlayercommon.bt"

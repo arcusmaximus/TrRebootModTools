@@ -1,0 +1,86 @@
+//------------------------------------------------
+//--- 010 Editor v14.0 Binary Template
+//
+//      File: tr11interactablecomponent.bt
+//   Authors: arc_
+//   Purpose: Parse .tr11dtp files storing OBJECTNETDATA components
+//  Category: SOTTR
+//------------------------------------------------
+
+#define TR_VERSION 11
+#define TR_OBJECT_NO_INSTANTIATE
+#include "../../trcommon.bt"
+#include "../../trobjectcommon.bt"
+
+typedef struct
+{
+    byte sync : 1;
+    byte save : 1;
+    byte retrosave : 1;
+    byte hasdefault : 1;
+    FSkip(3);
+} ObjectNetDataSharedData <optimize=false>;
+
+enum <uquad> ObjectNetDataTypes
+{
+    ObjectNetDataTypes_Bool = 0x0,
+    ObjectNetDataTypes_Int = 0x1,
+    ObjectNetDataTypes_Placement = 0x2,
+    ObjectNetDataTypes_Enum = 0x3,
+    ObjectNetDataTypes_Float = 0x4,
+    ObjectNetDataTypes_Vector3 = 0x5
+};
+
+typedef struct
+{
+    Ref nameRef;
+    if (CanSeekTo(nameRef))
+    {
+        SeekToRef(nameRef);
+        string name;
+        ReturnFromRef();
+    }
+    ObjectNetDataTypes type;
+    local int endPos = FTell() + 0x28;
+    ObjectNetDataSharedData sharedData;
+    switch (type)
+    {
+        case ObjectNetDataTypes_Bool:
+            byte defaultValue;
+            break;
+        case ObjectNetDataTypes_Int:
+            int defaultValue;
+            break;
+        case ObjectNetDataTypes_Placement:
+            FSkip(4);
+            PlacementPath defaultValue;
+            break;
+        case ObjectNetDataTypes_Enum:
+            int defaultValue;
+            break;
+        case ObjectNetDataTypes_Float:
+            float defaultValue;
+            break;
+        case ObjectNetDataTypes_Vector3:
+            float defaultValue[3];
+            break;
+    }
+    FSeek(endPos);
+} ObjectNetDataItem <optimize=false, read=name>;
+
+typedef struct
+{
+    Ref dataRef;
+    unsigned int dataCount;
+    if (CanSeekTo(dataRef))
+    {
+        SeekToRef(dataRef);
+        ObjectNetDataItem data[dataCount];
+        ReturnFromRef();
+    }
+} ObjectNetDataComponent <optimize=false>;
+
+#ifndef TR_COMPONENT_NO_INSTANTIATE
+    RefDefinitions refDefinitions;
+    ObjectNetDataComponent root <open=true>;
+#endif

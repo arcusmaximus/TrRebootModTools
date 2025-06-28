@@ -1,0 +1,349 @@
+#define TR_VERSION 11
+#include "../../trcommon.bt"
+#include "../lists/tr11zones.bt"
+
+enum <uint> AmmoType
+{
+    ArrowNormal = 0x8863BA99,
+    ArrowExplosive = 0x3C7C95A2,
+    ArrowFire = 0x540F3C56,
+    ArrowFlare = 0x01A09FB6,
+    ArrowSmoke = 0x0040C2C9,
+    ArrowGlue = 0x540FD890,
+    ArrowBodyTrap = 0xC1E3D56A,
+    ArrowHallucinogenic = 0x72CC463A,
+    ArrowBolt = 0x5469C330,
+    ArrowClimb = 0x96886E2A,
+    ArrowRope = 0x5424509E,
+    ArrowPrecision = 0xE444BC34,
+    ShotgunShellConcussive = 0x0B7CD833,
+    ShotgunShellFlaming = 0xEFB08959,
+    ShotgunShell = 0xA230E397,
+    Scythe = 0x76663A97,
+    MachinegunShell = 0x5C522579,
+    HandgunBullet = 0xB62B6E6C,
+    Salvage = 0x8720EBCE,
+    BrokenBowTRX = 0x262B0461,
+    BrokenPistolTRX = 0x6D735F18,
+    BrokenSMGTRX = 0x88699CEB,
+    BrokenShotgunTRX = 0xDEB2C42C,
+    BrokenShotgun = 0x98D54823,
+    BrokenMachinegun = 0xFA31DD1A,
+    BrokenPistol = 0x8E9CD4BD,
+    BrokenBow = 0xC278B548,
+    GrenadeFlash = 0x692E7E27,
+    Grenade = 0xAA96C1D1,
+    TurretAmmo = 0x3CC81CD3,
+    HarpoonBullet = 0x26AFF67B,
+    Explosives = 0x40C046ED,
+    ExplosivesTNT = 0xEA569737,
+    FireExtinguisher = 0x9D6C81D6,
+    ShotgunShellSecondary = 0x76DD90F7,
+    BearTrap = 0x365180A6,
+    None = 0x31DFD562,
+    LC2_UniversalAmmo = 0xB872382C,
+    OCD2_MindwipeAmmo = 0x43CEC4DC,
+    LC2_Key_TreasureRoom = 0xF583521F,
+    SpikeTrap = 0xCE31BEC8,
+    CorpseBoobyTrap = 0xA433F960,
+    Resource_Common_Feather = 0x90F8019C,
+    Resource_Common_Cloth = 0x4D826A39,
+    Resource_Common_Hide = 0x5F28F125,
+    Resource_Common_Hardwood = 0x1EC99446,
+    Resource_Exotic_ByzantineCoins = 0xE42682B1,
+    ArrowCluster = 0x033D743A,
+    ArrowPoison = 0x9CDA8C92,
+    ArrowShrapnel = 0x0BB51E36,
+    HandgunBullet_HollowPoint = 0x8CE197A7,
+    OutfitPart_ArmorTRX = 0x4B36FF88,
+    OutfitPart_HuntressTRX = 0x8C234D43,
+    OutfitPart_InfiltratorTRX = 0xE72A2506,
+    Infinimission_Berries = 0xBC7DD8A9,
+    Infinimission_Deer_Meat = 0x79E63A1E,
+    Infinimission_Batteries = 0xF57F8ACD,
+    Infinimission_Rabbit_Vittles = 0x97CD60B7,
+    Mission_Rabbit_Meat = 0x2C33EF7F,
+    Mission_Hardwood_Branches = 0x73BE2366,
+    Mission_Hide_Strips = 0x5E11893D,
+    Mission_Boar_Meat = 0x8947F1A3,
+    Mission_Mushrooms = 0x6107806E,
+    BrokenPistolTRX_Magnum = 0xEAB50040,
+    BrokenPistolTRX_SemiAuto = 0x8A42A581,
+    BrokenBowTRX_AncientHorn = 0x85EE9A94,
+    BrokenSMGTRX_BoltAction = 0x198462E7,
+    BrokenSMGTRX_MP7 = 0xDB9525C7,
+    BrokenShotgunTRX_BreakAction = 0xF3656D27,
+    BrokenShotgunTRX_FullAuto = 0x3B76D6D4,
+    BrokenBowTRX_Compound = 0xD37B01CC,
+    pdlc1_baba_yaga_mission_antidote = 0xBAA51CEB,
+    PDLC1_babayaga_DeerOrgan = 0xFADC4866,
+    ArrowRopeAscender = 0xEDDA43A0,
+    Resource_Common_Toxin = 0x4CDD4347,
+    Resource_Common_Medicine = 0x2B62301B,
+    Resource_Common_Fat = 0xFA60504C,
+    Resource_Common_BlackPowder = 0x6A400495,
+    Resource_Common_Glue = 0x5F280473,
+    Resource_Exotic_Gold = 0xDDC2903F,
+    Resource_Exotic_Jade = 0xDDEA19B5,
+    Resource_Exotic_Salvage = 0x3D9B411E,
+    Resource_Common_Stimulant = 0x85DE8318,
+    CraftHerb_Insight_Enemies = 0x19B916F2,
+    CraftHerb_Insight = 0xDE3830B1,
+    CraftHerb_Healing = 0x964D50A7,
+    CraftHerb_Endurance_Boost = 0xB2EC3EDE,
+    CraftHerb_Endurance = 0x7243E482,
+    CraftHerb_Strike_Boost = 0xAA3AAE9E,
+    CraftHerb_Strike = 0xFCD16AF5,
+    Resource_Exotic_Jaguar_Hide = 0x16FCCAD4,
+    Resource_Exotic_BlackManedWolf_Hide = 0x0020D2C8,
+    Resource_Exotic_AlbinoCapybara_Hide = 0x62B02C57,
+    Resource_Exotic_AmericanHarpyEagle_Feather = 0xDDB9F64A,
+    BrokenPart_TR11_pistol_cz = 0xD81A9A38,
+    BrokenPart_TR11_pistol_mac11 = 0x6DAACEAA,
+    BrokenPart_TR11_pistol_m19 = 0x8FC06837,
+    BrokenPart_TR11_pistol_de = 0xD81A9B02,
+    BrokenPart_TR11_rifle_mp5 = 0x79DDBB38,
+    BrokenPart_TR11_rifle_fal = 0x79E44FF4,
+    BrokenPart_TR11_shotgun_spas12 = 0xE8DB737A,
+    BrokenPart_TR11_shotgun_usas12 = 0x1B748800,
+    BrokenPart_TR11_bow_shortbow = 0x270F428C,
+    BrokenPart_TR11_bow_longbow = 0xE2360ED0,
+    BrokenPart_TR11_bow_marksman = 0x0636B881,
+    BrokenPart_TR11_rifle_galil = 0x2AB8A62E,
+    Resource_Exotic_BlackJaguar_Hide = 0xCA345EA3,
+    Resource_Exotic_AndeanCondor_Feather = 0xF87ADE60,
+    FQ_Jade_Dice = 0xA236741A,
+    BrokenPart_TR11_knife = 0xF4CE1749,
+    BrokenPart_TR11_rifle_boltaction = 0x3DC63248,
+    BrokenPart_TR11_knife_jaguar = 0xDA4708AC,
+    BrokenPart_TR11_bow_snake = 0x133E30FF,
+    Gold_Piece = 0xD367830F,
+    Resource_Common_YellowHerb = 0xDC39D571,
+    Resource_Precious_PreciousVenom = 0x6F638224,
+    Resource_Exotic_ExoticPoison = 0x130920A0,
+    Grenade_Explosive = 0xF4603F8F
+};
+
+enum <uint> InventoryState
+{
+    Cinematic_Torch_Visible = 0x1A94D294,
+    Cinematic_NoPistol = 0xB01A0BC4,
+    Cinematic = 0x41BBE4FC,
+    Normal = 0xA530EE3D,
+    HideWeaponsOnBack = 0x8DB15124,
+    PistolOnly = 0x48F368E7,
+    SpectatorMode = 0xD569FA97,
+    Hide_NPC_All = 0xDF2CA026,
+    Show_NPC_All = 0x6CFCA9F1,
+    NothingButBow = 0x0C262F6E,
+    NoWeapons_NoGear = 0x6F29AC16,
+    NoPistol = 0xAD27512E,
+    Campsite_Hide_Gun = 0xD55B0DF5,
+    VillageHub_RothCine_Custom_Gear_Hide = 0x200FE44F,
+    ShotgunSlide = 0xC056211A,
+    Hands_Tied_No_Weapons = 0x84E72BE9,
+    PistolOnlyProcessAndRender = 0x520BBA4B,
+    Prying = 0xB435B184,
+    Hide_Pistol_Bow_SMG_Shotgun = 0x91002C97,
+    Sickle_Only_NPC = 0x08EDF1F5,
+    Ledge = 0x05D041CE,
+    NothingButBowAndTorch = 0xF6E255EC,
+    NoCharacterCollide_NoDraw = 0xF5782BDA,
+    NoCharacterCollide = 0x82DC656A,
+    HideAxe = 0x78707DFC,
+    ShowAxe = 0x11584469,
+    ForcePistol = 0x5F6CBC0C,
+    Cinematic_ShowBow = 0x91F844F5,
+    NoWalkieTalkie = 0x4E2F56BC,
+    EverythingButBow = 0xA42D4F93,
+    ForceRenderQuiver = 0x51D67FC4,
+    Squeeze_HideGears = 0x692C6CA0,
+    Underwater = 0xC728DA59,
+    DoNothing = 0x044DC2CC,
+    HideKnife = 0xC6C4C454,
+    HideWeaponsOnBack_NoPistol = 0x6F00D2FD
+};
+
+typedef struct
+{
+    AmmoType ammoType <format=hex>;
+    short count;
+    short trait;
+} AmmoListItem <read=(EnumToString(ammoType) + (trait >= 0 ? Str(" (trait %d)", trait) : "")), optimize=false>;
+
+typedef struct
+{
+    int currentType;
+    FSkip(4);
+    Ref weaponPriorityListRef;
+    unsigned int weaponPriorityListCount;
+    if (CanSeekTo(weaponPriorityListRef))
+    {
+        SeekToRef(weaponPriorityListRef);
+        int weaponPriorityList[weaponPriorityListCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+} InventoryPriorityByType <optimize=false>;
+
+typedef struct
+{
+    InventoryState inventoryState <format=hex>;
+    int defaultPriority;
+    int defaultUrgency;
+    FSkip(4);
+    Ref itemListRef;
+    unsigned int itemListCount;
+    if (CanSeekTo(itemListRef))
+    {
+        SeekToRef(itemListRef);
+        int itemList[itemListCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref mpDebugNameRef;
+    if (CanSeekTo(mpDebugNameRef))
+    {
+        SeekToRef(mpDebugNameRef);
+        string mpDebugName;
+        ReturnFromRef();
+    }
+} InventoryGroup <optimize=false>;
+
+typedef struct
+{
+    int type;
+    unsigned int group;
+} InventoryItemGroupLink <optimize=false>;
+
+typedef struct
+{
+    Ref ammoListRef;
+    unsigned int ammoListCount;
+    if (CanSeekTo(ammoListRef))
+    {
+        SeekToRef(ammoListRef);
+        AmmoListItem ammoList[ammoListCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref weaponListRef;
+    unsigned int weaponListCount;
+    if (CanSeekTo(weaponListRef))
+    {
+        SeekToRef(weaponListRef);
+        ushort weaponList[weaponListCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref gearListRef;
+    unsigned int gearListCount;
+    if (CanSeekTo(gearListRef))
+    {
+        SeekToRef(gearListRef);
+        ushort gearList[gearListCount] <read=Str("%s (%d)", GetZoneName(this), this)>;
+        ReturnFromRef();
+    }
+    InventoryState initialInventoryState <format=hex>;
+} InventoryDataStrongReference <optimize=false>;
+
+typedef struct
+{
+    unsigned int subtype;
+    AmmoType ammoType;
+} ValidAmmoType <read=EnumToString(ammoType), optimize=false>;
+
+typedef struct
+{
+    unsigned int subtype;
+    AmmoType ammoType;
+    unsigned int lootThreshold;
+    float weightInc;
+    float lootPercentInc;
+} CriticalLoot <read=EnumToString(ammoType), optimize=false>;
+
+typedef struct
+{
+    Ref defaultAmmoListRef;
+    unsigned int defaultAmmoListCount;
+    if (CanSeekTo(defaultAmmoListRef))
+    {
+        SeekToRef(defaultAmmoListRef);
+        AmmoListItem defaultAmmoList[defaultAmmoListCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref maxAmmoListRef;
+    unsigned int maxAmmoListCount;
+    if (CanSeekTo(maxAmmoListRef))
+    {
+        SeekToRef(maxAmmoListRef);
+        AmmoListItem maxAmmoList[maxAmmoListCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref typeSpecificWeaponPriorityListRef;
+    unsigned int typeSpecificWeaponPriorityListCount;
+    if (CanSeekTo(typeSpecificWeaponPriorityListRef))
+    {
+        SeekToRef(typeSpecificWeaponPriorityListRef);
+        InventoryPriorityByType typeSpecificWeaponPriorityList[typeSpecificWeaponPriorityListCount];
+        ReturnFromRef();
+    }
+    unsigned int defaultPriorityListItem;
+    Ref inventoryGroupListRef;
+    unsigned int inventoryGroupListCount;
+    if (CanSeekTo(inventoryGroupListRef))
+    {
+        SeekToRef(inventoryGroupListRef);
+        InventoryGroup inventoryGroupList[inventoryGroupListCount];
+        ReturnFromRef();
+    }
+    unsigned int inventoryUIGroup;
+    Ref inventoryItemGroupLinkListRef;
+    unsigned int inventoryItemGroupLinkListCount;
+    if (CanSeekTo(inventoryItemGroupLinkListRef))
+    {
+        SeekToRef(inventoryItemGroupLinkListRef);
+        InventoryItemGroupLink inventoryItemGroupLinkList[inventoryItemGroupLinkListCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    InventoryDataStrongReference weapons;
+    InventoryState normalInventoryState <format=hex>;
+    InventoryState cinematicsInventoryState <format=hex>;
+    uint disableAllWeaponSwitchingInCode : 1;
+    uint mainWeaponDoNotDropWhenSwappingOut : 1;
+    uint useAltWeaponForMeleeAttacks : 1;
+    uint randomizeNPCWeapons : 1;
+    FSkip(4);
+    Ref validAmmoTypesRef;
+    unsigned int validAmmoTypesCount;
+    if (CanSeekTo(validAmmoTypesRef))
+    {
+        SeekToRef(validAmmoTypesRef);
+        ValidAmmoType validAmmoTypes[validAmmoTypesCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref retroSaveableAmmoTypesRef;
+    unsigned int retroSaveableAmmoTypesCount;
+    if (CanSeekTo(retroSaveableAmmoTypesRef))
+    {
+        SeekToRef(retroSaveableAmmoTypesRef);
+        ValidAmmoType retroSaveableAmmoTypes[retroSaveableAmmoTypesCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref criticalLootRef;
+    unsigned int criticalLootTypesCount;
+    if (CanSeekTo(criticalLootRef))
+    {
+        SeekToRef(criticalLootRef);
+        CriticalLoot criticalLoot[criticalLootTypesCount];
+        ReturnFromRef();
+    }
+} InventoryComponent <optimize=false>;
+
+RefDefinitions refDefinitions;
+InventoryComponent root <open=true>;

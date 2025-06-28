@@ -1,0 +1,24 @@
+//------------------------------------------------
+//--- 010 Editor v14.0 Binary Template
+//
+//      File: tr11actiongraphcomponent.bt
+//   Authors: arc_
+//   Purpose: Parse SOTTR action graphs
+//  Category: SOTTR
+//------------------------------------------------
+
+#define TR_ACTION_GRAPH_NO_INSTANTIATE
+#include "tr11actiongraph.bt"
+
+RefDefinitions refDefinitions;
+quad padding1;
+Ref ref1;
+quad padding2;
+
+Ref graphRef;
+if (CanSeekTo(graphRef))
+{
+    SeekToRef(graphRef);
+    ActionGraph graph <open=true>;
+    ReturnFromRef();
+}

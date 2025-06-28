@@ -1,0 +1,543 @@
+#define TR_VERSION 9
+#define TR_REVEAL_REFS
+#include "../trcommon.bt"
+
+typedef struct
+{
+    uint underwater : 1;
+    uint outdoor : 1;
+    uint farRain : 1;
+    uint useRadialIntroduction : 1;
+    uint vehicle : 1;
+    int _Bitfieldpadding0 : 27;
+} UnitFlags <optimize=false>;
+
+typedef struct
+{
+    unsigned int iD;
+    float alpha;
+    byte bEnabled;
+} FSFXLink <optimize=false>;
+
+typedef struct
+{
+    ubyte backColorR;
+    ubyte backColorG;
+    ubyte backColorB;
+    ubyte waterColorR;
+    ubyte waterColorG;
+    ubyte waterColorB;
+    FSkip(2);
+    int numShadowMaps;
+    byte pssmIsAbsolute;
+    FSkip(3);
+    float pssmDistance1;
+    float pssmDistance2;
+    float pssmDistance3;
+    float pssmDistance4;
+    float farPlane;
+    float fogFar;
+    float fogNear;
+    float waterFarPlane;
+    float waterFogFar;
+    float waterFogNear;
+    unsigned int underwaterFxa;
+    unsigned int abovewaterFxa;
+    unsigned int waterFSFX;
+    unsigned int waterTransitionFSFX;
+    float transitionBoundAbove;
+    float transitionBoundBelow;
+} depthq <optimize=false>;
+
+typedef struct
+{
+    ushort unit2;
+    ushort signal2;
+    unsigned int uniqueID;
+    Ref unit2NameRef;
+    if (CanSeekTo(unit2NameRef))
+    {
+        SeekToRef(unit2NameRef);
+        string unit2Name;
+        ReturnFromRef();
+    }
+    Ref packIDRef;
+    if (CanSeekTo(packIDRef))
+    {
+        SeekToRef(packIDRef);
+        string packID;
+        ReturnFromRef();
+    }
+    Ref licenseBitRef;
+    if (CanSeekTo(licenseBitRef))
+    {
+        SeekToRef(licenseBitRef);
+        string licenseBit;
+        ReturnFromRef();
+    }
+} StreamingSignalDLC <optimize=false>;
+
+typedef struct
+{
+    ushort signal;
+    ushort unit2;
+    ushort signal2;
+    FSkip(2);
+    unsigned int uniqueID;
+    Ref unit2NameRef;
+    if (CanSeekTo(unit2NameRef))
+    {
+        SeekToRef(unit2NameRef);
+        string unit2Name;
+        ReturnFromRef();
+    }
+    float blendDistance;
+    ushort autoStream : 1;
+    short _Bitfieldpadding7 : 15;
+    byte ignoreNextAutoLoad;
+    FSkip(1);
+    unsigned int streamSignalsDLCCount;
+    Ref streamingSignalsDLCRef;
+    if (CanSeekTo(streamingSignalsDLCRef))
+    {
+        SeekToRef(streamingSignalsDLCRef);
+        StreamingSignalDLC streamingSignalsDLC;
+        ReturnFromRef();
+    }
+} StreamingSignal <read=unit2Name, optimize=false>;
+
+typedef struct
+{
+    ubyte colorR;
+    ubyte colorG;
+    ubyte colorB;
+    FSkip(1);
+    float pitch;
+    float yaw;
+    byte followCamera;
+} BeautySpecData <optimize=false>;
+
+typedef struct
+{
+    unsigned int disabledLightListSize;
+    short disabledLightList[1];
+} DisabledLightGroups <optimize=false>;
+
+typedef struct
+{
+    float reflectionPlaneZOffset;
+    float enemyKillAltitude;
+} Misc <optimize=false>;
+
+typedef struct
+{
+    byte active;
+    byte dirRel;
+    ubyte iPad1;
+    ubyte iPad2;
+    float distMax;
+    float distMin;
+    float lifeMax;
+    float lifeMin;
+    float magMax;
+    float magMin;
+    float dirMax;
+    float dirMin;
+    float speed;
+    float uLength;
+    int bEnabledCurr;
+    int bDirRelCurr;
+    float fDistMaxCurr;
+    float fDistMinCurr;
+    float fLifeMaxCurr;
+    float fLifeMinCurr;
+    float fMagMaxCurr;
+    float fMagMinCurr;
+    float fDirMaxCurr;
+    float fDirMinCurr;
+    float fSpeedCurr;
+    int bEnabledSaved;
+    int bDirRelSaved;
+    float fDistMaxSaved;
+    float fDistMinSaved;
+    float fLifeMaxSaved;
+    float fLifeMinSaved;
+    float fMagMaxSaved;
+    float fMagMinSaved;
+    float fDirMaxSaved;
+    float fDirMinSaved;
+    float fSpeedSaved;
+    int bSaved;
+    int iFrames;
+    int iFramePrev;
+    int iLife;
+    float fMagCurrent;
+    float fMagDesired;
+    float fMagDelta;
+    float fDirCurrent;
+    float fDirDesired;
+    float fDirDelta;
+    float fSpeedCurrent;
+    float fULenCurrent;
+} WaveAttrib <optimize=false>;
+
+typedef struct
+{
+    byte ignoreUnitWind;
+    byte ignoreCellWind;
+    FSkip(2);
+    unsigned int waveCount;
+    Ref waveArrayRef;
+    if (CanSeekTo(waveArrayRef))
+    {
+        SeekToRef(waveArrayRef);
+        WaveAttrib waveArray[waveCount];
+        ReturnFromRef();
+    }
+} WindData <optimize=false>;
+
+typedef struct
+{
+    Ref layerIDRef;
+    if (CanSeekTo(layerIDRef))
+    {
+        SeekToRef(layerIDRef);
+        string layerID;
+        ReturnFromRef();
+    }
+    byte active;
+    byte preload;
+    FSkip(2);
+    int reservedDRAM;
+    int allocedReservedDRAM;
+    Ref dataPointerRef;
+    if (CanSeekTo(dataPointerRef))
+    {
+        SeekToRef(dataPointerRef);
+        byte dataPointer;
+        ReturnFromRef();
+    }
+    byte reservedCheck;
+    FSkip(3);
+} StreamLayer <read=layerID, optimize=false>;
+
+typedef struct
+{
+    ushort unit;
+    FSkip(2);
+    int streamLayer;
+} StreamLayerSetItem <optimize=false>;
+
+typedef struct
+{
+    Ref streamLayerSetItemListRef;
+    Ref streamLayerSetNameRef;
+    if (CanSeekTo(streamLayerSetNameRef))
+    {
+        SeekToRef(streamLayerSetNameRef);
+        string streamLayerSetName;
+        ReturnFromRef();
+    }
+    int reservedDRAM;
+    unsigned int streamLayerSetItemCount;
+    if (CanSeekTo(streamLayerSetItemListRef))
+    {
+        SeekToRef(streamLayerSetItemListRef);
+        StreamLayerSetItem streamLayerSetItemList[streamLayerSetItemCount];
+        ReturnFromRef();
+    }
+} StreamLayerSetListT <read=streamLayerSetName, optimize=false>;
+
+typedef struct
+{
+    int parentState;
+    Ref localStateAGRef;
+} LocalStateInfo <optimize=false>;
+
+typedef struct
+{
+    Ref groupIDRef;
+    if (CanSeekTo(groupIDRef))
+    {
+        SeekToRef(groupIDRef);
+        string groupID;
+        ReturnFromRef();
+    }
+} TriggerGroup <read=groupID, optimize=false>;
+
+typedef struct
+{
+    Ref lightgroupIDRef;
+    if (CanSeekTo(lightgroupIDRef))
+    {
+        SeekToRef(lightgroupIDRef);
+        string lightgroupID;
+        ReturnFromRef();
+    }
+    byte defaultGroupEnabled;
+    byte associateWithStreamLayer : 1;
+    byte registerWithStreamLayer : 1;
+    byte currentGroupEnabled : 1;
+    byte currentStreamLayerEnabled : 1;
+    byte _Bitfieldpadding2 : 4;
+    FSkip(2);
+    float defaultGroupIntensityScale;
+    float defaultGroupRangeScale;
+    int associatedStreamLayerMode;
+    ubyte associatedStreamLayer;
+    ubyte registeredStreamLayer;
+    FSkip(2);
+    float currentGroupIntensityScale;
+    float currentGroupRangeScale;
+    float currentGroupFader;
+} UnitLightGroup <optimize=false>;
+
+typedef struct
+{
+    byte enableHeightMap;
+    FSkip(3);
+    Ref terrainMaterialRef;
+    Ref heightMapRef;
+    float heightScale;
+    float heightBias;
+    int terrainMarker;
+} HeightMapTerrainData <optimize=false>;
+
+typedef struct
+{
+    unsigned int dirtColor <format=hex>;
+} DTPOverlayData <optimize=false>;
+
+typedef struct
+{
+    ushort skydome;
+    FSkip(2);
+    float rotation;
+    unsigned int streamLayer;
+} SkydomeData <optimize=false>;
+
+typedef struct
+{
+    Ref topNormalMapRef;
+    float topNormalScale;
+    float topNormalOffsetting;
+    float topNormalOffsetFramerate;
+    Ref sideNormalMapRef;
+    float sideNormalScale;
+    float sideNormalScroll;
+    Ref poolingTextureRef;
+    float poolingTextureScale;
+    float diffuseMultiplier;
+    float topNormalOffsetX;
+    float topNormalOffsetY;
+    float topNormalOffsetTime;
+} WetLightData <optimize=false>;
+
+typedef struct
+{
+    Ref levelDefaultRef;
+    if (CanSeekTo(levelDefaultRef))
+    {
+        SeekToRef(levelDefaultRef);
+        byte levelDefault;
+        ReturnFromRef();
+    }
+    Ref levelRef;
+    if (CanSeekTo(levelRef))
+    {
+        SeekToRef(levelRef);
+        byte level;
+        ReturnFromRef();
+    }
+    Ref worldDataDefaultRef;
+    if (CanSeekTo(worldDataDefaultRef))
+    {
+        SeekToRef(worldDataDefaultRef);
+        byte worldDataDefault;
+        ReturnFromRef();
+    }
+    Ref worldDataRef;
+    if (CanSeekTo(worldDataRef))
+    {
+        SeekToRef(worldDataRef);
+        byte worldData;
+        ReturnFromRef();
+    }
+    unsigned int defaultRegion;
+    ushort startCheckpoint;
+    byte darkArea;
+    byte startUnit;
+    ushort visionModeTerrainGroup;
+    byte bAllowReducedFramebufferInCombat;
+    byte bAllowReducedFramebufferInPreCombat;
+    byte bGrappleLengthOverride;
+    byte bGrappleAngleOverride;
+    FSkip(2);
+    float grappleFireMaxDistance;
+    float grappleRopeMinLength;
+    float grappleRopeMaxLength;
+    float grappleRopeIdealLength;
+    float grappleMinimumJumpOffAngle;
+    float grappleMaximumJumpOffAngle;
+    byte overrideSkydome;
+    FSkip(1);
+    ushort skydome;
+    float skydomeRotation;
+    byte killSkydome;
+    FSkip(3);
+    Ref streamLayerSkydomesRef;
+    unsigned int streamLayerSkydomesCount;
+    if (CanSeekTo(streamLayerSkydomesRef))
+    {
+        SeekToRef(streamLayerSkydomesRef);
+        SkydomeData streamLayerSkydomes[streamLayerSkydomesCount];
+        ReturnFromRef();
+    }
+    ubyte requiredContentPackID;
+    FSkip(3);
+    WetLightData wetLightData;
+    BeautySpecData beautySpecular;
+} GameUnitData <optimize=false>;
+
+typedef struct
+{
+    unsigned int streamLayer;
+} LayeredNextGenData <optimize=false>;
+
+typedef struct
+{
+    Ref streamGraphicsDataRef;
+    unsigned int numStreamGraphicsData;
+    if (CanSeekTo(streamGraphicsDataRef))
+    {
+        SeekToRef(streamGraphicsDataRef);
+        LayeredNextGenData streamGraphicsData[numStreamGraphicsData];
+        ReturnFromRef();
+    }
+} LayeredNextGenDataList <optimize=false>;
+
+typedef struct
+{
+    Ref nameRef;
+    if (CanSeekTo(nameRef))
+    {
+        SeekToRef(nameRef);
+        string name;
+        ReturnFromRef();
+    }
+    Ref colMeshRef;
+    UnitFlags unitFlags;
+    unsigned int numFSFX;
+    Ref fSFXRef;
+    if (CanSeekTo(fSFXRef))
+    {
+        SeekToRef(fSFXRef);
+        FSFXLink fSFX;
+        ReturnFromRef();
+    }
+    depthq depthData;
+    Ref actiongraphDataRef;
+    unsigned int scriptTypeID;
+    unsigned int numStreamingSignals;
+    Ref streamingSignalsRef1;
+    if (CanSeekTo(streamingSignalsRef1))
+    {
+        SeekToRef(streamingSignalsRef1);
+        StreamingSignal streamingSignals1[numStreamingSignals];
+        ReturnFromRef();
+    }
+    unsigned int numCinematics;
+    Ref fSFXListRef;
+    if (CanSeekTo(fSFXListRef))
+    {
+        SeekToRef(fSFXListRef);
+        FSFXLink fSFXList;
+        ReturnFromRef();
+    }
+    Ref streamingSignalsRef2;
+    Ref cinematicListRef;
+    FSkip(0xCFC);
+    Ref birthObjectsRef;
+    if (CanSeekTo(birthObjectsRef))
+    {
+        SeekToRef(birthObjectsRef);
+        ushort birthObjects;
+        ReturnFromRef();
+    }
+    ushort weatherObject;
+    FSkip(2);
+    Ref disabledLightGroupsRef;
+    if (CanSeekTo(disabledLightGroupsRef))
+    {
+        SeekToRef(disabledLightGroupsRef);
+        DisabledLightGroups disabledLightGroups;
+        ReturnFromRef();
+    }
+    Misc misc;
+    FSkip(4);
+    unsigned int numNavigationGroup;
+    Ref listNavigationGroupRef;
+    WindData unitWind;
+    Ref streamLayersRef;
+    unsigned int streamLayerSetCount;
+    unsigned int streamLayersCount;
+    Ref streamLayerSetsRef;
+    if (CanSeekTo(streamLayersRef))
+    {
+        SeekToRef(streamLayersRef);
+        StreamLayer streamLayers[streamLayersCount];
+        ReturnFromRef();
+    }
+    if (CanSeekTo(streamLayerSetsRef))
+    {
+        SeekToRef(streamLayerSetsRef);
+        StreamLayerSetListT streamLayerSets[streamLayerSetCount];
+        ReturnFromRef();
+    }
+    Ref localStatesRef;
+    unsigned int localStateCount;
+    if (CanSeekTo(localStatesRef))
+    {
+        SeekToRef(localStatesRef);
+        LocalStateInfo localStates[localStateCount];
+        ReturnFromRef();
+    }
+    Ref worldStateRef;
+    Ref triggerGroupsRef;
+    unsigned int triggerGroupsCount;
+    if (CanSeekTo(triggerGroupsRef))
+    {
+        SeekToRef(triggerGroupsRef);
+        TriggerGroup triggerGroups[triggerGroupsCount];
+        ReturnFromRef();
+    }
+    Ref unitLightGroupsRef;
+    unsigned int unitLightGroupsCount;
+    if (CanSeekTo(unitLightGroupsRef))
+    {
+        SeekToRef(unitLightGroupsRef);
+        UnitLightGroup unitLightGroups[unitLightGroupsCount];
+        ReturnFromRef();
+    }
+    HeightMapTerrainData heightMapData;
+    Ref overlayDataRef;
+    if (CanSeekTo(overlayDataRef))
+    {
+        SeekToRef(overlayDataRef);
+        DTPOverlayData overlayData;
+        ReturnFromRef();
+    }
+    Ref gameUnitDataRef;
+    if (CanSeekTo(gameUnitDataRef))
+    {
+        SeekToRef(gameUnitDataRef);
+        GameUnitData gameUnitData;
+        ReturnFromRef();
+    }
+    LayeredNextGenDataList layeredGraphicsDataList;
+    unsigned int iNumCinEvents;
+    ushort cinEventList[1];
+} UnitData <optimize=false>;
+
+RefDefinitions refDefinitions;
+UnitData root <open=true>;
