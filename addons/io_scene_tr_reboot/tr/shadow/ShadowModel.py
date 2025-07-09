@@ -73,6 +73,7 @@ class ShadowModel(Model[ShadowModelReferences, ShadowModelDataHeader, ShadowLodL
         if self.header.num_bones > 0:
             self.header.model_type = 1
 
+        self.update_bounding_box()
         writer.write_struct(self.header)
 
         if self.header.name_length != 0 or \

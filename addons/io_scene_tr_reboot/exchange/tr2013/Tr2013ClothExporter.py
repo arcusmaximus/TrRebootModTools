@@ -14,6 +14,7 @@ from io_scene_tr_reboot.tr.tr2013.Tr2013Cloth import Tr2013Cloth
 from io_scene_tr_reboot.tr.tr2013.Tr2013Collection import Tr2013ObjectHeader
 from io_scene_tr_reboot.tr.tr2013.Tr2013ModelReferences import Tr2013ModelReferences
 from io_scene_tr_reboot.util.Enumerable import Enumerable
+from io_scene_tr_reboot.util.IoHelper import IoHelper
 
 class Tr2013ClothExporter(ClothExporter):
     handled_model_data_ids: set[int]
@@ -48,7 +49,7 @@ class Tr2013ClothExporter(ClothExporter):
                 continue
 
             model_refs = Tr2013ModelReferences(model_data_id)
-            with open(model_data_file_path, "rb") as model_data_file:
+            with IoHelper.open_read(model_data_file_path) as model_data_file:
                 model_data_reader = ResourceReader(model_data_resource, model_data_file.read(), True, CdcGame.TR2013)
 
             model_refs.read(model_data_reader)
@@ -63,7 +64,7 @@ class Tr2013ClothExporter(ClothExporter):
             model_data_builder.position = 0
             model_refs.write(model_data_builder)
 
-            with open(model_data_file_path, "wb") as model_data_file:
+            with IoHelper.open_write(model_data_file_path) as model_data_file:
                 model_data_file.write(model_data_builder.build())
 
     def get_model_data_id(self, bl_obj: bpy.types.Object) -> int | None:
@@ -100,5 +101,5 @@ class Tr2013ClothExporter(ClothExporter):
         object_builder.write_struct(header)
 
         object_file_path = os.path.join(folder_path, Collection.make_resource_file_name(object_resource, CdcGame.TR2013))
-        with open(object_file_path, "wb") as object_file:
+        with IoHelper.open_write(object_file_path) as object_file:
             object_file.write(object_builder.build())

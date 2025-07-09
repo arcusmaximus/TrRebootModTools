@@ -5,7 +5,7 @@ from io_scene_tr_reboot.operator.BlenderOperatorBase import ImportOperatorBase, 
 from io_scene_tr_reboot.properties.ObjectProperties import ObjectProperties
 
 if TYPE_CHECKING:
-    from bpy._typing.rna_enums import OperatorReturnItems
+    from bpy.stub_internal.rna_enums import OperatorReturnItems
 else:
     OperatorReturnItems = str
 

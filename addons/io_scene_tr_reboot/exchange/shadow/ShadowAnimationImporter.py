@@ -8,6 +8,7 @@ from io_scene_tr_reboot.tr.Collection import Collection
 from io_scene_tr_reboot.tr.ResourceReader import ResourceReader
 from io_scene_tr_reboot.tr.shadow.ShadowAnimation import ShadowAnimation
 from io_scene_tr_reboot.util.Enumerable import Enumerable
+from io_scene_tr_reboot.util.IoHelper import IoHelper
 from io_scene_tr_reboot.util.SlotsBase import SlotsBase
 
 class _ItemAttrKey(NamedTuple):
@@ -31,7 +32,7 @@ class ShadowAnimationImporter(SlotsBase):
             raise Exception("Invalid filename")
 
         data: bytes
-        with open(file_path, "rb") as file:
+        with IoHelper.open_read(file_path) as file:
             data = file.read()
 
         animation = ShadowAnimation(resource_key.id)
@@ -93,7 +94,7 @@ class ShadowAnimationImporter(SlotsBase):
         bl_attr_fcurves: dict[_ItemAttrKey, list[bpy.types.FCurve]] = {}
 
         for bl_bone in bl_armature_obj.pose.bones:
-            global_bone_id = BlenderNaming.parse_bone_name(bl_bone.name).global_id
+            global_bone_id = BlenderNaming.try_get_bone_global_id(bl_bone.name)
             if global_bone_id is None:
                 continue
 
@@ -109,7 +110,7 @@ class ShadowAnimationImporter(SlotsBase):
         matrices: dict[int, Matrix] = {}
         with BlenderHelper.enter_edit_mode(bl_armature_obj):
             for bl_bone in cast(bpy.types.Armature, bl_armature_obj.data).edit_bones:
-                global_bone_id = BlenderNaming.parse_bone_name(bl_bone.name).global_id
+                global_bone_id = BlenderNaming.try_get_bone_global_id(bl_bone.name)
                 if global_bone_id is None:
                     continue
 

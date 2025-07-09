@@ -8,7 +8,7 @@ from io_scene_tr_reboot.properties.SceneProperties import SceneProperties
 from io_scene_tr_reboot.util.Enumerable import Enumerable
 
 if TYPE_CHECKING:
-    from bpy._typing.rna_enums import OperatorReturnItems
+    from bpy.stub_internal.rna_enums import OperatorReturnItems
 else:
     OperatorReturnItems = str
 

@@ -6,7 +6,7 @@ from io_scene_tr_reboot.properties.BlenderPropertyGroup import BlenderPropertyGr
 from io_scene_tr_reboot.util.Enumerable import Enumerable
 
 if TYPE_CHECKING:
-    from bpy._typing.rna_enums import OperatorReturnItems
+    from bpy.stub_internal.rna_enums import OperatorReturnItems
 else:
     OperatorReturnItems = str
 
@@ -47,8 +47,8 @@ class FixVertexGroupNamesOperator(BlenderOperatorBase[BlenderPropertyGroup]):
 
     def rename_for_global_armature(self, bl_mesh_obj: bpy.types.Object) -> None:
         for old_vertex_group_name in Enumerable(bl_mesh_obj.vertex_groups).select(lambda g: g.name).to_list():
-            old_vertex_group_id_set = BlenderNaming.parse_bone_name(old_vertex_group_name)
-            if old_vertex_group_id_set.global_id is None or old_vertex_group_id_set.local_id is None:
+            old_vertex_group_id_set = BlenderNaming.try_parse_bone_name(old_vertex_group_name)
+            if old_vertex_group_id_set is None or old_vertex_group_id_set.global_id is None or old_vertex_group_id_set.local_id is None:
                 continue
 
             new_vertex_group_name = BlenderNaming.make_bone_name(None, old_vertex_group_id_set.global_id, None)
@@ -58,15 +58,15 @@ class FixVertexGroupNamesOperator(BlenderOperatorBase[BlenderPropertyGroup]):
         bl_amature = cast(bpy.types.Armature, bl_armature_obj.data)
         local_ids_by_global_id: dict[int, int] = {}
         for bl_bone in bl_amature.bones:
-            bone_id_set = BlenderNaming.parse_bone_name(bl_bone.name)
-            if bone_id_set.global_id is None or bone_id_set.local_id is None:
+            bone_id_set = BlenderNaming.try_parse_bone_name(bl_bone.name)
+            if bone_id_set is None or bone_id_set.global_id is None or bone_id_set.local_id is None:
                 continue
 
             local_ids_by_global_id[bone_id_set.global_id] = bone_id_set.local_id
 
         for old_vertex_group_name in Enumerable(bl_mesh_obj.vertex_groups).select(lambda g: g.name).to_list():
-            old_vertex_group_id_set = BlenderNaming.parse_bone_name(old_vertex_group_name)
-            if old_vertex_group_id_set.global_id is None:
+            old_vertex_group_id_set = BlenderNaming.try_parse_bone_name(old_vertex_group_name)
+            if old_vertex_group_id_set is None or old_vertex_group_id_set.global_id is None:
                 continue
 
             new_local_id = local_ids_by_global_id.get(old_vertex_group_id_set.global_id)

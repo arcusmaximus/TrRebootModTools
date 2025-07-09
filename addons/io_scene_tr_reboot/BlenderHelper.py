@@ -1,17 +1,19 @@
 from types import TracebackType
-from typing import Any, ClassVar, Iterable, NamedTuple, Sequence, cast
+from typing import Any, Iterable, NamedTuple, Sequence, cast
 import bpy
 import bmesh
-from io_scene_tr_reboot.BlenderNaming import BlenderNaming
 from io_scene_tr_reboot.util.Enumerable import Enumerable
 from io_scene_tr_reboot.util.SlotsBase import SlotsBase
 
-class BlenderBoneGroup(NamedTuple):
-    name: str
-    palette: str
+class BlenderBoneGroupSet(NamedTuple):
+    group_names: list[str]
+    color: str | None
 
 class BlenderHelper:
-    is_blender_40: ClassVar[bool] = cast(tuple[int, ...], bpy.app.version) >= (4, 0, 0)
+    @staticmethod
+    def switch_to_object_mode() -> None:
+        if bpy.context and bpy.context.object and not bpy.context.object.hide_get():
+            bpy.ops.object.mode_set(mode = "OBJECT")
 
     @staticmethod
     def get_or_create_collection(name: str) -> bpy.types.Collection:
@@ -108,8 +110,7 @@ class BlenderHelper:
 
     @staticmethod
     def enter_edit_mode(bl_obj: bpy.types.Object | None = None) -> "BlenderEditContext":
-        if bpy.context and bpy.context.object and not bpy.context.object.hide_get():
-            bpy.ops.object.mode_set(mode = "OBJECT")
+        BlenderHelper.switch_to_object_mode()
 
         if bl_obj is not None:
             BlenderHelper.select_object(bl_obj)
@@ -134,99 +135,44 @@ class BlenderHelper:
         return BlenderModelExportContext(bl_obj)
 
     @staticmethod
-    def is_bone_visible(bl_armature: bpy.types.Armature, bl_bone: bpy.types.Bone) -> bool:
-        if BlenderHelper.is_blender_40:
-            bl_hidden_bone_collection = bl_armature.collections.get(BlenderNaming.hidden_bone_group_name)
-            return bl_hidden_bone_collection is None or bl_hidden_bone_collection.bones.get(bl_bone.name) is None
-        else:
-            return getattr(bl_bone, "layers")[0]
-
-    @staticmethod
-    def set_bone_visible(bl_armature: bpy.types.Armature, bl_bone: bpy.types.Bone, visible: bool) -> None:
-        if BlenderHelper.is_blender_40:
-            bl_hidden_bone_collection = bl_armature.collections.get(BlenderNaming.hidden_bone_group_name)
-
-            if visible:
-                if bl_hidden_bone_collection:
-                    bl_hidden_bone_collection.unassign(bl_bone)
-            else:
-                if bl_hidden_bone_collection is None:
-                    bl_hidden_bone_collection = bl_armature.collections.new(BlenderNaming.hidden_bone_group_name)
-                    bl_hidden_bone_collection.is_visible = False
-
-                bl_hidden_bone_collection.assign(bl_bone)
-        else:
-            if visible:
-                getattr(bl_bone, "layers")[0] = True
-                getattr(bl_bone, "layers")[1] = False
-            else:
-                getattr(bl_bone, "layers")[1] = True
-                getattr(bl_bone, "layers")[0] = False
-
-    @staticmethod
     def temporarily_show_all_bones(bl_armature_obj: bpy.types.Object) -> "BlenderShowAllBonesContext":
         return BlenderShowAllBonesContext(bl_armature_obj)
 
     @staticmethod
-    def get_bone_group(bl_armature_obj: bpy.types.Object, bl_bone: bpy.types.Bone) -> BlenderBoneGroup | None:
-        if BlenderHelper.is_blender_40:
-            if bl_bone.color is None:
-                return None
-
-            bl_armature = cast(bpy.types.Armature, bl_armature_obj.data)
-            for bl_bone_collection in bl_armature.collections:
-                if bl_bone_collection.bones.get(bl_bone.name):
-                    return BlenderBoneGroup(bl_bone_collection.name, str(bl_bone.color.palette))
-        elif bl_armature_obj.pose is not None:
-            bl_bone_group = getattr(bl_armature_obj.pose.bones[bl_bone.name], "bone_group")
-            if bl_bone_group is not None:
-                return BlenderBoneGroup(bl_bone_group.name, bl_bone_group.color_set)
-
-        return None
+    def get_bone_groups(bl_bone: bpy.types.Bone) -> BlenderBoneGroupSet:
+        return BlenderBoneGroupSet(
+            Enumerable(bl_bone.collections).select(lambda c: c.name).to_list(),
+            bl_bone.color.palette if bl_bone.color is not None else None
+        )
 
     @staticmethod
-    def is_bone_in_group(bl_armature_obj: bpy.types.Object, bl_bone: bpy.types.Bone, group_name: str) -> bool:
-        if BlenderHelper.is_blender_40:
-            bl_armature = cast(bpy.types.Armature, bl_armature_obj.data)
-            bl_bone_collection = bl_armature.collections.get(group_name)
-            return bl_bone_collection is not None and bl_bone_collection.bones.get(bl_bone.name) is not None
-        elif bl_armature_obj.pose is not None:
-            bl_bone_group = getattr(bl_armature_obj.pose.bones[bl_bone.name], "bone_group")
-            return bl_bone_group is not None and getattr(bl_bone_group, "name") == group_name
-        else:
-            return False
+    def set_bone_groups(bl_armature_obj: bpy.types.Object, bl_bone: bpy.types.Bone, group_set: BlenderBoneGroupSet) -> None:
+        bl_bone.collections.clear()
+        for group_name in group_set.group_names:
+            BlenderHelper.add_bone_to_group(bl_armature_obj, bl_bone, group_name, group_set.color)
 
     @staticmethod
-    def move_bone_to_group(bl_armature_obj: bpy.types.Object, bl_bone: bpy.types.Bone, group_name: str | None, palette: str | None) -> None:
-        if BlenderHelper.is_blender_40:
-            bl_armature = cast(bpy.types.Armature, bl_armature_obj.data)
-
-            for bl_bone_collection in list(bl_bone.collections):
-                if bl_bone_collection.name != BlenderNaming.hidden_bone_group_name:
-                    bl_bone_collection.unassign(bl_bone)
-
-            if group_name is not None:
-                bl_armature = cast(bpy.types.Armature, bl_armature_obj.data)
-                bl_bone_collection = bl_armature.collections.get(group_name) or bl_armature.collections.new(group_name)
-                bl_bone_collection.assign(bl_bone)
-
-            if bl_bone.color is not None:
-                bl_bone.color.palette = cast(Any, palette or "DEFAULT")
-        elif bl_armature_obj.pose is not None:
-            bl_bone_group: Any = None
-            if group_name is not None:
-                bl_bone_groups = getattr(bl_armature_obj.pose, "bone_groups")
-                bl_bone_group = bl_bone_groups.get(group_name) or bl_bone_groups.new(name = group_name)
-                bl_bone_group.color_set = palette
-
-            setattr(bl_armature_obj.pose.bones[bl_bone.name], "bone_group", bl_bone_group)
+    def is_bone_in_group(bl_bone: bpy.types.Bone, group_name: str) -> bool:
+        return bl_bone.collections.get(group_name) is not None
 
     @staticmethod
-    def remove_bone_from_group(bl_armature_obj: bpy.types.Object, bl_bone: bpy.types.Bone) -> None:
-        if BlenderHelper.is_blender_40:
-            bl_bone.collections.clear()
-        elif bl_armature_obj.pose is not None:
-            setattr(bl_armature_obj.pose.bones[bl_bone.name], "bone_group", None)
+    def add_bone_to_group(bl_armature_obj: bpy.types.Object, bl_bone: bpy.types.Bone, group_name: str, palette: str | None = None, group_visible: bool = True) -> None:
+        bl_armature = cast(bpy.types.Armature, bl_armature_obj.data)
+        bl_bone_collection = bl_armature.collections.get(group_name)
+        if bl_bone_collection is None:
+            bl_bone_collection = bl_armature.collections.new(group_name)
+            bl_bone_collection.is_visible = group_visible
+
+        bl_bone_collection.assign(bl_bone)
+
+        if bl_bone.color is not None and palette is not None:
+            bl_bone.color.palette = cast(Any, palette)
+
+    @staticmethod
+    def remove_bone_from_group(bl_bone: bpy.types.Bone, group_name: str) -> None:
+        bl_collection = bl_bone.collections.get(group_name)
+        if bl_collection is not None:
+            bl_collection.unassign(bl_bone)
 
     @staticmethod
     def reset_pose(bl_armature_obj: bpy.types.Object) -> None:
@@ -238,46 +184,31 @@ class BlenderHelper:
 
     @staticmethod
     def get_edge_bevel_weight(bl_mesh: bpy.types.Mesh | bmesh.types.BMesh, edge_idx: int) -> float:
-        if BlenderHelper.is_blender_40:
-            if isinstance(bl_mesh, bpy.types.Mesh):
-                bl_attr = cast(bpy.types.FloatAttribute | None, bl_mesh.attributes.get("bevel_weight_edge"))
-                if bl_attr is None:
-                    return 0
+        if isinstance(bl_mesh, bpy.types.Mesh):
+            bl_attr = cast(bpy.types.FloatAttribute | None, bl_mesh.attributes.get("bevel_weight_edge"))
+            if bl_attr is None:
+                return 0
 
-                return bl_attr.data[edge_idx].value
-            else:
-                bl_layer = bl_mesh.edges.layers.float.get("bevel_weight_edge")
-                if bl_layer is None:
-                    return 0
-
-                bl_mesh.edges.ensure_lookup_table()
-                return bl_mesh.edges[edge_idx][bl_layer] or 0
+            return bl_attr.data[edge_idx].value
         else:
-            if isinstance(bl_mesh, bpy.types.Mesh):
-                return getattr(bl_mesh.edges[edge_idx], "bevel_weight")
-            else:
-                bl_layer_collection = cast(bmesh.types.BMLayerCollection[float], getattr(bl_mesh.edges.layers, "bevel_weight"))
-                bl_layer = bl_layer_collection.active
-                return bl_mesh.edges[edge_idx][bl_layer]
+            bl_layer = bl_mesh.edges.layers.float.get("bevel_weight_edge")
+            if bl_layer is None:
+                return 0
+
+            bl_mesh.edges.ensure_lookup_table()
+            return bl_mesh.edges[edge_idx][bl_layer] or 0
 
     @staticmethod
     def set_edge_bevel_weight(bl_mesh: bpy.types.Mesh | bmesh.types.BMesh, edge_idx: int, weight: float) -> None:
-        if BlenderHelper.is_blender_40:
-            if isinstance(bl_mesh, bpy.types.Mesh):
-                bl_attr = cast(bpy.types.FloatAttribute, bl_mesh.attributes.get("bevel_weight_edge") or bl_mesh.attributes.new("bevel_weight_edge", "FLOAT", "EDGE"))
-                bl_attr.data[edge_idx].value = weight
-            else:
-                bl_layer = bl_mesh.edges.layers.float.get("bevel_weight_edge")
-                if bl_layer is None:
-                    raise Exception("bevel_weight_edge attribute not found")
-
-                bl_mesh.edges[edge_idx][bl_layer] = weight
+        if isinstance(bl_mesh, bpy.types.Mesh):
+            bl_attr = cast(bpy.types.FloatAttribute, bl_mesh.attributes.get("bevel_weight_edge") or bl_mesh.attributes.new("bevel_weight_edge", "FLOAT", "EDGE"))
+            bl_attr.data[edge_idx].value = weight
         else:
-            if isinstance(bl_mesh, bpy.types.Mesh):
-                setattr(bl_mesh.edges[edge_idx], "bevel_weight", weight)
-            else:
-                bl_layer_collection = cast(bmesh.types.BMLayerCollection[float | None], getattr(bl_mesh.edges.layers, "bevel_weight"))
-                bl_mesh.edges[edge_idx][bl_layer_collection.active] = weight
+            bl_layer = bl_mesh.edges.layers.float.get("bevel_weight_edge")
+            if bl_layer is None:
+                raise Exception("bevel_weight_edge attribute not found")
+
+            bl_mesh.edges[edge_idx][bl_layer] = weight
 
     @staticmethod
     def create_empty_material(name: str) -> bpy.types.Material:

@@ -1,6 +1,7 @@
 import os
 from typing import TYPE_CHECKING, Annotated, Protocol
 import bpy
+from io_scene_tr_reboot.BlenderHelper import BlenderHelper
 from io_scene_tr_reboot.BlenderNaming import BlenderNaming
 from io_scene_tr_reboot.exchange.shadow.ShadowAnimationExporter import ShadowAnimationExporter
 from io_scene_tr_reboot.operator.BlenderOperatorBase import ExportOperatorBase, ExportOperatorProperties
@@ -10,7 +11,7 @@ from io_scene_tr_reboot.properties.SceneProperties import SceneProperties
 from io_scene_tr_reboot.util.Enumerable import Enumerable
 
 if TYPE_CHECKING:
-    from bpy._typing.rna_enums import OperatorReturnItems
+    from bpy.stub_internal.rna_enums import OperatorReturnItems
 else:
     OperatorReturnItems = str
 
@@ -50,8 +51,7 @@ class ExportShadowAnimationOperator(ExportOperatorBase[_Properties]):
         if context is None:
             return { "CANCELLED" }
 
-        if context.object is not None:
-            bpy.ops.object.mode_set(mode = "OBJECT")
+        BlenderHelper.switch_to_object_mode()
 
         with OperatorContext.begin(self):
             bl_armature_obj = self.get_source_armature(context)

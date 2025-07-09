@@ -43,6 +43,7 @@ class ClothImporter(SlotsBase):
         bl_cloth_empty = BlenderHelper.create_object(None, BlenderNaming.make_cloth_empty_name(tr_collection.name))
         bl_cloth_empty.parent = bl_armature_obj
         bl_cloth_empty.hide_set(True)
+        bl_cloth_empty.hide_render = True
         BlenderHelper.move_object_to_collection(bl_cloth_empty, self.bl_target_collection)
         return bl_cloth_empty
 
@@ -68,16 +69,16 @@ class ClothImporter(SlotsBase):
                 bl_bone = bl_armature.bones[bl_vertex_group.name]
                 BoneProperties.get_instance(bl_bone).cloth.bounceback_factor = tr_cloth_mass.bounceback_factor
                 if tr_cloth_mass.mass == 0:
-                    BlenderHelper.move_bone_to_group(bl_armature_obj, bl_bone, BlenderNaming.pinned_cloth_bone_group_name, BlenderNaming.pinned_cloth_bone_palette_name)
+                    BlenderHelper.add_bone_to_group(bl_armature_obj, bl_bone, BlenderNaming.pinned_cloth_bone_group_name, BlenderNaming.pinned_cloth_bone_palette_name)
                 else:
-                    BlenderHelper.move_bone_to_group(bl_armature_obj, bl_bone, BlenderNaming.unpinned_cloth_bone_group_name, BlenderNaming.unpinned_cloth_bone_palette_name)
+                    BlenderHelper.add_bone_to_group(bl_armature_obj, bl_bone, BlenderNaming.unpinned_cloth_bone_group_name, BlenderNaming.unpinned_cloth_bone_palette_name)
 
             for i, tr_cloth_spring in enumerate(tr_cloth_strip.springs):
                 BlenderHelper.set_edge_bevel_weight(bl_mesh, i, tr_cloth_spring.stretchiness)
 
         cloth_strip_properties = ObjectProperties.get_instance(bl_obj).cloth
         cloth_strip_properties.parent_bone_name = Enumerable(bl_armature.bones).select(lambda b: b.name) \
-                                                                               .first(lambda b: BlenderNaming.parse_bone_name(b).local_id == tr_cloth_strip.parent_bone_local_id)
+                                                                               .first(lambda b: BlenderNaming.try_get_bone_local_id(b) == tr_cloth_strip.parent_bone_local_id)
         cloth_strip_properties.gravity_factor           = tr_cloth_strip.gravity_factor
         cloth_strip_properties.buoyancy_factor          = tr_cloth_strip.buoyancy_factor
         cloth_strip_properties.wind_factor              = tr_cloth_strip.wind_factor
@@ -99,6 +100,7 @@ class ClothImporter(SlotsBase):
         cloth_strip_properties.blend_to_bind_time       = tr_cloth_strip.blend_to_bind_time
         cloth_strip_properties.is_hair_collider         = tr_cloth_strip.is_hair_collider
 
+        bl_obj.hide_render = True
         BlenderHelper.move_object_to_collection(bl_obj, self.bl_target_collection)
         return bl_obj
 

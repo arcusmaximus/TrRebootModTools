@@ -76,8 +76,8 @@ other_classes: list[type] = [
 ]
 
 custom_property_groups: list[type[BlenderPropertyGroup]] = [
-    BoneConstraintProperties,
     BoneClothProperties,
+    BoneConstraintProperties,
     BoneProperties,
     ObjectClothProperties,
     ObjectCollisionModelProperties,

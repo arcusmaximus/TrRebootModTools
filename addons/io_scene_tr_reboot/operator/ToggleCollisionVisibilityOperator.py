@@ -1,12 +1,13 @@
 from typing import TYPE_CHECKING
 import bpy
+from io_scene_tr_reboot.BlenderHelper import BlenderHelper
 from io_scene_tr_reboot.BlenderNaming import BlenderNaming
 from io_scene_tr_reboot.operator.BlenderOperatorBase import BlenderOperatorBase
 from io_scene_tr_reboot.properties.BlenderPropertyGroup import BlenderPropertyGroup
 from io_scene_tr_reboot.util.Enumerable import Enumerable
 
 if TYPE_CHECKING:
-    from bpy._typing.rna_enums import OperatorReturnItems
+    from bpy.stub_internal.rna_enums import OperatorReturnItems
 else:
     OperatorReturnItems = str
 
@@ -24,6 +25,8 @@ class ToggleCollisionVisibilityOperator(BlenderOperatorBase[BlenderPropertyGroup
             return { "CANCELLED" }
 
         show_collisions = bl_first_collision_obj.hide_get()
+        BlenderHelper.switch_to_object_mode()
+
         for bl_obj in context.scene.objects:
             if isinstance(bl_obj.data, bpy.types.Armature):
                 if BlenderNaming.try_parse_global_armature_name(bl_obj.name) is not None or \

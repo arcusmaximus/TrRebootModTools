@@ -24,7 +24,7 @@ from io_scene_tr_reboot.tr.Enumerations import CdcGame
 from io_scene_tr_reboot.util.Enumerable import Enumerable
 
 if TYPE_CHECKING:
-    from bpy._typing.rna_enums import OperatorReturnItems
+    from bpy.stub_internal.rna_enums import OperatorReturnItems
 else:
     OperatorReturnItems = str
 
@@ -101,8 +101,7 @@ class ExportModelOperator(ExportOperatorBase[_Properties]):
         if context is None or context.view_layer is None:
             return { "CANCELLED" }
 
-        if context.object is not None:
-            bpy.ops.object.mode_set(mode = "OBJECT")
+        BlenderHelper.switch_to_object_mode()
 
         game = SceneProperties.get_game()
 

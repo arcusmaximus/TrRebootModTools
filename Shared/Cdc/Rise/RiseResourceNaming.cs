@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
-using System.Linq.Expressions;
 using System.Text;
 using TrRebootTools.Shared.Util;
 
@@ -130,7 +128,13 @@ namespace TrRebootTools.Shared.Cdc.Rise
         private static string ReadTextureOriginalFilePath(Stream stream)
         {
             using BinaryReader reader = new BinaryReader(stream, Encoding.UTF8, true);
-            reader.ReadBytes(0x1C);
+            var header = reader.ReadStruct<CdcTexture.CdcTextureHeader>();
+            if (header.Magic != CdcTexture.CdcTextureMagic)
+                return null;
+
+            if ((header.Flags & 0x2000) == 0)
+                return null;
+
             return reader.ReadZeroTerminatedString();
         }
     }

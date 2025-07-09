@@ -363,23 +363,27 @@ typedef struct (int numBlendShapes, int numFrames)
 
 typedef struct
 {
-    FSkip(0x18);
-    Vector3 basePosition;
-    FSkip(0x30 - 0x24);
-    Vector3 baseRotation;
-    FSkip(2);
+    Vector3 firstTranslation;
+    Vector3 lastTranslation;
+    Vector3 totalTranslation;
+    float travelDistanceOnFirstFrame;
+    float travelDistanceInTotal;
+    float travelDistanceOnLastFrame;
+    Vector3 totalRotation;
+    ushort animId;
     ushort numFrames                    <style=sHeading2>;
     ushort timePerFrame                 <style=sHeading2>;
     ushort numBones                     <style=sHeading2>;
-    FSkip(0x4A - 0x44);
+    ushort numBonesPerLod[3]            <style=sHeading2>;
     ubyte numBlendShapes                <style=sHeading2>;
-    FSkip(1);
+    ubyte numExtraChannels              <style=sHeading2>;
     ushort flags : 6                    <style=sHeading2>;
     ushort includeBoneScale : 1         <style=sHeading2>;
     ushort numBoneFrameBatches          <style=sHeading2>;         // Expected to be ceil(numFrames / 16)
     ushort numBlendShapeFrameBatches    <style=sHeading2>;
-    FSkip(0x68 - 0x52);
-    
+    FSkip(6);
+    Ref extraChannelLengthRef;
+    Ref extraChannelDataRef;
     Ref boneDistancesFromParentsRef;
     if (CanSeekTo(boneDistancesFromParentsRef))
     {
@@ -388,7 +392,7 @@ typedef struct
         ReturnFromRef();
     }
     
-    FSkip(8);
+    Ref accumulatedMotionIndicesRef;
     Ref boneHeldFrameNumbersRef;
     if (CanSeekTo(boneHeldFrameNumbersRef))
     {
@@ -411,7 +415,8 @@ typedef struct
         ReturnFromRef();
     }
     
-    FSkip(0xA0 - 0x88);
+    FSkip(0x18);
+    
     Ref globalBlendShapeIdsRef;
     if (CanSeekTo(globalBlendShapeIdsRef))
     {
@@ -420,13 +425,13 @@ typedef struct
         ReturnFromRef();
     }
     
-    FSkip(0xB8 - 0xA8);
+    FSkip(0x10);
     
     BoneAnimation boneAnimation(numBones, numBoneFrameBatches > 0 ? numFrames : 0, includeBoneScale);
     BlendShapeAnimation blendShapeAnimation(numBlendShapes, numBlendShapeFrameBatches > 0 ? numFrames : 0);
     
-    FSkip(0x128 - 0x118);
-    Ref unknownRef;
+    FSkip(0x10);
+    Ref endOfDataRef;
 } Animation <open=true>;
 
 RefDefinitions refDefinitions;

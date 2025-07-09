@@ -371,14 +371,24 @@ namespace TrRebootTools.ModManager.Mod
             switch (resourceKey.Type)
             {
                 case ResourceType.Texture when extension.Equals(".dds", StringComparison.InvariantCultureIgnoreCase):
-                    Stream textureStream = ConvertTexture(stream, resourceKey, archiveSet, resourceUsageCache);
-                    stream.Close();
-                    return textureStream;
+                    try
+                    {
+                        return ConvertTexture(stream, resourceKey, archiveSet, resourceUsageCache);
+                    }
+                    finally
+                    {
+                        stream.Close();
+                    }
 
                 case ResourceType.SoundBank when extension.Equals(".bnk", StringComparison.InvariantCultureIgnoreCase):
-                    Stream dtpStream = ConvertSoundBank(stream);
-                    stream.Close();
-                    return dtpStream;
+                    try
+                    {
+                        return ConvertSoundBank(stream);
+                    }
+                    finally
+                    {
+                        stream.Close();
+                    }
 
                 default:
                     return stream;

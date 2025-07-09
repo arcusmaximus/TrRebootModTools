@@ -18,6 +18,7 @@ class CollisionImporter:
         if bl_collisions_empty is None:
             bl_collisions_empty = BlenderHelper.create_object(None, bl_collisions_empty_name)
             bl_collisions_empty.hide_set(True)
+            bl_collisions_empty.hide_render = True
             bl_collisions_empty.parent = bl_collection_obj
             BlenderHelper.move_object_to_collection(bl_collisions_empty, self.bl_target_collection)
 

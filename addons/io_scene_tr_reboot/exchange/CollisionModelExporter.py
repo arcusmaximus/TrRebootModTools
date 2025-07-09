@@ -12,6 +12,7 @@ from io_scene_tr_reboot.tr.IFactory import IFactory
 from io_scene_tr_reboot.tr.ResourceBuilder import ResourceBuilder
 from io_scene_tr_reboot.tr.ResourceKey import ResourceKey
 from io_scene_tr_reboot.util.Enumerable import Enumerable
+from io_scene_tr_reboot.util.IoHelper import IoHelper
 
 class _Face(NamedTuple):
     min: Vector
@@ -43,7 +44,7 @@ class CollisionModelExporter:
         writer = ResourceBuilder(resource_key, self.game)
         tr_model.write(writer)
 
-        with open(os.path.join(folder_path, Collection.make_resource_file_name(resource_key, self.game)), "wb") as file:
+        with IoHelper.open_write(os.path.join(folder_path, Collection.make_resource_file_name(resource_key, self.game))) as file:
             file.write(writer.build())
 
     def create_mesh(self, bl_mesh_obj: bpy.types.Object) -> CollisionMesh:

@@ -107,6 +107,7 @@ class Tr2013ModelBase(Model[TModelReferences, TModelDataHeader, TLodLevel, TMesh
            self.header.pre_tesselation_info_offset != 0xFFFFFFFF:
             raise NotImplementedError()
 
+        self.update_bounding_box()
         writer.write_struct(cast(CStruct, self.header))
 
         self.header.local_bone_ids_offset = writer.position - model_data_header_pos

@@ -16,6 +16,7 @@ from io_scene_tr_reboot.tr.Enumerations import CdcGame, ResourceType
 from io_scene_tr_reboot.tr.ResourceReader import ResourceReader
 from io_scene_tr_reboot.tr.ResourceKey import ResourceKey
 from io_scene_tr_reboot.util.Enumerable import Enumerable
+from io_scene_tr_reboot.util.IoHelper import IoHelper
 from io_scene_tr_reboot.util.SlotsBase import SlotsBase
 
 class Collection(SlotsBase):
@@ -68,7 +69,7 @@ class Collection(SlotsBase):
         if root_file_path.endswith("objectref"):
             self._root_file_type = Collection.RootFileType.OBJECTREFERENCE
             object_ref_data: bytes
-            with open(root_file_path, "rb") as object_ref_file:
+            with IoHelper.open_read(root_file_path) as object_ref_file:
                 object_ref_data = object_ref_file.read()
 
             object_ref_reader = ResourceReader(ResourceKey(ResourceType.OBJECTREFERENCE, -1), object_ref_data, True, self.game)
@@ -195,7 +196,7 @@ class Collection(SlotsBase):
                 return None
 
             file_data: bytes
-            with open(file_path, "rb") as file:
+            with IoHelper.open_read(file_path) as file:
                 file_data = file.read()
 
             reader = ResourceReader(resource_key, file_data, has_references, self.game)

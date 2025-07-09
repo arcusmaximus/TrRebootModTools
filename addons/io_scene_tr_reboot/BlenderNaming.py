@@ -48,10 +48,7 @@ class BlenderHairStrandGroupIdSet(NamedTuple):
 class BlenderNaming:
     local_collection_name: ClassVar[str] = "Split meshes for export"
 
-    hidden_bone_group_name: ClassVar[str] = "Non-deforming bones"
-
-    cloth_bone_group_name: ClassVar[str] = "Cloth bones"
-    cloth_bone_palette_name: ClassVar[str] = "THEME08"
+    non_deforming_bone_group_name: ClassVar[str] = "Non-deforming bones"
 
     pinned_cloth_bone_group_name: ClassVar[str] = "Pinned cloth bones"
     pinned_cloth_bone_palette_name: ClassVar[str] = "THEME01"
@@ -61,6 +58,9 @@ class BlenderNaming:
 
     constrained_bone_group_name: ClassVar[str] = "Twist bones"
     constrained_bone_palette_name: ClassVar[str] = "THEME03"
+
+    helper_bone_group_name: ClassVar[str] = "Helper bones"
+    helper_bone_palette_name: ClassVar[str] = "THEME10"
 
     @staticmethod
     def make_collection_empty_name(collection_name: str, object_id: int) -> str:
@@ -264,12 +264,48 @@ class BlenderNaming:
         return bone_id_set
 
     @staticmethod
-    def get_bone_local_id(name: str) -> int:
-        bone_id_set = BlenderNaming.parse_bone_name(name)
-        if bone_id_set.local_id is None:
-            raise Exception(f"{name} is not a local bone.")
+    def try_get_bone_global_id(name: str) -> int | None:
+        id_set = BlenderNaming.try_parse_bone_name(name)
+        if id_set is None:
+            return None
 
-        return bone_id_set.local_id
+        return id_set.global_id
+
+    @staticmethod
+    def get_bone_global_id(name: str) -> int:
+        global_id = BlenderNaming.try_get_bone_global_id(name)
+        if global_id is None:
+            raise Exception(f"{name} is not a valid bone name.")
+
+        return global_id
+
+    @staticmethod
+    def try_get_bone_local_id(name: str) -> int | None:
+        id_set = BlenderNaming.try_parse_bone_name(name)
+        if id_set is None:
+            return None
+
+        return id_set.local_id
+
+    @staticmethod
+    def get_bone_local_id(name: str) -> int:
+        local_id = BlenderNaming.try_get_bone_local_id(name)
+        if local_id is None:
+            raise Exception(f"{name} is not a valid bone name.")
+
+        return local_id
+
+    @staticmethod
+    def make_helper_bone_name(global_id: int) -> str:
+        return f"helper_{global_id}"
+
+    @staticmethod
+    def try_parse_helper_bone_name(name: str) -> int | None:
+        match = re.fullmatch(r"helper_(\d+)", name)
+        if match is None:
+            return None
+
+        return int(match.group(1))
 
     @staticmethod
     def make_shape_key_name(name: str | None, global_id: int | None, local_id: int) -> str:

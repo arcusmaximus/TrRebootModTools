@@ -23,6 +23,7 @@ from io_scene_tr_reboot.util.CStruct import CArray, CByte, CFloat, CInt, CShort,
 from io_scene_tr_reboot.util.CStructTypeMappings import CVec2
 from io_scene_tr_reboot.util.DictionaryExtensions import DictionaryExtensions
 from io_scene_tr_reboot.util.Enumerable import Enumerable
+from io_scene_tr_reboot.util.IoHelper import IoHelper
 
 class Tr2013ObjectHeader(CStruct32):
     padding_1: CArray[CByte, Literal[0x80]]
@@ -145,7 +146,7 @@ class Tr2013Collection(Collection):
                 self.__cloth_tune_ref = object_header.cloth_tune_ref_1
 
             case Collection.RootFileType.LEVEL:
-                with open(root_file_path, "rb") as level_file:
+                with IoHelper.open_read(root_file_path) as level_file:
                     level_data = level_file.read()
 
                 reader = ResourceReader(ResourceKey(ResourceType.DTP, 0), level_data, True, CdcGame.TR2013)

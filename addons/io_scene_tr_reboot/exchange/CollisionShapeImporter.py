@@ -57,6 +57,7 @@ class CollisionShapeImporter(CollisionImporter):
         bl_collision_obj.name = collision_name
         cast(bpy.types.Mesh, bl_collision_obj.data).name = collision_name
         bl_collision_obj.hide_set(True)
+        bl_collision_obj.hide_render = True
 
         ObjectProperties.get_instance(bl_collision_obj).collision.data = tr_collision.serialize()
 
@@ -165,7 +166,7 @@ class CollisionShapeImporter(CollisionImporter):
 
     def find_bone(self, bl_armature_obj: bpy.types.Object, global_bone_id: int) -> bpy.types.Bone | None:
         bl_bones = Enumerable(cast(bpy.types.Armature, bl_armature_obj.data).bones)
-        return bl_bones.first_or_none(lambda b: BlenderNaming.parse_bone_name(b.name).global_id == global_bone_id)
+        return bl_bones.first_or_none(lambda b: BlenderNaming.try_get_bone_global_id(b.name) == global_bone_id)
 
     def add_armature_modifier(self, bl_mesh_obj: bpy.types.Object, bl_armature_obj: bpy.types.Object, bl_bone: bpy.types.Bone) -> None:
         if bl_mesh_obj.vertex_groups.get(bl_bone.name) is None:

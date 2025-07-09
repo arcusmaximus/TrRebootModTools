@@ -1,0 +1,187 @@
+#define TR_VERSION 10
+#include "../trcommon.bt"
+
+typedef struct
+{
+    unsigned int i0;
+    unsigned int i1;
+    unsigned int i2;
+    ubyte adjacencyFlags <format=hex>;
+    ubyte materialIndex;
+    FSkip(2);
+} IndexedFace <read=Str("(%d, %d, %d)", i0, i1, i2), optimize=true>;
+
+typedef struct
+{
+    ubyte collisionFlags;
+    FSkip(1);
+    ushort clientFlags;
+    unsigned int surfaceMaterialID;
+    unsigned int materialID;
+} CollisionMaterialData <optimize=false>;
+
+typedef struct
+{
+    Vector3 min;
+    Vector3 max;
+    ushort index;
+    ubyte numFaces;
+    char bboxExponent;
+} AABBNode;
+
+enum <ushort> VertexType
+{
+    VERTEX_INT16,
+    VERTEX_FLOAT32,
+    VERTEX_FLOAT16
+};
+
+typedef struct
+{
+    short x;
+    short y;
+    short z;
+} Vertex_Int16 <read=Str("(%d, %d, %d)", x, y, z)>;
+
+typedef struct
+{
+    float x;
+    float y;
+    float z;
+} Vertex_Float32 <read=Str("(%f, %f, %f)", x, y, z)>;
+
+typedef struct
+{
+    hfloat x;
+    hfloat y;
+    hfloat z;
+} Vertex_Float16 <read=Str("(%f, %f, %f)", x, y, z)>;
+
+typedef struct
+{
+    Vector3 offset;
+    FSkip(4);
+    Ref verticesRef;
+    Ref facesRef;
+    Ref collisionMaterialsRef;
+    Ref nodesRef;
+    unsigned int numNodes;
+    unsigned int numFaces;
+    unsigned int numVertices;
+    unsigned int numDegenerateFaces;
+    unsigned int numNonManifoldEdges;
+    VertexType vertexType;
+    ushort height;
+    ubyte numMaterials;
+    FSkip(7);
+    if (CanSeekTo(verticesRef))
+    {
+        SeekToRef(verticesRef);
+        switch (vertexType)
+        {
+            case VERTEX_INT16:
+                Vertex_Int16 vertices[numVertices];
+                break;
+            case VERTEX_FLOAT32:
+                Vertex_Float32 vertices[numVertices];
+                break;
+            case VERTEX_FLOAT16:
+                Vertex_Float16 vertices[numVertices];
+                break;
+        }
+        ReturnFromRef();
+    }
+    if (CanSeekTo(facesRef))
+    {
+        SeekToRef(facesRef);
+        IndexedFace faces[numFaces];
+        ReturnFromRef();
+    }
+    if (CanSeekTo(collisionMaterialsRef))
+    {
+        SeekToRef(collisionMaterialsRef);
+        CollisionMaterialData collisionMaterials[numMaterials];
+        ReturnFromRef();
+    }
+    if (CanSeekTo(nodesRef))
+    {
+        SeekToRef(nodesRef);
+        AABBNode nodes[numNodes];
+        ReturnFromRef();
+    }
+} Mesh <optimize=false>;
+
+typedef struct
+{
+    byte terrain : 1;
+    byte player : 1;
+    byte npc : 1;
+    byte enemy : 1;
+    byte object : 1;
+    byte shard : 1;
+    byte camera : 1;
+    byte cloth : 1;
+    byte incidental : 1;
+    byte gear : 1;
+    byte thrownProjectile : 1;
+    byte arrow : 1;
+    byte clutter : 1;
+    byte cameraLineOfSight : 1;
+    byte interact : 1;
+    byte npcPlayerStopper : 1;
+} CollisionTypesBitfield <optimize=false>;
+
+typedef struct
+{
+    CollisionTypesBitfield collideWith;
+    CollisionTypesBitfield collideNotWith;
+    CollisionTypesBitfield collideAs;
+    int collideGroup;
+} CollisionCategory <optimize=false>;
+
+typedef struct
+{
+    float friction;
+    CollisionCategory collisionCategory;
+    byte flagPlayerRespondTrans : 1;
+    byte flagParticleTrans : 1;
+    byte flagBulletTrans : 1;
+    byte flagAimTransparent : 1;
+    byte flagNpcAimTransparent : 1;
+    byte flagNpcBulletTrans : 1;
+    byte flagShallowWater : 1;
+    byte flagJumpCollisionTrans : 1;
+    byte flagGrappleArrow : 1;
+    byte flagSnow : 1;
+    byte flagWaterSurface : 1;
+    byte flagAvoidWeaponClipping : 1;
+    byte flagNoPlayerStanding : 1;
+} CollisionType <optimize=false>;
+
+typedef struct
+{
+    Ref meshRef;
+    if (CanSeekTo(meshRef))
+    {
+        SeekToRef(meshRef);
+        Mesh mesh;
+        ReturnFromRef();
+    }
+    Ref collisionTypeRef;
+    if (CanSeekTo(collisionTypeRef))
+    {
+        SeekToRef(collisionTypeRef);
+        CollisionType collisionType;
+        ReturnFromRef();
+    }
+} CollisionMesh <optimize=false>;
+
+typedef struct
+{
+    int numMeshes;
+    FSkip(4);
+    CollisionMesh meshes[numMeshes];
+} CollisionModel <optimize=false>;
+
+RefDefinitions refDefinitions;
+CollisionModel model <open=true>;

@@ -15,6 +15,7 @@ from io_scene_tr_reboot.tr.ResourceReader import ResourceReader
 from io_scene_tr_reboot.tr.ResourceReference import ResourceReference
 from io_scene_tr_reboot.tr.Skeleton import ISkeleton
 from io_scene_tr_reboot.tr.rise.RiseCloth import RiseCloth
+from io_scene_tr_reboot.tr.rise.RiseCollisionModel import RiseCollisionModel
 from io_scene_tr_reboot.tr.rise.RiseCollisionShape import RiseCollisionShape
 from io_scene_tr_reboot.tr.rise.RiseHair import RiseHair
 from io_scene_tr_reboot.tr.rise.RiseMaterial import RiseMaterial
@@ -22,6 +23,7 @@ from io_scene_tr_reboot.tr.rise.RiseModel import RiseModel
 from io_scene_tr_reboot.tr.rise.RiseSkeleton import RiseSkeleton
 from io_scene_tr_reboot.util.CStruct import CInt, CLong, CStruct64, CUInt, CULong
 from io_scene_tr_reboot.util.Enumerable import Enumerable
+from io_scene_tr_reboot.util.IoHelper import IoHelper
 
 class _ObjectHeader(CStruct64):
     zone_id: CInt
@@ -181,7 +183,7 @@ class RiseCollection(Collection):
                         if scene_item.dtp_ref is not None:
                             self._components[scene_item.type_hash] = scene_item.dtp_ref
             case Collection.RootFileType.STREAMLAYER:
-                with open(root_file_path, "rb") as root_file:
+                with IoHelper.open_read(root_file_path) as root_file:
                     root_file_data = root_file.read()
 
                 reader = ResourceReader(ResourceKey(ResourceType.DTP, 0), root_file_data, True, self.game)
@@ -278,11 +280,20 @@ class RiseCollection(Collection):
         model.read(reader)
         return model
 
-    def get_collision_model(self, resource: ResourceKey) -> CollisionModel | None:
-        return None
-
     def _create_material(self) -> Material:
         return RiseMaterial()
+
+    def get_collision_model(self, resource: ResourceKey) -> CollisionModel | None:
+        reader = self.get_resource_reader(resource, True)
+        if reader is None:
+            return None
+
+        model = self._create_collision_model()
+        model.read(reader)
+        return model
+
+    def _create_collision_model(self) -> CollisionModel:
+        return RiseCollisionModel()
 
     def get_skeleton(self, resource: ResourceKey) -> ISkeleton | None:
         if self._skeleton is not None:

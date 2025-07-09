@@ -5,6 +5,7 @@ from io_scene_tr_reboot.tr.BoneConstraint import IBoneConstraint
 from io_scene_tr_reboot.tr.Cloth import Cloth
 from io_scene_tr_reboot.tr.Collection import Collection
 from io_scene_tr_reboot.tr.CollectionFinder import CollectionFinder
+from io_scene_tr_reboot.tr.CollisionModel import CollisionModel
 from io_scene_tr_reboot.tr.CollisionShape import CollisionShape, CollisionShapeType
 from io_scene_tr_reboot.tr.Enumerations import CdcGame
 from io_scene_tr_reboot.tr.Hair import Hair
@@ -17,6 +18,7 @@ from io_scene_tr_reboot.tr.rise.RiseBone import RiseBone
 from io_scene_tr_reboot.tr.rise.RiseCloth import RiseCloth
 from io_scene_tr_reboot.tr.rise.RiseCollection import RiseCollection
 from io_scene_tr_reboot.tr.rise.RiseCollectionFinder import RiseCollectionFinder
+from io_scene_tr_reboot.tr.rise.RiseCollisionModel import RiseCollisionModel
 from io_scene_tr_reboot.tr.rise.RiseCollisionShape import RiseCollisionShape
 from io_scene_tr_reboot.tr.rise.RiseHair import RiseHair
 from io_scene_tr_reboot.tr.rise.RiseMesh import RiseMesh
@@ -45,6 +47,9 @@ class RiseFactory(IFactory):
 
     def create_mesh_part(self) -> IMeshPart:
         return RiseMeshPart()
+
+    def create_collision_model(self) -> CollisionModel:
+        return RiseCollisionModel()
 
     def create_skeleton(self, id: int) -> ISkeleton:
         return RiseSkeleton(id)

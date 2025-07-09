@@ -15,6 +15,7 @@ from io_scene_tr_reboot.tr.ResourceBuilder import ResourceBuilder
 from io_scene_tr_reboot.tr.ResourceKey import ResourceKey
 from io_scene_tr_reboot.tr.Skeleton import ISkeleton
 from io_scene_tr_reboot.util.Enumerable import Enumerable
+from io_scene_tr_reboot.util.IoHelper import IoHelper
 from io_scene_tr_reboot.util.SlotsBase import SlotsBase
 
 class SkeletonExporter(SlotsBase):
@@ -42,7 +43,7 @@ class SkeletonExporter(SlotsBase):
         tr_skeleton.write(writer)
 
         file_path = os.path.join(folder_path, Collection.make_resource_file_name(writer.resource, self.game))
-        with open(file_path, "wb") as file:
+        with IoHelper.open_write(file_path) as file:
             file.write(writer.build())
 
     def add_blend_shape_id_mappings(self, tr_skeleton: ISkeleton, bl_armature_obj: bpy.types.Object) -> None:
@@ -50,7 +51,11 @@ class SkeletonExporter(SlotsBase):
 
     def add_bones(self, tr_skeleton: ISkeleton, bl_armature_obj: bpy.types.Object) -> None:
         bl_armature = cast(bpy.types.Armature, bl_armature_obj.data)
-        bone_ids: dict[bpy.types.EditBone, BlenderBoneIdSet] = Enumerable(bl_armature.edit_bones).to_dict(lambda b: b, lambda b: BlenderNaming.parse_bone_name(b.name))
+        bone_ids = dict[bpy.types.EditBone, BlenderBoneIdSet]()
+        for bl_bone in bl_armature.edit_bones:
+            id_set = BlenderNaming.try_parse_bone_name(bl_bone.name)
+            if id_set is not None:
+                bone_ids[bl_bone] = id_set
 
         bone_with_missing_id = Enumerable(bone_ids.items()).first_or_none(lambda p: p[1].local_id is None)
         if bone_with_missing_id is not None:

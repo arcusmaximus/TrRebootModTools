@@ -10,6 +10,7 @@ from io_scene_tr_reboot.tr.Hair import Hair, HairPart, HairPoint, HairPointWeigh
 from io_scene_tr_reboot.tr.ResourceBuilder import ResourceBuilder
 from io_scene_tr_reboot.tr.ResourceKey import ResourceKey
 from io_scene_tr_reboot.util.Enumerable import Enumerable
+from io_scene_tr_reboot.util.IoHelper import IoHelper
 
 class HairExporter:
     scale_factor: float
@@ -34,7 +35,7 @@ class HairExporter:
             extension = f".tr{self.game}dtp"
 
         file_path = os.path.join(folder_path, str(tr_hair.hair_data_id) + extension)
-        with open(file_path, "wb") as file:
+        with IoHelper.open_write(file_path) as file:
             builder = ResourceBuilder(ResourceKey(resource_type, tr_hair.hair_data_id), self.game)
             tr_hair.write(builder)
             file.write(builder.build())

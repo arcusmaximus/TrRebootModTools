@@ -41,17 +41,11 @@ class ShadowCollection(RiseCollection):
         model.read(data_reader)
         return model
 
-    def get_collision_model(self, resource: ResourceKey) -> CollisionModel | None:
-        reader = self.get_resource_reader(resource, True)
-        if reader is None:
-            return None
-
-        model = ShadowCollisionModel()
-        model.read(reader)
-        return model
-
     def _create_material(self) -> Material:
         return ShadowMaterial()
+
+    def _create_collision_model(self) -> CollisionModel:
+        return ShadowCollisionModel()
 
     def _create_skeleton(self, id: int) -> ISkeleton:
         return ShadowSkeleton(id)

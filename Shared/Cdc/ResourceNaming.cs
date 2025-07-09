@@ -52,12 +52,26 @@ namespace TrRebootTools.Shared.Cdc
 
         public static string ReadOriginalFilePath(ArchiveSet archiveSet, ResourceReference resourceRef)
         {
-            return For(archiveSet.Game).ReadOriginalFilePathInstance(archiveSet, resourceRef);
+            try
+            {
+                return For(archiveSet.Game).ReadOriginalFilePathInstance(archiveSet, resourceRef);
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         public static string ReadOriginalFilePath(Stream stream, ResourceType type, CdcGame game)
         {
-            return For(game).ReadOriginalFilePathInstance(stream, type);
+            try
+            {
+                return For(game).ReadOriginalFilePathInstance(stream, type);
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         protected abstract Dictionary<(ResourceType, ResourceSubType), string[]> Mappings { get; }

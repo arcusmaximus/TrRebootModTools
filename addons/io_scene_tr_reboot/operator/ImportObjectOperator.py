@@ -28,7 +28,7 @@ from io_scene_tr_reboot.tr.Factories import Factories
 from io_scene_tr_reboot.util.Enumerable import Enumerable
 
 if TYPE_CHECKING:
-    from bpy._typing.rna_enums import OperatorReturnItems
+    from bpy.stub_internal.rna_enums import OperatorReturnItems
 else:
     OperatorReturnItems = str
 
@@ -67,8 +67,7 @@ class ImportObjectOperator(ImportOperatorBase[_Properties]):
         if context is None:
             return { "CANCELLED" }
 
-        if context.object is not None:
-            bpy.ops.object.mode_set(mode = "OBJECT")
+        BlenderHelper.switch_to_object_mode()
 
         game = self.get_game_from_file_path(self.properties.filepath)
         if game is None:
@@ -189,11 +188,11 @@ class ImportObjectOperator(ImportOperatorBase[_Properties]):
            self.properties.merge_with_existing_skeletons and \
            not self.properties.import_referenced_objects and \
            bl_armature_obj is not None:
-            self.merge(context)
+            self.merge(game, context)
 
         return (tr_collection, bl_collection_obj)
 
-    def merge(self, context: bpy.types.Context) -> None:
+    def merge(self, game: CdcGame, context: bpy.types.Context) -> None:
         if context.scene is None:
             return
 
@@ -202,7 +201,7 @@ class ImportObjectOperator(ImportOperatorBase[_Properties]):
         if bl_global_armature_obj is None and len(bl_armature_objs) == 1:
             return
 
-        merger: SkeletonMerger = self.properties.keep_original_skeletons and TemporaryModelMerger() or PermanentModelMerger()
+        merger: SkeletonMerger = self.properties.keep_original_skeletons and TemporaryModelMerger(game) or PermanentModelMerger(game)
         for bl_armature_obj in bl_armature_objs:
             if bl_armature_obj == bl_global_armature_obj:
                 continue

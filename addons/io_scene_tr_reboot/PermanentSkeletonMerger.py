@@ -25,9 +25,9 @@ class PermanentModelMerger(SkeletonMerger):
         self.apply_bone_renames_to_armature_and_children(bl_source_armature_obj, bone_renames.source_renames)
 
         bone_parents = self.get_global_bone_parents(bl_source_armature_obj)
-        visible_global_bone_ids = self.get_visible_global_bones(bl_source_armature_obj)
         source_bone_groups = self.get_bone_groups(bl_source_armature_obj)
         target_bone_groups = self.get_bone_groups(bl_target_armature_obj)
+        self.intersect_non_deforming_bones(source_bone_groups, target_bone_groups)
 
         self.move_armature_children(bl_source_armature_obj, bl_target_armature_obj)
         self.remove_bones(bl_source_armature_obj, bone_renames.existing_target_bones_in_source)
@@ -35,22 +35,21 @@ class PermanentModelMerger(SkeletonMerger):
         BlenderHelper.join_objects(bl_target_armature_obj, [bl_source_armature_obj])
 
         self.apply_global_bone_parents(bl_target_armature_obj, bone_parents)
-        self.apply_visible_global_bones(bl_target_armature_obj, visible_global_bone_ids)
         self.apply_bone_groups(bl_target_armature_obj, source_bone_groups)
         self.apply_bone_groups(bl_target_armature_obj, target_bone_groups)
 
         return bl_target_armature_obj
 
     def get_bone_renames(self, bl_target_armature_obj: bpy.types.Object, bl_source_armature_obj: bpy.types.Object) -> _BoneRenames:
-        target_bone_id_sets = self.get_sorted_bone_id_sets(bl_target_armature_obj)
-        source_bone_id_sets = self.get_sorted_bone_id_sets(bl_source_armature_obj)
+        (target_bone_id_sets, target_helper_bone_names) = self.get_sorted_bone_id_sets(bl_target_armature_obj)
+        (source_bone_id_sets, source_helper_bone_names) = self.get_sorted_bone_id_sets(bl_source_armature_obj)
 
         target_bone_id_sets_by_global_id = Enumerable(target_bone_id_sets).where(lambda ids: ids.global_id is not None) \
                                                                           .to_dict(lambda ids: ids.global_id)
 
         target_mappings: dict[str, str] = {}
         source_mappings: dict[str, str] = {}
-        existing_target_bones_in_source: list[str] = []
+        existing_target_bones_in_source: list[str] = Enumerable(target_helper_bone_names).intersect(source_helper_bone_names).to_list()
 
         # Clear out global source bones that already exist in the target
         source_bone_idx = 0
@@ -103,11 +102,18 @@ class PermanentModelMerger(SkeletonMerger):
             to_bone_name = BlenderNaming.make_bone_name(None, bone_id_set.global_id, from_idx + offset)
             mappings[from_bone_name] = to_bone_name
 
-    def get_sorted_bone_id_sets(self, bl_armature_obj: bpy.types.Object) -> list[BlenderBoneIdSet]:
+    def get_sorted_bone_id_sets(self, bl_armature_obj: bpy.types.Object) -> tuple[list[BlenderBoneIdSet], list[str]]:
         bl_armature = cast(bpy.types.Armature, bl_armature_obj.data)
-        bone_id_sets = Enumerable(bl_armature.bones).select(lambda b: BlenderNaming.parse_bone_name(b.name)) \
-                                                    .order_by(lambda ids: ids.local_id) \
-                                                    .to_list()
+        bone_id_sets: list[BlenderBoneIdSet] = []
+        helper_bone_names: list[str] = []
+        for bl_bone in bl_armature.bones:
+            bone_id_set = BlenderNaming.try_parse_bone_name(bl_bone.name)
+            if bone_id_set is not None:
+                bone_id_sets.append(bone_id_set)
+            else:
+                helper_bone_names.append(bl_bone.name)
+
+        bone_id_sets.sort(key = lambda ids: cast(int, ids.local_id))
 
         # Sanity check
         in_global_bones = True
@@ -124,7 +130,7 @@ class PermanentModelMerger(SkeletonMerger):
                 if bone_id_set.global_id is not None:
                     raise Exception(f"Armature {bl_armature_obj.name} contains mixed global and local bones")
 
-        return bone_id_sets
+        return (bone_id_sets, helper_bone_names)
 
     def remove_bones(self, bl_armature_obj: bpy.types.Object, bone_names: list[str]) -> None:
         bl_armature = cast(bpy.types.Armature, bl_armature_obj.data)

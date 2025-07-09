@@ -4,6 +4,7 @@ extern TrAddr_GameLoopStart         : dq
 extern TrAddr_RequestFile           : dq
 extern TrAddr_ParseMaterial         : dq
 extern TrAddr_GetAnimation          : dq
+extern TrAddr_PlayingTimeline       : dq
 extern TrAddr_MSFileSystemFile_dtor : dq
 
 extern TrHandler_GameLoopStart          : proc
@@ -64,6 +65,23 @@ TrHook_GetAnimation proc
     pop rcx
     jmp [TrAddr_GetAnimation]
 TrHook_GetAnimation endp
+
+TrHook_PlayingTimeline proc
+    push rcx
+    push rdx
+    push r8
+    push r9
+
+    sub rsp, 20h
+    call TrHandler_GetAnimation
+    add rsp, 20h
+
+    pop r9
+    pop r8
+    pop rdx
+    pop rcx
+    jmp [TrAddr_PlayingTimeline]
+TrHook_PlayingTimeline endp
 
 TrHook_MSFileSystemFile_dtor proc
     push rcx

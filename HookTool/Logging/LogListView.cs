@@ -36,7 +36,7 @@ namespace TrRebootTools.HookTool.Logging
 
         public void AddItem(object item)
         {
-            for (int i = Math.Max(_items.Count - 10, 0); i < _items.Count; i++)
+            for (int i = Math.Max(_items.Count - 30, 0); i < _items.Count; i++)
             {
                 if (item.Equals(_items[i]))
                     return;

@@ -8,6 +8,9 @@ extern "C"
     void* TrAddr_GetAnimation;
     void TrHook_GetAnimation();
 
+    void* TrAddr_PlayingTimeline;
+    void TrHook_PlayingTimeline();
+
     void TrHandler_GetAnimation(AnimLibItem* pAnim)
     {
         NotificationChannel::Instance.NotifyPlayingAnimation(pAnim->id, pAnim->pszName);
@@ -23,11 +26,13 @@ void TrHook::InitAddresses()
     TrAddr_MSFileSystemFile_dtor    = Game::ImageBase + 0x1CE940;
 
     TrAddr_GetAnimation             = Game::ImageBase + 0x12BCA2;
+    TrAddr_PlayingTimeline          = Game::ImageBase + 0x416360;
 }
 
 void TrHook::InstallGameSpecificHooks()
 {
     DetourAttach(&TrAddr_GetAnimation, TrHook_GetAnimation);
+    DetourAttach(&TrAddr_PlayingTimeline, TrHook_PlayingTimeline);
 }
 
 void TrHook::ApplyGameSpecificPatches()

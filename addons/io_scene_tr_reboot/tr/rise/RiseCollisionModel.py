@@ -64,7 +64,7 @@ class _MeshInfo(CStruct64):
 
 assert(sizeof(_MeshInfo) == 0x10)
 
-class ShadowCollisionModel(CollisionModel):
+class RiseCollisionModel(CollisionModel):
     def read(self, reader: ResourceReader) -> None:
         num_meshes = reader.read_int32()
         reader.skip(4)

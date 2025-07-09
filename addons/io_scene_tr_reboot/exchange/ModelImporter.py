@@ -310,18 +310,19 @@ class ModelImporter(SlotsBase):
             bl_obj.parent = bl_armature_obj
             bl_armature_modifier = cast(bpy.types.ArmatureModifier, bl_obj.modifiers.new("Armature", "ARMATURE"))
             bl_armature_modifier.object = bl_armature_obj
-            used_bone_names.update(Enumerable(bl_obj.vertex_groups).select(lambda g: g.name))
+            used_bone_names.update(Enumerable(bl_obj.vertex_groups).select(lambda g: g.name).where(lambda n: BlenderNaming.try_parse_bone_name(n) is not None))
 
         bl_armature = cast(bpy.types.Armature, bl_armature_obj.data)
         for bl_bone in bl_armature.bones:
-            BlenderHelper.set_bone_visible(bl_armature, bl_bone, False)
+            if BlenderNaming.try_parse_bone_name(bl_bone.name) is not None:
+                BlenderHelper.add_bone_to_group(bl_armature_obj, bl_bone, BlenderNaming.non_deforming_bone_group_name, None, False)
 
         for bl_bone in bl_armature.bones:
             if bl_bone.name not in used_bone_names:
                 continue
 
             while True:
-                BlenderHelper.set_bone_visible(bl_armature, bl_bone, True)
+                BlenderHelper.remove_bone_from_group(bl_bone, BlenderNaming.non_deforming_bone_group_name)
                 bl_bone = bl_bone.parent
                 if bl_bone is None or bl_bone.name in used_bone_names:
                     break

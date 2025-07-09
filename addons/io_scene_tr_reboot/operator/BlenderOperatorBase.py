@@ -6,7 +6,7 @@ from io_scene_tr_reboot.properties.BlenderPropertyGroup import BlenderPropertyGr
 from io_scene_tr_reboot.util.Enumerable import Enumerable
 
 if TYPE_CHECKING:
-    from bpy._typing.rna_enums import OperatorReturnItems
+    from bpy.stub_internal.rna_enums import OperatorReturnItems
 else:
     OperatorReturnItems = str
 

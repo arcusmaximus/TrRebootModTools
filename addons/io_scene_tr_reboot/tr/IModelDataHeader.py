@@ -7,6 +7,8 @@ class IModelDataHeader(Protocol):
     num_indexes:                int
     bound_box_min:              Vector
     bound_box_max:              Vector
+    bound_sphere_center:        Vector
+    bound_sphere_radius:        float
     min_lod:                    float
     max_lod:                    float
     has_vertex_weights:         bool
@@ -22,7 +24,7 @@ class IModelDataHeader(Protocol):
 
     num_mesh_parts:             int
     num_meshes:                 int
-    num_bones:          int
+    num_bones:                  int
     num_lod_levels:             int
 
     bone_usage_map:             list[int]

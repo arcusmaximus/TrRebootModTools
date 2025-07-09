@@ -6,7 +6,7 @@ import os
 import re
 from mathutils import Vector
 from io_scene_tr_reboot.BlenderHelper import BlenderHelper
-from io_scene_tr_reboot.BlenderNaming import BlenderModelIdSet, BlenderNaming
+from io_scene_tr_reboot.BlenderNaming import BlenderBoneIdSet, BlenderModelIdSet, BlenderNaming
 from io_scene_tr_reboot.operator.OperatorContext import OperatorContext
 from io_scene_tr_reboot.properties.ObjectProperties import ObjectProperties, ObjectSkeletonProperties
 from io_scene_tr_reboot.tr.BlendShape import BlendShape
@@ -23,6 +23,7 @@ from io_scene_tr_reboot.tr.Vertex import Vertex
 from io_scene_tr_reboot.tr.VertexFormat import VertexFormat
 from io_scene_tr_reboot.tr.VertexOffsets import VertexOffsets
 from io_scene_tr_reboot.util.Enumerable import Enumerable
+from io_scene_tr_reboot.util.IoHelper import IoHelper
 from io_scene_tr_reboot.util.SlotsBase import SlotsBase
 from io_scene_tr_reboot.util.SpatialIndex import SpatialIndex
 
@@ -58,13 +59,16 @@ class ModelExporter(SlotsBase):
         global_bone_ids: dict[int, int | None] | None = None
         global_blend_shape_ids: dict[int, int] | None = None
         if bl_armature_obj is not None:
-            global_bone_ids = Enumerable(cast(bpy.types.Armature, bl_armature_obj.data).bones).select(lambda b: BlenderNaming.parse_bone_name(b.name)).to_dict(lambda ids: ids.local_id or -1, lambda ids: ids.global_id)
+            bl_armature = cast(bpy.types.Armature, bl_armature_obj.data)
+            global_bone_ids = Enumerable(bl_armature.bones).select(lambda b: BlenderNaming.try_parse_bone_name(b.name)) \
+                                                           .of_type(BlenderBoneIdSet) \
+                                                           .to_dict(lambda ids: ids.local_id or 0, lambda ids: ids.global_id)
             global_blend_shape_ids = ObjectSkeletonProperties.get_global_blend_shape_ids(bl_armature_obj)
 
         tr_model = self.create_model(ids.model_id, ids.model_data_id, bl_mesh_objs, global_bone_ids, global_blend_shape_ids)
 
         model_data_file_path = os.path.join(folder_path, f"{ids.model_data_id}.tr{self.game}modeldata")
-        with open(model_data_file_path, "wb") as model_data_file:
+        with IoHelper.open_write(model_data_file_path) as model_data_file:
             resource_builder = ResourceBuilder(ResourceKey(ResourceType.MODEL, ids.model_data_id), self.game)
             tr_model.write(resource_builder)
             model_data_file.write(resource_builder.build())
@@ -124,7 +128,7 @@ class ModelExporter(SlotsBase):
         max_bones = len(tr_model.header.bone_usage_map) * 32
 
         for bl_vertex_group in Enumerable(bl_mesh_objs).select_many(lambda o: o.vertex_groups):
-            local_id = BlenderNaming.parse_bone_name(bl_vertex_group.name).local_id
+            local_id = BlenderNaming.try_get_bone_local_id(bl_vertex_group.name)
             if local_id is None:
                 continue
 
@@ -553,7 +557,7 @@ class ModelExporter(SlotsBase):
         game = CdcGame(game)
 
         tr_model = Factories.get(game).create_model(0, 0)
-        with open(file_path, "rb") as source_file:
+        with IoHelper.open_read(file_path) as source_file:
             has_references = game != CdcGame.SOTTR
             tr_model.read(ResourceReader(ResourceKey(ResourceType.MODEL, 0), source_file.read(), has_references, self.game))
 

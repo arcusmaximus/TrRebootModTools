@@ -7,7 +7,7 @@ namespace TrRebootTools.Shared.Cdc
 {
     public class CdcTexture
     {
-        private const uint CdcTextureMagic = 0x39444350;
+        internal const uint CdcTextureMagic = 0x39444350;
 
         [StructLayout(LayoutKind.Sequential)]
         public struct CdcTextureHeader

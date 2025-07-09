@@ -1,3 +1,4 @@
+from enum import Enum
 from io import StringIO
 from types import UnionType
 from typing import Any, Callable, ClassVar, cast
@@ -19,7 +20,7 @@ class Serializer:
 
             if field_type == bool:
                 field_value = str(field_value).lower()
-            elif field_type == int or field_type == float or field_type == str:
+            elif field_type == int or field_type == float or field_type == str or issubclass(field_type, Enum):
                 field_value = str(field_value)
             elif field_type == Vector or \
                 field_type == Quaternion or \
@@ -64,6 +65,8 @@ class Serializer:
                 field_value = int(field_value)
             elif field_type == float:
                 field_value = float(field_value)
+            elif issubclass(field_type, Enum):
+                field_value = cast(int, field_type(int(field_value)))
             elif field_type == Vector:
                 field_value = Vector(Enumerable(field_value.split(",")).select(float).to_tuple())
             elif field_type == Quaternion:

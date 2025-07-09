@@ -1,55 +1,56 @@
-//------------------------------------------------
-//--- 010 Editor v14.0 Binary Template
-//
-//      File: tr11globaluiinfo.bt
-//   Authors: arc_
-//   Purpose: Parse the .tr11dtp file in globaluiinfo.drm
-//  Category: SOTTR
-//------------------------------------------------
-
 #define TR_VERSION 11
+#define TR_OBJECT_NO_INSTANTIATE
 #include "../trcommon.bt"
+#include "../trobjectcommon.bt"
 
 typedef struct
 {
-    Ref name1Ref;
-    if (CanSeekTo(name1Ref))
+    unsigned int imageRes;
+    FSkip(4);
+    Ref filepathRef;
+    if (CanSeekTo(filepathRef))
     {
-        SeekToRef(name1Ref);
-        string name1;
+        SeekToRef(filepathRef);
+        string filepath;
         ReturnFromRef();
     }
-    FSkip(0x10 - 8);
-    
-    Ref name2Ref;
-    if (CanSeekTo(name2Ref))
+} ImageLoader <optimize=false>;
+
+typedef struct
+{
+    char teamId;
+    FSkip(7);
+    Ref teamNameDebugRef;
+    if (CanSeekTo(teamNameDebugRef))
     {
-        SeekToRef(name2Ref);
-        string name2;
+        SeekToRef(teamNameDebugRef);
+        string teamNameDebug;
         ReturnFromRef();
     }
-    FSkip(0x20 - 0x18);
-    
-    Ref schematicsPathRef;
-    if (CanSeekTo(schematicsPathRef))
+    uquad teamName;
+} TeamInfoItem <optimize=false>;
+
+typedef struct
+{
+    Ref debugNameRef;
+    if (CanSeekTo(debugNameRef))
     {
-        SeekToRef(schematicsPathRef);
-        string schematicsPath;
+        SeekToRef(debugNameRef);
+        string debugName;
         ReturnFromRef();
     }
-    FSkip(0x30 - 0x28);
-    
-    Ref skillPathRef;
-    if (CanSeekTo(skillPathRef))
+    uquad locName <format=hex>;
+    Ref indicatorNameRef;
+    if (CanSeekTo(indicatorNameRef))
     {
-        SeekToRef(skillPathRef);
-        string skillPath;
+        SeekToRef(indicatorNameRef);
+        string indicatorName;
         ReturnFromRef();
     }
-    
-    ushort zoneId;
-    FSkip(0x40 - 0x3A);
-    
+    ImageLoader characterImgLoader;
+    ImageLoader skinImgLoader;
+    ushort zoneID;
+    FSkip(6);
     Ref zoneNameRef;
     if (CanSeekTo(zoneNameRef))
     {
@@ -57,43 +58,63 @@ typedef struct
         string zoneName;
         ReturnFromRef();
     }
-    
-    FSkip(0x50 - 0x48);
-    Ref nullNameRef;
-    if (CanSeekTo(nullNameRef))
+    unsigned int zoneHashName <format=hex>;
+    ushort menuObjectID;
+    FSkip(2);
+    Ref menuObjectIDNameRef;
+    if (CanSeekTo(menuObjectIDNameRef))
     {
-        SeekToRef(nullNameRef);
-        string nullName;
+        SeekToRef(menuObjectIDNameRef);
+        string menuObjectIDName;
         ReturnFromRef();
     }
-    
-    FSkip(0xA8 - 0x58);
-    Ref defaultRef;
-    if (CanSeekTo(defaultRef))
+    Ref teamIdRef;
+    if (CanSeekTo(teamIdRef))
     {
-        SeekToRef(defaultRef);
-        string default_;
+        SeekToRef(teamIdRef);
+        TeamInfoItem teamId;
         ReturnFromRef();
     }
-} Player <read=name1, optimize=false>;
+    ushort unit;
+    FSkip(2);
+    unsigned int zoneMarkerZone;
+    PlacementPath zoneMarkerID;
+    unsigned int cameraUniqueID;
+    char characterType;
+    ubyte baseProfileIndex;
+    ushort buddyObjectID;
+    Ref inventoryRef;
+    Ref playerStateRef;
+    unsigned int playerColor <format=hex>;
+    byte isEnabledForMultiplayer;
+    byte isDefaultForMultiplayer;
+    FSkip(2);
+    Ref flashFrameLabelRef;
+    if (CanSeekTo(flashFrameLabelRef))
+    {
+        SeekToRef(flashFrameLabelRef);
+        string flashFrameLabel;
+        ReturnFromRef();
+    }
+} CharacterProfileItem <optimize=false, read=zoneName>;
 
 typedef struct
 {
-    Ref playersRef;
-    byte numPlayers;
-    if (CanSeekTo(playersRef))
+    Ref characterProfileMapRef;
+    ubyte characterProfileMapCount;
+    if (CanSeekTo(characterProfileMapRef))
     {
-        SeekToRef(playersRef);
-        Player players[numPlayers];
+        SeekToRef(characterProfileMapRef);
+        CharacterProfileItem characterProfileMap[characterProfileMapCount];
         ReturnFromRef();
     }
-} Root;
+} GlobalUIInfo <optimize=false>;
 
 RefDefinitions refDefinitions;
 Ref rootRef;
 if (CanSeekTo(rootRef))
 {
     SeekToRef(rootRef);
-    Root root <open=true>;
+    GlobalUIInfo root <open=true>;
     ReturnFromRef();
 }

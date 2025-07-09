@@ -4,7 +4,7 @@ import bpy
 from io_scene_tr_reboot.util.SlotsBase import SlotsBase
 
 if TYPE_CHECKING:
-    from bpy._typing.rna_enums import WmReportItems
+    from bpy.stub_internal.rna_enums import WmReportItems
 else:
     WmReportItems = str
 

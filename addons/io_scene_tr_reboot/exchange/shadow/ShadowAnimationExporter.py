@@ -13,6 +13,7 @@ from io_scene_tr_reboot.tr.ResourceKey import ResourceKey
 from io_scene_tr_reboot.tr.shadow.ShadowAnimation import BlendShapeAnimationFrame, BoneAnimationFrame, ShadowAnimation
 from io_scene_tr_reboot.util.DictionaryExtensions import DictionaryExtensions
 from io_scene_tr_reboot.util.Enumerable import Enumerable
+from io_scene_tr_reboot.util.IoHelper import IoHelper
 from io_scene_tr_reboot.util.SlotsBase import SlotsBase
 
 class _BoneConstraintParams(NamedTuple):
@@ -23,27 +24,24 @@ class _BoneConstraintParams(NamedTuple):
 class ShadowAnimationExporter(SlotsBase):
     scale_factor: float
     apply_lara_bone_fix_constraints: bool
-    bl_context: bpy.types.Context
 
     def __init__(self, scale_factor: float, apply_lara_bone_fix_constraints: bool) -> None:
         self.scale_factor = scale_factor
         self.apply_lara_bone_fix_constraints = apply_lara_bone_fix_constraints
-        self.bl_context = bpy.context
 
     def export_animation(self, file_path: str, bl_armature_obj: bpy.types.Object) -> None:
-        if self.bl_context.scene is None:
+        if bpy.context.scene is None:
             return
 
-        if self.bl_context.object is not None:
-            bpy.ops.object.mode_set(mode = "OBJECT")
+        BlenderHelper.switch_to_object_mode()
 
         resource_key = Collection.try_parse_resource_file_path(file_path, CdcGame.SOTTR)
         if resource_key is None:
             raise Exception("Invalid target filename")
 
         animation = ShadowAnimation(resource_key.id)
-        animation.num_frames = self.bl_context.scene.frame_end
-        animation.ms_per_frame = int(self.bl_context.scene.render.fps_base)
+        animation.num_frames = bpy.context.scene.frame_end
+        animation.ms_per_frame = int(bpy.context.scene.render.fps_base)
 
         self.export_armature_animation(animation, bl_armature_obj)
         for bl_mesh_obj in Enumerable(bl_armature_obj.children).where(lambda o: isinstance(o.data, bpy.types.Mesh)):
@@ -51,7 +49,7 @@ class ShadowAnimationExporter(SlotsBase):
 
         resource_builder = ResourceBuilder(ResourceKey(ResourceType.ANIMATION, 0), CdcGame.SOTTR)
         animation.write(resource_builder)
-        with open(file_path, "wb") as file:
+        with IoHelper.open_write(file_path) as file:
             file.write(resource_builder.build())
 
     def export_armature_animation(self, animation: ShadowAnimation, bl_armature_obj: bpy.types.Object) -> None:
@@ -78,7 +76,7 @@ class ShadowAnimationExporter(SlotsBase):
 
         with BlenderHelper.enter_edit_mode(bl_armature_obj):
             for bl_bone in cast(bpy.types.Armature, bl_armature_obj.data).edit_bones:
-                global_bone_id = BlenderNaming.parse_bone_name(bl_bone.name).global_id
+                global_bone_id = BlenderNaming.try_get_bone_global_id(bl_bone.name)
                 if global_bone_id is None:
                     continue
 
@@ -133,7 +131,7 @@ class ShadowAnimationExporter(SlotsBase):
             if match is None or len(bl_fcurve.keyframe_points) == 0:
                 continue
 
-            global_bone_id = BlenderNaming.parse_bone_name(match.group(1)).global_id
+            global_bone_id = BlenderNaming.try_get_bone_global_id(match.group(1))
             attr_idx = attr_names.index_of(match.group(2))
             if global_bone_id is None or attr_idx < 0:
                 continue
@@ -184,7 +182,7 @@ class ShadowAnimationExporter(SlotsBase):
 
         bl_bones: dict[int, bpy.types.PoseBone] = {}
         for bl_bone in bl_armature_obj.pose.bones:
-            global_bone_id = BlenderNaming.parse_bone_name(bl_bone.name).global_id
+            global_bone_id = BlenderNaming.try_get_bone_global_id(bl_bone.name)
             if global_bone_id is not None:
                 bl_bones[global_bone_id] = bl_bone
 
@@ -240,7 +238,7 @@ class ShadowAnimationExporter(SlotsBase):
                 bl_transforms_constraint.owner_space = "POSE"
 
     def bake_bone_constraints(self, bl_armature_obj: bpy.types.Object) -> None:
-        if self.bl_context.scene is None or bl_armature_obj.pose is None:
+        if bpy.context.scene is None or bl_armature_obj.pose is None:
             return
 
         BlenderHelper.select_object(bl_armature_obj)
@@ -251,8 +249,8 @@ class ShadowAnimationExporter(SlotsBase):
                 bl_bone.bone.select = len(bl_bone.constraints) > 0
 
             bpy.ops.nla.bake(
-                frame_start = self.bl_context.scene.frame_start,
-                frame_end   = self.bl_context.scene.frame_end,
+                frame_start = bpy.context.scene.frame_start,
+                frame_end   = bpy.context.scene.frame_end,
                 only_selected = True,
                 visual_keying = True,
                 use_current_action = True

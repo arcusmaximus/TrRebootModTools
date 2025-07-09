@@ -383,6 +383,10 @@ you'll need to set the *Frame Rate* to *Custom* to see the Base). Note that the 
 the opposite way as the FPS: a higher Base will result in each frame taking more time and the
 animation thus being slower overall, not faster.
 
+If you mod a cutscene animation (from a DRM that starts with "pcap" for "performance capture"),
+the character may jitter around ingame. If this happens, try including an export of the character's
+unmodified skeleton (for Lara, this is the one from tr11_lara.drm).
+
 ## Cloth physics modding
 
 Not all bones in an outfit are driven by an animation or other bones: some are instead driven by a

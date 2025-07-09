@@ -47,6 +47,16 @@ class Enumerable(Generic[T]):
     def concat(self, next_iterable: Iterable[T]) -> "Enumerable[T]":
         return _ConcatEnumerable(self, next_iterable)
 
+    def union(self, with_iterable: Iterable[T]) -> "Enumerable[T]":
+        result = set(self)
+        result.update(with_iterable)
+        return Enumerable[T](result)
+
+    def intersect(self, with_iterable: Iterable[T]) -> "Enumerable[T]":
+        result = set(self)
+        result.intersection_update(with_iterable)
+        return Enumerable[T](result)
+
     def order_by(self, key_selector: Callable[[T], Any]) -> "Enumerable[T]":
         return _OrderByEnumerable[T](self, key_selector, False)
 

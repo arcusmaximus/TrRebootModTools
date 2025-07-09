@@ -1,5 +1,6 @@
 from enum import IntEnum
 from io_scene_tr_reboot.util.BinaryReader import BinaryReader
+from io_scene_tr_reboot.util.IoHelper import IoHelper
 
 class DdsConstants:
     DDS_FOURCC = 0x00000004
@@ -14,9 +15,9 @@ class DdsFile:
     @staticmethod
     def get_type(file_path: str) -> DdsType:
         header: bytes
-        with open(file_path, "rb") as file:
+        with IoHelper.open_read(file_path) as file:
             header = file.read(0x94)
-        
+
         reader = BinaryReader(header)
         if bytes(reader.read_bytes(4)) != b"DDS ":
             raise Exception("Invalid DDS magic")
@@ -41,7 +42,7 @@ class DdsFile:
             match fourcc:
                 case b"DXT1" | b"DXT2" | b"DXT3" | b"DXT4" | b"DXT5" | b"BC4U" | b"BC4S" | b"ATI2" | b"BC5S":
                     return DdsType.RGB
-                
+
                 case b"DX10":
                     # Skip to DDS_HEADER_DXT10 structure
                     reader.skip(0x20 + 0x14)

@@ -59,7 +59,7 @@ class ModelSplitter(SlotsBase):
 
             bone_names_by_global_id: dict[int, str] = {}
             for bl_bone in cast(bpy.types.Armature, bl_armature_obj.data).bones:
-                global_bone_id = BlenderNaming.parse_bone_name(bl_bone.name).global_id
+                global_bone_id = BlenderNaming.try_get_bone_global_id(bl_bone.name)
                 if global_bone_id is not None:
                     bone_names_by_global_id[global_bone_id] = bl_bone.name
 
@@ -89,7 +89,7 @@ class ModelSplitter(SlotsBase):
             bl_local_armature_obj = bpy.data.objects[local_armature.name]
             bl_local_armature = cast(bpy.types.Armature, bl_local_armature_obj.data)
             for bl_bone in bl_local_armature.bones:
-                global_bone_id = BlenderNaming.parse_bone_name(bl_bone.name).global_id
+                global_bone_id = BlenderNaming.try_get_bone_global_id(bl_bone.name)
                 if global_bone_id is None:
                     continue
 
@@ -257,7 +257,10 @@ class ModelSplitter(SlotsBase):
                     local_bone_names_by_global_id: dict[int, str] = {}
 
                     for bl_local_bone in bl_local_armature.edit_bones:
-                        bone_id_set = BlenderNaming.parse_bone_name(bl_local_bone.name)
+                        bone_id_set = BlenderNaming.try_parse_bone_name(bl_local_bone.name)
+                        if bone_id_set is None:
+                            continue
+
                         if bone_id_set.global_id is None:
                             old_local_bone_names.append(bl_local_bone.name)
                         else:
@@ -280,9 +283,11 @@ class ModelSplitter(SlotsBase):
                 for bone_info in local_bone_infos:
                     bl_local_bone = bl_local_armature.bones[BlenderNaming.make_bone_name(None, None, bone_info.local_id)]
                     if bone_info.pinned:
-                        BlenderHelper.move_bone_to_group(bl_local_armature_obj, bl_local_bone, BlenderNaming.pinned_cloth_bone_group_name, BlenderNaming.pinned_cloth_bone_palette_name)
+                        BlenderHelper.remove_bone_from_group(bl_local_bone, BlenderNaming.unpinned_cloth_bone_group_name)
+                        BlenderHelper.add_bone_to_group(bl_local_armature_obj, bl_local_bone, BlenderNaming.pinned_cloth_bone_group_name, BlenderNaming.pinned_cloth_bone_palette_name)
                     else:
-                        BlenderHelper.move_bone_to_group(bl_local_armature_obj, bl_local_bone, BlenderNaming.unpinned_cloth_bone_group_name, BlenderNaming.unpinned_cloth_bone_palette_name)
+                        BlenderHelper.remove_bone_from_group(bl_local_bone, BlenderNaming.pinned_cloth_bone_group_name)
+                        BlenderHelper.add_bone_to_group(bl_local_armature_obj, bl_local_bone, BlenderNaming.unpinned_cloth_bone_group_name, BlenderNaming.unpinned_cloth_bone_palette_name)
 
                     self.set_bone_cloth_properties(bl_local_bone, bone_info.properties)
         finally:
@@ -294,8 +299,8 @@ class ModelSplitter(SlotsBase):
         with BlenderHelper.enter_edit_mode(bl_global_armature_obj):
             bl_global_armature = cast(bpy.types.Armature, bl_global_armature_obj.data)
             for bl_global_bone in bl_global_armature.bones:
-                bone_id_set = BlenderNaming.parse_bone_name(bl_global_bone.name)
-                if bone_id_set.skeleton_id is None or bone_id_set.local_id is None:
+                bone_id_set = BlenderNaming.try_parse_bone_name(bl_global_bone.name)
+                if bone_id_set is None or bone_id_set.skeleton_id is None or bone_id_set.local_id is None:
                     continue
 
                 parent_global_id: int | None = None
@@ -303,7 +308,7 @@ class ModelSplitter(SlotsBase):
                     parent_global_id = BlenderNaming.parse_bone_name(bl_global_bone.parent.name).global_id
 
                 position = bl_global_armature.edit_bones[bl_global_bone.name].head.copy()
-                pinned = BlenderHelper.is_bone_in_group(bl_global_armature_obj, bl_global_armature.bones[bl_global_bone.name], BlenderNaming.pinned_cloth_bone_group_name)
+                pinned = BlenderHelper.is_bone_in_group(bl_global_armature.bones[bl_global_bone.name], BlenderNaming.pinned_cloth_bone_group_name)
                 properties = self.get_bone_cloth_properties(bl_global_bone)
 
                 DictionaryExtensions.get_or_add(local_bone_infos_by_skeleton_id, bone_id_set.skeleton_id, lambda: []) \

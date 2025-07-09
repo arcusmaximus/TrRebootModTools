@@ -13,6 +13,7 @@ from io_scene_tr_reboot.tr.Skeleton import ISkeleton
 from io_scene_tr_reboot.tr.tr2013.Tr2013LegacyModel import Tr2013LegacyModel
 from io_scene_tr_reboot.tr.tr2013.Tr2013Skeleton import Tr2013Skeleton
 from io_scene_tr_reboot.util.Enumerable import Enumerable
+from io_scene_tr_reboot.util.IoHelper import IoHelper
 
 class Tr2013SkeletonExporter(SkeletonExporter):
     def __init__(self, scale_factor: float) -> None:
@@ -55,7 +56,7 @@ class Tr2013SkeletonExporter(SkeletonExporter):
             model_resource = ResourceKey(ResourceType.DTP, model_id)
             model_data_resource = ResourceKey(ResourceType.MODEL, model_data_id)
 
-            with open(model_data_path, "rb") as model_data_file:
+            with IoHelper.open_read(model_data_path) as model_data_file:
                 model_data_reader = ResourceReader(model_data_resource, model_data_file.read(), True, CdcGame.TR2013)
 
             model = Tr2013LegacyModel(model_bytes)
@@ -72,8 +73,8 @@ class Tr2013SkeletonExporter(SkeletonExporter):
             tr_skeleton.write_id_mappings(model_data_builder)
 
             model_path = os.path.join(folder_path, Collection.make_resource_file_name(model_resource, CdcGame.TR2013))
-            with open(model_path, "wb") as model_file:
+            with IoHelper.open_write(model_path) as model_file:
                 model_file.write(model.to_bytes())
 
-            with open(model_data_path, "wb") as model_data_file:
+            with IoHelper.open_write(model_data_path) as model_data_file:
                 model_data_file.write(model_data_builder.build())

@@ -9,7 +9,7 @@ from io_scene_tr_reboot.properties.BlenderPropertyGroup import BlenderPropertyGr
 from io_scene_tr_reboot.util.Enumerable import Enumerable
 
 if TYPE_CHECKING:
-    from bpy._typing.rna_enums import OperatorReturnItems
+    from bpy.stub_internal.rna_enums import OperatorReturnItems
 else:
     OperatorReturnItems = str
 
@@ -44,16 +44,20 @@ class HairWeightPaintingOperator(BlenderOperatorBase[HairWeightPaintingPropertie
         return BlenderNaming.try_parse_hair_strand_group_name(context.active_object.name) is not None
 
     def execute(self, context: bpy.types.Context | None) -> set[OperatorReturnItems]:
-        if context is None:
+        if context is None or context.scene is None:
             return { "CANCELLED" }
 
         bl_obj = context.active_object
         if bl_obj is None:
             return { "CANCELLED" }
 
-        bpy.ops.object.mode_set(mode = "OBJECT")
+        BlenderHelper.switch_to_object_mode()
 
         with OperatorContext.begin(self):
+            # Being on frame 0 causes the conversion to fail
+            if context.scene.frame_current <= 0:
+                context.scene.frame_current = 1
+
             if self.properties.enable and isinstance(bl_obj.data, bpy.types.Curves):
                 self.convert_curves_to_grease_pencil(bl_obj)
 

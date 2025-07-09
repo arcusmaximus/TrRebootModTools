@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Any, Callable, ClassVar, Generic, Iterator, Na
 from io_scene_tr_reboot.util.Enumerable import Enumerable
 
 if TYPE_CHECKING:
-    from bpy._typing.rna_enums import PropertyFlagItems, PropertySubtypeNumberItems
+    from bpy.stub_internal.rna_enums import PropertyFlagItems, PropertySubtypeNumberItems
 else:
     PropertyFlagItems = PropertySubtypeNumberItems = str
 
@@ -54,7 +54,6 @@ class BlenderPropertyGroup(Protocol):
 
     @classmethod
     def register(cls) -> None:
-        bpy.props.IntProperty()
         metaclass: type = type(bpy.types.PropertyGroup)
         cls.bl_class = metaclass.__new__(
             metaclass,

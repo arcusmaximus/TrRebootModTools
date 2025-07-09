@@ -7,7 +7,7 @@ from io_scene_tr_reboot.properties.BlenderPropertyGroup import BlenderPropertyGr
 from io_scene_tr_reboot.util.Enumerable import Enumerable
 
 if TYPE_CHECKING:
-    from bpy._typing.rna_enums import OperatorReturnItems
+    from bpy.stub_internal.rna_enums import OperatorReturnItems
 else:
     OperatorReturnItems = str
 
@@ -29,7 +29,8 @@ class PinClothBonesOperator(BlenderOperatorBase[BlenderPropertyGroup]):
             return { "CANCELLED" }
 
         for bl_bone in Enumerable(context.selected_pose_bones).where(PinClothBonesOperator.is_cloth_bone):
-            BlenderHelper.move_bone_to_group(
+            BlenderHelper.remove_bone_from_group(bl_bone.bone, BlenderNaming.unpinned_cloth_bone_group_name)
+            BlenderHelper.add_bone_to_group(
                 context.object,
                 bl_bone.bone,
                 BlenderNaming.pinned_cloth_bone_group_name,

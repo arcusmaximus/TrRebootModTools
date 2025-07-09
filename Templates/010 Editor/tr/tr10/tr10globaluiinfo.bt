@@ -1,0 +1,2060 @@
+#define TR_VERSION 10
+#define TR_OBJECT_NO_INSTANTIATE
+#include "../trcommon.bt"
+#include "../trobjectcommon.bt"
+
+typedef struct
+{
+    unsigned int imageRes;
+    FSkip(4);
+    Ref filepathRef;
+    if (CanSeekTo(filepathRef))
+    {
+        SeekToRef(filepathRef);
+        string filepath;
+        ReturnFromRef();
+    }
+    int offSetX;
+    int offSetY;
+    int width;
+    int height;
+    Ref actionRef;
+    if (CanSeekTo(actionRef))
+    {
+        SeekToRef(actionRef);
+        string action;
+        ReturnFromRef();
+    }
+    unsigned int imageResVR;
+    FSkip(4);
+    Ref filepathVRRef;
+    if (CanSeekTo(filepathVRRef))
+    {
+        SeekToRef(filepathVRRef);
+        string filepathVR;
+        ReturnFromRef();
+    }
+    int offSetXVR;
+    int offSetYVR;
+    int widthVR;
+    int heightVR;
+} ImagePath <optimize=false, read=filepath>;
+
+typedef struct
+{
+    int language;
+    FSkip(4);
+    ImagePath image;
+} UpsellImage <optimize=false, read=Str("Language %d -> %s", language, image.filepath)>;
+
+typedef struct
+{
+    unsigned int imageRes;
+    FSkip(4);
+    Ref filepathRef;
+    if (CanSeekTo(filepathRef))
+    {
+        SeekToRef(filepathRef);
+        string filepath;
+        ReturnFromRef();
+    }
+} ImageLoader <optimize=false, read=filepath>;
+
+typedef struct
+{
+    int teamId;
+    FSkip(4);
+    Ref teamNameDebugRef;
+    if (CanSeekTo(teamNameDebugRef))
+    {
+        SeekToRef(teamNameDebugRef);
+        string teamNameDebug;
+        ReturnFromRef();
+    }
+    short teamName;
+} TeamInfoItem <optimize=false, read=teamNameDebug>;
+
+typedef struct
+{
+    Ref debugNameRef;
+    if (CanSeekTo(debugNameRef))
+    {
+        SeekToRef(debugNameRef);
+        string debugName;
+        ReturnFromRef();
+    }
+    short locName;
+    FSkip(6);
+    Ref indicatorNameRef;
+    if (CanSeekTo(indicatorNameRef))
+    {
+        SeekToRef(indicatorNameRef);
+        string indicatorName;
+        ReturnFromRef();
+    }
+    ImageLoader characterImgLoader;
+    ImageLoader skinImgLoader;
+    ushort objectID;
+    FSkip(6);
+    Ref objectIDNameRef;
+    if (CanSeekTo(objectIDNameRef))
+    {
+        SeekToRef(objectIDNameRef);
+        string objectIDName;
+        ReturnFromRef();
+    }
+    unsigned int objectIDHashName <format=hex>;
+    ushort menuObjectID;
+    FSkip(2);
+    Ref menuObjectIDNameRef;
+    if (CanSeekTo(menuObjectIDNameRef))
+    {
+        SeekToRef(menuObjectIDNameRef);
+        string menuObjectIDName;
+        ReturnFromRef();
+    }
+    Ref teamIdRef;
+    if (CanSeekTo(teamIdRef))
+    {
+        SeekToRef(teamIdRef);
+        TeamInfoItem teamId;
+        ReturnFromRef();
+    }
+    ushort unit;
+    FSkip(2);
+    unsigned int zoneMarkerZone;
+    PlacementPath zoneMarkerID;
+    unsigned int cameraUniqueID;
+    char characterType;
+    ubyte baseProfileIndex;
+    ushort buddyObjectID;
+    Ref inventoryRef;
+    Ref playerStateRef;
+    unsigned int playerColor <format=hex>;
+    FSkip(4);
+} CharacterProfileItem <optimize=false, read=objectIDName>;
+
+typedef struct
+{
+    Ref identifierRef;
+    if (CanSeekTo(identifierRef))
+    {
+        SeekToRef(identifierRef);
+        string identifier;
+        ReturnFromRef();
+    }
+    ImageLoader imageLoaderRes;
+    unsigned int regionID;
+} LevelImageItem <optimize=false>;
+
+typedef struct
+{
+    Ref videoFileNameRef;
+    if (CanSeekTo(videoFileNameRef))
+    {
+        SeekToRef(videoFileNameRef);
+        string videoFileName;
+        ReturnFromRef();
+    }
+    short locName;
+    short locDescription;
+    short locHint;
+    byte bPlatform360;
+    byte bPlatformPS3;
+    byte bPlatformPC;
+    FSkip(7);
+    Ref eSRBFileNameRef;
+    if (CanSeekTo(eSRBFileNameRef))
+    {
+        SeekToRef(eSRBFileNameRef);
+        string eSRBFileName;
+        ReturnFromRef();
+    }
+    Ref pEGIEFileNameRef;
+    if (CanSeekTo(pEGIEFileNameRef))
+    {
+        SeekToRef(pEGIEFileNameRef);
+        string pEGIEFileName;
+        ReturnFromRef();
+    }
+    Ref pEGIFFileNameRef;
+    if (CanSeekTo(pEGIFFileNameRef))
+    {
+        SeekToRef(pEGIFFileNameRef);
+        string pEGIFFileName;
+        ReturnFromRef();
+    }
+    Ref pEGIIFileNameRef;
+    if (CanSeekTo(pEGIIFileNameRef))
+    {
+        SeekToRef(pEGIIFileNameRef);
+        string pEGIIFileName;
+        ReturnFromRef();
+    }
+    Ref pEGIGFileNameRef;
+    if (CanSeekTo(pEGIGFileNameRef))
+    {
+        SeekToRef(pEGIGFileNameRef);
+        string pEGIGFileName;
+        ReturnFromRef();
+    }
+    Ref pEGISFileNameRef;
+    if (CanSeekTo(pEGISFileNameRef))
+    {
+        SeekToRef(pEGISFileNameRef);
+        string pEGISFileName;
+        ReturnFromRef();
+    }
+    Ref uSKFileNameRef;
+    if (CanSeekTo(uSKFileNameRef))
+    {
+        SeekToRef(uSKFileNameRef);
+        string uSKFileName;
+        ReturnFromRef();
+    }
+} SquareEnixTrailerItem <optimize=false>;
+
+typedef struct
+{
+    unsigned int cardPackRewardELII <format=hex>;
+    unsigned int cardPackReward <format=hex>;
+} CardPackReward <optimize=false>;
+
+typedef struct
+{
+    unsigned int dlcHash <format=hex>;
+    short packDescription;
+    short packMissingLocal;
+    short packMissingRemote;
+    byte awardCardPackBonus;
+    FSkip(1);
+    CardPackReward cardPackBonus;
+    short cardPackBonusTitle;
+    short cardPackBonusDescription;
+} DLCPackInfo <optimize=false>;
+
+typedef struct
+{
+    Ref chapterNameRef;
+    if (CanSeekTo(chapterNameRef))
+    {
+        SeekToRef(chapterNameRef);
+        string chapterName;
+        ReturnFromRef();
+    }
+    short localNameID;
+    ushort unit;
+    FSkip(4);
+    Ref unitNameRef;
+    if (CanSeekTo(unitNameRef))
+    {
+        SeekToRef(unitNameRef);
+        string unitName;
+        ReturnFromRef();
+    }
+    unsigned int runnableID;
+    FSkip(4);
+    Ref runnableNameRef;
+    if (CanSeekTo(runnableNameRef))
+    {
+        SeekToRef(runnableNameRef);
+        string runnableName;
+        ReturnFromRef();
+    }
+} ChapterReplay <optimize=false>;
+
+typedef struct
+{
+    ImageLoader imageLoaderRes;
+    short imageDesc;
+    FSkip(2);
+    unsigned int audioCommentary;
+} ArtGalleryItem <optimize=false>;
+
+typedef struct
+{
+    short locName;
+    short locDescription;
+    short locHint;
+    FSkip(2);
+    ImageLoader thumbnail;
+    ImageLoader thumbnailLocked;
+    unsigned int unlockIndex;
+    FSkip(4);
+    Ref artGalleryItemListRef;
+    unsigned int artGalleryItemListCount;
+    if (CanSeekTo(artGalleryItemListRef))
+    {
+        SeekToRef(artGalleryItemListRef);
+        ArtGalleryItem artGalleryItemList[artGalleryItemListCount];
+        ReturnFromRef();
+    }
+} ArtGallery <optimize=false>;
+
+typedef struct
+{
+    short locName;
+    FSkip(6);
+    Ref artGalleryListRef;
+    unsigned int artGalleryListCount;
+    if (CanSeekTo(artGalleryListRef))
+    {
+        SeekToRef(artGalleryListRef);
+        ArtGallery artGalleryList[artGalleryListCount];
+        ReturnFromRef();
+    }
+} ConceptGalleryGroup <optimize=false>;
+
+typedef struct
+{
+    short charName;
+    ushort unit;
+    ushort menuObjectID;
+    FSkip(2);
+    Ref menuObjectIDNameRef;
+    if (CanSeekTo(menuObjectIDNameRef))
+    {
+        SeekToRef(menuObjectIDNameRef);
+        string menuObjectIDName;
+        ReturnFromRef();
+    }
+    unsigned int markerUniqueID;
+    unsigned int cameraExplorationUniqueID;
+    unsigned int cameraGalleryUniqueID;
+    short itemDesc;
+    short locHint;
+    unsigned int audioCommentary;
+    unsigned int unlockIndex;
+    ImageLoader imageLoaderRes;
+    ImageLoader imageLoaderResLocked;
+} CharacterGalleryItem <optimize=false>;
+
+typedef struct
+{
+    short locName;
+    ushort unit;
+    unsigned int streamLayer;
+    unsigned int cameraUniqueID;
+    FSkip(4);
+    Ref characterGalleryItemListRef;
+    unsigned int characterGalleryItemListCount;
+    if (CanSeekTo(characterGalleryItemListRef))
+    {
+        SeekToRef(characterGalleryItemListRef);
+        CharacterGalleryItem characterGalleryItemList[characterGalleryItemListCount];
+        ReturnFromRef();
+    }
+} CharacterGallery <optimize=false>;
+
+typedef struct
+{
+    Ref videoFileNameRef;
+    if (CanSeekTo(videoFileNameRef))
+    {
+        SeekToRef(videoFileNameRef);
+        string videoFileName;
+        ReturnFromRef();
+    }
+    ImageLoader imageLoaderRes;
+    ImageLoader imageLoaderResLocked;
+    short locName;
+    short locDescription;
+    short locHint;
+    FSkip(2);
+    unsigned int unlockIndex;
+} VideoGalleryItem <optimize=false>;
+
+typedef struct
+{
+    short locName;
+    FSkip(6);
+    Ref videoGalleryItemListRef;
+    unsigned int videoGalleryItemListCount;
+    if (CanSeekTo(videoGalleryItemListRef))
+    {
+        SeekToRef(videoGalleryItemListRef);
+        VideoGalleryItem videoGalleryItemList[videoGalleryItemListCount];
+        ReturnFromRef();
+    }
+} VideoGallery <optimize=false>;
+
+typedef union
+{
+    short byUserDefinedIndex;
+    ushort byBoneIndex;
+    short byBoneID;
+    ushort byMarkerIndex;
+    ushort byMarkerID;
+} ModelBoneOrMarkerReference__ModelBoneOrMarkerRefData;
+
+typedef struct
+{
+    ubyte refType;
+    FSkip(1);
+    ModelBoneOrMarkerReference__ModelBoneOrMarkerRefData refData;
+} ModelBoneOrMarkerReference <optimize=false>;
+
+typedef union
+{
+    byte _bool;
+    int _int;
+    float _float;
+} PersistentDataValueUnionRedirect;
+
+typedef struct
+{
+    ushort name;
+    FSkip(2);
+    int type;
+    Ref commentRef;
+    if (CanSeekTo(commentRef))
+    {
+        SeekToRef(commentRef);
+        string comment;
+        ReturnFromRef();
+    }
+    PersistentDataValueUnionRedirect _default;
+} PersistentDataGlobalStructSubClassed <optimize=false>;
+
+typedef struct
+{
+    unsigned int objectiveType <format=hex>;
+} ScriptObjectiveType <optimize=false>;
+
+typedef struct
+{
+    ScriptObjectiveType objectiveType;
+} ObjectiveItem <optimize=false>;
+
+typedef struct
+{
+    short sItemName;
+    short sItemDesc;
+    short sItemExtraInfo;
+    FSkip(2);
+    int iType;
+    ushort flashImageID;
+    ushort objectID;
+    ubyte bFound : 1;
+    byte _Bitfieldpadding6 : 7;
+    byte bPreventClose;
+    byte bIncrementsRegionCollectibleFoundCount;
+    FSkip(1);
+    unsigned int audioClip;
+    unsigned int audioClipHiddenInfo;
+    ModelBoneOrMarkerReference miniGameMarker;
+    float miniGameMarkerVariance;
+    unsigned int collectibleID;
+    unsigned int regionID <format=hex>;
+    FSkip(4);
+    PersistentDataGlobalStructSubClassed persistentData;
+    byte isTranslationDoc;
+    FSkip(1);
+    ushort translationRequiredTrait;
+    unsigned int translationLockedAudioClip <format=hex>;
+    short translationLockedName;
+    short translationLockedDesc;
+    unsigned int translationRewardID;
+    int revealedObjectUnit;
+    PlacementPath revealedObjectPlacementID;
+    unsigned int clueSetIndex;
+    unsigned int clueItemIndex;
+    int clueAwardMethod;
+    FSkip(0xC);
+    ImagePath imagePath;
+    Ref aObjectivesListRef;
+    unsigned int aObjectivesCount;
+    if (CanSeekTo(aObjectivesListRef))
+    {
+        SeekToRef(aObjectivesListRef);
+        ObjectiveItem aObjectivesList[aObjectivesCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+} CollectibleItem <optimize=false>;
+
+typedef struct
+{
+    short sSetName;
+    FSkip(6);
+    ImagePath imagePath;
+    int setTranslationRewardID;
+    byte bLarasDocs;
+    FSkip(1);
+    short traitRewardedOnSetCompletion;
+    int collectibleType;
+    byte isDLC;
+    FSkip(3);
+    unsigned int dlcHash <format=hex>;
+    FSkip(4);
+    Ref aCollectibleListRef;
+    unsigned int aCollectibleCount;
+    if (CanSeekTo(aCollectibleListRef))
+    {
+        SeekToRef(aCollectibleListRef);
+        CollectibleItem aCollectibleList[aCollectibleCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+} CollectibleSet <optimize=false>;
+
+typedef struct
+{
+    int iType;
+    FSkip(4);
+    Ref aRelicSetListRef;
+    unsigned int aRelicSetCount;
+    if (CanSeekTo(aRelicSetListRef))
+    {
+        SeekToRef(aRelicSetListRef);
+        CollectibleSet aRelicSetList[aRelicSetCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref aMPRelicSetListRef;
+    unsigned int aMPRelicSetCount;
+    if (CanSeekTo(aMPRelicSetListRef))
+    {
+        SeekToRef(aMPRelicSetListRef);
+        CollectibleSet aMPRelicSetList[aMPRelicSetCount];
+        ReturnFromRef();
+    }
+} RelicSets <optimize=false>;
+
+typedef struct
+{
+    int iType;
+    FSkip(4);
+    Ref aDocumentSetListRef;
+    unsigned int aDocumentSetCount;
+    if (CanSeekTo(aDocumentSetListRef))
+    {
+        SeekToRef(aDocumentSetListRef);
+        CollectibleSet aDocumentSetList[aDocumentSetCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref aMPDocumentSetListRef;
+    unsigned int aMPDocumentSetCount;
+    if (CanSeekTo(aMPDocumentSetListRef))
+    {
+        SeekToRef(aMPDocumentSetListRef);
+        CollectibleSet aMPDocumentSetList[aMPDocumentSetCount];
+        ReturnFromRef();
+    }
+} DocumentSets <optimize=false>;
+
+typedef struct
+{
+    int iType;
+    FSkip(4);
+    Ref aClueSetListRef;
+    unsigned int aClueSetCount;
+    if (CanSeekTo(aClueSetListRef))
+    {
+        SeekToRef(aClueSetListRef);
+        CollectibleSet aClueSetList[aClueSetCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref aMPClueSetListRef;
+    unsigned int aMPClueSetCount;
+    if (CanSeekTo(aMPClueSetListRef))
+    {
+        SeekToRef(aMPClueSetListRef);
+        CollectibleSet aMPClueSetList[aMPClueSetCount];
+        ReturnFromRef();
+    }
+} ClueSets <optimize=false>;
+
+typedef struct
+{
+    int iType;
+    FSkip(4);
+    Ref aMuralSetListRef;
+    unsigned int aMuralSetCount;
+    if (CanSeekTo(aMuralSetListRef))
+    {
+        SeekToRef(aMuralSetListRef);
+        CollectibleSet aMuralSetList[aMuralSetCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref aMPMuralSetListRef;
+    unsigned int aMPMuralSetCount;
+    if (CanSeekTo(aMPMuralSetListRef))
+    {
+        SeekToRef(aMPMuralSetListRef);
+        CollectibleSet aMPMuralSetList[aMPMuralSetCount];
+        ReturnFromRef();
+    }
+} MuralSets <optimize=false>;
+
+typedef struct
+{
+    int iType;
+    FSkip(4);
+    Ref aCryptTreasureSetListRef;
+    unsigned int aCryptTreasureSetCount;
+    if (CanSeekTo(aCryptTreasureSetListRef))
+    {
+        SeekToRef(aCryptTreasureSetListRef);
+        CollectibleSet aCryptTreasureSetList[aCryptTreasureSetCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref aMPCryptTreasureSetListRef;
+    unsigned int aMPCryptTreasureSetCount;
+    if (CanSeekTo(aMPCryptTreasureSetListRef))
+    {
+        SeekToRef(aMPCryptTreasureSetListRef);
+        CollectibleSet aMPCryptTreasureSetList[aMPCryptTreasureSetCount];
+        ReturnFromRef();
+    }
+} CryptTreasureSets <optimize=false>;
+
+typedef struct
+{
+    ushort tombHintTrait;
+    ushort relicHintTrait;
+    ushort containerTaggingTrait;
+    FSkip(2);
+    Ref miniGamePadshockRef;
+    if (CanSeekTo(miniGamePadshockRef))
+    {
+        SeekToRef(miniGamePadshockRef);
+        string miniGamePadshock;
+        ReturnFromRef();
+    }
+    ushort itemRevealedSymbol;
+} CollectibleMisc <optimize=false>;
+
+typedef struct
+{
+    char languageType;
+    FSkip(3);
+    int translationXP;
+} TranslationXPReward <optimize=false>;
+
+typedef struct
+{
+    ushort trait;
+    FSkip(2);
+    int not;
+} PlayerTraitListIndexComparison <optimize=false>;
+
+typedef struct
+{
+    unsigned int unit;
+    FSkip(4);
+    PlacementPath placementID;
+    int elevation;
+    float coodinateX;
+    float coodinateY;
+    float instanceZ;
+    byte brequiresTraitsToAccess;
+    FSkip(7);
+    Ref requiredTraitsToAccessListRef;
+    unsigned int requiredTraitsListCount;
+    if (CanSeekTo(requiredTraitsToAccessListRef))
+    {
+        SeekToRef(requiredTraitsToAccessListRef);
+        PlayerTraitListIndexComparison requiredTraitsToAccessList[requiredTraitsListCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref mapRevealGroupIDsRef;
+    unsigned int mapRevealGroupIDsCount;
+    if (CanSeekTo(mapRevealGroupIDsRef))
+    {
+        SeekToRef(mapRevealGroupIDsRef);
+        unsigned int mapRevealGroupIDs[mapRevealGroupIDsCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+} CollectibleContainer <optimize=false>;
+
+typedef struct
+{
+    int setListType;
+    unsigned int collectibleSet;
+    unsigned int collectibleSetMP;
+    FSkip(4);
+    Ref aCollectibleContainerListRef;
+    unsigned int aCollectibleContainerCount;
+    if (CanSeekTo(aCollectibleContainerListRef))
+    {
+        SeekToRef(aCollectibleContainerListRef);
+        CollectibleContainer aCollectibleContainerList[aCollectibleContainerCount];
+        ReturnFromRef();
+    }
+} RelicCollectibleContainerData <optimize=false>;
+
+typedef struct
+{
+    Ref iconTypeRef;
+    if (CanSeekTo(iconTypeRef))
+    {
+        SeekToRef(iconTypeRef);
+        string iconType;
+        ReturnFromRef();
+    }
+    Ref aRelicContainerListRef;
+    unsigned int aRelicContainerListCount;
+    if (CanSeekTo(aRelicContainerListRef))
+    {
+        SeekToRef(aRelicContainerListRef);
+        RelicCollectibleContainerData aRelicContainerList[aRelicContainerListCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref aMPRelicContainerListRef;
+    unsigned int aMPRelicContainerListCount;
+    if (CanSeekTo(aMPRelicContainerListRef))
+    {
+        SeekToRef(aMPRelicContainerListRef);
+        RelicCollectibleContainerData aMPRelicContainerList[aMPRelicContainerListCount];
+        ReturnFromRef();
+    }
+} RelicContainers <optimize=false>;
+
+typedef struct
+{
+    int setListType;
+    unsigned int collectibleSet;
+    unsigned int collectibleSetMP;
+    FSkip(4);
+    Ref aCollectibleContainerListRef;
+    unsigned int aCollectibleContainerCount;
+    if (CanSeekTo(aCollectibleContainerListRef))
+    {
+        SeekToRef(aCollectibleContainerListRef);
+        CollectibleContainer aCollectibleContainerList[aCollectibleContainerCount];
+        ReturnFromRef();
+    }
+    byte isDLC;
+    FSkip(3);
+    unsigned int dlcHash <format=hex>;
+    FSkip(4);
+} DocumentCollectibleContainerData <optimize=false>;
+
+typedef struct
+{
+    Ref iconTypeRef;
+    if (CanSeekTo(iconTypeRef))
+    {
+        SeekToRef(iconTypeRef);
+        string iconType;
+        ReturnFromRef();
+    }
+    Ref aDocumentContainerListRef;
+    unsigned int aDocumentContainerListCount;
+    if (CanSeekTo(aDocumentContainerListRef))
+    {
+        SeekToRef(aDocumentContainerListRef);
+        DocumentCollectibleContainerData aDocumentContainerList[aDocumentContainerListCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref aMPDocumentContainerListRef;
+    unsigned int aMPDocumentContainerListCount;
+    if (CanSeekTo(aMPDocumentContainerListRef))
+    {
+        SeekToRef(aMPDocumentContainerListRef);
+        DocumentCollectibleContainerData aMPDocumentContainerList[aMPDocumentContainerListCount];
+        ReturnFromRef();
+    }
+} DocumentContainers <optimize=false>;
+
+typedef struct
+{
+    int setListType;
+    unsigned int collectibleSet;
+    unsigned int collectibleSetMP;
+    FSkip(4);
+    Ref aCollectibleContainerListRef;
+    unsigned int aCollectibleContainerCount;
+    if (CanSeekTo(aCollectibleContainerListRef))
+    {
+        SeekToRef(aCollectibleContainerListRef);
+        CollectibleContainer aCollectibleContainerList[aCollectibleContainerCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+} MuralCollectibleContainerData <optimize=false>;
+
+typedef struct
+{
+    Ref iconTypeRef;
+    if (CanSeekTo(iconTypeRef))
+    {
+        SeekToRef(iconTypeRef);
+        string iconType;
+        ReturnFromRef();
+    }
+    Ref aMuralContainerListRef;
+    unsigned int aMuralContainerListCount;
+    if (CanSeekTo(aMuralContainerListRef))
+    {
+        SeekToRef(aMuralContainerListRef);
+        MuralCollectibleContainerData aMuralContainerList[aMuralContainerListCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref aMPMuralContainerListRef;
+    unsigned int aMPMuralContainerListCount;
+    if (CanSeekTo(aMPMuralContainerListRef))
+    {
+        SeekToRef(aMPMuralContainerListRef);
+        MuralCollectibleContainerData aMPMuralContainerList[aMPMuralContainerListCount];
+        ReturnFromRef();
+    }
+} MuralContainers <optimize=false>;
+
+typedef struct
+{
+    Ref iconTypeRef;
+    if (CanSeekTo(iconTypeRef))
+    {
+        SeekToRef(iconTypeRef);
+        string iconType;
+        ReturnFromRef();
+    }
+    unsigned int regionID <format=hex>;
+    int setListType;
+    Ref aCollectibleContainerListRef;
+    unsigned int aCollectibleContainerCount;
+    if (CanSeekTo(aCollectibleContainerListRef))
+    {
+        SeekToRef(aCollectibleContainerListRef);
+        CollectibleContainer aCollectibleContainerList[aCollectibleContainerCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+} GenericSecretCollectibleContainerData <optimize=false, read=iconType>;
+
+typedef struct
+{
+    Ref iconTypeRef;
+    if (CanSeekTo(iconTypeRef))
+    {
+        SeekToRef(iconTypeRef);
+        string iconType;
+        ReturnFromRef();
+    }
+    Ref aGenericSecretContainerListRef;
+    unsigned int aGenericSecretContainerListCount;
+    if (CanSeekTo(aGenericSecretContainerListRef))
+    {
+        SeekToRef(aGenericSecretContainerListRef);
+        GenericSecretCollectibleContainerData aGenericSecretContainerList[aGenericSecretContainerListCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref aMPGenericSecretContainerListRef;
+    unsigned int aMPGenericSecretContainerListCount;
+    if (CanSeekTo(aMPGenericSecretContainerListRef))
+    {
+        SeekToRef(aMPGenericSecretContainerListRef);
+        GenericSecretCollectibleContainerData aMPGenericSecretContainerList[aMPGenericSecretContainerListCount];
+        ReturnFromRef();
+    }
+} GenericSecretContainers <optimize=false>;
+
+typedef struct
+{
+    Ref iconTypeRef;
+    if (CanSeekTo(iconTypeRef))
+    {
+        SeekToRef(iconTypeRef);
+        string iconType;
+        ReturnFromRef();
+    }
+    Ref aGenericSecretContainerListRef;
+    unsigned int aGenericSecretContainerListCount;
+    if (CanSeekTo(aGenericSecretContainerListRef))
+    {
+        SeekToRef(aGenericSecretContainerListRef);
+        GenericSecretCollectibleContainerData aGenericSecretContainerList[aGenericSecretContainerListCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref aMPGenericSecretContainerListRef;
+    unsigned int aMPGenericSecretContainerListCount;
+    if (CanSeekTo(aMPGenericSecretContainerListRef))
+    {
+        SeekToRef(aMPGenericSecretContainerListRef);
+        GenericSecretCollectibleContainerData aMPGenericSecretContainerList[aMPGenericSecretContainerListCount];
+        ReturnFromRef();
+    }
+} ResourceContainers <optimize=false>;
+
+typedef struct
+{
+    Ref aCollectibleContainerListRef;
+    unsigned int aCollectibleContainerCount;
+    if (CanSeekTo(aCollectibleContainerListRef))
+    {
+        SeekToRef(aCollectibleContainerListRef);
+        CollectibleContainer aCollectibleContainerList[aCollectibleContainerCount];
+        ReturnFromRef();
+    }
+    int setListType;
+} GenericListData <optimize=false>;
+
+typedef struct
+{
+    Ref iconTypeRef;
+    if (CanSeekTo(iconTypeRef))
+    {
+        SeekToRef(iconTypeRef);
+        string iconType;
+        ReturnFromRef();
+    }
+    Ref aDataListRef;
+    unsigned int aDataListCount;
+    if (CanSeekTo(aDataListRef))
+    {
+        SeekToRef(aDataListRef);
+        GenericListData aDataList[aDataListCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref aMPDataListRef;
+    unsigned int aMPDataListCount;
+    if (CanSeekTo(aMPDataListRef))
+    {
+        SeekToRef(aMPDataListRef);
+        GenericListData aMPDataList[aMPDataListCount];
+        ReturnFromRef();
+    }
+} TombEntranceContainer <optimize=false>;
+
+typedef struct
+{
+    int setListType;
+    int collectibleSet;
+    int collectibleSetMP;
+    FSkip(4);
+    Ref aCollectibleContainerListRef;
+    unsigned int aCollectibleContainerCount;
+    if (CanSeekTo(aCollectibleContainerListRef))
+    {
+        SeekToRef(aCollectibleContainerListRef);
+        CollectibleContainer aCollectibleContainerList[aCollectibleContainerCount];
+        ReturnFromRef();
+    }
+} CryptTreasureContainerData <optimize=false>;
+
+typedef struct
+{
+    Ref iconTypeRef;
+    if (CanSeekTo(iconTypeRef))
+    {
+        SeekToRef(iconTypeRef);
+        string iconType;
+        ReturnFromRef();
+    }
+    Ref aCryptTreasureListRef;
+    unsigned int aCryptTreasureListCount;
+    if (CanSeekTo(aCryptTreasureListRef))
+    {
+        SeekToRef(aCryptTreasureListRef);
+        CryptTreasureContainerData aCryptTreasureList[aCryptTreasureListCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref aMPCryptTreasureListRef;
+    unsigned int aMPCryptTreasureListCount;
+    if (CanSeekTo(aMPCryptTreasureListRef))
+    {
+        SeekToRef(aMPCryptTreasureListRef);
+        CryptTreasureContainerData aMPCryptTreasureList[aMPCryptTreasureListCount];
+        ReturnFromRef();
+    }
+} CryptTreasureContainer <optimize=false>;
+
+typedef struct
+{
+    Ref iconTypeRef;
+    if (CanSeekTo(iconTypeRef))
+    {
+        SeekToRef(iconTypeRef);
+        string iconType;
+        ReturnFromRef();
+    }
+    Ref aDataListRef;
+    unsigned int aDataListCount;
+    if (CanSeekTo(aDataListRef))
+    {
+        SeekToRef(aDataListRef);
+        GenericListData aDataList[aDataListCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref aMPDataListRef;
+    unsigned int aMPDataListCount;
+    if (CanSeekTo(aMPDataListRef))
+    {
+        SeekToRef(aMPDataListRef);
+        GenericListData aMPDataList[aMPDataListCount];
+        ReturnFromRef();
+    }
+} MonolithContainer <optimize=false>;
+
+typedef struct
+{
+    Ref iconTypeRef;
+    if (CanSeekTo(iconTypeRef))
+    {
+        SeekToRef(iconTypeRef);
+        string iconType;
+        ReturnFromRef();
+    }
+    Ref aDataListRef;
+    unsigned int aDataListCount;
+    if (CanSeekTo(aDataListRef))
+    {
+        SeekToRef(aDataListRef);
+        GenericListData aDataList[aDataListCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref aMPDataListRef;
+    unsigned int aMPDataListCount;
+    if (CanSeekTo(aMPDataListRef))
+    {
+        SeekToRef(aMPDataListRef);
+        GenericListData aMPDataList[aMPDataListCount];
+        ReturnFromRef();
+    }
+} ExplorerCorpseContainer <optimize=false>;
+
+typedef struct
+{
+    Ref iconTypeRef;
+    if (CanSeekTo(iconTypeRef))
+    {
+        SeekToRef(iconTypeRef);
+        string iconType;
+        ReturnFromRef();
+    }
+    Ref aDataListRef;
+    unsigned int aDataListCount;
+    if (CanSeekTo(aDataListRef))
+    {
+        SeekToRef(aDataListRef);
+        GenericListData aDataList[aDataListCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref aMPDataListRef;
+    unsigned int aMPDataListCount;
+    if (CanSeekTo(aMPDataListRef))
+    {
+        SeekToRef(aMPDataListRef);
+        GenericListData aMPDataList[aMPDataListCount];
+        ReturnFromRef();
+    }
+} DocumentChestContainer <optimize=false>;
+
+typedef struct
+{
+    int setListType;
+    unsigned int collectibleSet;
+    unsigned int collectibleSetMP;
+    FSkip(4);
+    Ref aCollectibleContainerListRef;
+    unsigned int aCollectibleContainerCount;
+    if (CanSeekTo(aCollectibleContainerListRef))
+    {
+        SeekToRef(aCollectibleContainerListRef);
+        CollectibleContainer aCollectibleContainerList[aCollectibleContainerCount];
+        ReturnFromRef();
+    }
+} ClueData <optimize=false>;
+
+typedef struct
+{
+    Ref iconTypeRef;
+    if (CanSeekTo(iconTypeRef))
+    {
+        SeekToRef(iconTypeRef);
+        string iconType;
+        ReturnFromRef();
+    }
+    Ref aDataListRef;
+    unsigned int aDataListCount;
+    if (CanSeekTo(aDataListRef))
+    {
+        SeekToRef(aDataListRef);
+        ClueData aDataList[aDataListCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref aMPDataListRef;
+    unsigned int aMPDataListCount;
+    if (CanSeekTo(aMPDataListRef))
+    {
+        SeekToRef(aMPDataListRef);
+        ClueData aMPDataList[aMPDataListCount];
+        ReturnFromRef();
+    }
+} CryptContainer <optimize=false>;
+
+typedef struct
+{
+    Ref iconTypeRef;
+    if (CanSeekTo(iconTypeRef))
+    {
+        SeekToRef(iconTypeRef);
+        string iconType;
+        ReturnFromRef();
+    }
+    Ref aDataListRef;
+    unsigned int aDataListCount;
+    if (CanSeekTo(aDataListRef))
+    {
+        SeekToRef(aDataListRef);
+        ClueData aDataList[aDataListCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref aMPDataListRef;
+    unsigned int aMPDataListCount;
+    if (CanSeekTo(aMPDataListRef))
+    {
+        SeekToRef(aMPDataListRef);
+        ClueData aMPDataList[aMPDataListCount];
+        ReturnFromRef();
+    }
+} SealContainer <optimize=false>;
+
+typedef struct
+{
+    Ref iconTypeRef;
+    if (CanSeekTo(iconTypeRef))
+    {
+        SeekToRef(iconTypeRef);
+        string iconType;
+        ReturnFromRef();
+    }
+    Ref aDataListRef;
+    unsigned int aDataListCount;
+    if (CanSeekTo(aDataListRef))
+    {
+        SeekToRef(aDataListRef);
+        GenericListData aDataList[aDataListCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref aMPDataListRef;
+    unsigned int aMPDataListCount;
+    if (CanSeekTo(aMPDataListRef))
+    {
+        SeekToRef(aMPDataListRef);
+        GenericListData aMPDataList[aMPDataListCount];
+        ReturnFromRef();
+    }
+} StrongboxContainer <optimize=false>;
+
+typedef struct
+{
+    Ref iconTypeRef;
+    if (CanSeekTo(iconTypeRef))
+    {
+        SeekToRef(iconTypeRef);
+        string iconType;
+        ReturnFromRef();
+    }
+    Ref aDataListRef;
+    unsigned int aDataListCount;
+    if (CanSeekTo(aDataListRef))
+    {
+        SeekToRef(aDataListRef);
+        GenericListData aDataList[aDataListCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref aMPDataListRef;
+    unsigned int aMPDataListCount;
+    if (CanSeekTo(aMPDataListRef))
+    {
+        SeekToRef(aMPDataListRef);
+        GenericListData aMPDataList[aMPDataListCount];
+        ReturnFromRef();
+    }
+} CaveContainer <optimize=false>;
+
+typedef struct
+{
+    Ref iconTypeRef;
+    if (CanSeekTo(iconTypeRef))
+    {
+        SeekToRef(iconTypeRef);
+        string iconType;
+        ReturnFromRef();
+    }
+    Ref aDataListRef;
+    unsigned int aDataListCount;
+    if (CanSeekTo(aDataListRef))
+    {
+        SeekToRef(aDataListRef);
+        GenericListData aDataList[aDataListCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref aMPDataListRef;
+    unsigned int aMPDataListCount;
+    if (CanSeekTo(aMPDataListRef))
+    {
+        SeekToRef(aMPDataListRef);
+        GenericListData aMPDataList[aMPDataListCount];
+        ReturnFromRef();
+    }
+} MissionGiverContainer <optimize=false>;
+
+typedef struct
+{
+    ushort tombMonolithCorpseTrait;
+} CollectibleContainersMisc <optimize=false>;
+
+typedef struct
+{
+    Ref aCollectibleSetListRef;
+    unsigned int aCollectibleSetListCount;
+    if (CanSeekTo(aCollectibleSetListRef))
+    {
+        SeekToRef(aCollectibleSetListRef);
+        CollectibleSet aCollectibleSetList[aCollectibleSetListCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref aMPCollectibleSetListRef;
+    unsigned int aMPCollectibleSetListCount;
+    if (CanSeekTo(aMPCollectibleSetListRef))
+    {
+        SeekToRef(aMPCollectibleSetListRef);
+        CollectibleSet aMPCollectibleSetList[aMPCollectibleSetListCount];
+        ReturnFromRef();
+    }
+} CollectibleSetMasterCollection <optimize=false>;
+
+typedef struct
+{
+    Ref iconTypeRef;
+    if (CanSeekTo(iconTypeRef))
+    {
+        SeekToRef(iconTypeRef);
+        string iconType;
+        ReturnFromRef();
+    }
+    Ref aCollectibleContainerListRef;
+    unsigned int aCollectibleContainerCount;
+    if (CanSeekTo(aCollectibleContainerListRef))
+    {
+        SeekToRef(aCollectibleContainerListRef);
+        CollectibleContainer aCollectibleContainerList[aCollectibleContainerCount];
+        ReturnFromRef();
+    }
+    unsigned int regionID <format=hex>;
+    unsigned int collectibleSet;
+    byte isDLC;
+    FSkip(3);
+    unsigned int dlcHash <format=hex>;
+    FSkip(4);
+} ContainerGroup <optimize=false>;
+
+typedef struct
+{
+    int type;
+    FSkip(4);
+    Ref iconTypeRef;
+    if (CanSeekTo(iconTypeRef))
+    {
+        SeekToRef(iconTypeRef);
+        string iconType;
+        ReturnFromRef();
+    }
+    Ref aContainerGroupListRef;
+    unsigned int aContainerGroupListCount;
+    if (CanSeekTo(aContainerGroupListRef))
+    {
+        SeekToRef(aContainerGroupListRef);
+        ContainerGroup aContainerGroupList[aContainerGroupListCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+} CollectibleContainerCategory <optimize=false, read=iconType>;
+
+typedef struct
+{
+    Ref aContainerGroupListRef;
+    unsigned int aContainerGroupListCount;
+    if (CanSeekTo(aContainerGroupListRef))
+    {
+        SeekToRef(aContainerGroupListRef);
+        CollectibleContainerCategory aContainerGroupList[aContainerGroupListCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref aMPContainerGroupListRef;
+    unsigned int aMPContainerGroupListCount;
+    if (CanSeekTo(aMPContainerGroupListRef))
+    {
+        SeekToRef(aMPContainerGroupListRef);
+        CollectibleContainerCategory aMPContainerGroupList[aMPContainerGroupListCount];
+        ReturnFromRef();
+    }
+} CollectibleContainerCategoryMasterCollection <optimize=false>;
+
+typedef struct
+{
+    unsigned int hash;
+} EventEnum <optimize=false>;
+
+typedef struct
+{
+    short localId;
+    FSkip(2);
+    ImageLoader thumbImgLoader;
+    unsigned int mapId;
+    unsigned int teamId;
+} LoadingHintItem <optimize=false>;
+
+typedef struct
+{
+    short objective;
+    FSkip(2);
+    unsigned int teamId;
+} TeamObjectiveItem <optimize=false>;
+
+typedef struct
+{
+    ImageLoader backgroundImgLoader;
+} LoadingBackgroundItem <optimize=false>;
+
+typedef struct
+{
+    int type;
+    FSkip(4);
+    Ref teamHintsMapRef;
+    unsigned int teamHintsMapCount;
+    if (CanSeekTo(teamHintsMapRef))
+    {
+        SeekToRef(teamHintsMapRef);
+        LoadingHintItem teamHintsMap[teamHintsMapCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref teamObjectiveMapRef;
+    unsigned int teamObjectiveMapCount;
+    if (CanSeekTo(teamObjectiveMapRef))
+    {
+        SeekToRef(teamObjectiveMapRef);
+        TeamObjectiveItem teamObjectiveMap[teamObjectiveMapCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref gameModeBackgroundMapRef;
+    unsigned int gameModeBackgroundMapCount;
+    if (CanSeekTo(gameModeBackgroundMapRef))
+    {
+        SeekToRef(gameModeBackgroundMapRef);
+        LoadingBackgroundItem gameModeBackgroundMap[gameModeBackgroundMapCount];
+        ReturnFromRef();
+    }
+} LoadingGameModeItem <optimize=false>;
+
+typedef struct
+{
+    ushort objectID;
+    FSkip(6);
+    Ref objectIDNameRef;
+    if (CanSeekTo(objectIDNameRef))
+    {
+        SeekToRef(objectIDNameRef);
+        string objectIDName;
+        ReturnFromRef();
+    }
+    unsigned int teamID;
+} TeamWeapon <optimize=false>;
+
+typedef struct
+{
+    Ref nameRef;
+    if (CanSeekTo(nameRef))
+    {
+        SeekToRef(nameRef);
+        string name;
+        ReturnFromRef();
+    }
+    unsigned int hashName;
+    FSkip(4);
+    Ref weaponMapRef;
+    unsigned int weaponMapCount;
+    if (CanSeekTo(weaponMapRef))
+    {
+        SeekToRef(weaponMapRef);
+        TeamWeapon weaponMap[weaponMapCount];
+        ReturnFromRef();
+    }
+} WeaponProfile <optimize=false>;
+
+typedef struct
+{
+    short localId;
+} LobbyHintItem <optimize=false>;
+
+typedef struct
+{
+    int itemDataType;
+    unsigned int adaptation;
+    unsigned int noticeableAction;
+} AccoladesItem <optimize=false>;
+
+typedef struct
+{
+    short name;
+    FSkip(2);
+    ImageLoader imgLoader;
+    ImageLoader iconImgLoader;
+    FSkip(4);
+    Ref itemsRef;
+    unsigned int itemCount;
+    if (CanSeekTo(itemsRef))
+    {
+        SeekToRef(itemsRef);
+        AccoladesItem items[itemCount];
+        ReturnFromRef();
+    }
+} AccoladesSubcategory <optimize=false>;
+
+typedef struct
+{
+    short name;
+    FSkip(2);
+    ImageLoader imgLoader;
+    ImageLoader iconImgLoader;
+    int listItemType;
+    byte bHasSubCategories;
+    FSkip(7);
+    Ref subcategoriesRef;
+    if (CanSeekTo(subcategoriesRef))
+    {
+        SeekToRef(subcategoriesRef);
+        AccoladesSubcategory subcategories;
+        ReturnFromRef();
+    }
+    unsigned int subcategoryCount;
+    FSkip(4);
+    Ref itemsRef;
+    unsigned int itemCount;
+    if (CanSeekTo(itemsRef))
+    {
+        SeekToRef(itemsRef);
+        AccoladesItem items[itemCount];
+        ReturnFromRef();
+    }
+} AccoladesCategory <optimize=false>;
+
+typedef struct
+{
+    unsigned int ammoType <format=hex>;
+    unsigned int iconType <format=hex>;
+    Ref flashIconNameRef;
+    if (CanSeekTo(flashIconNameRef))
+    {
+        SeekToRef(flashIconNameRef);
+        string flashIconName;
+        ReturnFromRef();
+    }
+    short iconName;
+    FSkip(6);
+    Ref skittleIconNameRef;
+    if (CanSeekTo(skittleIconNameRef))
+    {
+        SeekToRef(skittleIconNameRef);
+        string skittleIconName;
+        ReturnFromRef();
+    }
+} AmmoTypeIcon <optimize=false, read=flashIconName>;
+
+typedef struct
+{
+    ushort id;
+} Symbol <optimize=false>;
+
+typedef struct
+{
+    float aimSpeed;
+    float damage;
+    float recoilReduction;
+    float reloadSpeed;
+    float ammoCapacity;
+    float rateOfFire;
+} DefaultUIData <optimize=false>;
+
+typedef struct
+{
+    int inventoryType;
+    ushort objectID;
+    ushort uiObjectID;
+    short name;
+    short weaponDesc;
+    FSkip(4);
+    Ref flashIconRef;
+    if (CanSeekTo(flashIconRef))
+    {
+        SeekToRef(flashIconRef);
+        string flashIcon;
+        ReturnFromRef();
+    }
+    float animationNumber;
+    Symbol equippedWeaponName;
+    FSkip(2);
+    unsigned int trait;
+    unsigned int traitEndurance;
+    DefaultUIData weaponDefaultUiInfo;
+    int isDlc;
+    byte iAmABrokenWeapon;
+    FSkip(3);
+    unsigned int dlcHash <format=hex>;
+    unsigned int communityEventHash;
+} WeaponUIInfo <optimize=false, read=flashIcon>;
+
+typedef struct
+{
+    short hint;
+    short prerequisite;
+    int loadingScreenType;
+    byte excludeOnExtremeDifficulty;
+    FSkip(3);
+} LoadingScreenHint <optimize=false>;
+
+typedef struct
+{
+    short hint;
+    FSkip(2);
+    unsigned int month;
+    unsigned int day;
+    unsigned int year;
+    int loadingScreenType;
+} DatedLoadingScreenHint <optimize=false>;
+
+typedef struct
+{
+    short hint;
+    FSkip(2);
+    int globalProgressPriority;
+    int loadingScreenType;
+    FSkip(4);
+    Ref movieNameRef;
+    if (CanSeekTo(movieNameRef))
+    {
+        SeekToRef(movieNameRef);
+        string movieName;
+        ReturnFromRef();
+    }
+} StoryLoadingScreenHint <optimize=false>;
+
+typedef struct
+{
+    Ref movieFileNameRef;
+    if (CanSeekTo(movieFileNameRef))
+    {
+        SeekToRef(movieFileNameRef);
+        string movieFileName;
+        ReturnFromRef();
+    }
+    byte exclusiveUse;
+} LoadingScreenSubs <optimize=false>;
+
+typedef struct
+{
+    Ref upsellImagesRef;
+    unsigned int upsellImagesCount;
+    if (CanSeekTo(upsellImagesRef))
+    {
+        SeekToRef(upsellImagesRef);
+        UpsellImage upsellImages[upsellImagesCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref characterProfileMapRef;
+    ubyte characterProfileMapCount;
+    if (CanSeekTo(characterProfileMapRef))
+    {
+        SeekToRef(characterProfileMapRef);
+        CharacterProfileItem characterProfileMap[characterProfileMapCount];
+        ReturnFromRef();
+    }
+    FSkip(7);
+    Ref teamInfoMapRef;
+    unsigned int teamInfoMapCount;
+    if (CanSeekTo(teamInfoMapRef))
+    {
+        SeekToRef(teamInfoMapRef);
+        TeamInfoItem teamInfoMap[teamInfoMapCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref levelImageMapRef;
+    unsigned int levelImageMapCount;
+    if (CanSeekTo(levelImageMapRef))
+    {
+        SeekToRef(levelImageMapRef);
+        LevelImageItem levelImageMap[levelImageMapCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref videoEnixItemListRef;
+    unsigned int videoEnixItemListCount;
+    if (CanSeekTo(videoEnixItemListRef))
+    {
+        SeekToRef(videoEnixItemListRef);
+        SquareEnixTrailerItem videoEnixItemList[videoEnixItemListCount];
+        ReturnFromRef();
+    }
+    ushort unit;
+    FSkip(2);
+    int mainMenuStreamLayer;
+    int multiplayerStreamLayer;
+    Ref dLCInfoListRef;
+    unsigned int dLCInfoListCount;
+    if (CanSeekTo(dLCInfoListRef))
+    {
+        SeekToRef(dLCInfoListRef);
+        DLCPackInfo dLCInfoList[dLCInfoListCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref chapterReplayListRef;
+    unsigned int chapterReplayListCount;
+    if (CanSeekTo(chapterReplayListRef))
+    {
+        SeekToRef(chapterReplayListRef);
+        ChapterReplay chapterReplayList[chapterReplayListCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref conceptGalleriesGroupListRef;
+    unsigned int conceptGalleriesGroupListCount;
+    if (CanSeekTo(conceptGalleriesGroupListRef))
+    {
+        SeekToRef(conceptGalleriesGroupListRef);
+        ConceptGalleryGroup conceptGalleriesGroupList[conceptGalleriesGroupListCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref characterGalleryListRef;
+    unsigned int characterGalleryListCount;
+    if (CanSeekTo(characterGalleryListRef))
+    {
+        SeekToRef(characterGalleryListRef);
+        CharacterGallery characterGalleryList[characterGalleryListCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref videoGalleryListRef;
+    unsigned int videoGalleryListCount;
+    if (CanSeekTo(videoGalleryListRef))
+    {
+        SeekToRef(videoGalleryListRef);
+        VideoGallery videoGalleryList[videoGalleryListCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    RelicSets collectibleRelics;
+    FSkip(4);
+    DocumentSets collectibleDocuments;
+    FSkip(4);
+    ClueSets collectibleClues;
+    FSkip(4);
+    MuralSets collectibleMurals;
+    FSkip(4);
+    CryptTreasureSets collectibleCryptTreasures;
+    FSkip(4);
+    CollectibleMisc collectibleMisc;
+    FSkip(6);
+    Ref translationXPListRef;
+    unsigned int translationXPListCount;
+    if (CanSeekTo(translationXPListRef))
+    {
+        SeekToRef(translationXPListRef);
+        TranslationXPReward translationXPList[translationXPListCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    RelicContainers collectibleRelicContainers;
+    FSkip(4);
+    DocumentContainers collectibleDocumentContainers;
+    FSkip(4);
+    MuralContainers collectibleMuralContainers;
+    FSkip(4);
+    GenericSecretContainers collectibleGenericSecretContainers;
+    FSkip(4);
+    ResourceContainers collectibleResourceContainers;
+    FSkip(4);
+    TombEntranceContainer collectibleTombEntrances;
+    FSkip(4);
+    CryptTreasureContainer collectibleCryptTreasureContainers;
+    FSkip(4);
+    MonolithContainer collectibleMonoliths;
+    FSkip(4);
+    ExplorerCorpseContainer collectibleExplorerCorpses;
+    FSkip(4);
+    DocumentChestContainer collectibleDocumentChests;
+    FSkip(4);
+    CryptContainer collectibleCrypt;
+    FSkip(4);
+    SealContainer collectibleSeals;
+    FSkip(4);
+    StrongboxContainer collectibleStrongbox;
+    FSkip(4);
+    CaveContainer collectibleCaves;
+    FSkip(4);
+    MissionGiverContainer collectibleMissionGiver;
+    FSkip(4);
+    CollectibleContainersMisc collectibleContainersMisc;
+    FSkip(6);
+    CollectibleSetMasterCollection collectibleSetMasterCollection;
+    FSkip(4);
+    CollectibleContainerCategoryMasterCollection collectibleContainerMasterCollection;
+    FSkip(4);
+    float healthBarLowWarningPercent;
+    float lastKillerIndicatorFacingDistanceVisibility;
+    ushort lastKillerIndicatorFacingDistanceVisibilityRequiredTrait;
+    byte lastKillerIndicatorFacingDistanceVisibilityOverrideEnabled;
+    FSkip(1);
+    float enemyIndicatorFacingDistanceVisibility;
+    float enemyIndicatorFacingDistanceVisibilityOverride;
+    byte enemyIndicatorFacingDistanceVisibilityOverrideEnabled;
+    FSkip(3);
+    float enemyIndicatorTriangleVisibilityAngle;
+    float enemyIndicatorTriangleVisibilityMaxRange;
+    float enemyIndicatorTriangleVisibilityHalfHeight;
+    float teammateIndicatorOrangeMaxHealthPercent;
+    float teammateIndicatorYellowMaxHealthPercent;
+    float flagHolderIndicatorFadeDistanceStartPercent;
+    float flagHolderIndicatorFadeDistanceEndPercent;
+    float flagHolderIndicatorPositionUpdateTime;
+    float reviveIndicatorVisibilityRadiusFFAMode;
+    float enemyIndicatorVisibilityRadius;
+    float objectIndicatorVisibilityRadius;
+    ushort objectIndicatorSeeAllTrait;
+    FSkip(2);
+    float objectIndicatorConsumableAlphaFadeValue;
+    float objectIndicatorConsumableAlphaShowValue;
+    int instinctMessageMaxHorizontalAngle;
+    int instinctMessageMaxVerticalAngle;
+    ushort smgGrenadeLauncherTrait;
+    ushort smgFlashBangTrait;
+    ushort smgSilencerTrait;
+    ushort bowRopeArrowTrait;
+    ushort bowFireArrowTrait;
+    ushort bowNapalmArrowTrait;
+    ushort bowExplosiveArrowTrait;
+    ushort shotgunChokeTrait;
+    ushort shotgunIncendiaryTrait;
+    ushort pistolBurstFireTrait;
+    ushort pistolSilencerTrait;
+    ushort bowShootThroughTrait;
+    ushort pistolArmorPenetrationTrait;
+    FSkip(2);
+    float uiWeaponOffset[3];
+    float uiWeaponRotationInterp;
+    float uiWeaponPositionInterp;
+    float uiWeaponPositionInterpDuringRotation;
+    float uiWeaponInterpSmoothnessCurve[20];
+    FSkip(4);
+    Ref uiCampsiteAnimationNameRef;
+    if (CanSeekTo(uiCampsiteAnimationNameRef))
+    {
+        SeekToRef(uiCampsiteAnimationNameRef);
+        string uiCampsiteAnimationName;
+        ReturnFromRef();
+    }
+    Ref uiCampsiteAnimationNameEquippedWeaponRef;
+    if (CanSeekTo(uiCampsiteAnimationNameEquippedWeaponRef))
+    {
+        SeekToRef(uiCampsiteAnimationNameEquippedWeaponRef);
+        string uiCampsiteAnimationNameEquippedWeapon;
+        ReturnFromRef();
+    }
+    Ref uiCampsiteAnimationNameStatesRef;
+    if (CanSeekTo(uiCampsiteAnimationNameStatesRef))
+    {
+        SeekToRef(uiCampsiteAnimationNameStatesRef);
+        string uiCampsiteAnimationNameStates;
+        ReturnFromRef();
+    }
+    Ref uiCampsiteAnimationNameExitRef;
+    if (CanSeekTo(uiCampsiteAnimationNameExitRef))
+    {
+        SeekToRef(uiCampsiteAnimationNameExitRef);
+        string uiCampsiteAnimationNameExit;
+        ReturnFromRef();
+    }
+    Ref uiCampsiteAnimationNamePreviousWeaponRef;
+    if (CanSeekTo(uiCampsiteAnimationNamePreviousWeaponRef))
+    {
+        SeekToRef(uiCampsiteAnimationNamePreviousWeaponRef);
+        string uiCampsiteAnimationNamePreviousWeapon;
+        ReturnFromRef();
+    }
+    Ref uiCampsiteAnimationNameForWeaponRef;
+    if (CanSeekTo(uiCampsiteAnimationNameForWeaponRef))
+    {
+        SeekToRef(uiCampsiteAnimationNameForWeaponRef);
+        string uiCampsiteAnimationNameForWeapon;
+        ReturnFromRef();
+    }
+    int uiCampsiteAnimationValueForExit;
+    int uiCampsiteAnimationValueForOutfits;
+    float timeBeforeItemConsideredSelected;
+    float timeBeforeChangingOutfit;
+    ModelBoneOrMarkerReference tutorialAttachBoneMarker;
+    ScriptObjectiveType lastCampTutorialTraining;
+    ScriptObjectiveType lastCampTutorialHint;
+    ushort campsiteSkillDisabled;
+    ushort campsiteSalvageDisabled;
+    ushort campsiteTravelDisabled;
+    ushort campsiteSkillTutorial;
+    ushort campsiteSalvageTutorial;
+    ushort campsiteTravelTutorial;
+    ushort fastTravelDestinationTOD;
+    ushort fastTravelDepartureTOD;
+    ushort fastTravelDepartureRegion;
+    ushort statusMenuDisabled;
+    float relicZoomSpeed;
+    float relicZoomDistances;
+    float relicMaxZoomInAllowedForRotation;
+    float dPadStayOpenTime;
+    float relicViewerMiniGameTime;
+    float minBeaconMarkerScale;
+    float minBeaconMarkerDistance;
+    float maxBeaconMarkerScale;
+    float maxBeaconMarkerDistance;
+    FSkip(4);
+    ImagePath trialNotificationImage;
+    unsigned int trialEndGlobalProgress;
+    EventEnum trialEndBroadcastEvent;
+    ImagePath vibrationImage;
+    ImagePath yAxisImage;
+    ImagePath aimSensitivityImage;
+    ImagePath difficultyImage;
+    ImagePath brightnessImage;
+    ImagePath screenAdjustmentImage;
+    ImagePath beaconImage;
+    ImagePath glowImage;
+    ImagePath textLanguageImage;
+    ImagePath subtitlesImage;
+    ImagePath gameFrameImage;
+    ImagePath musicVolumeImage;
+    ImagePath dialogueVolumeImage;
+    ImagePath sfxVolumeImage;
+    ImagePath voLanguageImage;
+    ImagePath semImage;
+    ImagePath liveNotificationsImage;
+    ImagePath broadcastInteractionsImage;
+    ImagePath ps4LightbarImage;
+    ImagePath ps4PadspeakerImage;
+    ImagePath ps4RenderingModeImage;
+    ImagePath vrComfortImage;
+    ImagePath vrTeleportImage;
+    ImagePath vrFlashlightImage;
+    ImagePath vrPlayAreaImage;
+    ImagePath vrMovementRotationImage;
+    ImagePath vrMovementSpeedImage;
+    ImagePath vrMovementAccelerationImage;
+    ImagePath vrMovementRelativeImage;
+    ImagePath vrMovementRestrictedImage;
+    ushort lootedSymbol;
+    ushort containerStateSymbol;
+    ushort containerStateDirtySymbol;
+    ushort traitRequired;
+    float proximityFromCollectible;
+    ushort lootablePersistentDataSymbol;
+    ushort loadingMPMenuCollection;
+    float hintRefreshTime;
+    float specialHintRefreshTime;
+    Ref loadingSharedHintMapRef;
+    unsigned int loadingSharedHintMapCount;
+    if (CanSeekTo(loadingSharedHintMapRef))
+    {
+        SeekToRef(loadingSharedHintMapRef);
+        LoadingHintItem loadingSharedHintMap[loadingSharedHintMapCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref loadingGameModeMapRef;
+    unsigned int loadingGameModeMapCount;
+    if (CanSeekTo(loadingGameModeMapRef))
+    {
+        SeekToRef(loadingGameModeMapRef);
+        LoadingGameModeItem loadingGameModeMap[loadingGameModeMapCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref weaponProfileMapRef;
+    unsigned int weaponProfileMapCount;
+    if (CanSeekTo(weaponProfileMapRef))
+    {
+        SeekToRef(weaponProfileMapRef);
+        WeaponProfile weaponProfileMap[weaponProfileMapCount];
+        ReturnFromRef();
+    }
+    float lobbyHintRefreshTime;
+    Ref lobbyHintListRef;
+    unsigned int lobbyHintListCount;
+    if (CanSeekTo(lobbyHintListRef))
+    {
+        SeekToRef(lobbyHintListRef);
+        LobbyHintItem lobbyHintList[lobbyHintListCount];
+        ReturnFromRef();
+    }
+    int finalCountdownTimer;
+    float inGamePostCountdownDelayTimer;
+    int inGameVoteCountdown;
+    int normalCountdownTimer;
+    int sessionFullCountdownTimer;
+    int quickCountdownStartTime;
+    int postCountdownDelayTimer;
+    int minPlayersCountdownTimer;
+    int lobbyDisplayCountdownTimer;
+    int lobbyCountdownWarning;
+    int mapVoteDuration;
+    Ref accoladesCategoriesRef;
+    unsigned int accoladesCategoryCount;
+    if (CanSeekTo(accoladesCategoriesRef))
+    {
+        SeekToRef(accoladesCategoriesRef);
+        AccoladesCategory accoladesCategories[accoladesCategoryCount];
+        ReturnFromRef();
+    }
+    int markerScaleLV0;
+    int markerScaleLV1;
+    int markerScaleLV2;
+    int playerScaleLV0;
+    int playerScaleLV1;
+    int playerScaleLV2;
+    float cursorSpeedLV0;
+    float cursorSpeedLV1;
+    float cursorSpeedLV2;
+    int zoomZLV0;
+    int zoomZLV1;
+    int zoomZLV2;
+    int cursorSpeedInSnapping;
+    int snapMinTargetRangeLV0;
+    int snapMaxTargetRangeLV0;
+    int snapMinTargetRangeLV1;
+    int snapMaxTargetRangeLV1;
+    int snapMinTargetRangeLV2;
+    int snapMaxTargetRangeLV2;
+    float snapTargetDeceleration;
+    float cursorAccelerationLV0;
+    float cursorAccelerationLV1;
+    float cursorAccelerationLV2;
+    float mapZoomTweenTime;
+    float infoPanelCoordinatesLV0[3];
+    float infoPanelCoordinatesLV1[3];
+    float infoPanelCoordinatesLV2[3];
+    float infoPanelFastTravelCoordinatesLV0[3];
+    float infoPanelFastTravelCoordinatesLV1[3];
+    float infoPanelFastTravelCoordinatesLV2[3];
+    FSkip(4);
+    ImagePath defaultHeightMapImagePath;
+    ImagePath regionUnknownImagePath;
+    unsigned int gameCompletionProgressLevel;
+    unsigned int extremeDifficultyDlcHash <format=hex>;
+    ushort waypointBeaconObjectID;
+    FSkip(2);
+    float unknownWaypointItemLocationZLeash;
+    float reticleFadeInTime;
+    float automaticWeaponReticleGrowthRate;
+    float automaticWeaponReticleShrinkRate;
+    float playerMovementReticleGrowthRate;
+    ushort showHeadshotIndicatorTraitDLCBow;
+    ushort showHeadshotIndicatorTraitBow;
+    ushort showHeadshotIndicatorTraitSMG;
+    ushort showHeadshotIndicatorTraitPistol;
+    ushort numAmmoTypeIcons;
+    FSkip(6);
+    Ref ammoTypeIconsRef;
+    if (CanSeekTo(ammoTypeIconsRef))
+    {
+        SeekToRef(ammoTypeIconsRef);
+        AmmoTypeIcon ammoTypeIcons[numAmmoTypeIcons];
+        ReturnFromRef();
+    }
+    unsigned int numInGameWeapons;
+    FSkip(4);
+    Ref weaponListRef;
+    if (CanSeekTo(weaponListRef))
+    {
+        SeekToRef(weaponListRef);
+        WeaponUIInfo weaponList[numInGameWeapons];
+        ReturnFromRef();
+    }
+    ubyte numLoadingHints;
+    FSkip(7);
+    Ref loadingHintsRef;
+    if (CanSeekTo(loadingHintsRef))
+    {
+        SeekToRef(loadingHintsRef);
+        LoadingScreenHint loadingHints[numLoadingHints];
+        ReturnFromRef();
+    }
+    unsigned int numDatedLoadingHints;
+    FSkip(4);
+    Ref datedLoadingHintsRef;
+    if (CanSeekTo(datedLoadingHintsRef))
+    {
+        SeekToRef(datedLoadingHintsRef);
+        DatedLoadingScreenHint datedLoadingHints[numDatedLoadingHints];
+        ReturnFromRef();
+    }
+    unsigned int numStoryLoadingHints;
+    FSkip(4);
+    Ref storyLoadingHintsRef;
+    if (CanSeekTo(storyLoadingHintsRef))
+    {
+        SeekToRef(storyLoadingHintsRef);
+        StoryLoadingScreenHint storyLoadingHints[numStoryLoadingHints];
+        ReturnFromRef();
+    }
+    short lowDeathsHint;
+    ubyte numLoadingScreens;
+    FSkip(5);
+    Ref loadingScreensRef;
+    if (CanSeekTo(loadingScreensRef))
+    {
+        SeekToRef(loadingScreensRef);
+        LoadingScreenSubs loadingScreens[numLoadingScreens];
+        ReturnFromRef();
+    }
+    ushort stealthFinisherPromptHandsTiedTrait;
+    ubyte stealthFinisherPromptInputActionType;
+    FSkip(1);
+    float survivalGuideOffset[2];
+    float globalTimeBeforeLoadingUIAssets;
+    unsigned int babaYagaResourceDlcHash <format=hex>;
+    float replayUITimeChallengeCompleted;
+    float replayUITimeChallengeNotCompleted;
+    float replayUITimeCardRewarded;
+    float cardVoteCancelAnimTime;
+    float cardVoteFinishAnimTime;
+    float storyCelebrationIntroAnimTime;
+    float storyCelebrationMedalAnimTime;
+    float storyCelebrationCreditsAnimTime;
+} GlobalUIInfo <optimize=false>;
+
+RefDefinitions refDefinitions;
+Ref rootRef;
+if (CanSeekTo(rootRef))
+{
+    SeekToRef(rootRef);
+    GlobalUIInfo root <open=true>;
+    ReturnFromRef();
+}

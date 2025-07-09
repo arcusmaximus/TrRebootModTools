@@ -7,8 +7,6 @@ using System.Threading.Tasks;
 using TrRebootTools.Shared;
 using TrRebootTools.Shared.Cdc;
 using TrRebootTools.Shared.Controls.VirtualTreeView;
-using TrRebootTools.HookTool.Logging;
-using TrRebootTools.HookTool;
 
 namespace TrRebootTools.HookTool.Logging
 {

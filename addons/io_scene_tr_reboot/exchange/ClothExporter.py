@@ -15,6 +15,7 @@ from io_scene_tr_reboot.tr.IFactory import IFactory
 from io_scene_tr_reboot.tr.ResourceBuilder import ResourceBuilder
 from io_scene_tr_reboot.tr.ResourceKey import ResourceKey
 from io_scene_tr_reboot.util.Enumerable import Enumerable
+from io_scene_tr_reboot.util.IoHelper import IoHelper
 
 class _ClothIdSet(NamedTuple):
     skeleton_id: int
@@ -86,7 +87,10 @@ class ClothExporter:
         result: list[_BoneInfo] = []
         with BlenderHelper.enter_edit_mode(bl_armature_obj):
             for bl_bone in cast(bpy.types.Armature, bl_armature_obj.data).edit_bones:
-                bone_id_set = BlenderNaming.parse_bone_name(bl_bone.name)
+                bone_id_set = BlenderNaming.try_parse_bone_name(bl_bone.name)
+                if bone_id_set is None:
+                    continue
+
                 if bone_id_set.local_id is None:
                     raise Exception()
 
@@ -124,12 +128,12 @@ class ClothExporter:
 
     def write_cloth_definition_file(self, folder_path: str, bl_armature_obj: bpy.types.Object, definition_builder: ResourceBuilder) -> None:
         definition_file_path = os.path.join(folder_path, Collection.make_resource_file_name(definition_builder.resource, self.game))
-        with open(definition_file_path, "wb") as definition_file:
+        with IoHelper.open_write(definition_file_path) as definition_file:
             definition_file.write(definition_builder.build())
 
     def write_cloth_tune_file(self, folder_path: str, bl_armature_obj: bpy.types.Object, tune_builder: ResourceBuilder) -> None:
         tune_file_path = os.path.join(folder_path, Collection.make_resource_file_name(tune_builder.resource, self.game))
-        with open(tune_file_path, "wb") as component_file:
+        with IoHelper.open_write(tune_file_path) as component_file:
             component_file.write(tune_builder.build())
 
     def add_cloth_strip(
@@ -213,15 +217,15 @@ class ClothExporter:
             if bl_bone is None:
                 raise Exception(f"Cloth strip object {bl_cloth_strip_obj.name} references bone {bone_name} which doesn't exist.")
 
-            bone_id_set = BlenderNaming.parse_bone_name(bone_name)
-            if bone_id_set.local_id is None:
+            bone_id_set = BlenderNaming.try_parse_bone_name(bone_name)
+            if bone_id_set is None or bone_id_set.local_id is None:
                 raise Exception(f"Cloth strip object {bl_cloth_strip_obj.name} contains vertex group {bone_name} which has no local ID.")
 
             bone_cloth_properties = BoneProperties.get_instance(bl_bone).cloth
 
             tr_cloth_mass = ClothMass(bone_id_set.local_id, bone_infos_by_local_id[bone_id_set.local_id].position)
             tr_cloth_mass.bounceback_factor = bone_cloth_properties.bounceback_factor
-            if BlenderHelper.is_bone_in_group(bl_armature_obj, bl_bone, BlenderNaming.pinned_cloth_bone_group_name):
+            if BlenderHelper.is_bone_in_group(bl_bone, BlenderNaming.pinned_cloth_bone_group_name):
                 anchor_offset = bone_infos_by_local_id[tr_cloth_strip.parent_bone_local_id].position - bone_infos_by_local_id[bone_id_set.local_id].position
                 tr_cloth_mass.anchor_local_bones = [ClothMassAnchorBone(tr_cloth_strip.parent_bone_local_id, anchor_offset)]
                 tr_cloth_mass.mass = 0.0

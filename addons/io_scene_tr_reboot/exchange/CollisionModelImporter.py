@@ -4,7 +4,7 @@ from io_scene_tr_reboot.BlenderNaming import BlenderNaming
 from io_scene_tr_reboot.exchange.CollisionImporter import CollisionImporter
 from io_scene_tr_reboot.properties.ObjectProperties import ObjectProperties
 from io_scene_tr_reboot.tr.Collection import Collection
-from io_scene_tr_reboot.tr.CollisionModel import CollisionBoundingBoxNode, CollisionMesh, CollisionModel
+from io_scene_tr_reboot.tr.CollisionModel import CollisionMesh, CollisionModel
 from io_scene_tr_reboot.util.Enumerable import Enumerable
 import colorsys
 
@@ -46,11 +46,9 @@ class CollisionModelImporter(CollisionImporter):
             bl_mesh_obj.parent = bl_collisions_empty
             bl_mesh_obj.matrix_local = transform
             bl_mesh_obj.hide_set(True)
+            bl_mesh_obj.hide_render = True
             BlenderHelper.move_object_to_collection(bl_mesh_obj, self.bl_target_collection)
             bl_mesh_objs.append(bl_mesh_obj)
-
-            if tr_mesh.root_bounding_box_node is not None and len(tr_mesh.faces) < 500:
-                self.import_bb_node_recursive(0, tr_mesh.root_bounding_box_node, bl_mesh_obj)
 
         return bl_mesh_objs
 
@@ -89,24 +87,6 @@ class CollisionModelImporter(CollisionImporter):
         bpy.ops.object.shade_flat()
         ObjectProperties.get_instance(bl_obj).collision_model.collision_type_id = tr_mesh.collision_type_id or 0
         return bl_obj
-
-    def import_bb_node_recursive(self, index: int, tr_node: CollisionBoundingBoxNode, bl_parent_obj: bpy.types.Object) -> int:
-        bpy.ops.mesh.primitive_cube_add(size = 1)
-        bl_obj = bpy.context.object
-        if bl_obj is None:
-            raise Exception()
-
-        bl_obj.name = f"bb_node_{index}_{tr_node.first_face_idx}_{tr_node.num_faces}"
-        bl_obj.location = (tr_node.min + tr_node.max) / 2 * self.scale_factor
-        bl_obj.scale = (tr_node.max - tr_node.min) * self.scale_factor
-        bpy.ops.object.transform_apply()
-        bl_obj.parent = bl_parent_obj
-
-        index += 1
-        for tr_child in tr_node.children:
-            index = self.import_bb_node_recursive(index, tr_child, bl_obj)
-
-        return index
 
     @staticmethod
     def assign_material_colors() -> None:
