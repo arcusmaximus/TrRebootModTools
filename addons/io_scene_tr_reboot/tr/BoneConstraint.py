@@ -5,8 +5,8 @@ from io_scene_tr_reboot.tr.ResourceBuilder import ResourceBuilder
 
 class BoneConstraintType(IntEnum):
     LOOK_AT = 0
-    COPY_POSITION = 1
-    COPY_ROTATION = 2
+    WEIGHTED_POSITION = 1
+    WEIGHTED_ROTATION = 2
     FROM_BLEND_SHAPES = 3
 
 class IBoneConstraint(Protocol):

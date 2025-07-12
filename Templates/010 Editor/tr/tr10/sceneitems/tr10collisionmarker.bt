@@ -1,0 +1,43 @@
+enum <byte> HPrimType
+{
+    _CLDTYPE_NONE = 0x0,
+    _CLDTYPE_HSPHERE = 0x1,
+    _CLDTYPE_TFACE = 0x3,
+    _CLDTYPE_HBOX = 0x5,
+    _CLDTYPE_HMARKER = 0x8,
+    _CLDTYPE_HCAPSULE = 0xA,
+    _CLDTYPE_HGEOM = 0xD
+};
+
+typedef struct
+{
+    Vector4 pos;
+    Quaternion quat;
+    int boneId;
+    ushort index;
+    ushort indexInMarkerList;
+} ZoneHMarker;
+
+typedef struct
+{
+    Ref matrixRef;
+    if (CanSeekTo(matrixRef))
+    {
+        SeekToRef(matrixRef);
+        Matrix matrix;
+        ReturnFromRef();
+    }
+    ubyte hpFlags;
+    byte enabledByDefault;
+    HPrimType type;
+    byte enabledLastFrame;
+    ubyte segment;
+    FSkip(3);
+    Ref dataRef;
+    if (CanSeekTo(dataRef) && type == _CLDTYPE_HMARKER)
+    {
+        SeekToRef(dataRef);
+        ZoneHMarker hmarker;
+        ReturnFromRef();
+    }
+} CollisionMarker <optimize=false>;

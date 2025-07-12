@@ -1,0 +1,183 @@
+struct PlacementPath;
+struct StreamLayerRef;
+
+typedef struct
+{
+    int type : 3;
+    uint screenTime : 5;
+    uint minDist : 11;
+    uint minHeight : 11;
+    int _Bitfieldpadding0 : 2;
+    byte distanceIs2D : 1;
+    byte checkDistance : 1;
+    byte checkHeight : 1;
+    byte checkVisibility : 1;
+    byte onScreen : 1;
+} InstanceProcessLOD;
+
+typedef struct
+{
+    Ref lodsRef;
+    unsigned int lodsCount;
+    if (CanSeekTo(lodsRef))
+    {
+        SeekToRef(lodsRef);
+        InstanceProcessLOD lods[lodsCount];
+        ReturnFromRef();
+    }
+} InstanceProcessSpec <optimize=false>;
+
+typedef union
+{
+    short byUserDefinedIndex;
+    ushort byBoneIndex;
+    short byBoneID;
+    ushort byMarkerIndex;
+    ushort byMarkerID;
+} ModelBoneOrMarkerReferenceWithContext__ModelBoneOrMarkerRefData;
+
+typedef struct
+{
+    ubyte refType;
+    FSkip(1);
+    ModelBoneOrMarkerReferenceWithContext__ModelBoneOrMarkerRefData refData;
+} ModelBoneOrMarkerReferenceWithContext <optimize=false>;
+
+typedef union
+{
+    short byUserDefinedIndex;
+    ushort byBoneIndex;
+    short byBoneID;
+    ushort byMarkerIndex;
+    ushort byMarkerID;
+} ModelBoneOrMarkerReference__ModelBoneOrMarkerRefData;
+
+typedef struct
+{
+    ubyte refType;
+    FSkip(1);
+    ModelBoneOrMarkerReference__ModelBoneOrMarkerRefData refData;
+} ModelBoneOrMarkerReference <optimize=false>;
+
+typedef struct
+{
+    ModelBoneOrMarkerReferenceWithContext bindFrom;
+    ModelBoneOrMarkerReference bindTo;
+} ParentBindParams <optimize=false>;
+
+typedef union
+{
+    ParentBindParams bindParent;
+} BindParams;
+
+typedef struct
+{
+    unsigned int type <format=hex>;
+    FSkip(4);
+    Ref dataRef;
+    if (CanSeekTo(dataRef))
+    {
+        SeekToRef(dataRef);
+        byte data;
+        ReturnFromRef();
+    }
+} ComponentOverrideData <optimize=false>;
+
+typedef struct
+{
+    byte canMoveToNewUnit;
+    byte bUseActivationOverrides;
+    FSkip(6);
+    InstanceProcessSpec activationSpec;
+    int vvRemoveDist;
+    int removeDist;
+    byte bNestedOverride;
+    FSkip(3);
+    Ref envMaterialOverrideTableRef;
+    if (CanSeekTo(envMaterialOverrideTableRef))
+    {
+        SeekToRef(envMaterialOverrideTableRef);
+        byte envMaterialOverrideTable;
+        ReturnFromRef();
+    }
+    byte isUnitObjectRef;
+    FSkip(15);
+    Ref debugNameRef;
+    if (CanSeekTo(debugNameRef))
+    {
+        SeekToRef(debugNameRef);
+        string debugName;
+        ReturnFromRef();
+    }
+    unsigned int zoneId;
+    int instanceType;
+    BindParams bindParams;
+    Ref streamLayersRef;
+    unsigned int streamLayerCount;
+    if (CanSeekTo(streamLayersRef))
+    {
+        SeekToRef(streamLayersRef);
+        StreamLayerRef streamLayers[streamLayerCount];
+        ReturnFromRef();
+    }
+    byte introduceRadially;
+    byte useLODDistanceForRadialIntro;
+    FSkip(2);
+    float introductionDistance;
+    float introductionRemoveSlack;
+    float introductionFadeRange;
+    int introductionType;
+    int fxOverride;
+    FSkip(4);
+    Ref fxLibOverrideDynamicItemRef;
+    byte isDelayedBirth;
+    byte isNetworked;
+    byte isNetSyncFX;
+    byte cinematicNoKill : 1;
+    byte overrideSaveSettings : 1;
+    byte doNotSave : 1;
+    byte neverDeadDead : 1;
+    FSkip(4);
+    Ref sfxMarkerOverridesRef;
+    unsigned int sfxMarkerOverrideCount;
+    unsigned int numComponents;
+    Ref componentsRef;
+    if (CanSeekTo(componentsRef))
+    {
+        SeekToRef(componentsRef);
+        ComponentOverrideData components[numComponents];
+        ReturnFromRef();
+    }
+    Matrix matrix;
+    byte placeInExteriorCell;
+    FSkip(3);
+    int cellOverride;
+    char lodLevelStart;
+    char lodLevelEnd;
+    FSkip(2);
+    float instanceLodBias;
+    float instanceLodScale;
+    float enlightenLightMapUvScale;
+    ushort enlightenSystemListCount;
+    FSkip(6);
+    Ref enlightenSystemListRef;
+    if (CanSeekTo(enlightenSystemListRef))
+    {
+        SeekToRef(enlightenSystemListRef);
+        PlacementPath enlightenSystemList[enlightenSystemListCount];
+        ReturnFromRef();
+    }
+    uint increasedLoadPriority : 1;
+    byte canCastShadows;
+    byte usePlacementDependencies;
+    FSkip(2);
+    Ref placementDependenciesRef;
+    if (CanSeekTo(placementDependenciesRef))
+    {
+        SeekToRef(placementDependenciesRef);
+        PlacementPath placementDependencies;
+        ReturnFromRef();
+    }
+    unsigned int placementDependencyCount;
+    char sortBehaviour;
+} ObjectRef <optimize=false>;

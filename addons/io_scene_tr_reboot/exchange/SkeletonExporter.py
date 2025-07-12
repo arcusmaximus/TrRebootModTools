@@ -4,9 +4,11 @@ import os
 from mathutils import Matrix, Quaternion, Vector
 from io_scene_tr_reboot.BlenderHelper import BlenderHelper
 from io_scene_tr_reboot.BlenderNaming import BlenderBoneIdSet, BlenderNaming
+from io_scene_tr_reboot.operator.OperatorContext import OperatorContext
 from io_scene_tr_reboot.properties.BoneProperties import BoneProperties
 from io_scene_tr_reboot.properties.ObjectProperties import ObjectSkeletonProperties
 from io_scene_tr_reboot.tr.Bone import IBone
+from io_scene_tr_reboot.tr.BoneConstraint import BoneConstraintType, IBoneConstraint_LookAt
 from io_scene_tr_reboot.tr.Collection import Collection
 from io_scene_tr_reboot.tr.Enumerations import CdcGame, ResourceType
 from io_scene_tr_reboot.tr.Factories import Factories
@@ -23,10 +25,13 @@ class SkeletonExporter(SlotsBase):
     game: CdcGame
     factory: IFactory
 
+    constraint_error_logged: bool
+
     def __init__(self, scale_factor: float, game: CdcGame) -> None:
         self.scale_factor = scale_factor
         self.game = game
         self.factory = Factories.get(game)
+        self.constraint_error_logged = False
 
     def export(self, folder_path: str, bl_armature_obj: bpy.types.Object) -> None:
         skeleton_id = BlenderNaming.parse_local_armature_name(bl_armature_obj.name)
@@ -108,8 +113,8 @@ class SkeletonExporter(SlotsBase):
             y_axis = cast(Vector, z_axis.cross((z_axis.y, z_axis.z, z_axis.x)))
             x_axis = cast(Vector, z_axis.cross(y_axis))
             tr_bone.absolute_orientation = Matrix(((x_axis.x, y_axis.x, z_axis.x),
-                                                    (x_axis.y, y_axis.y, z_axis.y),
-                                                    (x_axis.z, y_axis.z, z_axis.z))).to_quaternion()
+                                                   (x_axis.y, y_axis.y, z_axis.y),
+                                                   (x_axis.z, y_axis.z, z_axis.z))).to_quaternion()
         else:
             tr_bone.parent_id = -1
             tr_bone.relative_location = bl_edit_bone.head / self.scale_factor
@@ -132,5 +137,13 @@ class SkeletonExporter(SlotsBase):
         tr_bone.constraints = []
         for prop_constraint in BoneProperties.get_instance(bl_bone).constraints:
             tr_constraint = self.factory.deserialize_bone_constraint(prop_constraint.data)
-            if tr_constraint is not None:
-                tr_bone.constraints.append(tr_constraint)
+            if tr_constraint is None:
+                continue
+
+            if tr_constraint.type == BoneConstraintType.LOOK_AT and \
+               cast(IBoneConstraint_LookAt, tr_constraint).bone_local_tangent.length == 0 and \
+               not self.constraint_error_logged:
+                OperatorContext.log_error("The skeleton either has no bone constraints or bone constraints from an older addon version. Please reimport it.")
+                self.constraint_error_logged = True
+
+            tr_bone.constraints.append(tr_constraint)

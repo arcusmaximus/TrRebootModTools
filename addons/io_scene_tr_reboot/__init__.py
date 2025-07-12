@@ -3,7 +3,7 @@ bl_info = {
     "description": "Import/export files for the Tomb Raider Reboot games",
     "author": "arc_",
     "blender": (4, 0, 0),
-    "version": (1, 6, 2),
+    "version": (1, 7, 0),
     "location": "File > Import-Export",
     "support": "COMMUNITY",
     "category": "Import-Export"
@@ -17,6 +17,7 @@ from io_scene_tr_reboot.tr.TrCStructTypeMappings import TrCStructTypeMappings
 CStructTypeMappings.register()
 TrCStructTypeMappings.register()
 
+from io_scene_tr_reboot.DriverFunctions import DriverFunctions
 from io_scene_tr_reboot.operator.BrowseBlendShapeNormalsSourceFileOperator import BrowseBlendShapeNormalsSourceFileOperator
 from io_scene_tr_reboot.operator.ExportAnimationOperator import ExportShadowAnimationOperator
 from io_scene_tr_reboot.operator.ExportModelOperator import ExportModelOperator
@@ -114,6 +115,8 @@ def register() -> None:
     for cls in custom_property_groups:
         cls.register()
 
+    DriverFunctions.register()
+
 def unregister() -> None:
     for operator in menu_operators:
         bpy.utils.unregister_class(cast(type, operator))
@@ -125,3 +128,5 @@ def unregister() -> None:
 
     for cls in custom_property_groups:
         cls.unregister()
+
+    DriverFunctions.unregister()

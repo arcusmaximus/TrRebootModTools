@@ -1,16 +1,30 @@
 import bpy
-from typing import cast
+from typing import ClassVar, cast
 from mathutils import Matrix, Vector, Quaternion
 
 class DriverFunctions:
+    blender_flip_quat: ClassVar[Quaternion] = Quaternion((0, 0.707107, 0, -0.707107))
+    tr_flip_quat: ClassVar[Quaternion] = Quaternion((0, 0.707107, -0.707107, 0))
+
     @staticmethod
-    def register():
+    def register() -> None:
+        DriverFunctions.__register()
+        bpy.app.handlers.load_post.append(DriverFunctions.register_on_load)
+
+    @staticmethod
+    @bpy.app.handlers.persistent
+    def register_on_load(bl_scene: bpy.types.Scene) -> None:
+        DriverFunctions.__register()
+
+    @staticmethod
+    def __register() -> None:
         for name, func in DriverFunctions.__dict__.items():
             if name.startswith("tr_"):
                 bpy.app.driver_namespace[name] = func
 
     @staticmethod
-    def unregister():
+    def unregister() -> None:
+        bpy.app.handlers.load_post.remove(DriverFunctions.register_on_load)
         for name in DriverFunctions.__dict__.keys():
             if name.startswith("tr_") and name in bpy.app.driver_namespace:
                 del bpy.app.driver_namespace[name]
@@ -80,6 +94,7 @@ class DriverFunctions:
         armature_position: tuple[float, ...],
         armature_rotation: tuple[float, ...],
         bone_positions: list[tuple[float, ...]],
+        bone_flip_flags: list[int],
         weights: list[float],
         offset: tuple[float, ...]
     ) -> tuple[float, ...]:
@@ -95,22 +110,31 @@ class DriverFunctions:
     def tr_weighted_rot(
         armature_position: tuple[float, ...],
         armature_rotation: tuple[float, ...],
-        bone_rotations: list[tuple[float, ...]],
+        bone_rotation_tuples: list[tuple[float, ...]],
+        bone_flip_flags: list[int],
         weights: list[float],
         offset: tuple[float, ...]
     ) -> tuple[float, ...]:
+        bone_rotation_quats: list[Quaternion] = []
+        for i in range(len(bone_rotation_tuples)):
+            bone_rotation = Quaternion(bone_rotation_tuples[i])
+            if bone_flip_flags[i] != 0:
+                bone_rotation = bone_rotation @ DriverFunctions.blender_flip_quat
+
+            bone_rotation_quats.append(bone_rotation)
+
         result: Quaternion
-        if len(bone_rotations) == 2:
-            result = Quaternion(bone_rotations[0]).slerp(Quaternion(bone_rotations[1]), weights[1])
+        if len(bone_rotation_tuples) == 2:
+            result = bone_rotation_quats[0].slerp(bone_rotation_quats[1], weights[1])
         else:
             result = Quaternion()
             no_rot = Quaternion()
-            for i, bone_rotation in enumerate(bone_rotations):
-                result = result @ no_rot.slerp(Quaternion(bone_rotation), weights[i])
+            for i, bone_rotation in enumerate(bone_rotation_quats):
+                result = result @ no_rot.slerp(bone_rotation, weights[i])
 
         result = Quaternion(armature_rotation).inverted() @ result @ DriverFunctions.convert_tr_rotation_to_blender(Quaternion(offset))
         return (result.w, result.x, result.y, result.z)
 
     @staticmethod
     def convert_tr_rotation_to_blender(rotation: Quaternion) -> Quaternion:
-        return Quaternion((rotation.w, -rotation.y, rotation.x, rotation.z))
+        return Quaternion((rotation.w, rotation.x, -rotation.z, rotation.y))

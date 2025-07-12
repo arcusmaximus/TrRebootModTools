@@ -61,6 +61,12 @@
             get;
         }
 
+        public bool Enabled
+        {
+            get;
+            set;
+        } = true;
+
         public override string ToString()
         {
             return $"{(ResourceKey)this} -> Archive {ArchiveId}:{ArchiveSubId}:{ArchivePart}, Offset {Offset:X}, OffsetInBatch {DecompressionOffset:X}";

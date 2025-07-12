@@ -316,7 +316,25 @@ namespace TrRebootTools.Shared.Cdc
                         }
                         else if (!archiveIds.Contains(resourceRef.ArchiveId))
                         {
-                            collection.UpdateResourceReference(resourceIdx, resourceUsageCache.GetResourceReference(this, resourceRef));
+                            ResourceReference gameResourceRef = resourceUsageCache.GetResourceReference(this, resourceRef);
+                            if (gameResourceRef == null)
+                            {
+                                gameResourceRef = new ResourceReference(
+                                    resourceRef.Type,
+                                    resourceRef.SubType,
+                                    resourceRef.Id,
+                                    resourceRef.Locale,
+                                    sortedArchives[0].Id,
+                                    sortedArchives[0].SubId,
+                                    0,
+                                    0,
+                                    0,
+                                    0,
+                                    0,
+                                    0
+                                ) { Enabled = false };
+                            }
+                            collection.UpdateResourceReference(resourceIdx, gameResourceRef);
                             changesMade = true;
                         }
                     }

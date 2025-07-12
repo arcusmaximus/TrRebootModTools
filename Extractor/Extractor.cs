@@ -251,6 +251,9 @@ namespace TrRebootTools.Extractor
             if (!File.Exists(vgmstreamPath))
                 return;
 
+            if (wemFilePath.StartsWith(@"\\?\"))
+                wemFilePath = wemFilePath.Substring(4);
+
             using Process process = Process.Start(
                 new ProcessStartInfo
                 {

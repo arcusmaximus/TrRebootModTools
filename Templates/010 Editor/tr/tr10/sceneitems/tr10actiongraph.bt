@@ -1,0 +1,43 @@
+typedef struct
+{
+    short nodeType;
+    FSkip(6);
+    Ref propertiesRef;
+    byte enabled;
+    FSkip(7);
+    Ref debugNameRef;
+    if (CanSeekTo(debugNameRef))
+    {
+        SeekToRef(debugNameRef);
+        string debugName;
+        ReturnFromRef();
+    }
+} Node <optimize=false>;
+
+typedef struct
+{
+    short srcNode;
+    short destNode;
+    short srcSocketIndex;
+    short destSocketIndex;
+} Edge <optimize=false>;
+
+typedef struct
+{
+    unsigned int numNodes;
+    unsigned int numEdges;
+    Ref nodeListRef;
+    if (CanSeekTo(nodeListRef))
+    {
+        SeekToRef(nodeListRef);
+        Node nodeList[numNodes];
+        ReturnFromRef();
+    }
+    Ref edgeListRef;
+    if (CanSeekTo(edgeListRef))
+    {
+        SeekToRef(edgeListRef);
+        Edge edges[numEdges];
+        ReturnFromRef();
+    }
+} ActionGraph <optimize=false>;

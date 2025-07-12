@@ -1,10 +1,9 @@
 import bpy
 import math
-from typing import Any, Literal, NamedTuple, cast
+from typing import Any, ClassVar, Literal, NamedTuple, cast
 from mathutils import Matrix, Quaternion, Vector
 from io_scene_tr_reboot.BlenderHelper import BlenderHelper
 from io_scene_tr_reboot.BlenderNaming import BlenderBoneIdSet, BlenderNaming
-from io_scene_tr_reboot.DriverFunctions import DriverFunctions
 from io_scene_tr_reboot.properties.BoneProperties import BoneProperties
 from io_scene_tr_reboot.properties.ObjectProperties import ObjectSkeletonProperties
 from io_scene_tr_reboot.tr.Bone import IBone
@@ -15,6 +14,13 @@ from io_scene_tr_reboot.tr.Skeleton import ISkeleton
 from io_scene_tr_reboot.util.Enumerable import Enumerable
 from io_scene_tr_reboot.util.SlotsBase import SlotsBase
 
+class _BoneTransform(NamedTuple):
+    global_id: int | None
+    head: Vector
+    tail: Vector
+    orientation: Quaternion
+    is_flipped: bool
+
 class _ConstrainedBoneSet(NamedTuple):
     tr_bone: IBone
     bl_constrained_pose_bone: bpy.types.PoseBone
@@ -23,6 +29,9 @@ class _ConstrainedBoneSet(NamedTuple):
 class SkeletonImporter(SlotsBase):
     scale_factor: float
     bl_target_collection: bpy.types.Collection | None
+
+    blender_flip_quat: ClassVar[Quaternion] = Quaternion((0, 0.707107, 0, -0.707107))
+    tr_flip_quat:      ClassVar[Quaternion] = Quaternion((0, 0.707107, -0.707107, 0))
 
     def __init__(self, scale_factor: float, bl_target_collection: bpy.types.Collection | None = None) -> None:
         self.scale_factor = scale_factor
@@ -44,14 +53,12 @@ class SkeletonImporter(SlotsBase):
             if bl_armature is None:
                 bl_armature = bpy.data.armatures.new(armature_name)
                 bl_armature.display_type = "STICK"
-
                 bl_armature_obj = BlenderHelper.create_object(bl_armature)
 
-                with BlenderHelper.enter_edit_mode():
-                    self.create_bones(bl_armature, tr_skeleton)
-
+                bone_transforms = self.calc_bone_transforms(tr_skeleton)
+                self.create_bones(bl_armature, tr_skeleton, bone_transforms)
                 self.assign_counterparts(bl_armature_obj, tr_skeleton)
-                self.create_constraints(bl_armature_obj, tr_skeleton)
+                self.create_constraints(bl_armature_obj, tr_skeleton, bone_transforms)
             else:
                 bl_armature_obj = BlenderHelper.create_object(bl_armature)
 
@@ -63,52 +70,86 @@ class SkeletonImporter(SlotsBase):
 
         return bl_armature_objs
 
-    def create_bones(self, bl_armature: bpy.types.Armature, tr_skeleton: ISkeleton) -> None:
-        bone_child_indices: list[list[int]] = []
-        bone_heads: list[Vector] = []
-
+    def calc_bone_transforms(self, tr_skeleton: ISkeleton) -> list[_BoneTransform]:
+        child_indices: list[list[int]] = []
+        heads: list[Vector] = []
         for i, tr_bone in enumerate(tr_skeleton.bones):
-            bone_child_indices.append([])
+            child_indices.append([])
             if tr_bone.parent_id < 0:
-                bone_heads.append(tr_bone.relative_location * self.scale_factor)
+                heads.append(tr_bone.relative_location * self.scale_factor)
             else:
-                bone_heads.append(bone_heads[tr_bone.parent_id] + tr_bone.relative_location * self.scale_factor)
-                bone_child_indices[tr_bone.parent_id].append(i)
+                heads.append(heads[tr_bone.parent_id] + tr_bone.relative_location * self.scale_factor)
+                child_indices[tr_bone.parent_id].append(i)
 
+        transforms: list[_BoneTransform] = []
+        existing_bone_flip_states: dict[int, bool] = self.get_existing_bone_flip_states()
         for i, tr_bone in enumerate(tr_skeleton.bones):
-            bl_bone = bl_armature.edit_bones.new(BlenderNaming.make_bone_name(None, tr_bone.global_id, i))
+            head = heads[i]
+            orientation = self.to_blender_orientation(tr_bone.absolute_orientation)
 
-            orientation_matrix = tr_bone.absolute_orientation.to_matrix()
-            orientation_matrix = Matrix((
-                (orientation_matrix[0][1], orientation_matrix[0][2], orientation_matrix[0][0]),
-                (orientation_matrix[1][1], orientation_matrix[1][2], orientation_matrix[1][0]),
-                (orientation_matrix[2][1], orientation_matrix[2][2], orientation_matrix[2][0])
-            ))
-            orientation = orientation_matrix.to_quaternion()
-
-            bl_bone.head = bone_heads[i]
             tail_offset: Vector
+            is_flipped: bool | None
             if tr_bone.global_id is None:
                 tail_offset = Vector((0, 0, 0.01))
+                is_flipped = False
             else:
-                bone_length: float
-                if len(bone_child_indices[i]) > 0:
-                    avg_child_head = Enumerable(bone_child_indices[i]).avg(lambda idx: bone_heads[idx])
-                    bone_length = (avg_child_head - bone_heads[i]).length
+                length: float
+                if len(child_indices[i]) > 0:
+                    avg_child_head = Enumerable(child_indices[i]).avg(lambda idx: heads[idx])
+                    length = (avg_child_head - heads[i]).length
                 else:
-                    bone_length = tr_bone.distance_from_parent * self.scale_factor
+                    length = tr_bone.distance_from_parent * self.scale_factor
 
-                tail_offset = (orientation @ Vector((0, 1, 0))) * max(bone_length, 0.5 * self.scale_factor)
+                tail_offset = (orientation @ Vector((0, 1, 0))) * max(length, 0.5 * self.scale_factor)
 
-            bl_bone.tail = bl_bone.head + tail_offset
+                is_flipped = existing_bone_flip_states.get(tr_bone.global_id)
+                if is_flipped is None and tr_bone.parent_id >= 0:
+                    parent_head = heads[tr_bone.parent_id]
+                    if (head + tail_offset - parent_head).length < (head - tail_offset - parent_head).length:
+                        tail_offset = -tail_offset
+                        orientation = orientation @ SkeletonImporter.blender_flip_quat
+                        is_flipped = True
 
-            relative_orientation = bl_bone.matrix.to_quaternion().inverted() @ orientation
-            bl_bone.roll = relative_orientation.angle
-            if (relative_orientation.w < 0) != (relative_orientation.y < 0):
-                bl_bone.roll = -bl_bone.roll
+            transforms.append(_BoneTransform(tr_bone.global_id, head, head + tail_offset, orientation, is_flipped or False))
 
-            if tr_bone.parent_id >= 0:
-                bl_bone.parent = bl_armature.edit_bones[BlenderNaming.make_bone_name(None, tr_skeleton.bones[tr_bone.parent_id].global_id, tr_bone.parent_id)]
+        return transforms
+
+    def get_existing_bone_flip_states(self) -> dict[int, bool]:
+        bone_flip_states: dict[int, bool] = {}
+        if bpy.context.scene is None:
+            return bone_flip_states
+
+        for bl_obj in bpy.context.scene.objects:
+            bl_armature = bl_obj.data
+            if not isinstance(bl_armature, bpy.types.Armature):
+                continue
+
+            for bl_bone in bl_armature.bones:
+                bone_ids = BlenderNaming.try_parse_bone_name(bl_bone.name)
+                if bone_ids is None or bone_ids.global_id is None:
+                    continue
+
+                bone_flip_states[bone_ids.global_id] = BoneProperties.get_instance(bl_bone).is_flipped
+
+        return bone_flip_states
+
+    def create_bones(self, bl_armature: bpy.types.Armature, tr_skeleton: ISkeleton, bone_transforms: list[_BoneTransform]) -> None:
+        with BlenderHelper.enter_edit_mode():
+            for i, tr_bone in enumerate(tr_skeleton.bones):
+                bl_bone = bl_armature.edit_bones.new(BlenderNaming.make_bone_name(None, tr_bone.global_id, i))
+                bl_bone.head = bone_transforms[i].head
+                bl_bone.tail = bone_transforms[i].tail
+
+                relative_x_axis = bl_bone.matrix.to_quaternion().inverted() @ bone_transforms[i].orientation @ Vector((1, 0, 0))
+                bl_bone.roll = -math.atan2(relative_x_axis.z, relative_x_axis.x)
+
+                if tr_bone.parent_id >= 0:
+                    parent_bone_name = BlenderNaming.make_bone_name(None, tr_skeleton.bones[tr_bone.parent_id].global_id, tr_bone.parent_id)
+                    bl_bone.parent = bl_armature.edit_bones[parent_bone_name]
+
+        for i, tr_bone in enumerate(tr_skeleton.bones):
+            bl_bone = bl_armature.bones[BlenderNaming.make_bone_name(None, tr_bone.global_id, i)]
+            BoneProperties.get_instance(bl_bone).is_flipped = bone_transforms[i].is_flipped
 
     def assign_counterparts(self, bl_armature_obj: bpy.types.Object, tr_skeleton: ISkeleton) -> None:
         bl_armature = cast(bpy.types.Armature, bl_armature_obj.data)
@@ -120,15 +161,14 @@ class SkeletonImporter(SlotsBase):
             counterpart_bone_name = BlenderNaming.make_bone_name(None, tr_skeleton.bones[tr_bone.counterpart_local_id].global_id, tr_bone.counterpart_local_id)
             BoneProperties.get_instance(bl_armature.bones[bone_name]).counterpart_bone_name = counterpart_bone_name
 
-    def create_constraints(self, bl_armature_obj: bpy.types.Object, tr_skeleton: ISkeleton) -> None:
+    def create_constraints(self, bl_armature_obj: bpy.types.Object, tr_skeleton: ISkeleton, bone_transforms: list[_BoneTransform]) -> None:
         if bl_armature_obj.pose is None:
             raise Exception("Armature has no pose")
 
-        DriverFunctions.register()
         constrained_bone_sets = self.create_helper_bones(bl_armature_obj, tr_skeleton)
         for constrained_bone_set in constrained_bone_sets:
             for tr_constraint in constrained_bone_set.tr_bone.constraints:
-                self.create_constraint(bl_armature_obj, constrained_bone_set, tr_skeleton, tr_constraint)
+                self.create_constraint(bl_armature_obj, bone_transforms, constrained_bone_set, tr_constraint)
 
         # Hack to make the now-constrained bones settle into place
         with BlenderHelper.enter_edit_mode(bl_armature_obj):
@@ -171,21 +211,26 @@ class SkeletonImporter(SlotsBase):
 
         return constrained_bone_sets
 
-    def create_constraint(self, bl_armature_obj: bpy.types.Object, constrained_bone_set: _ConstrainedBoneSet, tr_skeleton: ISkeleton, tr_constraint: IBoneConstraint) -> None:
+    def create_constraint(
+        self,
+        bl_armature_obj: bpy.types.Object,
+        bone_transforms: list[_BoneTransform],
+        constrained_bone_set: _ConstrainedBoneSet,
+        tr_constraint: IBoneConstraint
+    ) -> None:
         bl_bone = constrained_bone_set.bl_constrained_pose_bone.bone
-        prop_constraints = BoneProperties.get_instance(bl_bone).constraints
-        prop_constraint = prop_constraints.add()
-        prop_constraint.data = tr_constraint.serialize()
+        constraint_properties = BoneProperties.get_instance(bl_bone).constraints.add()
+        constraint_properties.data = tr_constraint.serialize()
 
         match tr_constraint.type:
             case BoneConstraintType.LOOK_AT:
-                self.create_look_at_constraint(bl_armature_obj, constrained_bone_set, tr_skeleton, cast(IBoneConstraint_LookAt, tr_constraint))
+                self.create_look_at_constraint(bl_armature_obj, bone_transforms, constrained_bone_set, cast(IBoneConstraint_LookAt, tr_constraint))
 
-            case BoneConstraintType.COPY_POSITION:
-                self.create_weighted_position_constraint(bl_armature_obj, constrained_bone_set, tr_skeleton, cast(IBoneConstraint_WeightedPosition, tr_constraint))
+            case BoneConstraintType.WEIGHTED_POSITION:
+                self.create_weighted_position_constraint(bl_armature_obj, bone_transforms, constrained_bone_set, cast(IBoneConstraint_WeightedPosition, tr_constraint))
 
-            case BoneConstraintType.COPY_ROTATION:
-                self.create_weighted_rotation_constraint(bl_armature_obj, constrained_bone_set, tr_skeleton, cast(IBoneConstraint_WeightedRotation, tr_constraint))
+            case BoneConstraintType.WEIGHTED_ROTATION:
+                self.create_weighted_rotation_constraint(bl_armature_obj, bone_transforms, constrained_bone_set, cast(IBoneConstraint_WeightedRotation, tr_constraint))
 
             case _:
                 pass
@@ -193,8 +238,8 @@ class SkeletonImporter(SlotsBase):
     def create_look_at_constraint(
         self,
         bl_armature_obj: bpy.types.Object,
+        bone_transforms: list[_BoneTransform],
         constrained_bone_set: _ConstrainedBoneSet,
-        tr_skeleton: ISkeleton,
         tr_constraint: IBoneConstraint_LookAt
     ) -> None:
         (tr_bone, bl_constrained_pose_bone, bl_helper_pose_bone) = constrained_bone_set
@@ -205,26 +250,36 @@ class SkeletonImporter(SlotsBase):
         for elem_idx, bl_curve in enumerate(bl_curves):
             bl_driver = cast(bpy.types.Driver, bl_curve.driver)
             armature_rotation = self.make_driver_expr_for_obj_attr(bl_driver, bl_armature_obj, None, "rotation_quaternion")
-            looker_position   = self.make_driver_expr_for_bone_attr(bl_driver, bl_armature_obj, tr_skeleton, tr_constraint.target_bone_local_id, "location")
-            look_at_positions = self.make_driver_expr_for_bones_attr(bl_driver, bl_armature_obj, tr_skeleton, tr_constraint.source_bone_local_ids, "location")
+            looker_position   = self.make_driver_expr_for_bone_attr(bl_driver, bl_armature_obj, bone_transforms, tr_constraint.target_bone_local_id, "location")
+            look_at_positions = self.make_driver_expr_for_bones_attr(bl_driver, bl_armature_obj, bone_transforms, tr_constraint.source_bone_local_ids, "location")
             look_at_weights   = self.float_list_to_string(tr_constraint.source_bone_weights)
 
-            pole_dir: str
+            pole_dir_expr: str
             if tr_constraint.pole_bone_local_id is not None and tr_constraint.pole_dir is None:
-                pole_position = self.make_driver_expr_for_bone_attr(bl_driver, bl_armature_obj, tr_skeleton, tr_constraint.pole_bone_local_id, "location")
-                pole_dir = f"tr_dir({looker_position},{pole_position})"
-            elif tr_constraint.pole_dir is not None and tr_constraint.pole_bone_local_id is not None and tr_constraint.pole_bone_orientation is not None:
-                pole_dir = self.float_tuple_to_string(tr_constraint.pole_dir)
-                pole_rotation = self.make_driver_expr_for_bone_attr(bl_driver, bl_armature_obj, tr_skeleton, tr_constraint.pole_bone_local_id, "rotation_quaternion")
-                pole_dir = f"tr_rotate({pole_dir},{pole_rotation})"
-            elif tr_constraint.pole_dir is not None:
-                pole_dir = self.float_tuple_to_string(tr_constraint.pole_dir)
-            else:
-                pole_dir = "(0,0,1)"
+                pole_position = self.make_driver_expr_for_bone_attr(bl_driver, bl_armature_obj, bone_transforms, tr_constraint.pole_bone_local_id, "location")
+                pole_dir_expr = f"tr_dir({looker_position},{pole_position})"
+            elif tr_constraint.pole_bone_local_id is not None and tr_constraint.pole_dir is not None:
+                pole_dir = tr_constraint.pole_dir
+                if bone_transforms[tr_constraint.pole_bone_local_id].is_flipped:
+                    pole_dir = SkeletonImporter.tr_flip_quat @ pole_dir
 
-            bone_local_tangent = self.float_tuple_to_string(tr_constraint.bone_local_tangent)
-            bone_local_normal = self.float_tuple_to_string(tr_constraint.bone_local_normal)
-            bl_driver.expression = f"tr_look_at({armature_rotation},{looker_position},{look_at_positions},{look_at_weights},{pole_dir},{bone_local_tangent},{bone_local_normal})[{elem_idx}]"
+                pole_dir_expr = self.float_tuple_to_string(pole_dir)
+                pole_bone_rotation = self.make_driver_expr_for_bone_attr(bl_driver, bl_armature_obj, bone_transforms, tr_constraint.pole_bone_local_id, "rotation_quaternion")
+                pole_dir_expr = f"tr_rotate({pole_dir_expr},{pole_bone_rotation})"
+            elif tr_constraint.pole_dir is not None:
+                pole_dir_expr = self.float_tuple_to_string(tr_constraint.pole_dir)
+            else:
+                pole_dir_expr = "(0,0,1)"
+
+            bone_local_tangent = tr_constraint.bone_local_tangent
+            bone_local_normal  = tr_constraint.bone_local_normal
+            if bone_transforms[tr_constraint.target_bone_local_id].is_flipped:
+                bone_local_tangent = SkeletonImporter.tr_flip_quat @ bone_local_tangent
+                bone_local_normal  = SkeletonImporter.tr_flip_quat @ bone_local_normal
+
+            bone_local_tangent_expr = self.float_tuple_to_string(bone_local_tangent)
+            bone_local_normal_expr  = self.float_tuple_to_string(bone_local_normal)
+            bl_driver.expression = f"tr_look_at({armature_rotation},{looker_position},{look_at_positions},{look_at_weights},{pole_dir_expr},{bone_local_tangent_expr},{bone_local_normal_expr})[{elem_idx}]"
 
         bl_constraint = cast(bpy.types.CopyRotationConstraint, bl_constrained_pose_bone.constraints.new("COPY_ROTATION"))
         bl_constraint.target = bl_armature_obj
@@ -233,8 +288,8 @@ class SkeletonImporter(SlotsBase):
     def create_weighted_position_constraint(
         self,
         bl_armature_obj: bpy.types.Object,
+        bone_transforms: list[_BoneTransform],
         constrained_bone_set: _ConstrainedBoneSet,
-        tr_skeleton: ISkeleton,
         tr_constraint: IBoneConstraint_WeightedPosition
     ) -> None:
         (_, bl_constrained_pose_bone, bl_helper_pose_bone) = constrained_bone_set
@@ -243,8 +298,8 @@ class SkeletonImporter(SlotsBase):
 
         self.create_weighted_attr_drivers(
             bl_armature_obj,
+            bone_transforms,
             bl_helper_pose_bone,
-            tr_skeleton,
             "tr_weighted_pos",
             tr_constraint.source_bone_local_ids,
             tr_constraint.source_bone_weights,
@@ -258,22 +313,26 @@ class SkeletonImporter(SlotsBase):
     def create_weighted_rotation_constraint(
         self,
         bl_armature_obj: bpy.types.Object,
+        bone_transforms: list[_BoneTransform],
         constrained_bone_set: _ConstrainedBoneSet,
-        tr_skeleton: ISkeleton,
         tr_constraint: IBoneConstraint_WeightedRotation
     ) -> None:
         (_, bl_constrained_pose_bone, bl_helper_pose_bone) = constrained_bone_set
         if bl_helper_pose_bone is None:
             return
 
+        offset = tr_constraint.offset
+        if bone_transforms[tr_constraint.target_bone_local_id].is_flipped:
+            offset = offset @ SkeletonImporter.tr_flip_quat
+
         self.create_weighted_attr_drivers(
             bl_armature_obj,
+            bone_transforms,
             bl_helper_pose_bone,
-            tr_skeleton,
             "tr_weighted_rot",
             tr_constraint.source_bone_local_ids,
             tr_constraint.source_bone_weights,
-            tr_constraint.offset,
+            offset,
             "rotation_quaternion"
         )
         bl_constraint = cast(bpy.types.CopyRotationConstraint, bl_constrained_pose_bone.constraints.new("COPY_ROTATION"))
@@ -283,8 +342,8 @@ class SkeletonImporter(SlotsBase):
     def create_weighted_attr_drivers(
         self,
         bl_armature_obj: bpy.types.Object,
+        bone_transforms: list[_BoneTransform],
         bl_helper_pose_bone: bpy.types.PoseBone,
-        tr_skeleton: ISkeleton,
         driver_func_name: str,
         source_bone_local_ids: list[int],
         source_bone_weights: list[float],
@@ -296,16 +355,17 @@ class SkeletonImporter(SlotsBase):
             bl_driver = cast(bpy.types.Driver, bl_curve.driver)
             armature_position = self.make_driver_expr_for_obj_attr(bl_driver, bl_armature_obj, None, "location")
             armature_rotation = self.make_driver_expr_for_obj_attr(bl_driver, bl_armature_obj, None, "rotation_quaternion")
-            bone_attrs        = self.make_driver_expr_for_bones_attr(bl_driver, bl_armature_obj, tr_skeleton, source_bone_local_ids, attr_name)
+            bone_attrs        = self.make_driver_expr_for_bones_attr(bl_driver, bl_armature_obj, bone_transforms, source_bone_local_ids, attr_name)
+            bone_flip_flags   = self.bone_flip_flags_to_string(bone_transforms, source_bone_local_ids)
             weights_expr      = self.float_list_to_string(source_bone_weights)
             offset_expr       = self.float_tuple_to_string(offset)
-            bl_driver.expression = f"{driver_func_name}({armature_position},{armature_rotation},{bone_attrs},{weights_expr},{offset_expr})[{elem_idx}]"
+            bl_driver.expression = f"{driver_func_name}({armature_position},{armature_rotation},{bone_attrs},{bone_flip_flags},{weights_expr},{offset_expr})[{elem_idx}]"
 
     def make_driver_expr_for_bones_attr(
         self,
         bl_driver: bpy.types.Driver,
         bl_armature_obj: bpy.types.Object,
-        tr_skeleton: ISkeleton,
+        bone_transforms: list[_BoneTransform],
         local_bone_ids: list[int],
         attr_name: Literal["location"] | Literal["rotation_quaternion"]
     ) -> str:
@@ -314,7 +374,7 @@ class SkeletonImporter(SlotsBase):
             if i > 0:
                 expr += ","
 
-            expr += self.make_driver_expr_for_bone_attr(bl_driver, bl_armature_obj, tr_skeleton, local_bone_id, attr_name)
+            expr += self.make_driver_expr_for_bone_attr(bl_driver, bl_armature_obj, bone_transforms, local_bone_id, attr_name)
 
         expr += "]"
         return expr
@@ -323,12 +383,11 @@ class SkeletonImporter(SlotsBase):
         self,
         bl_driver: bpy.types.Driver,
         bl_armature_obj: bpy.types.Object,
-        tr_skeleton: ISkeleton,
+        bone_transforms: list[_BoneTransform],
         local_bone_id: int,
         attr_name: Literal["location"] | Literal["rotation_quaternion"]
     ) -> str:
-        tr_bone = tr_skeleton.bones[local_bone_id]
-        bone_name = BlenderNaming.make_bone_name(None, tr_bone.global_id, local_bone_id)
+        bone_name = BlenderNaming.make_bone_name(None, bone_transforms[local_bone_id].global_id, local_bone_id)
         return self.make_driver_expr_for_obj_attr(bl_driver, bl_armature_obj, bone_name, attr_name)
 
     def make_driver_expr_for_obj_attr(
@@ -390,3 +449,23 @@ class SkeletonImporter(SlotsBase):
             value = round(value, 5)
 
         return str(value)
+
+    def bone_flip_flags_to_string(self, bone_transforms: list[_BoneTransform], local_bone_ids: list[int]) -> str:
+        result = "["
+        for i, local_bone_id in enumerate(local_bone_ids):
+            if i > 0:
+                result += ","
+
+            result += "1" if bone_transforms[local_bone_id].is_flipped else "0"
+
+        result += "]"
+        return result
+
+    def to_blender_orientation(self, tr_orientation: Quaternion) -> Quaternion:
+        matrix = tr_orientation.to_matrix()
+        matrix = Matrix((
+            (matrix[0][1], matrix[0][2], matrix[0][0]),
+            (matrix[1][1], matrix[1][2], matrix[1][0]),
+            (matrix[2][1], matrix[2][2], matrix[2][0])
+        ))
+        return matrix.to_quaternion()

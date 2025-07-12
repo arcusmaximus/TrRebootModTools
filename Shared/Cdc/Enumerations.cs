@@ -10,8 +10,9 @@
     public enum ResourceType
     {
         Unknown = 0,
+        Empty = 1,
         Animation = 2,
-        PsdRes = 4,
+        PoseSpaceDeformer = 4,
         Texture = 5,
         SoundBank = 6,
         Dtp = 7,

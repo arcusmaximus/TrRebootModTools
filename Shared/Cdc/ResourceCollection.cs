@@ -116,7 +116,9 @@ namespace TrRebootTools.Shared.Cdc
                     {
                         var identification = _resourceIdentifications[i];
                         var location = _resourceLocations[i];
-                        _resourceReferences.Add(MakeResourceReference(identification, location));
+                        ResourceReference resourceRef = MakeResourceReference(identification, location);
+                        resourceRef.Enabled = identification.Type != (byte)ResourceType.Empty;
+                        _resourceReferences.Add(resourceRef);
                     }
                 }
                 return _resourceReferences;
@@ -157,6 +159,7 @@ namespace TrRebootTools.Shared.Cdc
             {
                 identification.BodySize = resourceRef.BodySize - identification.RefDefinitionsSize;
             }
+            identification.Type = (byte)(resourceRef.Enabled ? resourceRef.Type : ResourceType.Empty);
             _resourceIdentifications[resourceIdx] = identification;
 
             TResourceLocation location = _resourceLocations[resourceIdx];

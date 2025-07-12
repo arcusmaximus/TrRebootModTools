@@ -13,6 +13,7 @@ This toolset allows modding the games from the Tomb Raider Reboot trilogy. The f
 | Hair                                       | ✓                  | ✓                       | ✓                        |
 | Animations                                 |                    |                         | ✓                         |
 | Sound                                      |                    |                         | ✓                         |
+| Level geometry importing                   | ~                  | ✓                       | ✓                         |
 
 <small>\* For Tomb Raider (2013), the "Definitive Edition" that can only be bought on the Xbox store is **not** supported.
 Only the "regular" edition from e.g. Steam or the EGS is.</small>
@@ -214,10 +215,15 @@ So, if you import a file that seems to have way too few bones (like tr11_lara.dr
 #### Twist bones
 
 Many SOTTR bones are not animated directly, but are so-called twist bones that have their position and rotation calculated based
-on other bones. They are displayed in green in Pose Mode, and can be hidden in Blender 4.0 by toggling the "Twist bones"
-bone collection. While the twisting information is not applied as Blender bone constraints or drivers,
-it's still stored in the Blender file, and will be written out again when exporting the skeleton (meaning that,
-if you mod a skeleton, the twisting information won't be lost).
+on other bones. For example, they're used to automatically flex Lara's biceps when she bends her arm. These bones are displayed in
+green in Edit Mode and Pose Mode, and can be hidden by toggling the "Twist bones" bone collection.
+
+The twisting information is imported as Blender drivers so you get an accurate preview of how your custom outfit will behave ingame.
+In certain cases, however, these drivers break down and put the bones in the wrong location, making the outfit look all mangled.
+(This happens when resetting the pose to the rest position, for example.) To fix this, simply enter and exit Edit Mode on the armature.
+
+Also, while you can technically edit the driver expressions to make the twist bones behave differently, these changes will
+not be applied when exporting the skeleton. The addon keeps an internal copy of the twist bone settings and exports that instead.
 
 #### Bone IDs
 
@@ -590,8 +596,8 @@ shader references and the other textures.
 
 ## Text modding
 
-You can mod the file pcx64-w\local\locals.bin ("pc-w" for TR2013), which contains all the text
-displayed in the game: menu items, subtitles, outfit names/descriptions, and so on.
+You can mod the file pc(x64)-w\local\locals.bin, which contains all the text displayed in the game:
+menu items, subtitles, outfit names/descriptions, and so on.
 
 As indicated by its extension, it's a binary file, but the extractor automatically converts
 it to JSON for convenience. Once extracted, you can change any text you like. To keep an overview,
@@ -607,7 +613,7 @@ manager will then create a new locals.bin that includes your changes.
 SOTTR uses the Wwise sound engine, which has a proprietary file format called .wem
 (for Wwise Encoded Media). To create such files, you need the Wwise authoring tools,
 which can be installed for free through the [Audiokinetic Launcher](https://www.audiokinetic.com/download/).
-~~You may be able to skip past the account registration using
+~~You may be able to skip the account registration using
 [bugmenot.com](https://bugmenot.com/view/audiokinetic.com).~~ Specifically, you need version 2023.1.1.8417.
 
 While it's possible to do the conversion using these tools alone, it's a bit cumbersome,
@@ -616,6 +622,29 @@ so you can use the modding toolset's WwiseSoundConverter.exe instead.
 Once you have your .wem file, place it in your mod with the same folder structure as the original
 (mod\\pcx64-w\\wwise\\...), and you're done.
 
+
+## Level importing
+
+The addon supports importing entire game levels. This is mainly for viewing purposes: it only imports models
+and puts them in the right place, so you won't be seeing spawnpoints or trigger volumes for example. Also,
+while you can edit and export individual models and their collisions, you can't add, move, or remove objects
+in the level.
+
+To get started, open the folder "pc(x64)-w\\streamlayers" in the Extractor. It contains DRMs for pieces of
+the various levels, such as "cm_croft_manor#cm_croft_manor-content_cm_background.drm". While you can import these
+pieces directly, you'll generally want to import the main DRM that references all the pieces — in this case,
+cm_croft_manor.drm (the part before the "#").
+
+After you import a streamlayer DRM or a main level DRM, the addon will log any missing DRMs in Blender's
+Scripting tab. You can then extract these, redo the import, and repeat until you have everything.
+
+The "Tomb Raider" tab in Blender's sidebar has a button called "Toggle Collision Visibility" that displays
+the level geometry in wireframe mode and makes the collision models visible. You can edit and export these
+just like regular models (for example, to remove barriers so you can explore areas ingame that are normally
+inaccessible). The material of a collision face determines the sound it makes when you walk on it ingame.
+
+Note that depending on the size of the level, importing it can take several hours. Also, collision import/export
+is not available for TR2013.
 
 ## Mod packaging
 
@@ -629,7 +658,7 @@ into a folder or compressed archive (.zip/.7z/.rar) and you're done. There's no 
 > to publish it.
 >
 > What's more: if you install from a folder, the manager will first automatically uninstall
-> the existing mod with the same name (if present) so that you don't have to do this manually,
+> the existing mod with the same name so that you don't have to do this manually,
 > saving you some time when iterating.
 
 For textures, simply use DDS files; the manager will automatically convert them back to the game-specific texture

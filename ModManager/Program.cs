@@ -128,13 +128,13 @@ namespace TrRebootTools.ModManager
         /*
         private static void CreateSoundSpreadsheet()
         {
-            using ArchiveSet archiveSet = new ArchiveSet(@"D:\Steam\steamapps\common\Shadow of the Tomb Raider", true, false);
+            using ArchiveSet archiveSet = ArchiveSet.Open(@"D:\Steam\steamapps\common\Shadow of the Tomb Raider", true, false, CdcGame.Shadow);
 
             Dictionary<string, Dictionary<string, List<int>>> soundIds = new();
             HashSet<string> languages = new();
             foreach (ArchiveFileReference fileRef in archiveSet.Files)
             {
-                string filePath = CdcHash.Lookup(fileRef.NameHash);
+                string filePath = CdcHash.Lookup(fileRef.NameHash, CdcGame.Shadow);
                 if (filePath == null || !filePath.EndsWith(".wem"))
                     continue;
 
@@ -169,13 +169,10 @@ namespace TrRebootTools.ModManager
             }
 
             Dictionary<string, LocalsBin> locals = new();
-            using (Stream stream = archiveSet.OpenFile(archiveSet.GetFileReference("pcx64-w\\local\\locals.bin", 0xffffffffffff0401)))
+            foreach (CdcGameInfo.Language language in CdcGameInfo.Get(CdcGame.Shadow).Languages)
             {
-                locals["english"] = new LocalsBin(stream);
-            }
-            using (Stream stream = archiveSet.OpenFile(archiveSet.GetFileReference("pcx64-w\\local\\locals.bin", 0xffffffffffff0408)))
-            {
-                locals["italian"] = new LocalsBin(stream);
+                using Stream stream = archiveSet.OpenFile(archiveSet.GetFileReference("pcx64-w\\local\\locals.bin", language.Locale));
+                locals[language.Name.ToLower()] = LocalsBin.Open(stream, CdcGame.Shadow);
             }
 
             Dictionary<string, Dictionary<Guid, string>> guidLocals = new();
@@ -193,18 +190,18 @@ namespace TrRebootTools.ModManager
 
             using StreamWriter writer = new StreamWriter(@"D:\Downloads\sounds.csv");
             writer.Write("\"Subtitle keys\"");
-            foreach (string language in languages)
+            foreach (string language in languages.OrderBy(l => l))
             {
                 writer.Write(",\"" + language.Substring(0, 1).ToUpper() + language.Substring(1) + " text\"");
                 writer.Write(",\"" + language.Substring(0, 1).ToUpper() + language.Substring(1) + " file\"");
             }
             writer.WriteLine();
 
-            foreach ((string subtitleKeys, Dictionary<string, List<int>> idsByLanguage) in soundIds)
+            foreach ((string subtitleKeys, Dictionary<string, List<int>> idsByLanguage) in soundIds.OrderBy(p => p.Key))
             {
                 writer.Write($"\"{subtitleKeys}\"");
 
-                foreach (string language in languages)
+                foreach (string language in languages.OrderBy(l => l))
                 {
                     writer.Write(",");
                     string subtitleTexts = string.Join(
@@ -248,14 +245,14 @@ namespace TrRebootTools.ModManager
 
         private static void ExtractSoundNames()
         {
-            using ArchiveSet archiveSet = new ArchiveSet(@"D:\Steam\steamapps\common\Shadow of the Tomb Raider", true, false);
+            using ArchiveSet archiveSet = ArchiveSet.Open(@"D:\Steam\steamapps\common\Shadow of the Tomb Raider", true, false, CdcGame.Shadow);
             ResourceUsageCache cache = new ResourceUsageCache();
             cache.Load(archiveSet.FolderPath);
 
             var archiveSetNameHashes = archiveSet.Files.Select(f => f.NameHash).ToHashSet();
-            using Stream listStream = File.Open(@"E:\Projects\SottrModTools\Extractor\SOTR_PC_Release.list", FileMode.Append, FileAccess.Write);
+            using Stream listStream = File.Open(@"D:\Projects\TrRebootModTools\Extractor\SOTR_PC_Release.list", FileMode.Append, FileAccess.Write);
             using StreamWriter listWriter = new StreamWriter(listStream);
-            foreach (int soundId in cache.SoundIds)
+            foreach (int soundId in cache.WwiseSoundIds)
             {
                 foreach (string soundPath in GetSoundFilePaths(soundId))
                 {
@@ -291,8 +288,8 @@ namespace TrRebootTools.ModManager
 
         private static void AddSoundPath(string path, HashSet<ulong> archiveSetNameHashes, StreamWriter listWriter)
         {
-            ulong nameHash = CdcHash.Calculate(path);
-            if (!archiveSetNameHashes.Contains(nameHash) || CdcHash.Lookup(nameHash) != null)
+            ulong nameHash = CdcHash.Calculate(path, CdcGame.Shadow);
+            if (!archiveSetNameHashes.Contains(nameHash) || CdcHash.Lookup(nameHash, CdcGame.Shadow) != null)
                 return;
 
             listWriter.WriteLine(path);

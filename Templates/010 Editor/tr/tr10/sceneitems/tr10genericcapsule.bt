@@ -1,0 +1,6 @@
+typedef struct
+{
+    float radius;
+    float length;
+    unsigned byte boneId;
+} GenericCapsuleShape;

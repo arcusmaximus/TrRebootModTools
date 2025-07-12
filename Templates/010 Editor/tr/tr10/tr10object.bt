@@ -9,4 +9,8 @@
 
 #define TR_VERSION 10
 #include "../trcommon.bt"
+#include "sceneitems/tr10collisionmarker.bt"
+#include "sceneitems/tr10genericcapsule.bt"
+#include "sceneitems/tr10meshrefsceneitem.bt"
+#include "sceneitems/tr10objectrefsceneitem.bt"
 #include "../trobjectcommon.bt"

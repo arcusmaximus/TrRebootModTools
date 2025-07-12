@@ -1,0 +1,92 @@
+#define TR_VERSION 10
+#include "../../trcommon.bt"
+
+typedef struct
+{
+    ushort type : 2;
+    ushort disable : 1;
+    ushort oneshot : 1;
+    ushort surface : 6;
+    ushort triggercondition : 2;
+    ushort additionalFxDataSize : 4;
+    short frame;
+    ubyte iFxEvent;
+    ubyte pad8_1;
+    ubyte pad8_2;
+    ubyte pad8_3;
+} FxHeader <optimize=false>;
+
+typedef struct
+{
+    ushort fxtype;
+    short group;
+    ushort override;
+    ushort modifier3;
+} endallfx <optimize=false>;
+
+typedef struct
+{
+    FxHeader header;
+    endallfx payload;
+} fx_endallfx <optimize=false>;
+
+typedef struct
+{
+    fx_endallfx fxEndallfxList[1];
+    byte gap0[8];
+} FXComponent__fx__triggers <optimize=false>;
+
+typedef struct
+{
+    Ref fxLibRef;
+    Ref fxListRef;
+    if (CanSeekTo(fxListRef))
+    {
+        SeekToRef(fxListRef);
+        FXComponent__fx__triggers fxList;
+        ReturnFromRef();
+    }
+} FXComponent__fx <optimize=false>;
+
+typedef struct
+{
+    unsigned int eSurfaceType;
+    unsigned int effect;
+} FXMaterialAssignment <optimize=false>;
+
+typedef struct
+{
+    ubyte id;
+    FSkip(7);
+    Ref surfaceListRef;
+    unsigned int surfaceListCount;
+    if (CanSeekTo(surfaceListRef))
+    {
+        SeekToRef(surfaceListRef);
+        FXMaterialAssignment surfaceList[surfaceListCount];
+        ReturnFromRef();
+    }
+} MaterialSpecificEffect <optimize=false>;
+
+typedef struct
+{
+    Ref fxLibRef;
+    Ref initFXRef;
+    if (CanSeekTo(initFXRef))
+    {
+        SeekToRef(initFXRef);
+        FXComponent__fx initFX;
+        ReturnFromRef();
+    }
+    Ref effectsRef;
+    unsigned int effectsListCount;
+    if (CanSeekTo(effectsRef))
+    {
+        SeekToRef(effectsRef);
+        MaterialSpecificEffect effects[effectsListCount];
+        ReturnFromRef();
+    }
+} FXComponent <optimize=false>;
+
+RefDefinitions refDefinitions;
+FXComponent root <open=true>;

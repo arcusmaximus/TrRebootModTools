@@ -24,3 +24,4 @@ class BoneProperties(BlenderAttachedPropertyGroup[bpy.types.Bone]):
     counterpart_bone_name: Annotated[str, Prop("Counterpart", search = search_bones)]
     constraints: Annotated[BlenderPropertyGroupCollection[BoneConstraintProperties], Prop("Constraints")]
     cloth: Annotated[BoneClothProperties, Prop("Cloth properties")]
+    is_flipped: Annotated[bool, Prop("Is flipped", description = "Has opposite orientation than in original skeletion")]

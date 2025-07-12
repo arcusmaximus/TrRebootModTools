@@ -219,24 +219,15 @@ enum TypeNameHash
 
 typedef struct
 {
-    Ref nameRef;
-    if (CanSeekTo(nameRef))
-    {
-        SeekToRef(nameRef);
-        string name;
-        ReturnFromRef();
-    }
-    int type;
-    int renderModelId;
-    int collisionModelId;
-} MeshRef;
-
-typedef struct
-{
     TypeNameHash type <read=EnumToString(this)>;
     FSkip(4);
     Ref reference;
 } Component <read=EnumToString(type), optimize=false>;
+
+struct CollisionMarker;
+struct GenericCapsuleShape;
+struct MeshRef;
+struct ObjectRef;
 
 typedef struct
 {
@@ -261,19 +252,26 @@ typedef struct
     }
     
     quad hash <format=hex>;
-    if (TR_VERSION == 10)
+    Ref propertiesRef;
+    if (CanSeekTo(propertiesRef))
     {
-        Ref propertiesRef;
-        if (parentof(this).type == MESHREF)
+        SeekToRef(propertiesRef);
+        switch (parentof(this).type)
         {
-            SeekToRef(propertiesRef);
-            MeshRef meshRef;
-            ReturnFromRef();
+            case COLLISIONMARKER:
+                CollisionMarker properties;
+                break;
+            case GENERICCAPSULESHAPELIST:
+                GenericCapsuleShape properties;
+                break;
+            case MESHREF:
+                MeshRef properties;
+                break;
+            case OBJECTREF:
+                ObjectRef properties;
+                break;
         }
-    }
-    else
-    {
-        Ref propertiesRef;
+        ReturnFromRef();
     }
     FSkip(8);
 } SceneItem <read=(exists(uiName) && uiName != "?" ? uiName : Str("%016LX", hash)), optimize=false>;
@@ -372,6 +370,12 @@ typedef struct
         ReturnFromRef();
     }
 } PlacementPath <optimize=false>;
+
+typedef struct
+{
+    ushort unit;
+    ushort streamLayer;
+} StreamLayerRef;
 
 #ifndef TR_OBJECT_NO_INSTANTIATE
     RefDefinitions refDefinitions;

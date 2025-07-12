@@ -1,0 +1,1150 @@
+#define TR_VERSION 10
+#include "../trcommon.bt"
+
+typedef struct
+{
+    float fSpecularPower;
+    float fSoftParticle;
+    float fFadeWidth;
+    float fAlphaBias;
+    float fFlowMapSpeed;
+    float fFlowMapStrength;
+} emitterfx__MaterialData <optimize=false>;
+
+typedef struct
+{
+    float fWarpAmount;
+    float fScrollX;
+    float fScrollY;
+    float fUScrollRate;
+    float fVScrollRate;
+    float fUCount;
+    float fVCount;
+    float fCmPerV;
+} emitterfx__ScrollData <optimize=false>;
+
+typedef struct
+{
+    int samplepoints[31];
+} MyColorBar <optimize=false>;
+
+typedef struct
+{
+    int samplepoints[31];
+} MyColorBarNoAlpha <optimize=false>;
+
+typedef struct
+{
+    float fColorScaleMin;
+    float fColorScaleMax;
+    float fAlphaScaleMin;
+    float fAlphaScaleMax;
+    float fColorDist;
+    FSkip(4);
+    Ref colorBarPLRef;
+    if (CanSeekTo(colorBarPLRef))
+    {
+        SeekToRef(colorBarPLRef);
+        MyColorBar colorBarPL;
+        ReturnFromRef();
+    }
+    Ref colorBarELRef;
+    if (CanSeekTo(colorBarELRef))
+    {
+        SeekToRef(colorBarELRef);
+        MyColorBarNoAlpha colorBarEL;
+        ReturnFromRef();
+    }
+    Ref colorBarDistRef;
+    if (CanSeekTo(colorBarDistRef))
+    {
+        SeekToRef(colorBarDistRef);
+        MyColorBar colorBarDist;
+        ReturnFromRef();
+    }
+} emitterfx__ColorData <optimize=false>;
+
+typedef struct
+{
+    unsigned int hash;
+} EventEnum <optimize=false>;
+
+typedef struct
+{
+    float time;
+} SoundPlex__Silence <optimize=false>;
+
+typedef struct
+{
+    ushort type;
+    byte clickPlay;
+    FSkip(5);
+    Ref dataRef;
+    if (CanSeekTo(dataRef))
+    {
+        SeekToRef(dataRef);
+        SoundPlex__Silence data;
+        ReturnFromRef();
+    }
+    unsigned int ownerID;
+} SoundPlex <optimize=false>;
+
+typedef struct
+{
+    float fEdgeFadeTime;
+    float vShapeMin[3];
+    float vShapeMax[3];
+    float fShapeLen;
+    float fShotgun;
+    float vCapsuleMax[2];
+    float vConeMin[2];
+    float vConeMax[2];
+    float vShapePos[3];
+    float vShapeRot[3];
+    FSkip(4);
+    Ref aCurveOffsetInitELRef;
+    if (CanSeekTo(aCurveOffsetInitELRef))
+    {
+        SeekToRef(aCurveOffsetInitELRef);
+        ubyte aCurveOffsetInitEL;
+        ReturnFromRef();
+    }
+} emitterfx__BirthControl <optimize=false>;
+
+typedef struct
+{
+    float fVortexAmp;
+    float fVortexFreq;
+    float fVortex;
+    FSkip(4);
+    Ref aCurveVortexCoefRef;
+    if (CanSeekTo(aCurveVortexCoefRef))
+    {
+        SeekToRef(aCurveVortexCoefRef);
+        ubyte aCurveVortexCoef;
+        ReturnFromRef();
+    }
+    Ref aCurveVortexAmpRef;
+    if (CanSeekTo(aCurveVortexAmpRef))
+    {
+        SeekToRef(aCurveVortexAmpRef);
+        ubyte aCurveVortexAmp;
+        ReturnFromRef();
+    }
+    Ref aCurveVortexFreqRef;
+    if (CanSeekTo(aCurveVortexFreqRef))
+    {
+        SeekToRef(aCurveVortexFreqRef);
+        ubyte aCurveVortexFreq;
+        ReturnFromRef();
+    }
+} emitterfx__VortexData <optimize=false>;
+
+typedef struct
+{
+    float fModelScale;
+    float fStretch;
+    float fStretchRand;
+    float fStretchSpeedMin;
+    float fStretchSpeedMax;
+    float fStretchRatioAtSpeedMin;
+    float fStretchRatioAtSpeedMax;
+    float fParticleSize;
+    float fParticleSizeRand;
+    FSkip(4);
+    Ref aCurveSizeELRef;
+    if (CanSeekTo(aCurveSizeELRef))
+    {
+        SeekToRef(aCurveSizeELRef);
+        ubyte aCurveSizeEL;
+        ReturnFromRef();
+    }
+    Ref aCurveSizePLRef;
+    if (CanSeekTo(aCurveSizePLRef))
+    {
+        SeekToRef(aCurveSizePLRef);
+        ubyte aCurveSizePL;
+        ReturnFromRef();
+    }
+    Ref aCurveSizeRandELRef;
+    if (CanSeekTo(aCurveSizeRandELRef))
+    {
+        SeekToRef(aCurveSizeRandELRef);
+        ubyte aCurveSizeRandEL;
+        ReturnFromRef();
+    }
+    Ref aCurveSizeRandPLRef;
+    if (CanSeekTo(aCurveSizeRandPLRef))
+    {
+        SeekToRef(aCurveSizeRandPLRef);
+        ubyte aCurveSizeRandPL;
+        ReturnFromRef();
+    }
+    Ref aCurveStretchPLRef;
+    if (CanSeekTo(aCurveStretchPLRef))
+    {
+        SeekToRef(aCurveStretchPLRef);
+        ubyte aCurveStretchPL;
+        ReturnFromRef();
+    }
+} emitterfx__DimensionData <optimize=false>;
+
+typedef struct
+{
+    float fGravityScale;
+    float fWindFactor;
+    float fInheritScale;
+    float fTurbulence;
+    float fMaxSpeed;
+    float fMaxRange;
+    Ref aCurveTurbulenceRef;
+    if (CanSeekTo(aCurveTurbulenceRef))
+    {
+        SeekToRef(aCurveTurbulenceRef);
+        ubyte aCurveTurbulence;
+        ReturnFromRef();
+    }
+    Ref aCurveVelInheritPLRef;
+    if (CanSeekTo(aCurveVelInheritPLRef))
+    {
+        SeekToRef(aCurveVelInheritPLRef);
+        ubyte aCurveVelInheritPL;
+        ReturnFromRef();
+    }
+} emitterfx__AdvancedData <optimize=false>;
+
+typedef struct
+{
+    float fFlarePositionDistance;
+    float fFlarePositionSpread;
+    float fFlarePositionRandomSpread;
+    float fFlarePositionRandomSeed;
+    float fFlareSizeRandomSpread;
+    float eFlareAxisLockAmount;
+    float fFlareSizeRandomSeed;
+    float fFlareRadius;
+    float fFlarePositionOffsetX;
+    float fFlarePositionOffsetY;
+    float fFlarePositionOffsetZ;
+    float fFlarePositionOffsetAngle;
+} emitterfx__LensFlareData <optimize=false>;
+
+typedef struct
+{
+    float fFadeAngleStart;
+    float fFadeAngleEnd;
+    float fFadeSizeStart;
+    float fFadeSizeEnd;
+    float f3dLod;
+    float fZPushPart;
+    float fZPushGeom;
+    float fSphereBumper;
+    float fSphereCushion;
+    float fActiveDist;
+    Ref aCurveFadeRef;
+    if (CanSeekTo(aCurveFadeRef))
+    {
+        SeekToRef(aCurveFadeRef);
+        ubyte aCurveFade;
+        ReturnFromRef();
+    }
+} emitterfx__VisibilityData <optimize=false>;
+
+typedef struct
+{
+    float vVelInit[3];
+    float vVelRand[3];
+    Ref aCurveVelInitELRef;
+    if (CanSeekTo(aCurveVelInitELRef))
+    {
+        SeekToRef(aCurveVelInitELRef);
+        ubyte aCurveVelInitEL;
+        ReturnFromRef();
+    }
+    Ref aCurveVelPLRef;
+    if (CanSeekTo(aCurveVelPLRef))
+    {
+        SeekToRef(aCurveVelPLRef);
+        ubyte aCurveVelPL;
+        ReturnFromRef();
+    }
+    Ref aCurveVelRandELRef;
+    if (CanSeekTo(aCurveVelRandELRef))
+    {
+        SeekToRef(aCurveVelRandELRef);
+        ubyte aCurveVelRandEL;
+        ReturnFromRef();
+    }
+    Ref aCurveVelRandPLRef;
+    if (CanSeekTo(aCurveVelRandPLRef))
+    {
+        SeekToRef(aCurveVelRandPLRef);
+        ubyte aCurveVelRandPL;
+        ReturnFromRef();
+    }
+} emitterfx__VelocityData <optimize=false>;
+
+typedef struct
+{
+    unsigned int eSurfaceType;
+    unsigned int colFxa;
+    ubyte eHeadingType : 2;
+    byte _Bitfieldpadding2 : 6;
+} FXSurfaceCol <optimize=false>;
+
+typedef struct
+{
+    float fShotgunRadiusMin;
+    float fShotgunRadiusMax;
+    int iRingParticleCount;
+    float fIdividualRotation;
+} ShotgunRing <optimize=false>;
+
+typedef struct
+{
+    float x;
+    float y;
+} FXPointCurve__Point <optimize=false>;
+
+typedef struct
+{
+    unsigned int numPoints;
+    FSkip(4);
+    Ref pointsRef;
+    if (CanSeekTo(pointsRef))
+    {
+        SeekToRef(pointsRef);
+        FXPointCurve__Point points[numPoints];
+        ReturnFromRef();
+    }
+} FXPointCurve <optimize=false>;
+
+typedef struct
+{
+    unsigned int eSurfaceType;
+    char iProbeTile;
+    FSkip(3);
+    float fProbeRadius;
+    unsigned int probeFxa;
+    ubyte eHeadingType : 2;
+    ubyte eRenderType : 2;
+    byte _Bitfieldpadding4 : 4;
+} FXSurface <optimize=false>;
+
+typedef struct
+{
+    unsigned int iProbeMarker;
+    float fProbeLength;
+    float fProbeTolerance;
+    FSkip(4);
+    Ref probeSoundRef;
+    if (CanSeekTo(probeSoundRef))
+    {
+        SeekToRef(probeSoundRef);
+        SoundPlex probeSound;
+        ReturnFromRef();
+    }
+    ubyte bProbeEnabled : 1;
+    ubyte bProbeLocal : 1;
+    ubyte bDieOnImpact : 1;
+    ubyte bApplyDamage : 1;
+    ubyte bProbeTerrain : 1;
+    ubyte bProbeObjects : 1;
+    ubyte bProbeWater : 1;
+    ubyte bProbeSnow : 1;
+    ubyte bProbePlayer : 1;
+    ubyte bProbeEnemy : 1;
+    ubyte bProbeFriendlyTeam : 1;
+    ubyte bParentCollision : 1;
+    ubyte bIgnoreProjectile : 1;
+    ubyte bIgnoreProjectileThrower : 1;
+    ubyte bProbePrev : 1;
+    ubyte bDamageSpeed : 1;
+    FSkip(2);
+    float vLastBirth[3];
+    ushort nSurfaces;
+    FSkip(6);
+    Ref aSurfaceRef;
+    if (CanSeekTo(aSurfaceRef))
+    {
+        SeekToRef(aSurfaceRef);
+        FXSurface aSurface;
+        ReturnFromRef();
+    }
+} FXProbe <optimize=false>;
+
+typedef struct
+{
+    ubyte key;
+    FSkip(3);
+    float value;
+} FXGameDataKeyValuePair <optimize=false>;
+
+typedef struct
+{
+    Ref materialDataRef;
+    if (CanSeekTo(materialDataRef))
+    {
+        SeekToRef(materialDataRef);
+        emitterfx__MaterialData materialData;
+        ReturnFromRef();
+    }
+    Ref scrollDataRef;
+    if (CanSeekTo(scrollDataRef))
+    {
+        SeekToRef(scrollDataRef);
+        emitterfx__ScrollData scrollData;
+        ReturnFromRef();
+    }
+    Ref colorDataRef;
+    if (CanSeekTo(colorDataRef))
+    {
+        SeekToRef(colorDataRef);
+        emitterfx__ColorData colorData;
+        ReturnFromRef();
+    }
+    Ref debugNameRef;
+    if (CanSeekTo(debugNameRef))
+    {
+        SeekToRef(debugNameRef);
+        string debugName;
+        ReturnFromRef();
+    }
+    ubyte bDamageIndicator : 1;
+    ubyte bEnabled : 1;
+    ubyte bEnabledMulti : 1;
+    ubyte bDebugColor : 1;
+    ubyte bDebugInfo : 1;
+    ubyte bDebugShape : 1;
+    ubyte bDebugSphere : 1;
+    ubyte bDebugActivation : 1;
+    ubyte bDebugSleep : 1;
+    ubyte bDebugCollision : 1;
+    ubyte bDebugAvgVel : 1;
+    ubyte bDebugDrawKV : 1;
+    ubyte bDebugDrawWS : 1;
+    ubyte bDebugCenter : 1;
+    ubyte bDebugOutline : 1;
+    ubyte bDebugNormals : 1;
+    ubyte bDebugMaterial : 1;
+    ubyte bDebugAlphaBar : 1;
+    ubyte bDebugVel : 1;
+    ubyte bCallbackBirth : 1;
+    ubyte bCallbackPost : 1;
+    ubyte bStopProcIfNotVisible : 1;
+    ubyte bAlwaysFitBoundingRadius : 1;
+    ubyte bRendBuf : 1;
+    ubyte bRendPostScr : 1;
+    ubyte bRendBehindCamera : 1;
+    ubyte bEmitterStatic : 1;
+    ubyte bEmitterDynamic : 1;
+    ubyte bPrefab : 1;
+    ubyte bPostBirth : 1;
+    ubyte bAtRest : 1;
+    ubyte bLockRot : 1;
+    ubyte bDistributed : 1;
+    ubyte bShapeLocal : 1;
+    ubyte bGrounded : 1;
+    ubyte bAssertCreate : 1;
+    ubyte bAssertDestroy : 1;
+    ubyte bAssertKill : 1;
+    ubyte bAssertBaseFree : 1;
+    ubyte bUseLRDistr : 1;
+    ubyte bMoveRibbonTail : 1;
+    ubyte bPostDeathConnect : 1;
+    ubyte bKillVolume : 1;
+    ubyte bCollideFirst : 1;
+    ubyte bCollideAll : 1;
+    ubyte bCollideTer : 1;
+    ubyte bCollideObj : 1;
+    ubyte bCollideWater : 1;
+    ubyte bCollideSnow : 1;
+    ubyte bCollidePlayer : 1;
+    ubyte bCollideEnemy : 1;
+    ubyte bCollideFriendly : 1;
+    ubyte bCollideParent : 1;
+    ubyte bCollideParent2 : 1;
+    ubyte bEmitterLoop : 1;
+    ubyte bLocalVel : 1;
+    ubyte bRadialVel : 1;
+    ubyte bConicalVel : 1;
+    ubyte bPropDist : 1;
+    ubyte bFlockingBound : 1;
+    ubyte bFrameStartRand : 1;
+    ubyte bAnimOneShot : 1;
+    ubyte bSE1Parent : 1;
+    ubyte bSE2Parent : 1;
+    ubyte bWindAsVel : 1;
+    ubyte bDieAtRange : 1;
+    ubyte bInheritInitOnly : 1;
+    ubyte bFlareSourceOriented : 1;
+    ubyte bFlareLockOcclusionToSource : 1;
+    ubyte bFlareProbe : 1;
+    ubyte bSimpleCollide : 1;
+    ubyte bCallbackDamage : 1;
+    ubyte bDoAlphaAngleUsingDirFromCam : 1;
+    ubyte bDoAlphaAngleUsingLocalDirVsCamToEmitterDir : 1;
+    FSkip(2);
+    EventEnum eMessageName;
+    Ref soundCollideRef;
+    if (CanSeekTo(soundCollideRef))
+    {
+        SeekToRef(soundCollideRef);
+        SoundPlex soundCollide;
+        ReturnFromRef();
+    }
+    Ref soundBirthRef;
+    if (CanSeekTo(soundBirthRef))
+    {
+        SeekToRef(soundBirthRef);
+        SoundPlex soundBirth;
+        ReturnFromRef();
+    }
+    Ref soundParticleRef;
+    if (CanSeekTo(soundParticleRef))
+    {
+        SeekToRef(soundParticleRef);
+        SoundPlex soundParticle;
+        ReturnFromRef();
+    }
+    ubyte eDebugValue : 4;
+    ubyte eCollideReact : 3;
+    byte _Bitfieldpadding102 : 1;
+    ubyte eFacing : 3;
+    ubyte eNormal : 1;
+    ubyte eBirthShape : 3;
+    byte _Bitfieldpadding104 : 1;
+    ubyte eBirthType : 4;
+    ubyte eRenderType : 2;
+    byte _Bitfieldpadding107 : 2;
+    ubyte eShapeEdgeX : 3;
+    ubyte eShapeEdgeY : 3;
+    byte _Bitfieldpadding109 : 2;
+    ubyte eShapeEdgeZ : 3;
+    byte _Bitfieldpadding111 : 5;
+    FSkip(1);
+    ushort eParticleTargetarea;
+    ubyte eBirthMethod : 2;
+    ubyte eSortOrder : 2;
+    ubyte eDistType : 2;
+    ubyte eOccluderShape : 2;
+    FSkip(1);
+    ushort overrideProjectileID;
+    ubyte eFlareAxisLockType : 2;
+    byte _Bitfieldpadding118 : 6;
+    FSkip(3);
+    float fLifeEmitter;
+    float fLifeEmitterRand;
+    float fFadeTimeIn;
+    float fFadeTimeOut;
+    float fLifeParticle;
+    float fLifeParticleRand;
+    float fBirthDelay;
+    float fBirthDelayRand;
+    Ref birthControlRef;
+    if (CanSeekTo(birthControlRef))
+    {
+        SeekToRef(birthControlRef);
+        emitterfx__BirthControl birthControl;
+        ReturnFromRef();
+    }
+    float fDilationMin;
+    FSkip(4);
+    Ref vortexDataRef;
+    if (CanSeekTo(vortexDataRef))
+    {
+        SeekToRef(vortexDataRef);
+        emitterfx__VortexData vortexData;
+        ReturnFromRef();
+    }
+    Ref dimensionDataRef;
+    if (CanSeekTo(dimensionDataRef))
+    {
+        SeekToRef(dimensionDataRef);
+        emitterfx__DimensionData dimensionData;
+        ReturnFromRef();
+    }
+    float fBloomMult;
+    float fBloomRange;
+    Ref advancedDataRef;
+    if (CanSeekTo(advancedDataRef))
+    {
+        SeekToRef(advancedDataRef);
+        emitterfx__AdvancedData advancedData;
+        ReturnFromRef();
+    }
+    float fFlocking;
+    float fBounce;
+    float fNoLitScale;
+    FSkip(4);
+    Ref lensFlareDataRef;
+    if (CanSeekTo(lensFlareDataRef))
+    {
+        SeekToRef(lensFlareDataRef);
+        emitterfx__LensFlareData lensFlareData;
+        ReturnFromRef();
+    }
+    float fDisplacementX;
+    float fDisplacementY;
+    float fFrameRate;
+    ubyte bRandomUCoordFlip : 1;
+    ubyte bRandomVCoordFlip : 1;
+    ubyte bDoStretchBySpeed : 1;
+    ubyte bDoNotStretchOnFirstFrame : 1;
+    byte _Bitfieldpadding160 : 4;
+    FSkip(3);
+    Ref visibilityDataRef;
+    if (CanSeekTo(visibilityDataRef))
+    {
+        SeekToRef(visibilityDataRef);
+        emitterfx__VisibilityData visibilityData;
+        ReturnFromRef();
+    }
+    float fBloomInfluence;
+    float fBloomThreshold;
+    float fDecalFov;
+    float fDecalNear;
+    float fDecalFar;
+    float fDistToCam;
+    float fFlockingSpeed;
+    float fFlockingAttract;
+    float fShotgunScale;
+    int iMaxCount;
+    int iParticleCount;
+    int iParticleCountRand;
+    char iFrameX;
+    char iFrameY;
+    char iFrameStart;
+    char iFrameEnd;
+    char iMaxBounce;
+    char iNthCount;
+    FSkip(2);
+    float fShotgunRange;
+    FSkip(4);
+    Ref velocityDataRef;
+    if (CanSeekTo(velocityDataRef))
+    {
+        SeekToRef(velocityDataRef);
+        emitterfx__VelocityData velocityData;
+        ReturnFromRef();
+    }
+    float vRotInit[3];
+    float vRotRand[3];
+    float vRotVelInit[3];
+    float vRotVelRand[3];
+    float vAlphaAngleLocalDir[3];
+    FSkip(4);
+    Ref aCurveAlphaInRef;
+    if (CanSeekTo(aCurveAlphaInRef))
+    {
+        SeekToRef(aCurveAlphaInRef);
+        ubyte aCurveAlphaIn;
+        ReturnFromRef();
+    }
+    Ref aCurveAlphaOutRef;
+    if (CanSeekTo(aCurveAlphaOutRef))
+    {
+        SeekToRef(aCurveAlphaOutRef);
+        ubyte aCurveAlphaOut;
+        ReturnFromRef();
+    }
+    Ref aCurveBloomScaleRef;
+    if (CanSeekTo(aCurveBloomScaleRef))
+    {
+        SeekToRef(aCurveBloomScaleRef);
+        ubyte aCurveBloomScale;
+        ReturnFromRef();
+    }
+    Ref aCurveShader1PLRef;
+    if (CanSeekTo(aCurveShader1PLRef))
+    {
+        SeekToRef(aCurveShader1PLRef);
+        ubyte aCurveShader1PL;
+        ReturnFromRef();
+    }
+    Ref aCurveShader2PLRef;
+    if (CanSeekTo(aCurveShader2PLRef))
+    {
+        SeekToRef(aCurveShader2PLRef);
+        ubyte aCurveShader2PL;
+        ReturnFromRef();
+    }
+    Ref aCurveShader3PLRef;
+    if (CanSeekTo(aCurveShader3PLRef))
+    {
+        SeekToRef(aCurveShader3PLRef);
+        ubyte aCurveShader3PL;
+        ReturnFromRef();
+    }
+    Ref aCurveShader4PLRef;
+    if (CanSeekTo(aCurveShader4PLRef))
+    {
+        SeekToRef(aCurveShader4PLRef);
+        ubyte aCurveShader4PL;
+        ReturnFromRef();
+    }
+    Ref aCurveRotInitELRef;
+    if (CanSeekTo(aCurveRotInitELRef))
+    {
+        SeekToRef(aCurveRotInitELRef);
+        ubyte aCurveRotInitEL;
+        ReturnFromRef();
+    }
+    Ref aCurveRotRandELRef;
+    if (CanSeekTo(aCurveRotRandELRef))
+    {
+        SeekToRef(aCurveRotRandELRef);
+        ubyte aCurveRotRandEL;
+        ReturnFromRef();
+    }
+    Ref aCurveRotVelInitELRef;
+    if (CanSeekTo(aCurveRotVelInitELRef))
+    {
+        SeekToRef(aCurveRotVelInitELRef);
+        ubyte aCurveRotVelInitEL;
+        ReturnFromRef();
+    }
+    Ref aCurveRotVelRandELRef;
+    if (CanSeekTo(aCurveRotVelRandELRef))
+    {
+        SeekToRef(aCurveRotVelRandELRef);
+        ubyte aCurveRotVelRandEL;
+        ReturnFromRef();
+    }
+    Ref aCurveFlareScreenAlphaRef;
+    if (CanSeekTo(aCurveFlareScreenAlphaRef))
+    {
+        SeekToRef(aCurveFlareScreenAlphaRef);
+        ubyte aCurveFlareScreenAlpha;
+        ReturnFromRef();
+    }
+    Ref aCurveFlareAngleAlphaRef;
+    if (CanSeekTo(aCurveFlareAngleAlphaRef))
+    {
+        SeekToRef(aCurveFlareAngleAlphaRef);
+        ubyte aCurveFlareAngleAlpha;
+        ReturnFromRef();
+    }
+    Ref aCurveFlareCamDistAlphaRef;
+    if (CanSeekTo(aCurveFlareCamDistAlphaRef))
+    {
+        SeekToRef(aCurveFlareCamDistAlphaRef);
+        ubyte aCurveFlareCamDistAlpha;
+        ReturnFromRef();
+    }
+    Ref aCurveFlareEmitterAgeAlphaRef;
+    if (CanSeekTo(aCurveFlareEmitterAgeAlphaRef))
+    {
+        SeekToRef(aCurveFlareEmitterAgeAlphaRef);
+        ubyte aCurveFlareEmitterAgeAlpha;
+        ReturnFromRef();
+    }
+    Ref aCurveFlareScreenSizeRef;
+    if (CanSeekTo(aCurveFlareScreenSizeRef))
+    {
+        SeekToRef(aCurveFlareScreenSizeRef);
+        ubyte aCurveFlareScreenSize;
+        ReturnFromRef();
+    }
+    Ref aCurveFlareAngleSizeRef;
+    if (CanSeekTo(aCurveFlareAngleSizeRef))
+    {
+        SeekToRef(aCurveFlareAngleSizeRef);
+        ubyte aCurveFlareAngleSize;
+        ReturnFromRef();
+    }
+    Ref aCurveFlareCamDistSizeRef;
+    if (CanSeekTo(aCurveFlareCamDistSizeRef))
+    {
+        SeekToRef(aCurveFlareCamDistSizeRef);
+        ubyte aCurveFlareCamDistSize;
+        ReturnFromRef();
+    }
+    Ref aCurveFlareEmitterAgeSizeRef;
+    if (CanSeekTo(aCurveFlareEmitterAgeSizeRef))
+    {
+        SeekToRef(aCurveFlareEmitterAgeSizeRef);
+        ubyte aCurveFlareEmitterAgeSize;
+        ReturnFromRef();
+    }
+    Ref aSESpeed1Ref;
+    if (CanSeekTo(aSESpeed1Ref))
+    {
+        SeekToRef(aSESpeed1Ref);
+        ubyte aSESpeed1;
+        ReturnFromRef();
+    }
+    Ref aSESpeed2Ref;
+    if (CanSeekTo(aSESpeed2Ref))
+    {
+        SeekToRef(aSESpeed2Ref);
+        ubyte aSESpeed2;
+        ReturnFromRef();
+    }
+    Ref materialRef;
+    Ref sIMaterialRef;
+    short survivalInstinctMaterialTrait;
+    FSkip(6);
+    Ref revealTextureRef;
+    if (CanSeekTo(revealTextureRef))
+    {
+        SeekToRef(revealTextureRef);
+        unsigned int revealTexture;
+        ReturnFromRef();
+    }
+    Ref renderMeshRef;
+    Ref renderMesh1Ref;
+    Ref renderMesh2Ref;
+    Ref renderMesh3Ref;
+    byte bDrawGroupAnimation;
+    byte bDrawGroupAnimationLoop;
+    FSkip(2);
+    float drawGroupAnimationRate;
+    unsigned int sE1Fxa;
+    unsigned int sE2Fxa;
+    unsigned int nPassThruSurfaces;
+    FSkip(4);
+    Ref passThruSurfacesRef;
+    if (CanSeekTo(passThruSurfacesRef))
+    {
+        SeekToRef(passThruSurfacesRef);
+        unsigned int passThruSurfaces[nPassThruSurfaces];
+        ReturnFromRef();
+    }
+    ushort nCollideSurfaces;
+    FSkip(6);
+    Ref aCollideSurfaceRef;
+    if (CanSeekTo(aCollideSurfaceRef))
+    {
+        SeekToRef(aCollideSurfaceRef);
+        FXSurfaceCol aCollideSurface[nCollideSurfaces];
+        ReturnFromRef();
+    }
+    unsigned int nShotgunRings;
+    FSkip(4);
+    Ref shotgunRingsRef;
+    if (CanSeekTo(shotgunRingsRef))
+    {
+        SeekToRef(shotgunRingsRef);
+        ShotgunRing shotgunRings[nShotgunRings];
+        ReturnFromRef();
+    }
+    Ref emitterBaseRef;
+    if (CanSeekTo(emitterBaseRef))
+    {
+        SeekToRef(emitterBaseRef);
+        byte emitterBase;
+        ReturnFromRef();
+    }
+    Ref modifierNodeRef;
+    if (CanSeekTo(modifierNodeRef))
+    {
+        SeekToRef(modifierNodeRef);
+        byte modifierNode;
+        ReturnFromRef();
+    }
+    int birthId;
+    FSkip(4);
+    FXPointCurve aCurveFlare;
+    FXPointCurve aCurveSE1;
+    FXPointCurve aCurveSE2;
+    ushort nProbes;
+    FSkip(6);
+    Ref probeRef;
+    if (CanSeekTo(probeRef))
+    {
+        SeekToRef(probeRef);
+        FXProbe probe[nProbes];
+        ReturnFromRef();
+    }
+    ubyte nGameData;
+    FSkip(7);
+    Ref aGameDataRef;
+    if (CanSeekTo(aGameDataRef))
+    {
+        SeekToRef(aGameDataRef);
+        FXGameDataKeyValuePair aGameData[nGameData];
+        ReturnFromRef();
+    }
+} emitterfx <optimize=false, read=debugName>;
+
+typedef union
+{
+    short bone;
+    ushort markerid;
+} UnionParticleBoneIDOrMarkerID;
+
+typedef struct
+{
+    short boneOrMarkerSelector;
+    UnionParticleBoneIDOrMarkerID boneOrMarker;
+} ParticleBoneIDOrMarkerID <optimize=false>;
+
+typedef struct
+{
+    ushort unit;
+    ushort unitLightGroupIdx;
+} UnitLightGroup <optimize=false>;
+
+typedef struct
+{
+    byte scriptDisabled;
+    byte enableLightCulling;
+    byte invertedLightCulling;
+    FSkip(1);
+    float cullLightDistance;
+    float cullLightFadeDistance;
+    int lightType;
+    int lightComplexity;
+    float range;
+    float lightIntensity;
+    ubyte lightColorR;
+    ubyte lightColorG;
+    ubyte lightColorB;
+    FSkip(1);
+    int probeModul;
+    float probePriority;
+    ushort scriptLightGroup;
+    UnitLightGroup unitLightGroup;
+    FSkip(2);
+    float rangeScale;
+    float rangeScaleScripted;
+    byte activeInGameplay : 1;
+    byte activeInCinematics : 1;
+    byte activeForMainPass : 1;
+    byte activeForReflection : 1;
+    byte activeForCapturing : 1;
+    byte _Bitfieldpadding16 : 3;
+    byte inExteriorCell;
+    byte disablePortalCulling;
+    FSkip(1);
+    float umbra;
+    float penumbra;
+    float nearRadius;
+    byte doIndirect;
+    FSkip(3);
+    float indirectStrength;
+    float indirectIntensity;
+    int indirectLightType;
+    float boxLightStartX;
+    float boxLightFalloffX;
+    float boxLightStartY;
+    float boxLightFalloffY;
+    float boxLightStartZ;
+    float boxLightFalloffZ;
+    float relReflCubeCenterX;
+    float relReflCubeCenterY;
+    float relReflCubeCenterZ;
+    byte relReflEnableColisionProxy;
+    FSkip(3);
+    float relReflCollisionBoxCenterX;
+    float relReflCollisionBoxCenterY;
+    float relReflCollisionBoxCenterZ;
+    float relReflCollisionBoxDimX;
+    float relReflCollisionBoxDimY;
+    float relReflCollisionBoxDimZ;
+    int fireLightFlameScale;
+    int fireLightMaskScale;
+    float fireLightBurnSpeed;
+    float fireLightCurrentBurn;
+    byte cheapWetLight;
+    FSkip(3);
+    float wetCubeMapIntensity;
+    float wetDarkLightIntensity;
+    FSkip(4);
+    Ref attenuationRef;
+    if (CanSeekTo(attenuationRef))
+    {
+        SeekToRef(attenuationRef);
+        ubyte attenuation;
+        ReturnFromRef();
+    }
+    float specularStrength;
+    float lambertWeight;
+    float halfLambertWeight;
+    float ambientWeight;
+    float minShadowSpecular;
+    byte enableVariation;
+    byte randomStartVariation;
+    FSkip(2);
+    float intensityVariationSpeed;
+    FSkip(4);
+    Ref intensityVariationRef;
+    if (CanSeekTo(intensityVariationRef))
+    {
+        SeekToRef(intensityVariationRef);
+        ubyte intensityVariation;
+        ReturnFromRef();
+    }
+    byte enableModulationTexture;
+    FSkip(7);
+    Ref modulationTextureRef;
+    float texScale;
+    float texRotation;
+    float texXScroll;
+    float texYScroll;
+    byte shadowEnabled;
+    byte shadowIncreaseResolution;
+    byte enablePerInstanceShadowBias;
+    FSkip(1);
+    float shadowConstBias;
+    float shadowSlopeBias;
+    float shadowDistanceBias;
+    int shadowMapSize;
+    byte isReceiverFocus;
+    byte isSoftshadow;
+    FSkip(2);
+    float softShadowRadius;
+    int softShadowNumSamples;
+    float softShadowDepthBias;
+    float softShadowExponent;
+    byte volumetricLightEnabled;
+    byte volumetricLightIntensityCorrellated;
+    FSkip(2);
+    float volumetricLightIntensity;
+    float volumetricLightScatterFactor;
+    int volumetricLightSamples;
+    int volumetricLightSamples2;
+    byte volumetricLightUseScatteringAmount;
+    byte volumetricLightParamOverride;
+    ubyte volumetricLightColorR;
+    ubyte volumetricLightColorG;
+    ubyte volumetricLightColorB;
+    FSkip(7);
+    Ref volumetricLightAttenuationRef;
+    if (CanSeekTo(volumetricLightAttenuationRef))
+    {
+        SeekToRef(volumetricLightAttenuationRef);
+        ubyte volumetricLightAttenuation;
+        ReturnFromRef();
+    }
+    byte volumetricLightParamSpotOverride;
+    FSkip(3);
+    float volumetricLightUmbra;
+    float volumetricLightPenumbra;
+    byte viewIndependentShadowCulling;
+    byte enableShadowLOD;
+    FSkip(2);
+    float shadowLODDist1;
+    float shadowLODDist2;
+    float shadowLODDist3;
+    byte enableAutomaticShadowLOD;
+    FSkip(3);
+    float automaticShadowLODMultiplier;
+    byte enableAutoLightConversion;
+    FSkip(3);
+    float conversionDistance;
+    byte enableShadowDistanceCulling;
+    FSkip(3);
+    float shadowFadeDistance;
+    float shadowCullDistance;
+    byte affectsPlayer : 1;
+    byte affectsIntros : 1;
+    byte affectsBGObjects : 1;
+    byte affectsTerrain : 1;
+    byte affectsGroup1 : 1;
+    byte affectsGroup2 : 1;
+    byte affectsGroup3 : 1;
+    byte affectsGroup4 : 1;
+    byte affectsCineGroup1 : 1;
+    byte affectsCineGroup2 : 1;
+    byte affectsCineGroup3 : 1;
+    byte affectsCineGroup4 : 1;
+    byte affectsCineGroup5 : 1;
+    byte affectsCineGroup6 : 1;
+    byte affectsCineGroup7 : 1;
+    byte affectsCineGroup8 : 1;
+    byte affectsWater : 1;
+    byte affectsFX : 1;
+    byte _Bitfieldpadding137 : 6;
+    char onlyAffects;
+    FSkip(4);
+    Ref affectsCellsRef;
+    unsigned int affectsCellsCount;
+    if (CanSeekTo(affectsCellsRef))
+    {
+        SeekToRef(affectsCellsRef);
+        unsigned int affectsCells[affectsCellsCount];
+        ReturnFromRef();
+    }
+    byte shadowAffectsPlayer : 1;
+    byte shadowAffectsIntros : 1;
+    byte shadowAffectsBGObjects : 1;
+    byte shadowAffectsTerrain : 1;
+    byte shadowAffectsGroup1 : 1;
+    byte shadowAffectsGroup2 : 1;
+    byte shadowAffectsGroup3 : 1;
+    byte shadowAffectsGroup4 : 1;
+    byte shadowAffectsCineGroup1 : 1;
+    byte shadowAffectsCineGroup2 : 1;
+    byte shadowAffectsCineGroup3 : 1;
+    byte shadowAffectsCineGroup4 : 1;
+    byte shadowAffectsCineGroup5 : 1;
+    byte shadowAffectsCineGroup6 : 1;
+    byte shadowAffectsCineGroup7 : 1;
+    byte shadowAffectsCineGroup8 : 1;
+    byte animEnabled;
+    FSkip(1);
+    float animParamsPosX[4];
+    float animParamsPosY[4];
+    float animParamsPosZ[4];
+    float animParamsDirX[4];
+    float animParamsDirY[4];
+    float animParamsDirZ[4];
+    float originalIntensity;
+    ubyte originalColorR;
+    ubyte originalColorG;
+    ubyte originalColorB;
+    FSkip(1);
+    float originalRangeScale;
+} LightTemplateData <optimize=false>;
+
+typedef struct
+{
+    char type;
+    FSkip(1);
+    short length;
+    char priority;
+    FSkip(1);
+    ParticleBoneIDOrMarkerID startSegment;
+    ParticleBoneIDOrMarkerID endSegment;
+    ubyte maxColorR;
+    ubyte maxColorG;
+    ubyte maxColorB;
+    ubyte startoninit : 1;
+    byte _Bitfieldpadding6 : 7;
+    ushort maxradius;
+    short lifeTime;
+    short fadeinTime;
+    short fadeoutTime;
+    char groupId;
+    LightTemplateData lightData;
+} DynamicLightData <optimize=false>;
+
+typedef struct
+{
+    ubyte bWeatherObject : 1;
+    FSkip(3);
+    unsigned int fxLibDTPID;
+    ushort emitterFXCount;
+    FSkip(6);
+    Ref emitterFXListRef;
+    if (CanSeekTo(emitterFXListRef))
+    {
+        SeekToRef(emitterFXListRef);
+        emitterfx emitterFXList[emitterFXCount];
+        ReturnFromRef();
+    }
+    ushort dynamicLightCount;
+    FSkip(6);
+    Ref dynamicLightListRef;
+    if (CanSeekTo(dynamicLightListRef))
+    {
+        SeekToRef(dynamicLightListRef);
+        DynamicLightData dynamicLightList[dynamicLightCount];
+        ReturnFromRef();
+    }
+} FXLib <optimize=false>;
+
+RefDefinitions refDefinitions;
+FXLib root <open=true>;

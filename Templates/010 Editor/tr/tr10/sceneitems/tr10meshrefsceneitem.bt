@@ -1,0 +1,169 @@
+struct PlacementPath;
+struct StreamLayerRef;
+
+typedef struct
+{
+    byte terrain : 1;
+    byte player : 1;
+    byte npc : 1;
+    byte enemy : 1;
+    byte object : 1;
+    byte shard : 1;
+    byte camera : 1;
+    byte cloth : 1;
+    byte incidental : 1;
+    byte gear : 1;
+    byte thrownProjectile : 1;
+    byte arrow : 1;
+    byte clutter : 1;
+    byte cameraLineOfSight : 1;
+} CollisionTypesBitfield <optimize=false>;
+
+typedef struct
+{
+    CollisionTypesBitfield collideWith;
+    CollisionTypesBitfield collideNotWith;
+    CollisionTypesBitfield collideAs;
+    FSkip(3);
+    int collideGroup;
+} CollisionCategory <optimize=false>;
+
+typedef struct
+{
+    float friction;
+    CollisionCategory collisionCategory;
+    byte flagPlayerRespondTrans : 1;
+    byte flagParticleTrans : 1;
+    byte flagBulletTrans : 1;
+    byte flagAimTransparent : 1;
+    byte flagNpcAimTransparent : 1;
+    byte flagNpcBulletTrans : 1;
+    byte flagShallowWater : 1;
+    byte flagJumpCollisionTrans : 1;
+    byte flagGrappleArrow : 1;
+    byte flagSnow : 1;
+    byte flagIndicatorTransparent : 1;
+    byte flagWaterSurface : 1;
+    byte flagAvoidWeaponClipping : 1;
+} CollisionType <optimize=false>;
+
+typedef struct
+{
+    unsigned int originalMaterialID;
+    unsigned int overrideMaterial;
+} CollisionMaterialOverride <optimize=false>;
+
+typedef struct
+{
+    unsigned int sourceMaterialID;
+    FSkip(4);
+    Ref destMaterialRef;
+    unsigned int streamLayer;
+} MaterialOverride <optimize=false>;
+
+typedef struct
+{
+    float instanceParam0[4];
+    float instanceParam1[4];
+    float instanceParam2[4];
+    float instanceParam3[4];
+} InstanceParams;
+
+typedef struct
+{
+    Ref debugNameRef;
+    if (CanSeekTo(debugNameRef))
+    {
+        SeekToRef(debugNameRef);
+        string debugName;
+        ReturnFromRef();
+    }
+    int instanceType;
+    unsigned int meshRenderID;
+    unsigned int meshCollisionID;
+    byte embedCollision;
+    FSkip(3);
+    Ref collisionTypeRef;
+    if (CanSeekTo(collisionTypeRef))
+    {
+        SeekToRef(collisionTypeRef);
+        CollisionType collisionType;
+        ReturnFromRef();
+    }
+    unsigned int numCollisionOverrideMaterials;
+    FSkip(4);
+    Ref collisionOverrideMaterialsRef;
+    if (CanSeekTo(collisionOverrideMaterialsRef))
+    {
+        SeekToRef(collisionOverrideMaterialsRef);
+        CollisionMaterialOverride collisionOverrideMaterials[numCollisionOverrideMaterials];
+        ReturnFromRef();
+    }
+    char lodLevelStart;
+    char lodLevelEnd;
+    FSkip(2);
+    float instanceLodBias;
+    float instanceLodScale;
+    float instanceLodClamp;
+    unsigned int numOverrideMaterials;
+    FSkip(4);
+    Ref overrideMaterialsRef;
+    if (CanSeekTo(overrideMaterialsRef))
+    {
+        SeekToRef(overrideMaterialsRef);
+        MaterialOverride overrideMaterials[numOverrideMaterials];
+        ReturnFromRef();
+    }
+    byte placeInExteriorCell;
+    byte canRender;
+    byte bCanCastShadows;
+    byte bCanRenderInReflection;
+    byte canCollide;
+    byte canUseNavMesh;
+    byte depthPrePass;
+    byte collideWithHMD;
+    Ref texture0Ref;
+    Ref texture1Ref;
+    Ref texture2Ref;
+    Ref texture3Ref;
+    Ref envMaterialOverrideTableRef;
+    if (CanSeekTo(envMaterialOverrideTableRef))
+    {
+        SeekToRef(envMaterialOverrideTableRef);
+        byte envMaterialOverrideTable;
+        ReturnFromRef();
+    }
+    Ref instanceParamsRef;
+    if (CanSeekTo(instanceParamsRef))
+    {
+        SeekToRef(instanceParamsRef);
+        InstanceParams instanceParams;
+        ReturnFromRef();
+    }
+    uint lightMask;
+    byte streamOverride;
+    FSkip(3);
+    float introductionDistance;
+    FSkip(4);
+    Ref streamLayersRef;
+    unsigned int streamLayerCount;
+    if (CanSeekTo(streamLayersRef))
+    {
+        SeekToRef(streamLayersRef);
+        StreamLayerRef streamLayers[streamLayerCount];
+        ReturnFromRef();
+    }
+    float enlightenLightMapUvScale;
+    int enlightenInstanceType;
+    ushort enlightenSystemListCount;
+    FSkip(2);
+    Ref enlightenSystemListRef;
+    if (CanSeekTo(enlightenSystemListRef))
+    {
+        SeekToRef(enlightenSystemListRef);
+        PlacementPath enlightenSystemList[enlightenSystemListCount];
+        ReturnFromRef();
+    }
+    int cellOverrideID;
+    char sortBehaviour;
+} MeshRef <optimize=false>;

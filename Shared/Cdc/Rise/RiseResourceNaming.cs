@@ -22,7 +22,7 @@ namespace TrRebootTools.Shared.Cdc.Rise
                 { (ResourceType.Model, ResourceSubType.ModelData), [".tr10modeldata", ".tr2mesh"] },
                 { (ResourceType.Model, ResourceSubType.ShResource), [".tr10shresource"] },
                 { (ResourceType.ObjectReference, 0), [".tr10objectref", ".grplist"] },
-                { (ResourceType.PsdRes, 0), [".tr10psdres", ".psdres"] },
+                { (ResourceType.PoseSpaceDeformer, 0), [".tr10psdres", ".psdres"] },
                 { (ResourceType.Script, 0), [".tr10script", ".script"] },
                 { (ResourceType.ShaderLib, 0), [".tr10shaderlib"] },
                 { (ResourceType.SoundBank, 0), [".tr10sound", ".sound"] },
