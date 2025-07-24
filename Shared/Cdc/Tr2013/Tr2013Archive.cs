@@ -22,10 +22,10 @@ namespace TrRebootTools.Shared.Cdc.Tr2013
             return new ArchiveFileReference(
                 entry.NameHash,
                 0xFFFFFFFF00000000 | entry.Locale,
-                (entry.PackedOffset >> 4) & 0x7F,
-                0,
-                entry.PackedOffset & 0xF,
-                (int)(entry.PackedOffset & 0xFFFFF800),
+                entry.ArchiveId,
+                entry.ArchiveId == Id ? SubId : 0,
+                entry.ArchivPart,
+                entry.Offset,
                 entry.Size
             );
         }
@@ -50,6 +50,10 @@ namespace TrRebootTools.Shared.Cdc.Tr2013
             public uint Locale;
             public int Size;
             public int PackedOffset;
+
+            public int ArchiveId => (PackedOffset >> 4) & 0x7F;
+            public int ArchivPart => PackedOffset & 0xF;
+            public int Offset => (int)(PackedOffset & 0xFFFFF800);
         }
     }
 }

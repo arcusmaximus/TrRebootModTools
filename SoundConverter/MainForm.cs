@@ -1,22 +1,34 @@
 ﻿using System;
 using System.Configuration;
 using System.Data;
-using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Xml.Linq;
+using TrRebootTools.Shared.Cdc;
 
-namespace SoundConverter
+namespace TrRebootTools.SoundConverter
 {
     public partial class MainForm : Form
     {
-        private string _wwiseConsolePath;
+        private static class AppSettingKeys
+        {
+            public const string Game = "Game";
+            public const string OutputFolder = "OutputFolder";
+        }
+
         private CancellationTokenSource _cancellationTokenSource;
+
+        private readonly ISoundConverter[] _converters = [
+            new TrSoundDecoder(CdcGame.Tr2013),
+            new TrSoundDecoder(CdcGame.Rise),
+            new TrSoundEncoder(CdcGame.Tr2013),
+            new TrSoundEncoder(CdcGame.Rise),
+            new MulEncoder(CdcGame.Tr2013),
+            new MulEncoder(CdcGame.Rise),
+            new WwiseEncoder()
+        ];
 
         public MainForm()
         {
@@ -26,39 +38,47 @@ namespace SoundConverter
 
         private void MainForm_Load(object sender, EventArgs e)
         {
-            _wwiseConsolePath = ConfigurationManager.AppSettings["WwiseConsole"];
-            _txtOutputFolder.Text = ConfigurationManager.AppSettings["OutputFolder"];
+            string gameStr = ConfigurationManager.AppSettings[AppSettingKeys.Game];
+            if (Enum.TryParse(gameStr, out CdcGame game))
+                SetSelectedGame(game);
 
-            if (!string.IsNullOrEmpty(_wwiseConsolePath) && File.Exists(_wwiseConsolePath))
-                return;
+            _dlgSelectInputFiles.Filter = string.Join("|", _converters.Select(c => $"{c.InputExtension}|*{c.InputExtension}").Distinct());
 
-            MessageBox.Show("Please install the Wwise authoring tools (through the Audiokinetic Launcher) and select the location of WwiseConsole.exe", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            if (_dlgSelectWwiseConsole.ShowDialog() != DialogResult.OK)
-            {
-                Close();
-                return;
-            }
-
-            _wwiseConsolePath = _dlgSelectWwiseConsole.FileName;
-            Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-            config.AppSettings.Settings["WwiseConsole"].Value = _wwiseConsolePath;
-            config.Save(ConfigurationSaveMode.Modified);
+            _txtOutputFolder.Text = ConfigurationManager.AppSettings[AppSettingKeys.OutputFolder];
         }
 
-        private void _lstWavFiles_DragEnter(object sender, DragEventArgs e)
+        private void _lstInputFiles_DragEnter(object sender, DragEventArgs e)
         {
-            if (GetDroppedFilesIfAllowed(e) != null)
+            if (GetDroppedItemsIfAllowed(e) != null)
                 e.Effect = DragDropEffects.Copy;
         }
 
-        private void _lstWavFiles_DragDrop(object sender, DragEventArgs e)
+        private void _lstInputFiles_DragDrop(object sender, DragEventArgs e)
         {
-            string[] wavFilePaths = GetDroppedFilesIfAllowed(e);
-            if (wavFilePaths != null)
-                _lstInputFiles.Items.AddRange(wavFilePaths);
+            string[] inputPaths = GetDroppedItemsIfAllowed(e);
+            if (inputPaths == null)
+                return;
+
+            _lstInputFiles.BeginUpdate();
+            foreach (string inputPath in inputPaths)
+            {
+                if (Directory.Exists(inputPath))
+                {
+                    foreach (string filePath in Directory.EnumerateFiles(inputPath, "*", SearchOption.AllDirectories))
+                    {
+                        if (IsInputFileAllowed(filePath))
+                            _lstInputFiles.Items.Add(filePath);
+                    }
+                }
+                else
+                {
+                    _lstInputFiles.Items.Add(inputPath);
+                }
+            }
+            _lstInputFiles.EndUpdate();
         }
 
-        private string[] GetDroppedFilesIfAllowed(DragEventArgs e)
+        private string[] GetDroppedItemsIfAllowed(DragEventArgs e)
         {
             if (!_pnlOptions.Enabled)
                 return null;
@@ -68,21 +88,32 @@ namespace SoundConverter
 
             foreach (string path in paths)
             {
-                if (Path.GetExtension(path) != ".wav" || !File.Exists(path))
-                    return null;
+                if (Directory.Exists(path))
+                    continue;
+
+                if (File.Exists(path) && IsInputFileAllowed(path))
+                    continue;
+
+                return null;
             }
             return paths;
         }
 
-        private void _btnAddWavFile_Click(object sender, EventArgs e)
+        private void _btnAddInputFiles_Click(object sender, EventArgs e)
         {
             if (_dlgSelectInputFiles.ShowDialog() != DialogResult.OK)
                 return;
 
-            _lstInputFiles.Items.AddRange(_dlgSelectInputFiles.FileNames);
+            _lstInputFiles.Items.AddRange(_dlgSelectInputFiles.FileNames.Where(IsInputFileAllowed).ToArray());
         }
 
-        private void _btnRemoveSelectedWavs_Click(object sender, EventArgs e)
+        private bool IsInputFileAllowed(string path)
+        {
+            string extension = Path.GetExtension(path);
+            return _converters.Any(c => c.InputExtension.Equals(extension, StringComparison.InvariantCultureIgnoreCase));
+        }
+
+        private void _btnRemoveSelectedInputFiles_Click(object sender, EventArgs e)
         {
             foreach (int index in _lstInputFiles.SelectedIndices.Cast<int>().OrderByDescending(i => i).ToList())
             {
@@ -90,12 +121,12 @@ namespace SoundConverter
             }
         }
 
-        private void _btnClearWavFiles_Click(object sender, EventArgs e)
+        private void _btnClearInputFiles_Click(object sender, EventArgs e)
         {
             _lstInputFiles.Items.Clear();
         }
 
-        private void _btnBrowseWemFolder_Click(object sender, EventArgs e)
+        private void _btnBrowseOutputFolder_Click(object sender, EventArgs e)
         {
             if (_dlgSelectOutputFolder.ShowDialog() != DialogResult.OK)
                 return;
@@ -125,8 +156,7 @@ namespace SoundConverter
 
             _cancellationTokenSource = new();
 
-            string projectFolderPath = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "TempWwiseProject");
-            string projectFilePath = Path.Combine(projectFolderPath, Path.GetFileName(projectFolderPath) + ".wproj");
+            CdcGame game = GetSelectedGame();
             string outputFolderPath = _txtOutputFolder.Text;
 
             try
@@ -136,20 +166,29 @@ namespace SoundConverter
 
                 SetWorking(true);
 
-                if (Directory.Exists(projectFolderPath))
-                    Directory.Delete(projectFolderPath, true);
-
-                CreateWwiseProject(projectFilePath);
+                bool success = true;
                 foreach (string inputFilePath in _lstInputFiles.Items)
                 {
                     if (_cancellationTokenSource.Token.IsCancellationRequested)
                         break;
 
-                    await Task.Run(() => ConvertWavToWem(inputFilePath, outputFolderPath, projectFilePath));
+                    string inputFileExtension = Path.GetExtension(inputFilePath);
+                    ISoundConverter converter = _converters.FirstOrDefault(c => c.InputExtension.Equals(inputFileExtension, StringComparison.InvariantCultureIgnoreCase) && c.Game == game);
+                    if (converter == null)
+                    {
+                        MessageBox.Show($"Don't know what to do for {inputFilePath}\r\nPlease make sure to select the correct game.", "", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                        success = false;
+                        break;
+                    }
+
+                    success &= await converter.ConvertAsync(inputFilePath, outputFolderPath);
+                    if (!success)
+                        break;
+
                     _progressBar.PerformStep();
                 }
 
-                if (!_cancellationTokenSource.Token.IsCancellationRequested)
+                if (!_cancellationTokenSource.Token.IsCancellationRequested && success)
                     MessageBox.Show("Conversion complete.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
@@ -158,68 +197,30 @@ namespace SoundConverter
             }
             finally
             {
-                if (Directory.Exists(projectFolderPath))
-                    Directory.Delete(projectFolderPath, true);
-
                 SetWorking(false);
             }
         }
 
-        private void CreateWwiseProject(string projectFilePath)
+        private CdcGame GetSelectedGame()
         {
-            using Process process = Process.Start(
-                new ProcessStartInfo
-                {
-                    FileName = _wwiseConsolePath,
-                    Arguments = $"create-new-project \"{projectFilePath}\"",
-                    CreateNoWindow = true,
-                    UseShellExecute = false
-                }
-            );
-            process.WaitForExit();
+            if (_radTr2013.Checked)
+                return CdcGame.Tr2013;
+
+            if (_radRise.Checked)
+                return CdcGame.Rise;
+
+            return CdcGame.Shadow;
         }
 
-        private void ConvertWavToWem(string wavFilePath, string outputFolderPath, string projectFilePath)
+        private void SetSelectedGame(CdcGame game)
         {
-            string projectFolderPath = Path.GetDirectoryName(projectFilePath);
-            string sourcesFilePath = Path.Combine(projectFolderPath, "sources.wsources");
-            XElement sourcesXml =
-                new XElement(
-                    "ExternalSourcesList",
-                    new XAttribute("SchemaVersion", 1),
-                    new XElement(
-                        "Source",
-                        new XAttribute("Path", wavFilePath),
-                        new XAttribute("Conversion", "Vorbis Quality High")
-                    )
-                );
-            sourcesXml.Save(sourcesFilePath);
-
-            using Process process = Process.Start(
-                new ProcessStartInfo
-                {
-                    FileName = _wwiseConsolePath,
-                    Arguments = $"convert-external-source \"{projectFilePath}\" --source-file \"{sourcesFilePath}\"",
-                    CreateNoWindow = true,
-                    UseShellExecute = false
-                }
-            );
-            process.WaitForExit();
-
-            string fromWemFilePath = Path.Combine(
-                projectFolderPath,
-                "GeneratedSoundBanks",
-                "Windows",
-                Path.ChangeExtension(Path.GetFileName(wavFilePath), ".wem")
-            );
-            if (!File.Exists(fromWemFilePath))
-                return;
-
-            string toWemFilePath = Path.Combine(outputFolderPath, Path.GetFileName(fromWemFilePath));
-            if (File.Exists(toWemFilePath))
-                File.Delete(toWemFilePath);
-            
-            File.Move(fromWemFilePath, toWemFilePath);
+            RadioButton button = game switch
+            {
+                CdcGame.Tr2013 => _radTr2013,
+                CdcGame.Rise => _radRise,
+                CdcGame.Shadow => _radShadow
+            };
+            button.Checked = true;
         }
 
         private void SetWorking(bool working)
@@ -239,7 +240,8 @@ namespace SoundConverter
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-            config.AppSettings.Settings["OutputFolder"].Value = _txtOutputFolder.Text;
+            config.AppSettings.Settings[AppSettingKeys.Game].Value = GetSelectedGame().ToString();
+            config.AppSettings.Settings[AppSettingKeys.OutputFolder].Value = _txtOutputFolder.Text;
             config.Save(ConfigurationSaveMode.Modified);
         }
     }

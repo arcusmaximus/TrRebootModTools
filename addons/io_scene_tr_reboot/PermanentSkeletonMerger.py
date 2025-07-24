@@ -138,6 +138,8 @@ class PermanentModelMerger(SkeletonMerger):
             for bone_name in bone_names:
                 bl_armature.edit_bones.remove(bl_armature.edit_bones[bone_name])
 
+            self.remove_invalid_bone_drivers(bl_armature_obj)
+
     def add_blend_shape_id_mappings(self, bl_target_armature_obj: bpy.types.Object, bl_source_armature_obj: bpy.types.Object) -> None:
         target_mappings = ObjectSkeletonProperties.get_global_blend_shape_ids(bl_target_armature_obj)
         source_mappings = ObjectSkeletonProperties.get_global_blend_shape_ids(bl_source_armature_obj)

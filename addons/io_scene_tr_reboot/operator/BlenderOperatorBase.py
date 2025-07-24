@@ -45,7 +45,7 @@ class BlenderMenuOperatorBase(Generic[TProperties], BlenderOperatorBase[TPropert
 
 
 class ImportOperatorProperties(BlenderPropertyGroup, Protocol):
-    filepath: Annotated[str, Prop("File path")]
+    filepath: Annotated[str, Prop("File path", subtype = cast(Any, "FILE_PATH"))]
     filter_glob: Annotated[str, Prop("Filter", options = { "HIDDEN" })]
 
 TImportProperties = TypeVar("TImportProperties", bound = ImportOperatorProperties)
@@ -66,7 +66,7 @@ class ImportOperatorBase(Generic[TImportProperties], BlenderMenuOperatorBase[TIm
 
 
 class ExportOperatorProperties(BlenderPropertyGroup, Protocol):
-    filepath: Annotated[str, Prop("File path")] #, subtype = "FILE_PATH")]
+    filepath: Annotated[str, Prop("File path", subtype = cast(Any, "FILE_PATH"))]
     filter_glob: Annotated[str, Prop("Filter", options = { "HIDDEN" })]
     check_existing: Annotated[bool, Prop("Check Existing", default = True, options = { "HIDDEN" })]
 

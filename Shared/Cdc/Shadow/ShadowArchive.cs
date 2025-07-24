@@ -1,7 +1,5 @@
 ﻿using System.IO;
 using System.Runtime.InteropServices;
-using TrRebootTools.Shared.Cdc;
-using TrRebootTools.Shared.Cdc.Shadow;
 using TrRebootTools.Shared.Util;
 
 namespace TrRebootTools.Shared.Cdc.Shadow

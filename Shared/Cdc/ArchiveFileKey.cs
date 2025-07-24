@@ -1,5 +1,4 @@
 ﻿using System;
-using TrRebootTools.Shared.Cdc;
 
 namespace TrRebootTools.Shared.Cdc
 {

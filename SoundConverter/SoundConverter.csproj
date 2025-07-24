@@ -6,13 +6,13 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{9A9C5607-17A6-414C-8545-2CED3D407701}</ProjectGuid>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>WwiseSoundConverter</RootNamespace>
-    <AssemblyName>WwiseSoundConverter</AssemblyName>
+    <RootNamespace>TrRebootTools.SoundConverter</RootNamespace>
+    <AssemblyName>TrRebootTools.SoundConverter</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Deterministic>true</Deterministic>
-    <LangVersion>10</LangVersion>
+    <LangVersion>12</LangVersion>
     <AssemblyOriginatorKeyFile>..\dummykey.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -56,14 +56,22 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FmodEncoder.cs" />
+    <Compile Include="ISoundConverter.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="MainForm.Designer.cs">
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="MulEncoder.cs" />
+    <Compile Include="ProcessHelper.cs" />
     <Compile Include="Properties\Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SoundEncoder.cs" />
+    <Compile Include="TrSoundDecoder.cs" />
+    <Compile Include="TrSoundEncoder.cs" />
+    <Compile Include="WwiseEncoder.cs" />
     <EmbeddedResource Include="MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
     </EmbeddedResource>
@@ -80,6 +88,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <Content Include="fmod-project.fdp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Ookii.Dialogs.WinForms">
@@ -88,6 +99,12 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="icon.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Shared\Shared.csproj">
+      <Project>{20068ca2-eed2-4c9e-99be-1edf9569777d}</Project>
+      <Name>Shared</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

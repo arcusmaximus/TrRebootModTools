@@ -500,28 +500,27 @@ class ModelExporter(SlotsBase):
             OperatorContext.log_warning(f"Couldn't load shape key source file {source_file_path} - skipping transfer.")
             return
 
-        tr_source_meshes: list[IMesh] = Enumerable(tr_source_model.meshes).where(lambda m: any(m.blend_shapes)).order_by(lambda m: len(m.vertices)).to_list()
-        tr_target_meshes: list[IMesh] = Enumerable(tr_target_model.meshes).where(lambda m: any(m.blend_shapes)).order_by(lambda m: len(m.vertices)).to_list()
-        if len(tr_source_meshes) != len(tr_target_meshes):
-            OperatorContext.log_warning(f"Mesh count mismatch between source file {source_file_path} and target model - skipping transfer of shape key normals.")
+        tr_source_mesh = Enumerable(tr_source_model.meshes).order_by_descending(lambda m: Enumerable(m.blend_shapes).count(lambda b: b is not None)).first_or_none()
+        if tr_source_mesh is None:
             return
 
-        for mesh_idx in range(len(tr_source_meshes)):
-            tr_source_mesh = tr_source_meshes[mesh_idx]
-            tr_target_mesh = tr_target_meshes[mesh_idx]
+        source_vertex_lookup = SpatialIndex[int](0.001, False)
+        for source_vertex_idx, tr_source_vertex in enumerate(tr_source_mesh.vertices):
+            source_vertex_pos = Vector(tr_source_vertex.attributes[Hashes.position])
+            source_vertex_lookup.add(source_vertex_pos, source_vertex_idx)
 
-            target_vertex_lookup = SpatialIndex[int](0.001)
-            for target_vertex_idx, target_vertex in enumerate(tr_target_mesh.vertices):
-                target_vertex_pos = Vector(target_vertex.attributes[Hashes.position])
-                target_vertex_lookup.add(target_vertex_pos, target_vertex_idx)
+        for tr_target_mesh in tr_target_model.meshes:
+            if not Enumerable(tr_target_mesh.blend_shapes).any(lambda b: b is not None):
+                continue
 
             source_vertex_idx_by_target_vertex_idx: list[int | None] = [None] * len(tr_target_mesh.vertices)
-            for source_vertex_idx, source_vertex in enumerate(tr_source_mesh.vertices):
-                source_vertex_pos = Vector(source_vertex.attributes[Hashes.position])
-                target_vertex_idx = target_vertex_lookup.find_nearest_item(source_vertex_pos)
-                if target_vertex_idx is not None:
+            for target_vertex_idx, tr_target_vertex in enumerate(tr_target_mesh.vertices):
+                target_vertex_pos = Vector(tr_target_vertex.attributes[Hashes.position])
+                source_vertex_idx = source_vertex_lookup.find_nearest_item(target_vertex_pos)
+                if source_vertex_idx is not None:
                     source_vertex_idx_by_target_vertex_idx[target_vertex_idx] = source_vertex_idx
-                    tr_target_mesh.vertices[target_vertex_idx].attributes[Hashes.normal] = source_vertex.attributes[Hashes.normal]
+                    tr_source_vertex = tr_source_mesh.vertices[source_vertex_idx]
+                    tr_target_vertex.attributes[Hashes.normal] = tr_source_vertex.attributes[Hashes.normal]
 
             for blend_shape_idx, tr_target_blend_shape in enumerate(tr_target_mesh.blend_shapes):
                 if blend_shape_idx >= len(tr_source_mesh.blend_shapes) or tr_target_blend_shape is None:
@@ -531,7 +530,7 @@ class ModelExporter(SlotsBase):
                 if tr_source_blend_shape is None:
                     continue
 
-                for target_vertex_idx in tr_target_blend_shape.vertices.keys():
+                for target_vertex_idx, target_vertex_offsets in tr_target_blend_shape.vertices.items():
                     source_vertex_idx = source_vertex_idx_by_target_vertex_idx[target_vertex_idx]
                     if source_vertex_idx is None:
                         continue
@@ -540,7 +539,8 @@ class ModelExporter(SlotsBase):
                     if source_vertex_offsets is None:
                         continue
 
-                    tr_target_blend_shape.vertices[target_vertex_idx] = source_vertex_offsets
+                    target_vertex_offsets.normal_offset = source_vertex_offsets.normal_offset
+                    target_vertex_offsets.color_offset  = source_vertex_offsets.color_offset
 
     def load_model(self, file_path: str) -> IModel | None:
         if not os.path.isfile(file_path):

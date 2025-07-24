@@ -8,6 +8,7 @@ using TrRebootTools.Shared;
 using TrRebootTools.Shared.Cdc;
 using TrRebootTools.ModManager.Mod;
 using TrRebootTools.Shared.Forms;
+using System.Collections.Generic;
 
 namespace TrRebootTools.ModManager
 {
@@ -16,6 +17,9 @@ namespace TrRebootTools.ModManager
         [STAThread]
         public static void Main(string[] args)
         {
+            //GenerateCineEyePatchFiles();
+            //return;
+
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
@@ -126,7 +130,158 @@ namespace TrRebootTools.ModManager
         }
 
         /*
-        private static void CreateSoundSpreadsheet()
+        private static void GenerateCineEyePatchFiles()
+        {
+            using ArchiveSet archiveSet = ArchiveSet.Open(@"D:\Steam\steamapps\common\Rise of the Tomb Raider", true, false, CdcGame.Rise);
+            foreach (ArchiveFileReference fileRef in archiveSet.Files)
+            {
+                string filePath = CdcHash.Lookup(fileRef.NameHash, CdcGame.Rise);
+                if (filePath == null || !filePath.StartsWith("pcx64-w\\cinstream\\") || !filePath.EndsWith(".mul"))
+                    continue;
+
+                using Stream stream = archiveSet.OpenFile(fileRef);
+                BinaryReader reader = new(stream);
+                stream.Position = 0x2000;
+
+                int numChannels = 0;
+                int[] channelRunTypes = null;
+                int[] channelRunLengths = null;
+                Dictionary<int, float> channelChanges = null;
+
+                Ips32Patch ips = new();
+                while (stream.Position < stream.Length)
+                {
+                    int packetType = reader.ReadInt32();
+                    int packetSize = reader.ReadInt32();
+                    stream.Position += 8;
+                    if (packetType != 1)
+                    {
+                        stream.Position += packetSize;
+                        stream.Position = (stream.Position + 0xF) & ~0xF;
+                        continue;
+                    }
+
+                    if (channelRunTypes == null)
+                    {
+                        int cineMagic = reader.ReadInt32();
+                        if (cineMagic != 0x43494E45)
+                            throw new InvalidDataException();
+
+                        stream.Position += 0x50;
+                        int numAnchors = reader.ReadInt32();
+                        stream.Position += numAnchors * 0xC;
+                        numChannels += numAnchors * 9;
+
+                        int numSkeletons = reader.ReadInt32();
+                        int? laraFirstChannel = null;
+                        for (int i = 0; i < numSkeletons; i++)
+                        {
+                            numChannels += 3;
+
+                            int instanceId = reader.ReadInt32();
+                            int numBones = reader.ReadInt32();
+                            numChannels += numBones * 14;
+
+                            int firstChannel = reader.ReadInt32();
+                            if (instanceId == -1 && numBones == 185)
+                                laraFirstChannel = firstChannel;
+
+                            stream.Position += numBones * 0x40;
+
+                            int numLights = reader.ReadInt32();
+                            int firstLightChannel = reader.ReadInt32();
+                            numChannels += numLights * 10;
+
+                            int numCustomChannels = reader.ReadInt32();
+                            int firstCustomChannel = reader.ReadInt32();
+                            numChannels += numCustomChannels;
+
+                            int numBlendShapes = reader.ReadInt32();
+                            int firstBlendShapeChannel = reader.ReadInt32();
+                            numChannels += numBlendShapes;
+                        }
+
+                        int numCameras = reader.ReadInt32();
+                        stream.Position += numCameras * 4;
+                        numChannels += numCameras * 16;
+
+                        int triggerUnitId = reader.ReadInt32();
+                        int numTriggers = reader.ReadInt32();
+                        stream.Position += numTriggers * 8;
+                        numChannels += numTriggers;
+
+                        int numSubtitles = reader.ReadInt32();
+
+                        stream.Position += numSkeletons * 0x1C;
+                        stream.Position += numCameras * 0x1C;
+
+                        int numCameraCuts = reader.ReadInt32();
+                        stream.Position += numCameraCuts * 4;
+
+                        if (laraFirstChannel == null)
+                            break;
+
+                        channelRunTypes = new int[numChannels];
+                        channelRunLengths = new int[numChannels];
+                        channelChanges = new()
+                        {
+                            { laraFirstChannel.Value + 3 + 14*87 + 6, -1.715306f },
+                            { laraFirstChannel.Value + 3 + 14*87 + 7, -2f },
+                            { laraFirstChannel.Value + 3 + 14*87 + 8, 2.1f },
+
+                            { laraFirstChannel.Value + 3 + 14*88 + 6, 1.71841f },
+                            { laraFirstChannel.Value + 3 + 14*88 + 7, -2f },
+                            { laraFirstChannel.Value + 3 + 14*88 + 8, 2.1f },
+                        };
+                    }
+
+                    int frameSize = reader.ReadInt32();
+                    int frameNr = reader.ReadInt32();
+                    if (frameNr < 0)
+                        break;
+
+                    for (int i = 0; i < numChannels; i++)
+                    {
+                        bool readValue;
+                        if (channelRunLengths[i] == 0)
+                        {
+                            int channelInfo = reader.ReadInt32();
+                            channelRunLengths[i] = channelInfo & 0x0FFFFFFF;
+                            channelRunTypes[i] = channelInfo >> 28;
+                            readValue = true;
+                        }
+                        else
+                        {
+                            readValue = channelRunTypes[i] != 0;
+                        }
+                        if (readValue)
+                        {
+                            if (channelChanges.TryGetValue(i, out float value))
+                                ips.Add((uint)stream.Position, BitConverter.GetBytes(value));
+
+                            float origValue = reader.ReadSingle();
+                        }
+                        channelRunLengths[i]--;
+                    }
+
+                    int subtitleLength = reader.ReadInt32();
+                    stream.Position += subtitleLength;
+                    stream.Position = (stream.Position + 0xF) & ~0xF;
+                }
+
+                if (ips.Patches.Count == 0)
+                    continue;
+
+                string ipsFilePath = Path.Combine(@"D:\Projects\TrRebootModTools\Build\Debug\_mod", filePath + ".ips32");
+                Directory.CreateDirectory(Path.GetDirectoryName(ipsFilePath));
+                using Stream ipsStream = File.Create(ipsFilePath);
+                ips.Write(ipsStream);
+            }
+        }
+        */
+
+        /*
+        private static void CreateSottrSoundSpreadsheet()
         {
             using ArchiveSet archiveSet = ArchiveSet.Open(@"D:\Steam\steamapps\common\Shadow of the Tomb Raider", true, false, CdcGame.Shadow);
 

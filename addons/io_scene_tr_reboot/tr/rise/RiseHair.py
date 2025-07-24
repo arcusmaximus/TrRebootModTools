@@ -620,7 +620,7 @@ class RiseHair(Hair):
     def get_slave_strand_output_order(self) -> Iterator[_HairStrandReference]:
         # The game only renders the first X% of slave strands depending on distance,
         # so we need to make sure that at any percentage, the trimmed list has a good spatial distribution
-        lookup = SpatialIndex[_HairStrandReference](0.8)
+        lookup = SpatialIndex[_HairStrandReference](0.8, True)
         for part_idx, part in enumerate(self.parts):
             first_vertex_idx_in_part = 0
             for strand_idx_in_part, num_strand_vertices in enumerate(part.slave_strands.strand_point_counts):
@@ -858,7 +858,7 @@ class _SlaveStrandSkinningCalculator:
         self.part_infos = []
         master_vertex_idx = 0
         for part in hair.parts:
-            master_vertex_lookup = SpatialIndex[_HairMasterVertexDescriptor](1)
+            master_vertex_lookup = SpatialIndex[_HairMasterVertexDescriptor](1, True)
             self.part_infos.append(_SlaveStrandSkinningCalculator._PartInfo(master_vertex_lookup, master_vertex_idx))
             for master_vertex in part.master_strands.points:
                 master_vertex_lookup.add(master_vertex.position, master_vertices[master_vertex_idx])

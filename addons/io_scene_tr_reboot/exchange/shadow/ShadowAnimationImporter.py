@@ -158,8 +158,8 @@ class ShadowAnimationImporter(SlotsBase):
         bl_fcurves: dict[int, bpy.types.FCurve] = {}
 
         for bl_shape_key in Enumerable(bl_mesh.shape_keys.key_blocks).skip(1):
-            global_shape_key_id = BlenderNaming.parse_shape_key_name(bl_shape_key.name).global_id
-            if global_shape_key_id is not None and global_shape_key_id in animation.blend_shape_frames:
-                bl_fcurves[global_shape_key_id] = bl_action.fcurves.new(f'key_blocks["{bl_shape_key.name}"].value')
+            id_set = BlenderNaming.try_parse_shape_key_name(bl_shape_key.name)
+            if id_set is not None and id_set.global_id is not None and id_set.global_id in animation.blend_shape_frames:
+                bl_fcurves[id_set.global_id] = bl_action.fcurves.new(f'key_blocks["{bl_shape_key.name}"].value')
 
         return bl_fcurves

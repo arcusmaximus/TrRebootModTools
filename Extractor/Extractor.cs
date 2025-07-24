@@ -210,8 +210,17 @@ namespace TrRebootTools.Extractor
                     {
                         archiveFileStream.CopyTo(extractedFileStream);
                     }
-                    if (Path.GetExtension(filePath) == ".wem")
-                        ConvertWwiseSound(filePath);
+
+                    string extension = Path.GetExtension(filePath);
+                    switch (extension)
+                    {
+                        case ".mul":
+                            SplitMultiplexStream(filePath);
+                            break;
+                        case ".wem":
+                            ConvertGameSound(filePath);
+                            break;
+                    }
                 }
             }
             finally
@@ -245,20 +254,32 @@ namespace TrRebootTools.Extractor
                 return a.CompareTo(b);
         }
 
-        private static void ConvertWwiseSound(string wemFilePath)
+        private void SplitMultiplexStream(string mulFilePath)
+        {
+            new MultiplexStreamSplitter(_archiveSet.Game).Split(mulFilePath);
+            
+            string folderPath = Path.GetDirectoryName(mulFilePath);
+            foreach (string fmodFilePath in Directory.GetFiles(folderPath, "*.fsb"))
+            {
+                ConvertGameSound(fmodFilePath);
+                File.Delete(fmodFilePath);
+            }
+        }
+
+        private static void ConvertGameSound(string soundFilePath)
         {
             string vgmstreamPath = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), @"vgmstream\vgmstream-cli.exe");
             if (!File.Exists(vgmstreamPath))
                 return;
 
-            if (wemFilePath.StartsWith(@"\\?\"))
-                wemFilePath = wemFilePath.Substring(4);
+            if (soundFilePath.StartsWith(@"\\?\"))
+                soundFilePath = soundFilePath.Substring(4);
 
             using Process process = Process.Start(
                 new ProcessStartInfo
                 {
                     FileName = vgmstreamPath,
-                    Arguments = $"-o \"{Path.ChangeExtension(wemFilePath, ".wav")}\" \"{wemFilePath}\"",
+                    Arguments = $"-o \"{Path.ChangeExtension(soundFilePath, ".wav")}\" \"{soundFilePath}\"",
                     CreateNoWindow = true,
                     UseShellExecute = false
                 }

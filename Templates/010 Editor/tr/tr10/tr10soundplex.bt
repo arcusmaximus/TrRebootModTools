@@ -1,0 +1,119 @@
+// cdc::PlexFactory::CreatePlexHierarchy
+
+#define TR_VERSION 10
+#include "../trcommon.bt"
+
+enum <ushort> SoundPlexType
+{
+    SoundPlexType_Silence,
+    SoundPlexType_Reference,
+    SoundPlexType_Derived,
+    SoundPlexType_Wave,
+    SoundPlexType_Stream,
+    SoundPlexType_Multiplex,
+    SoundPlexType_Assignment,
+    SoundPlexType_Envelope,
+    SoundPlexType_Selector,
+    SoundPlexType_ChoiceList,
+    SoundPlexType_MaterialList,
+    SoundPlexType_Reaction,
+    SoundPlexType_Sequence,
+    SoundPlexType_Overlap,
+    SoundPlexType_Effect,
+    SoundPlexType_Oscillator,
+    SoundPlexType_Talea,
+    SoundPlexType_NewTest
+};
+
+struct SoundPlex;
+
+typedef struct
+{
+    float time;
+} Silence;
+
+typedef struct
+{
+    int soundPlexDtpId;
+} Reference;
+
+typedef struct
+{
+    int soundPlexDtpId;
+    Ref soundRef;
+    if (CanSeekTo(dataRef))
+    {
+        SeekToRef(dataRef);
+        SoundPlex sound;
+        ReturnFromRef();
+    }
+} Derived;
+
+typedef struct
+{
+    int waveId;
+    ubyte priority;
+    ubyte curVoices;
+    ubyte bVirtualDelayStart;
+} Wave;
+
+typedef struct
+{
+    Ref streamNameRef;
+    if (CanSeekTo(streamNamRef))
+    {
+        SeekToRef(streamNameRef);
+        string streamName;
+        ReturnFromRef();
+    }
+    int m_channelCount;
+    char m_subtitlemode;
+    char m_priorityStream;
+    bool m_bCullStream;
+} Stream;
+
+typedef struct 
+{
+    unsigned int multiplex;
+    ubyte controlType;
+    FSkip(3);
+    Ref dataRef;
+} Multiplex;
+
+typedef struct
+{
+    SoundPlexType type;
+    byte clickPlay;
+    FSkip(5);
+    Ref dataRef;
+    if (CanSeekTo(dataRef))
+    {
+        SeekToRef(dataRef);
+        switch (type)
+        {
+            case SoundPlexType_Silence:
+                Silence data;
+                break;
+            case SoundPlexType_Reference:
+                Reference data;
+                break;
+            case SoundPlexType_Derived:
+                Derived data;
+                break;
+            case SoundPlexType_Wave:
+                Wave data;
+                break;
+            case SoundPlexType_Stream:
+                Stream data;
+                break;
+            case SoundPlexType_Multiplex:
+                Multiplex data;
+                break;
+        }
+        ReturnFromRef();
+    }
+    unsigned int ownerID;
+} SoundPlex <optimize=false>;
+
+RefDefinitions refDefinitions;
+SoundPlex root <open=true>;

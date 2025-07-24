@@ -1,0 +1,435 @@
+//------------------------------------------------
+//--- 010 Editor v15.0 Binary Template
+//
+//      File: tr10multiplexstream.bt
+//   Authors: arc_
+//   Purpose: Parse TR2013/ROTTR .mul files
+//  Category: ROTTR
+// File Mask: *.mul
+//------------------------------------------------
+
+#define TR_VERSION 10
+#include "../trcommon.bt"
+
+#define MAX_CINE_CHANNELS 15000
+
+local int gCineVersion;
+local byte gFirstCinePacket = 1;
+local byte gFirstSoundPacket = 1;
+local int gNumCineChannels;
+local int gCineAnchorIdx;
+local int gCineSkeletonIdx;
+local int gCineCameraIdx;
+local int gCineTriggerIdx;
+
+typedef struct
+{
+    string name;
+    int runLength;
+    byte runType;
+} CineChannel;
+
+local CineChannel gCineChannels[MAX_CINE_CHANNELS];
+
+enum <byte> AudioChannelType
+{
+    ChannelMono,
+    ChannelLeft,
+    ChannelRight
+};
+
+typedef struct
+{
+    int hertz;
+    int startLoop;
+    int endLoop;
+    int channelCount;
+    int reverbVol;
+    int startSizeToLoad;
+    int partialLoop;
+    int loopAreaSize;
+    int hasCinematic;
+    int hasSubtitles;
+    int faceFxSize;
+    int loopStartFileOffset;
+    int loopStartBundleOffset;
+    int maxEEBytesPerRead;
+    float mediaLength;
+    float volLeft[12];
+    float volRight[12];
+    unsigned int loopStartSamplesToSkip[12];
+    unsigned int spliceMarkersCount;
+    unsigned int spliceMarkersSampleOffset[1024];
+    short spliceMarkersIdentifier[1024];
+    char spliceMarkersChars[1024];
+    AudioChannelType channelType[12];
+} StreamHeader;
+
+typedef struct
+{
+    uint areaId;
+    int markerId;
+    int firstChannel;
+    
+    local int i;
+    for (i = 0; i < 9; i++)
+    {
+        gCineChannels[firstChannel + i].name = Str("Anchor %d channel %d", gCineAnchorIdx, i);
+    }
+    
+    gCineAnchorIdx++;
+    gNumCineChannels += 9;
+} CineAnchor <optimize=false>;
+
+enum <int> CineLightType
+{
+    LightType_Directional,
+    LightType_Point,
+    LightType_Spot
+};
+
+typedef struct
+{
+    int parentBoneId;
+    CineLightType type;
+    int useDepthMapShadows;
+    int depthMapShadowFilterSize;
+    int depthMapShadowResolution;
+    int templateIndex;
+} CineLight;
+
+typedef struct
+{
+    int instanceId;
+    if (gCineVersion == 13)
+    {
+        int sectionIdOrPlayerInvId;
+    }
+    int numBones;
+    int firstChannel;
+    Matrix defaultBoneTransforms[numBones];
+    int numLights;
+    int firstLightChannel;
+    CineLight lights[numLights];
+    int numCustomChannels;
+    int firstCustomChannel;
+    if (gCineVersion == 14)
+    {
+        int numBlendShapes;
+        int firstBlendShapeChannel;
+    }
+    
+    local int i;
+    local string prefix;
+    
+    prefix = Str("Skeleton %d ", gCineSkeletonIdx);
+    gCineChannels[firstChannel + 0].name = prefix + "channel 0";
+    gCineChannels[firstChannel + 1].name = prefix + "root matrix index";
+    gCineChannels[firstChannel + 2].name = prefix + "light mask";
+    gNumCineChannels += 3;
+    
+    for (i = 0; i < numBones; i++)
+    {
+        prefix = Str("Skeleton %d bone %d ", gCineSkeletonIdx, i);
+        gCineChannels[firstChannel + 3 + 14*i + 0].name  = prefix + "scale X";
+        gCineChannels[firstChannel + 3 + 14*i + 1].name  = prefix + "scale Y";
+        gCineChannels[firstChannel + 3 + 14*i + 2].name  = prefix + "scale Z";
+        gCineChannels[firstChannel + 3 + 14*i + 3].name  = prefix + "rotation X";
+        gCineChannels[firstChannel + 3 + 14*i + 4].name  = prefix + "rotation Y";
+        gCineChannels[firstChannel + 3 + 14*i + 5].name  = prefix + "rotation Z";
+        gCineChannels[firstChannel + 3 + 14*i + 6].name  = prefix + "position X";
+        gCineChannels[firstChannel + 3 + 14*i + 7].name  = prefix + "position Y";
+        gCineChannels[firstChannel + 3 + 14*i + 8].name  = prefix + "position Z";
+        gCineChannels[firstChannel + 3 + 14*i + 9].name  = prefix + "flags";
+        gCineChannels[firstChannel + 3 + 14*i + 10].name = prefix + "channel 10";
+        gCineChannels[firstChannel + 3 + 14*i + 11].name = prefix + "channel 11";
+        gCineChannels[firstChannel + 3 + 14*i + 12].name = prefix + "channel 12";
+        gCineChannels[firstChannel + 3 + 14*i + 13].name = prefix + "channel 13";
+        gNumCineChannels += 14;
+    }
+    
+    for (i = 0; i < numLights; i++)
+    {
+        prefix = Str("Skeleton %d light %d ", gCineSkeletonIdx, i);
+        gCineChannels[firstLightChannel + 10*i + 0].name = prefix + "color R";
+        gCineChannels[firstLightChannel + 10*i + 1].name = prefix + "color G";
+        gCineChannels[firstLightChannel + 10*i + 2].name = prefix + "color B";
+        gCineChannels[firstLightChannel + 10*i + 3].name = prefix + "umbra";
+        gCineChannels[firstLightChannel + 10*i + 4].name = prefix + "channel 4";
+        gCineChannels[firstLightChannel + 10*i + 5].name = prefix + "flags";
+        gCineChannels[firstLightChannel + 10*i + 6].name = prefix + "light mask";
+        gCineChannels[firstLightChannel + 10*i + 7].name = prefix + "shadow mask";
+        gCineChannels[firstLightChannel + 10*i + 8].name = prefix + "intensity";
+        gCineChannels[firstLightChannel + 10*i + 9].name = prefix + "penumbra";
+        gNumCineChannels += 10;
+    }
+    
+    for (i = 0; i < numCustomChannels; i++)
+    {
+        gCineChannels[firstCustomChannel + i].name = Str("Skeleton %d custom channel %d", gCineSkeletonIdx, i);
+        gNumCineChannels++;
+    }
+    
+    if (exists(numBlendShapes))
+    {
+        for (i = 0; i < numBlendShapes; i++)
+        {
+            gCineChannels[firstBlendShapeChannel + i].name = Str("Skeleton %d blendshape %d", gCineSkeletonIdx, i);
+            gNumCineChannels++;
+        }
+    }
+    
+    gCineSkeletonIdx++;
+} CineSkeleton <optimize=false, read=Str("Instance %d, %d bones", instanceId, numBones)>;
+
+typedef struct
+{
+    int firstChannel;
+    
+    local string prefix = Str("Camera %d ", gCineCameraIdx);
+    gCineChannels[firstChannel + 0].name  = prefix + "scale X";
+    gCineChannels[firstChannel + 1].name  = prefix + "scale Y";
+    gCineChannels[firstChannel + 2].name  = prefix + "scale Z";
+    gCineChannels[firstChannel + 3].name  = prefix + "rotation X";
+    gCineChannels[firstChannel + 4].name  = prefix + "rotation Y";
+    gCineChannels[firstChannel + 5].name  = prefix + "rotation Z";
+    gCineChannels[firstChannel + 6].name  = prefix + "position X";
+    gCineChannels[firstChannel + 7].name  = prefix + "position Y";
+    gCineChannels[firstChannel + 8].name  = prefix + "position Z";
+    gCineChannels[firstChannel + 9].name  = prefix + "FOV";
+    gCineChannels[firstChannel + 10].name = prefix + "flags";
+    gCineChannels[firstChannel + 11].name = prefix + "channel 11";
+    gCineChannels[firstChannel + 12].name = prefix + "channel 12";
+    gCineChannels[firstChannel + 13].name = prefix + "channel 13";
+    gCineChannels[firstChannel + 14].name = prefix + "channel 14";
+    gCineChannels[firstChannel + 15].name = prefix + "channel 15";
+    
+    gCineCameraIdx++;
+    gNumCineChannels += 16;
+} CineCamera <optimize=false>;
+
+typedef struct
+{
+    int triggerId;
+    int channel;
+    
+    gCineChannels[channel].name = Str("Trigger %d", triggerId);
+    gCineTriggerIdx++;
+    gNumCineChannels++;
+} CineTrigger <optimize=false>;
+
+typedef struct
+{
+    Vector3 endPosition;
+    Vector3 endRotation;
+    int finalUnitId;
+} SkeletonEndTransform;
+
+typedef struct
+{
+    Vector3 endRotation;
+    Vector3 endPosition;
+    float endFov;
+} CameraEndTransform;
+
+typedef struct
+{
+    char magic[4];
+    int version;
+    gCineVersion = version;
+    
+    int headerSize <format=hex>;
+    int numFrames;
+    char szName[0x40];
+    int mainUnitId;
+    
+    int numAnchors;
+    CineAnchor anchors[numAnchors];
+    
+    int numSkeletons;
+    CineSkeleton skeletons[numSkeletons];
+    
+    int numCameras;
+    CineCamera cameras[numCameras];
+    
+    int triggerUnitId;
+    int numTriggers;
+    CineTrigger triggers[numTriggers];
+    
+    int numSubtitles;
+    
+    SkeletonEndTransform skeletonEndTransforms[numSkeletons];
+    
+    if (gCineVersion == 14)
+    {
+        CameraEndTransform cameraEndTransforms[numCameras];
+        if (numCameras > 0)
+        {
+            int numCameraCuts;
+            int cameraCuts[numCameraCuts];
+        }
+    }
+} CineHeader;
+
+typedef struct
+{
+    uint length : 28;
+    uint type : 4 <comment=(this ? "New value for each frame in run" : "One value for all frames in run")>;
+} CineChannelRun <read=Str("%d frames", length)>;
+
+string GetCineChannelValueComment(float& value)
+{
+    local int valuesStart = startof(parentof(value).size) + 8;
+    local int valueIdx = (startof(value) - valuesStart) / 4;
+    local int channel = parentof(value).valueChannels[valueIdx];
+    return gCineChannels[channel].name;
+}
+
+typedef struct
+{
+    local int startPos = FTell();
+    local int endPos = startPos;
+    while (ReadByte(endPos) != 0xD)
+    {
+        endPos++;
+    }
+    char value[endPos - startPos];
+    FSkip(1);
+} SubtitleString <read=StringToWString(value, CHARSET_UTF8)>;
+
+typedef struct
+{
+    int size <format=hex>;
+    local int endPos = FTell() + size;
+    while (FTell() < endPos)
+    {
+        SubtitleString language;
+        SubtitleString text;
+    }
+} SubtitleSet;
+
+typedef struct
+{
+    int size <format=hex>;
+    int frameNr;
+    if (frameNr < 0)
+    {
+        FAlign(0x10);
+        return;
+    }
+    
+    local int channel;
+    local byte readChannelValue = 0;
+    local int valueChannels[MAX_CINE_CHANNELS*2];
+    for (channel = 0; channel < gNumCineChannels; channel++)
+    {
+        if (gCineChannels[channel].runLength == 0)
+        {
+            CineChannelRun channelRun;
+            gCineChannels[channel].runLength = channelRun.length;
+            gCineChannels[channel].runType   = channelRun.type;
+            readChannelValue = 1;
+        }
+        else
+        {
+            readChannelValue = gCineChannels[channel].runType;
+        }
+        if (readChannelValue)
+        {
+            valueChannels[(FTell() - startof(size) - 8) / 4] = channel;
+            float value <comment=GetCineChannelValueComment>;
+        }
+        gCineChannels[channel].runLength--;
+    }
+    SubtitleSet subtitles;
+    FAlign(0x10);
+} CineFrame <read=Str("Frame %d", frameNr)>;
+
+typedef struct
+{
+    char magic[4];
+    int numSubsongs;
+    int sampleHeadersSize <format=hex>;
+    int sampleDataSize <format=hex>;
+    int version <format=hex>;
+    int flags <format=hex>;
+    FSkip(0x18);
+    ushort streamHeaderSize <format=hex>;
+    char name[0x1E];
+    int numSamples;
+    int streamSize <format=hex>;
+    int loopStart;
+    int loopEnd;
+    int mode <format=hex>;
+    int sampleRate;
+    short defVol;
+    short defPan;
+    short devPri;
+    short numChannels;
+    float minDistance;
+    float maxDistance;
+    int varFreq;
+    short varVol;
+    short varPan;
+} FsbHeader;
+
+typedef struct
+{
+    int size <format=hex>;
+    int channel;
+    FSkip(8);
+    
+    if (gFirstSoundPacket)
+    {
+        local int dataPos = FTell();
+        FsbHeader fsbHeader;
+        FSeek(dataPos);
+    }
+    byte data[size];
+} SoundPacketChannelData <read=Str("Channel %d", channel)>;
+
+enum <int> PacketType
+{
+    PacketType_Sound,
+    PacketType_Cinematic,
+    PacketType_FaceFx,
+    PacketType_Padding
+};
+
+typedef struct
+{
+    PacketType type;
+    int size <format=hex>;
+    FSkip(8);
+    local int endPos = FTell() + size;
+    switch (type)
+    {
+        case PacketType_Sound:
+            while (FTell() < endPos)
+            {
+                SoundPacketChannelData channelData;
+            }
+            gFirstSoundPacket = 0;
+            break;
+        case PacketType_Cinematic:
+            if (gFirstCinePacket)
+            {
+                CineHeader cineHeader;
+                gFirstCinePacket = 0;
+            }
+            while (FTell() < endPos)
+            {
+                CineFrame frame;
+            }
+            break;
+    }
+    FSeek(endPos);
+    FAlign(0x10);
+} StreamPacket <read=SubStr(EnumToString(type), Strlen("PacketType_"))>;
+
+StreamHeader streamHeader;
+FSeek(0x2000);
+while (FTell() < FileSize())
+{
+    StreamPacket packet;
+}

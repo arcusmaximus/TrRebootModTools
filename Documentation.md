@@ -11,9 +11,9 @@ This toolset allows modding the games from the Tomb Raider Reboot trilogy. The f
 | Text (outfit descriptions, subtitles etc.) | ✓                  | ✓                      | ✓                         |
 | Cloth physics                              | ✓                  | ✓                       | ✓                         |
 | Hair                                       | ✓                  | ✓                       | ✓                        |
-| Animations                                 |                    |                         | ✓                         |
-| Sound                                      |                    |                         | ✓                         |
+| Sound                                      | ✓                  | ✓                       | ✓                         |
 | Level geometry importing                   | ~                  | ✓                       | ✓                         |
+| Animations                                 |                    |                         | ✓                         |
 
 <small>\* For Tomb Raider (2013), the "Definitive Edition" that can only be bought on the Xbox store is **not** supported.
 Only the "regular" edition from e.g. Steam or the EGS is.</small>
@@ -198,8 +198,8 @@ and clicking "Clear Custom Split Normals Data."
 Because TR blend shapes use custom vertex normals but Blender's shape keys don't support these, exported heads tend to
 have artifacts even if you didn't change anything. (The most noticeable effect is dark patches on the eyelids.)
 To work around this, the addon lets you transfer the shape key normals from the original model to your modified one.
-Find the "TR Mesh Properties" panel in Blender's Data Properties tab, select the original file
-as the "Shape Key Normals Source", and export your model as usual.
+Find the "Tomb Raider Properties" panel in Blender's Data Properties tab, select the original file as the "Shape Key Normals Source",
+and export your model as usual.
 
 ### Skeletons
 
@@ -219,10 +219,7 @@ on other bones. For example, they're used to automatically flex Lara's biceps wh
 green in Edit Mode and Pose Mode, and can be hidden by toggling the "Twist bones" bone collection.
 
 The twisting information is imported as Blender drivers so you get an accurate preview of how your custom outfit will behave ingame.
-In certain cases, however, these drivers break down and put the bones in the wrong location, making the outfit look all mangled.
-(This happens when resetting the pose to the rest position, for example.) To fix this, simply enter and exit Edit Mode on the armature.
-
-Also, while you can technically edit the driver expressions to make the twist bones behave differently, these changes will
+However, while you can technically edit the driver expressions to make the twist bones behave differently, these changes will
 not be applied when exporting the skeleton. The addon keeps an internal copy of the twist bone settings and exports that instead.
 
 #### Bone IDs
@@ -308,7 +305,7 @@ reason being that the local IDs in the vertex group names no longer match those 
 exception is when both skeletons were merged with "Keep originals.")
 
 However, if you select the mesh and go to Blender's Data Properties tab (green triangle), you'll
-find a panel labeled "TR Mesh Properties" with a button named "Fix Vertex Group Names."
+find a panel labeled "Tomb Raider Properties" with a button named "Fix Vertex Group Names."
 If you click this, the addon will match the vertex groups with the parent armature's bones based on
 global ID, and rename the vertex groups so they have the correct local ID. This way, you can
 reuse the mesh after all.
@@ -345,7 +342,7 @@ Certain parts of an outfit may only be visible under certain conditions. One exa
 it contains a version of the hood that's on Lara's head, and another that's hanging down the back. Each hood has a
 unique *Draw Group ID* that allows the game to find it and then show/hide it as needed.
 
-This Draw Group ID can be seen, and changed, in the "TR Mesh Properties" panel in the "Data" tab (green triangle icon)
+This Draw Group ID can be seen, and changed, in the "Tomb Raider Properties" panel in the "Data" tab (green triangle icon)
 of Blender's Properties editor.
 
 
@@ -610,6 +607,30 @@ manager will then create a new locals.bin that includes your changes.
 
 ## Sound modding
 
+### TR2013/ROTTR
+
+The first two games in the series use the [FMOD](https://www.fmod.com/) sound engine and its .fsb
+file format. Rather than storing the audio files directly in the .tiger archives, however,
+they embed them in two custom formats:
+
+- Ingame sound effects are stored in .trXsound resources referenced by DRM files. You can convert these
+  to .wav using the SoundConverter in these modding tools.
+- Dialogue, music, and cutscene sound effects are stored in .mul files (short for "multiplexed stream")
+  alongside subtitles and sometimes cutscene animation data. When you extract such a .mul file, the tool
+  will automatically pull out the .fsbs and convert them to .wav. It will also output the subtitles as a
+  .json file. If there is any animation data, it will be written to a .trXcineanim file, but this can't
+  be viewed or edited.
+
+Once you have an extracted sound, you can edit or replace the .wav and edit the subtitles if desired.
+
+To pack these into a new .trXsound resource or .mul file, you'll first need to install FMOD Designer version
+[4.36.04](https://archive.org/details/fmoddesigner43604win-installer) for converting the .wavs
+to .fsbs. Then launch the modding toolset's TrRebootTools.SoundConverter.exe, drag the .wav (for .trXsound)
+or .json (for .mul) onto the input list, specify your mod folder as the output location, and click Convert.
+
+
+### SOTTR
+
 SOTTR uses the Wwise sound engine, which has a proprietary file format called .wem
 (for Wwise Encoded Media). To create such files, you need the Wwise authoring tools,
 which can be installed for free through the [Audiokinetic Launcher](https://www.audiokinetic.com/download/).
@@ -617,10 +638,8 @@ which can be installed for free through the [Audiokinetic Launcher](https://www.
 [bugmenot.com](https://bugmenot.com/view/audiokinetic.com).~~ Specifically, you need version 2023.1.1.8417.
 
 While it's possible to do the conversion using these tools alone, it's a bit cumbersome,
-so you can use the modding toolset's WwiseSoundConverter.exe instead.
-
-Once you have your .wem file, place it in your mod with the same folder structure as the original
-(mod\\pcx64-w\\wwise\\...), and you're done.
+so you can again use the modding toolset's TrRebootTools.SoundConverter.exe. Simply drag the .wav
+onto the input file list, specify your mod folder as the output location, and click Convert.
 
 
 ## Level importing
@@ -635,16 +654,18 @@ the various levels, such as "cm_croft_manor#cm_croft_manor-content_cm_background
 pieces directly, you'll generally want to import the main DRM that references all the pieces — in this case,
 cm_croft_manor.drm (the part before the "#").
 
-After you import a streamlayer DRM or a main level DRM, the addon will log any missing DRMs in Blender's
-Scripting tab. You can then extract these, redo the import, and repeat until you have everything.
+After you import a streamlayer DRM or a main level DRM — making sure to enable "Import referenced objects" —
+the addon will log any missing DRMs in Blender's Scripting tab. You can then extract these, redo the import,
+and repeat until you have everything.
 
-The "Tomb Raider" tab in Blender's sidebar has a button called "Toggle Collision Visibility" that displays
-the level geometry in wireframe mode and makes the collision models visible. You can edit and export these
-just like regular models (for example, to remove barriers so you can explore areas ingame that are normally
-inaccessible). The material of a collision face determines the sound it makes when you walk on it ingame.
+The "Tomb Raider" tab in Blender's sidebar has a button called "Toggle Collision Visibility" that makes the
+collision models visible and displays the level geometry in wireframe mode. You can edit and export the
+collisions just like regular models (for example, removing barriers so you can explore areas ingame that are
+normally inaccessible). The material of a collision face determines the sound it makes when you walk on it.
 
 Note that depending on the size of the level, importing it can take several hours. Also, collision import/export
 is not available for TR2013.
+
 
 ## Mod packaging
 
@@ -665,12 +686,18 @@ For textures, simply use DDS files; the manager will automatically convert them 
 format during installation (again without loss of quality). However, you should make sure to generate mipmaps,
 and ideally use the same compression as the original textures.
 
-You can organize your resources in subfolders in any way you like. You can keep the original folder structure,
-but you can also reorganize them or even just throw them all into the same single place.
-This is not the case for files such as locals.bin, however — these have to keep the original folder structure.
+You can organize your *resources* in subfolders in any way you like. You can keep the original folder structure,
+but you can also reorganize them in arbitrarily named folders or even not use folders at all. Note that a resource
+may be referenced by multiple .drm resource collections: modding a texture that you extracted for just one outfit
+may well end up affecting other outfits too.
 
-Note that a resource may be referenced by multiple .drm resource collections. Modding a texture that you extracted
-for just one outfit may well end up affecting other outfits too.
+Unlike resources, *files* such as locals.bin have to be placed in the mod using their original folder structure
+(so starting with a subfolder called pc-w or pcx64-w).
+
+If you have a particularly large file (not resource) to which you're only making a few small changes, you can
+opt to ship an IPS32 patch in your mod instead of the whole file. This patch should have the same folder path
+and file name as the target file, with an added ".ips32" extension (so for example
+pcx64-w\\cinstream\\03_carcrash_cine_03_part01.mul.ips32).
 
 
 ### Variations

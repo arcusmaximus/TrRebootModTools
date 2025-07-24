@@ -21,13 +21,15 @@ class SpatialIndex(Generic[T]):
 
     grid: dict[tuple[int, int, int], list[IndexItem[T]]]
     cell_size: float
+    search_in_neighboring_cells: bool
 
     grid_min_coords: list[int]
     grid_max_coords: list[int]
 
-    def __init__(self, cell_size: float) -> None:
+    def __init__(self, cell_size: float, search_in_neighboring_cells: bool) -> None:
         self.grid = {}
         self.cell_size = cell_size
+        self.search_in_neighboring_cells = search_in_neighboring_cells
 
         self.grid_min_coords = [ 100000,  100000,  100000]
         self.grid_max_coords = [-100000, -100000, -100000]
@@ -105,6 +107,9 @@ class SpatialIndex(Generic[T]):
             result = get_result(state.items)
             if result is not None:
                 return (result, state)
+
+            if not self.search_in_neighboring_cells:
+                break
 
             if truncated_shell_min_coords == tuple(self.grid_min_coords) and truncated_shell_max_coords == tuple(self.grid_max_coords):
                 break

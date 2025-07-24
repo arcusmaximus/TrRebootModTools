@@ -1,7 +1,5 @@
 ﻿using System.IO;
 using System.Runtime.InteropServices;
-using TrRebootTools.Shared.Cdc;
-using TrRebootTools.Shared.Cdc.Rise;
 using TrRebootTools.Shared.Util;
 
 namespace TrRebootTools.Shared.Cdc.Rise
@@ -26,7 +24,7 @@ namespace TrRebootTools.Shared.Cdc.Rise
                 entry.NameHash,
                 0xFFFFFFFF00000000 | entry.Locale,
                 entry.ArchiveId,
-                0,
+                entry.ArchiveId == Id ? SubId : 0,
                 entry.ArchivePart,
                 entry.Offset,
                 entry.UncompressedSize

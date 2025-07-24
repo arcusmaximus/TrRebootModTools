@@ -1,5 +1,6 @@
 from typing import cast
 import bpy
+import re
 from io_scene_tr_reboot.BlenderHelper import BlenderBoneGroupSet, BlenderHelper
 from io_scene_tr_reboot.BlenderNaming import BlenderNaming
 from io_scene_tr_reboot.properties.BoneProperties import BoneProperties
@@ -104,6 +105,25 @@ class SkeletonMerger:
         self.apply_bone_renames_to_armature_drivers(bl_armature_obj, renames)
         self.apply_bone_renames_to_armature_constraints(bl_armature_obj, renames)
 
+    def remove_invalid_bone_drivers(self, bl_armature_obj: bpy.types.Object) -> None:
+        if bl_armature_obj.animation_data is None or bl_armature_obj.pose is None:
+            return
+
+        bl_armature = cast(bpy.types.Armature, bl_armature_obj.data)
+        for bl_curve in Enumerable(bl_armature_obj.animation_data.drivers).to_list():
+            match = re.match(r'pose\.bones\["(\w+)"\]', bl_curve.data_path)
+            if match is None:
+                continue
+
+            bone_name = match.group(1)
+            if bl_armature_obj.mode == "EDIT":
+                bone_exists = bone_name in bl_armature.edit_bones
+            else:
+                bone_exists = bone_name in bl_armature_obj.pose.bones
+
+            if not bone_exists:
+                bl_armature_obj.animation_data.drivers.remove(bl_curve)
+
     def apply_bone_renames_to_armature_drivers(self, bl_armature_obj: bpy.types.Object, renames: dict[str, str]) -> None:
         if bl_armature_obj.animation_data is None:
             return
@@ -114,15 +134,15 @@ class SkeletonMerger:
                 continue
 
             for bl_variable in bl_driver.variables:
-                from_bone_name = bl_variable.targets[0].bone_target
-                if from_bone_name == "":
+                old_bone_name = bl_variable.targets[0].bone_target
+                if old_bone_name == "":
                     continue
 
-                to_bone_name = renames.get(from_bone_name)
-                if to_bone_name is None:
+                new_bone_name = renames.get(old_bone_name)
+                if new_bone_name is None:
                     continue
 
-                bl_variable.targets[0].bone_target = to_bone_name
+                bl_variable.targets[0].bone_target = new_bone_name
 
     def apply_bone_renames_to_armature_constraints(self, bl_armature_obj: bpy.types.Object, renames: dict[str, str]) -> None:
         if bl_armature_obj.pose is None:
@@ -135,22 +155,10 @@ class SkeletonMerger:
             if old_id_set.local_id is not None and new_id_set.local_id is not None and old_id_set.local_id != new_id_set.local_id:
                 local_id_changes[old_id_set.local_id] = new_id_set.local_id
 
+        if len(local_id_changes) == 0:
+            return
+
         for bl_bone in bl_armature_obj.pose.bones:
-            for bl_constraint in bl_bone.constraints:
-                if isinstance(bl_constraint, bpy.types.CopyLocationConstraint) or isinstance(bl_constraint, bpy.types.CopyRotationConstraint):
-                    from_bone_name = bl_constraint.subtarget
-                    if from_bone_name == "":
-                        continue
-
-                    to_bone_name = renames.get(from_bone_name)
-                    if to_bone_name is None:
-                        continue
-
-                    bl_constraint.subtarget = to_bone_name
-
-            if len(local_id_changes) == 0:
-                continue
-
             bone_properties = BoneProperties.get_instance(bl_bone.bone)
             for prop_constraint in bone_properties.constraints:
                 tr_constraint = self.factory.deserialize_bone_constraint(prop_constraint.data)

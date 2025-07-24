@@ -220,9 +220,9 @@ namespace TrRebootTools.Shared.Cdc
 
         private List<ResourceCollectionDependency> ReadDependencies(BinaryReader reader, int length)
         {
-            long startPos = reader.BaseStream.Position;
+            int startPos = reader.Tell();
             List<ResourceCollectionDependency> dependencies = new();
-            while (reader.BaseStream.Position < startPos + length)
+            while (reader.Tell() < startPos + length)
             {
                 ulong locale = ReadLocale(reader, DependencyLocaleSize);
                 string filePath = reader.ReadZeroTerminatedString();

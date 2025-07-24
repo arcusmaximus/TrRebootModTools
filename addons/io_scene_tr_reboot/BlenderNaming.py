@@ -59,9 +59,6 @@ class BlenderNaming:
     constrained_bone_group_name: ClassVar[str] = "Twist bones"
     constrained_bone_palette_name: ClassVar[str] = "THEME03"
 
-    helper_bone_group_name: ClassVar[str] = "Helper bones"
-    helper_bone_palette_name: ClassVar[str] = "THEME10"
-
     @staticmethod
     def make_collection_empty_name(collection_name: str, object_id: int) -> str:
         return BlenderNaming.make_collection_item_name(collection_name, f"object_{object_id}")
@@ -296,18 +293,6 @@ class BlenderNaming:
         return local_id
 
     @staticmethod
-    def make_helper_bone_name(global_id: int) -> str:
-        return f"helper_{global_id}"
-
-    @staticmethod
-    def try_parse_helper_bone_name(name: str) -> int | None:
-        match = re.fullmatch(r"helper_(\d+)", name)
-        if match is None:
-            return None
-
-        return int(match.group(1))
-
-    @staticmethod
     def make_shape_key_name(name: str | None, global_id: int | None, local_id: int) -> str:
         name = f"{name or 'shapekey'}_{coalesce(global_id, 'x')}_{local_id}"
         if len(name) > 63:
@@ -316,7 +301,7 @@ class BlenderNaming:
         return name
 
     @staticmethod
-    def parse_shape_key_name(name: str) -> BlenderBlendShapeIdSet:
+    def try_parse_shape_key_name(name: str) -> BlenderBlendShapeIdSet | None:
         match = re.search(r"_(x|\d+)_(\d+)$", name)
         if match is not None:
             return BlenderBlendShapeIdSet(
@@ -328,7 +313,15 @@ class BlenderNaming:
         if match is not None:
             return BlenderBlendShapeIdSet(None, int(match.group(1)))
 
-        raise Exception(f"{name} is not a valid shape key name.")
+        return None
+
+    @staticmethod
+    def parse_shape_key_name(name: str) -> BlenderBlendShapeIdSet:
+        ids = BlenderNaming.try_parse_shape_key_name(name)
+        if ids is None:
+            raise Exception(f"{name} is not a valid shape key name.")
+
+        return ids
 
     @staticmethod
     def make_material_name(name: str | None, id: int) -> str:

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using TrRebootTools.Shared.Cdc;
 using TrRebootTools.Shared.Util;
 
 namespace TrRebootTools.Shared.Cdc

@@ -9,11 +9,11 @@ class DriverFunctions:
     @staticmethod
     def register() -> None:
         DriverFunctions.__register()
-        bpy.app.handlers.load_post.append(DriverFunctions.register_on_load)
+        bpy.app.handlers.load_post.append(DriverFunctions.on_scene_load)
 
     @staticmethod
     @bpy.app.handlers.persistent
-    def register_on_load(bl_scene: bpy.types.Scene) -> None:
+    def on_scene_load(bl_scene: bpy.types.Scene) -> None:
         DriverFunctions.__register()
 
     @staticmethod
@@ -24,7 +24,7 @@ class DriverFunctions:
 
     @staticmethod
     def unregister() -> None:
-        bpy.app.handlers.load_post.remove(DriverFunctions.register_on_load)
+        bpy.app.handlers.load_post.remove(DriverFunctions.on_scene_load)
         for name in DriverFunctions.__dict__.keys():
             if name.startswith("tr_") and name in bpy.app.driver_namespace:
                 del bpy.app.driver_namespace[name]
@@ -45,7 +45,7 @@ class DriverFunctions:
 
     @staticmethod
     def tr_look_at(
-        armature_rotation: tuple[float, ...],
+        bl_looker_pose_bone: bpy.types.PoseBone,
         looker_position: tuple[float, ...],
         look_at_positions: list[tuple[float, ...]],
         look_at_weights: list[float],
@@ -65,9 +65,9 @@ class DriverFunctions:
             (bone_local_normal[1],  bone_local_normal[2],  bone_local_normal[0]),
         )
         bone_local_rotation.invert()
+        look_rotation = look_rotation @ bone_local_rotation
 
-        result = Quaternion(armature_rotation).inverted() @ look_rotation @ bone_local_rotation
-        return (result.w, result.x, result.y, result.z)
+        return DriverFunctions.world_rotation_to_bone_rotation(bl_looker_pose_bone, look_rotation)
 
     @staticmethod
     def get_rotation_from_axes(
@@ -91,50 +91,61 @@ class DriverFunctions:
 
     @staticmethod
     def tr_weighted_pos(
-        armature_position: tuple[float, ...],
-        armature_rotation: tuple[float, ...],
-        bone_positions: list[tuple[float, ...]],
-        bone_flip_flags: list[int],
-        weights: list[float],
+        bl_target_pose_bone: bpy.types.PoseBone,
+        source_bone_positions: list[tuple[float, ...]],
+        source_bone_flip_flags: list[int],
+        source_bone_weights: list[float],
         offset: tuple[float, ...]
     ) -> tuple[float, ...]:
         result = Vector(offset)
-        for i, pos in enumerate(bone_positions):
-            result += Vector(pos) * weights[i]
+        for i, pos in enumerate(source_bone_positions):
+            result += Vector(pos) * source_bone_weights[i]
 
-        inv_transform = Matrix.LocRotScale(Vector(armature_position), Quaternion(armature_rotation), None)
-        inv_transform.invert()
-        return (inv_transform @ result).to_tuple()
+        return DriverFunctions.world_position_to_bone_position(bl_target_pose_bone, result)
 
     @staticmethod
     def tr_weighted_rot(
-        armature_position: tuple[float, ...],
-        armature_rotation: tuple[float, ...],
-        bone_rotation_tuples: list[tuple[float, ...]],
-        bone_flip_flags: list[int],
-        weights: list[float],
+        bl_target_pose_bone: bpy.types.PoseBone,
+        source_bone_rotation_tuples: list[tuple[float, ...]],
+        source_bone_flip_flags: list[int],
+        source_bone_weights: list[float],
         offset: tuple[float, ...]
     ) -> tuple[float, ...]:
         bone_rotation_quats: list[Quaternion] = []
-        for i in range(len(bone_rotation_tuples)):
-            bone_rotation = Quaternion(bone_rotation_tuples[i])
-            if bone_flip_flags[i] != 0:
+        for i in range(len(source_bone_rotation_tuples)):
+            bone_rotation = Quaternion(source_bone_rotation_tuples[i])
+            if source_bone_flip_flags[i] != 0:
                 bone_rotation = bone_rotation @ DriverFunctions.blender_flip_quat
 
             bone_rotation_quats.append(bone_rotation)
 
         result: Quaternion
-        if len(bone_rotation_tuples) == 2:
-            result = bone_rotation_quats[0].slerp(bone_rotation_quats[1], weights[1])
+        if len(source_bone_rotation_tuples) == 2:
+            result = bone_rotation_quats[0].slerp(bone_rotation_quats[1], source_bone_weights[1])
         else:
             result = Quaternion()
             no_rot = Quaternion()
             for i, bone_rotation in enumerate(bone_rotation_quats):
-                result = result @ no_rot.slerp(bone_rotation, weights[i])
+                result = result @ no_rot.slerp(bone_rotation, source_bone_weights[i])
 
-        result = Quaternion(armature_rotation).inverted() @ result @ DriverFunctions.convert_tr_rotation_to_blender(Quaternion(offset))
-        return (result.w, result.x, result.y, result.z)
+        result = result @ DriverFunctions.convert_tr_rotation_to_blender(Quaternion(offset))
+        return DriverFunctions.world_rotation_to_bone_rotation(bl_target_pose_bone, result)
 
     @staticmethod
     def convert_tr_rotation_to_blender(rotation: Quaternion) -> Quaternion:
         return Quaternion((rotation.w, rotation.x, -rotation.z, rotation.y))
+
+    @staticmethod
+    def world_position_to_bone_position(bl_pose_bone: bpy.types.PoseBone, world_space_position: Vector) -> tuple[float, ...]:
+        bl_armature_obj = cast(bpy.types.Object, bl_pose_bone.id_data)
+        world_space_matrix = Matrix.Translation(world_space_position)
+        bone_space_matrix  = bl_armature_obj.convert_space(pose_bone = bl_pose_bone, matrix = world_space_matrix, from_space = "WORLD", to_space = "LOCAL")
+        return bone_space_matrix.translation.to_tuple()
+
+    @staticmethod
+    def world_rotation_to_bone_rotation(bl_pose_bone: bpy.types.PoseBone, world_space_rotation: Quaternion) -> tuple[float, ...]:
+        bl_armature_obj = cast(bpy.types.Object, bl_pose_bone.id_data)
+        world_space_matrix = world_space_rotation.to_matrix().to_4x4()
+        bone_space_matrix  = bl_armature_obj.convert_space(pose_bone = bl_pose_bone, matrix = world_space_matrix, from_space = "WORLD", to_space = "LOCAL")
+        bone_space_rotation = bone_space_matrix.to_quaternion()
+        return (bone_space_rotation.w, bone_space_rotation.x, bone_space_rotation.y, bone_space_rotation.z)

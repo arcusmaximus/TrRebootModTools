@@ -168,7 +168,7 @@ class ShadowBoneConstraint_LookAt(ShadowBoneConstraint, IBoneConstraint_LookAt):
         match extra_data.pole_type:
             case _LookAtPoleType.POLE_BONE_POS:
                 self.pole_bone_local_id = extra_data.pole_bone_local_id
-                self.pole_bone_orientation = None    # type: ignore
+                self.pole_bone_orientation = None   # type: ignore
                 self.pole_dir = None                # type: ignore
             case _LookAtPoleType.POLE_BONE_ROT:
                 self.pole_bone_local_id = extra_data.pole_bone_local_id
@@ -176,11 +176,11 @@ class ShadowBoneConstraint_LookAt(ShadowBoneConstraint, IBoneConstraint_LookAt):
                 self.pole_dir = extra_data.pole_dir
             case _LookAtPoleType.POLE_DIR:
                 self.pole_bone_local_id = None
-                self.pole_bone_orientation = None    # type: ignore
+                self.pole_bone_orientation = None   # type: ignore
                 self.pole_dir = extra_data.pole_dir
             case _:
                 self.pole_bone_local_id = None
-                self.pole_bone_orientation = None    # type: ignore
+                self.pole_bone_orientation = None   # type: ignore
                 self.pole_dir = None                # type: ignore
 
         self.bone_local_tangent = extra_data.bone_local_tangent

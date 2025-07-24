@@ -115,6 +115,9 @@ namespace TrRebootTools.ModManager.Mod
                 if (locale != 0xFFFFFFFFFFFFFFFF)
                     filePathToHash = Path.GetDirectoryName(filePathToHash);
 
+                if (Path.GetExtension(filePathToHash) == ".ips32")
+                    filePathToHash = filePathToHash.Substring(0, filePathToHash.Length - 6);
+
                 ulong nameHash = CdcHash.Calculate(filePathToHash, game);
                 locale = gameFileLocales.GetOrDefault(nameHash) ?? locale;
                 files[new ArchiveFileKey(nameHash, locale)] = filePath;
@@ -257,6 +260,8 @@ namespace TrRebootTools.ModManager.Mod
                     resultStream = GetPatchedLocalsBin(fileStream, fileKey, archiveSet);
                 else if (filePath.EndsWith(".wem"))
                     resultStream = GetPatchedSound(fileStream, fileKey, archiveSet);
+                else if (filePath.EndsWith(".ips32"))
+                    resultStream = GetIps32PatchedStream(fileStream, fileKey, archiveSet);
                 else
                     resultStream = fileStream;
             }
@@ -267,6 +272,41 @@ namespace TrRebootTools.ModManager.Mod
             }
 
             return resultStream;
+        }
+
+        private static Stream GetPatchedLocalsBin(Stream jsonStream, ArchiveFileKey fileKey, ArchiveSet archiveSet)
+        {
+            ArchiveFileReference fileRef = archiveSet.GetFileReference(fileKey);
+            if (fileRef == null)
+                throw new Exception($"File {fileKey} not found for locals.bin");
+
+            LocalsBin locals;
+            using (Stream origStream = archiveSet.OpenFile(fileRef))
+            {
+                locals = LocalsBin.Open(origStream, archiveSet.Game);
+            }
+
+            JObject json;
+            try
+            {
+                using StreamReader streamReader = new StreamReader(jsonStream);
+                using JsonReader jsonReader = new JsonTextReader(streamReader);
+                json = JObject.Load(jsonReader);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Failed to parse JSON file for locals.bin:\r\n" + ex.Message);
+            }
+
+            foreach ((string key, JToken value) in json)
+            {
+                locals.Strings[key] = (string)value;
+            }
+
+            MemoryStream patchedStream = new MemoryStream();
+            locals.Write(patchedStream);
+            patchedStream.Position = 0;
+            return patchedStream;
         }
 
         private static Stream GetPatchedSound(Stream modSoundFileStream, ArchiveFileKey fileKey, ArchiveSet archiveSet)
@@ -305,7 +345,7 @@ namespace TrRebootTools.ModManager.Mod
                         origCueChunk.Points[i] = point;
                     }
                 }
-                
+
                 if (origChunk is WwiseSound.CueChunk or WwiseSound.ListChunk)
                     modSound.Chunks.Insert(chunkInsertIdx++, origChunk);
             }
@@ -316,39 +356,20 @@ namespace TrRebootTools.ModManager.Mod
             return modSoundMemStream;
         }
 
-        private static Stream GetPatchedLocalsBin(Stream jsonStream, ArchiveFileKey fileKey, ArchiveSet archiveSet)
+        private static Stream GetIps32PatchedStream(Stream ipsStream, ArchiveFileKey fileKey, ArchiveSet archiveSet)
         {
             ArchiveFileReference fileRef = archiveSet.GetFileReference(fileKey);
             if (fileRef == null)
-                throw new Exception($"File {fileKey} not found for locals.bin");
+                throw new Exception($"File {fileKey} not found for IPS32 patching");
 
-            LocalsBin locals;
-            using (Stream origStream = archiveSet.OpenFile(fileRef))
-            {
-                locals = LocalsBin.Open(origStream, archiveSet.Game);
-            }
+            using Stream fileStream = archiveSet.OpenFile(fileRef);
+            byte[] data = new byte[fileStream.Length];
+            fileStream.Read(data, 0, data.Length);
 
-            JObject json;
-            try
-            {
-                using StreamReader streamReader = new StreamReader(jsonStream);
-                using JsonReader jsonReader = new JsonTextReader(streamReader);
-                json = JObject.Load(jsonReader);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Failed to parse JSON file for locals.bin:\r\n" + ex.Message);
-            }
+            Ips32Patch patch = new(ipsStream);
+            patch.Apply(data);
 
-            foreach ((string key, JToken value) in json)
-            {
-                locals.Strings[key] = (string)value;
-            }
-
-            MemoryStream patchedStream = new MemoryStream();
-            locals.Write(patchedStream);
-            patchedStream.Position = 0;
-            return patchedStream;
+            return new MemoryStream(data);
         }
 
         private static Stream OpenResource(

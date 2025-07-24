@@ -82,6 +82,8 @@ class TemporaryModelMerger(SkeletonMerger):
                 if bl_existing_global_armature is not None and bl_existing_global_armature.bones.get(global_bone_name) is not None:
                     bl_local_armature.edit_bones.remove(bl_local_armature.edit_bones[local_bone_name])
 
+            self.remove_invalid_bone_drivers(bl_local_armature_obj)
+
         self.apply_bone_renames_to_armature(bl_local_armature_obj, bone_renames)
         return bone_renames
 

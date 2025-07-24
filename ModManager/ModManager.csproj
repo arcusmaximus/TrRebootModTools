@@ -61,6 +61,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Mod\Ips32Patch.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
