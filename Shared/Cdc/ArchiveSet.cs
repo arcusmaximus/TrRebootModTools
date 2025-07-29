@@ -171,10 +171,7 @@ namespace TrRebootTools.Shared.Cdc
             lock (_lock)
             {
                 _archives.Add((archive.Id, archive.SubId), archive);
-                List<Archive> sortedArchives = GetSortedArchives();
-                int index = sortedArchives.IndexOf(archive);
-                if (index >= 0)
-                    UpdateResourceReferences(sortedArchives, index + 1, gameResourceUsageCache, progress, cancellationToken);
+                UpdateResourceReferences(gameResourceUsageCache, progress, cancellationToken);
             }
         }
 
@@ -191,11 +188,7 @@ namespace TrRebootTools.Shared.Cdc
                     progress?.Begin($"Enabling mod {archive.ModName}...");
 
                     archive.MetaData.Enabled = true;
-
-                    List<Archive> sortedArchives = GetSortedArchives();
-                    int index = sortedArchives.IndexOf(archive);
-                    if (index >= 0)
-                        UpdateResourceReferences(sortedArchives, index, gameResourceUsageCache, progress, cancellationToken);
+                    UpdateResourceReferences(gameResourceUsageCache, progress, cancellationToken);
                 }
                 finally
                 {
@@ -222,22 +215,8 @@ namespace TrRebootTools.Shared.Cdc
             try
             {
                 progress?.Begin(statusText);
-
-                List<Archive> sortedArchives = GetSortedArchives();
-                int index = sortedArchives.IndexOf(archive);
                 archive.MetaData.Enabled = false;
-                if (index >= 0)
-                {
-                    while (index < sortedArchives.Count && sortedArchives[index].Id == archiveId)
-                    {
-                        sortedArchives.RemoveAt(index);
-                    }
-                    UpdateResourceReferences(sortedArchives, index, gameResourceUsageCache, progress, cancellationToken);
-                }
-                else
-                {
-                    UpdateResourceReferences(sortedArchives, sortedArchives.Count, gameResourceUsageCache, progress, cancellationToken);
-                }
+                UpdateResourceReferences(gameResourceUsageCache, progress, cancellationToken);
             }
             finally
             {
@@ -261,30 +240,34 @@ namespace TrRebootTools.Shared.Cdc
             }
         }
 
-        private void UpdateResourceReferences(List<Archive> sortedArchives, int startIndex, ResourceUsageCache gameResourceUsageCache, ITaskProgress progress, CancellationToken cancellationToken)
+        private void UpdateResourceReferences(ResourceUsageCache gameResourceUsageCache, ITaskProgress progress, CancellationToken cancellationToken)
         {
+            List<Archive> sortedArchives = GetSortedArchives();
+            int firstModArchiveIdx = sortedArchives.IndexOf(a => a.ModName != null);
+            if (firstModArchiveIdx < 0)
+                firstModArchiveIdx = sortedArchives.Count;
+
             _files.Clear();
-            ResourceUsageCache resourceUsageCache = new ResourceUsageCache(gameResourceUsageCache);
-            foreach (Archive archive in sortedArchives.Take(startIndex))
+            foreach (Archive archive in sortedArchives.Take(firstModArchiveIdx))
             {
                 foreach (ArchiveFileReference file in archive.Files)
                 {
                     _files[file] = file;
                 }
-                if (archive.ModName != null && startIndex < sortedArchives.Count)
-                    resourceUsageCache.AddArchive(archive, this);
             }
 
             int numTotalFiles = 0;
-            foreach (Archive archive in sortedArchives.Skip(startIndex))
+            foreach (Archive archive in sortedArchives.Skip(firstModArchiveIdx))
             {
                 numTotalFiles += archive.Files.Count;
             }
 
+            ResourceUsageCache resourceUsageCache = new ResourceUsageCache(gameResourceUsageCache);
+
             int numUpdatedFiles = 0;
             HashSet<int> archiveIds = sortedArchives.Select(a => a.Id).ToHashSet();
             Dictionary<ResourceKey, ResourceReference> modResourceRefs = new();
-            foreach (Archive archive in sortedArchives.Skip(startIndex))
+            foreach (Archive archive in sortedArchives.Skip(firstModArchiveIdx))
             {
                 foreach (ArchiveFileReference file in archive.Files)
                 {
@@ -304,12 +287,13 @@ namespace TrRebootTools.Shared.Cdc
                     for (int resourceIdx = 0; resourceIdx < collection.ResourceReferences.Count; resourceIdx++)
                     {
                         ResourceReference resourceRef = collection.ResourceReferences[resourceIdx];
-                        if (resourceRef.ArchiveId == archive.Id)
+                        if (resourceRef.ArchiveId == archive.Id && resourceRef.ArchiveSubId == archive.SubId)
                         {
                             resourceUsageCache.AddResourceReference(this, collection, resourceIdx);
                             modResourceRefs[resourceRef] = resourceRef;
                         }
-                        else if (modResourceRefs.TryGetValue(resourceRef, out ResourceReference modResourceRef))
+                        else if (modResourceRefs.TryGetValue(resourceRef, out ResourceReference modResourceRef) &&
+                                 (resourceRef.ArchiveId != modResourceRef.ArchiveId || resourceRef.ArchiveSubId != modResourceRef.ArchiveSubId))
                         {
                             collection.UpdateResourceReference(resourceIdx, modResourceRef);
                             changesMade = true;

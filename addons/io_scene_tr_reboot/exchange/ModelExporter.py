@@ -505,42 +505,37 @@ class ModelExporter(SlotsBase):
             return
 
         source_vertex_lookup = SpatialIndex[int](0.001, False)
-        for source_vertex_idx, tr_source_vertex in enumerate(tr_source_mesh.vertices):
-            source_vertex_pos = Vector(tr_source_vertex.attributes[Hashes.position])
+        for source_vertex_idx in Enumerable(tr_source_mesh.parts).select_many(lambda p: p.indices).distinct():  # Skip loose vertices
+            source_vertex_pos = Vector(tr_source_mesh.vertices[source_vertex_idx].attributes[Hashes.position])
             source_vertex_lookup.add(source_vertex_pos, source_vertex_idx)
 
         for tr_target_mesh in tr_target_model.meshes:
             if not Enumerable(tr_target_mesh.blend_shapes).any(lambda b: b is not None):
                 continue
 
-            source_vertex_idx_by_target_vertex_idx: list[int | None] = [None] * len(tr_target_mesh.vertices)
+            target_vertex_idx_by_source_vertex_idx: list[int | None] = [None] * len(tr_source_mesh.vertices)
             for target_vertex_idx, tr_target_vertex in enumerate(tr_target_mesh.vertices):
                 target_vertex_pos = Vector(tr_target_vertex.attributes[Hashes.position])
                 source_vertex_idx = source_vertex_lookup.find_nearest_item(target_vertex_pos)
                 if source_vertex_idx is not None:
-                    source_vertex_idx_by_target_vertex_idx[target_vertex_idx] = source_vertex_idx
+                    target_vertex_idx_by_source_vertex_idx[source_vertex_idx] = target_vertex_idx
                     tr_source_vertex = tr_source_mesh.vertices[source_vertex_idx]
                     tr_target_vertex.attributes[Hashes.normal] = tr_source_vertex.attributes[Hashes.normal]
 
             for blend_shape_idx, tr_target_blend_shape in enumerate(tr_target_mesh.blend_shapes):
-                if blend_shape_idx >= len(tr_source_mesh.blend_shapes) or tr_target_blend_shape is None:
+                if tr_target_blend_shape is None or blend_shape_idx >= len(tr_source_mesh.blend_shapes):
                     continue
 
                 tr_source_blend_shape = tr_source_mesh.blend_shapes[blend_shape_idx]
                 if tr_source_blend_shape is None:
                     continue
 
-                for target_vertex_idx, target_vertex_offsets in tr_target_blend_shape.vertices.items():
-                    source_vertex_idx = source_vertex_idx_by_target_vertex_idx[target_vertex_idx]
-                    if source_vertex_idx is None:
+                for source_vertex_idx, source_vertex_offsets in tr_source_blend_shape.vertices.items():
+                    target_vertex_idx = target_vertex_idx_by_source_vertex_idx[source_vertex_idx]
+                    if target_vertex_idx is None:
                         continue
 
-                    source_vertex_offsets = tr_source_blend_shape.vertices.get(source_vertex_idx)
-                    if source_vertex_offsets is None:
-                        continue
-
-                    target_vertex_offsets.normal_offset = source_vertex_offsets.normal_offset
-                    target_vertex_offsets.color_offset  = source_vertex_offsets.color_offset
+                    tr_target_blend_shape.vertices[target_vertex_idx] = source_vertex_offsets
 
     def load_model(self, file_path: str) -> IModel | None:
         if not os.path.isfile(file_path):

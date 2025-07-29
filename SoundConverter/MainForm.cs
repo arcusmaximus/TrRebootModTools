@@ -109,6 +109,9 @@ namespace TrRebootTools.SoundConverter
 
         private bool IsInputFileAllowed(string path)
         {
+            if (Path.GetFileNameWithoutExtension(path).Contains(".channel"))
+                return false;
+
             string extension = Path.GetExtension(path);
             return _converters.Any(c => c.InputExtension.Equals(extension, StringComparison.InvariantCultureIgnoreCase));
         }
@@ -243,6 +246,19 @@ namespace TrRebootTools.SoundConverter
             config.AppSettings.Settings[AppSettingKeys.Game].Value = GetSelectedGame().ToString();
             config.AppSettings.Settings[AppSettingKeys.OutputFolder].Value = _txtOutputFolder.Text;
             config.Save(ConfigurationSaveMode.Modified);
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing && components != null)
+                components.Dispose();
+
+            foreach (ISoundConverter converter in _converters)
+            {
+                converter.Dispose();
+            }
+
+            base.Dispose(disposing);
         }
     }
 }

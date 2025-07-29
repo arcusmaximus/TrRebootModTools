@@ -13,6 +13,12 @@ namespace TrRebootTools.Shared
             set;
         }
 
+        public bool Looping
+        {
+            get;
+            set;
+        }
+
         public SubtitleFrame[] SubtitleFrames
         {
             get;

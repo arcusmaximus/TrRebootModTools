@@ -35,11 +35,14 @@ namespace TrRebootTools.SoundConverter
 
             await RunConsoleToolAsync($"-pc \"{ProjectFilePath}\"");
 
+            string cacheFolderPath = Path.Combine(ProjectFolderPath, ".fsbcache");
+            if (Directory.Exists(cacheFolderPath))
+                Directory.Delete(cacheFolderPath, true);
+
             string fromFsbPath = Path.Combine(ProjectFolderPath, "proj_bank00.fsb");
             if (!File.Exists(fromFsbPath))
                 return null;
 
-            string toFsbName = Path.ChangeExtension(Path.GetFileName(wavFilePath), ".fsb");
             string toFsbPath = Path.ChangeExtension(wavFilePath, ".fsb");
             if (File.Exists(toFsbPath))
                 File.Delete(toFsbPath);

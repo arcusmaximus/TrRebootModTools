@@ -159,7 +159,11 @@ namespace TrRebootTools.Shared.Cdc
             {
                 identification.BodySize = resourceRef.BodySize - identification.RefDefinitionsSize;
             }
-            identification.Type = (byte)(resourceRef.Enabled ? resourceRef.Type : ResourceType.Empty);
+            if (resourceRef.Enabled)
+                identification.Type = (byte)(resourceRef.Type < ResourceType.Max ? resourceRef.Type : ResourceType.CollisionMesh);
+            else
+                identification.Type = (byte)ResourceType.Empty;
+            
             _resourceIdentifications[resourceIdx] = identification;
 
             TResourceLocation location = _resourceLocations[resourceIdx];

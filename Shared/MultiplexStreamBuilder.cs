@@ -17,10 +17,13 @@ namespace TrRebootTools.Shared
 
         public void Build(string infoFilePath, string mulFilePath)
         {
-            MultiplexStream mul = new();
-
             MultiplexStreamInfo info = MultiplexStreamInfo.Load(infoFilePath);
-            mul.AudioChannels = info.AudioChannels;
+            MultiplexStream mul =
+                new()
+                {
+                    AudioChannels = info.AudioChannels,
+                    Looping = info.Looping
+                };
 
             AddPackets(mul, infoFilePath, info);
 

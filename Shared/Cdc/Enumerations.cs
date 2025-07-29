@@ -23,7 +23,8 @@
         Model = 12,
         CollisionMesh = 13,
         ObjectReference = 14,
-        AnimationLib = 15
+        AnimationLib = 15,
+        Max
     }
 
     public enum ResourceSubType

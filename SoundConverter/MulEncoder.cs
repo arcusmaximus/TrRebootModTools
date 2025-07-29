@@ -1,8 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 using TrRebootTools.Shared;
 using TrRebootTools.Shared.Cdc;
+using TrRebootTools.Shared.Util;
 
 namespace TrRebootTools.SoundConverter
 {
@@ -22,12 +25,26 @@ namespace TrRebootTools.SoundConverter
             List<string> fsbFilePaths = new();
             try
             {
+                Dictionary<ulong, string> fsbsByWavHash = new();
                 for (int i = 0; i < mulInfo.AudioChannels.Length; i++)
                 {
                     string wavFilePath = Path.ChangeExtension(jsonFilePath, $".channel{i}.wav");
-                    string fsbFilePath = await ConvertWavAsync(wavFilePath);
-                    if (fsbFilePath == null)
-                        return null;
+                    ulong wavHash = CalculateFileHash(wavFilePath);
+                    string existingFsbFilePath = fsbsByWavHash.GetOrDefault(wavHash);
+                    string fsbFilePath;
+                    if (existingFsbFilePath != null)
+                    {
+                        fsbFilePath = Path.ChangeExtension(wavFilePath, ".fsb");
+                        File.Copy(existingFsbFilePath, fsbFilePath, true);
+                    }
+                    else
+                    {
+                        fsbFilePath = await ConvertWavAsync(wavFilePath);
+                        if (fsbFilePath == null)
+                            return null;
+
+                        fsbsByWavHash.Add(wavHash, fsbFilePath);
+                    }
 
                     fsbFilePaths.Add(fsbFilePath);
                 }
@@ -43,6 +60,14 @@ namespace TrRebootTools.SoundConverter
                     File.Delete(fsbFilePath);
                 }
             }
+        }
+
+        private static ulong CalculateFileHash(string filePath)
+        {
+            using Stream stream = File.OpenRead(filePath);
+            MD5 md5 = MD5.Create();
+            byte[] hash = md5.ComputeHash(stream);
+            return BitConverter.ToUInt64(hash, 0);
         }
     }
 }

@@ -47,6 +47,12 @@ namespace TrRebootTools.Shared.Cdc
             set;
         }
 
+        public bool Looping
+        {
+            get;
+            set;
+        }
+
         public List<Packet> Packets
         {
             get;
@@ -61,6 +67,8 @@ namespace TrRebootTools.Shared.Cdc
             HasSubtitles = header.HasSubtitles != 0;
             if (HasAnimation && HasSubtitles)
                 throw new NotSupportedException(".mul files containing both animation and subtitles are not supported");
+
+            Looping = header.LoopStartFileOffset != 0;
 
             if (header.AudioChannelCount < 0 || header.AudioChannelCount > 12)
                 throw new InvalidDataException();
@@ -105,10 +113,12 @@ namespace TrRebootTools.Shared.Cdc
             StreamHeader header = new()
             {
                 Hertz = 44100,
-                StartLoop = -1,
+                StartLoop = Looping ? 0 : -1,
                 EndLoop = GetNumAudioSamples(),
+                LoopStartFileOffset = Looping ? 0x2000 : 0,
                 HasAnimation = Convert.ToInt32(HasAnimation),
-                HasSubtitles = Convert.ToInt32(HasSubtitles)
+                HasSubtitles = Convert.ToInt32(HasSubtitles),
+                MediaLength = Packets.OfType<SoundPacket>().Count()
             };
 
             if (AudioChannels != null)

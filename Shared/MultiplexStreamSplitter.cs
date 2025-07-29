@@ -36,7 +36,8 @@ namespace TrRebootTools.Shared
 
             MultiplexStreamInfo info = new()
                                        {
-                                           AudioChannels = mul.AudioChannels
+                                           AudioChannels = mul.AudioChannels,
+                                           Looping = mul.Looping
                                        };
             if (mul.HasSubtitles)
             {

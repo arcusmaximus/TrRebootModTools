@@ -8,14 +8,14 @@ using TrRebootTools.Shared;
 using TrRebootTools.Shared.Cdc;
 using TrRebootTools.ModManager.Mod;
 using TrRebootTools.Shared.Forms;
-using System.Collections.Generic;
+using System.Linq;
 
 namespace TrRebootTools.ModManager
 {
     public static class Program
     {
         [STAThread]
-        public static void Main(string[] args)
+        public static int Main(string[] args)
         {
             //GenerateCineEyePatchFiles();
             //return;
@@ -26,7 +26,7 @@ namespace TrRebootTools.ModManager
             bool forceGamePrompt = false;
             while (true)
             {
-                CdcGame? game = GameSelectionForm.GetGame(forceGamePrompt);
+                CdcGame? game = ShiftGameFromCommandLine(ref args) ?? GameSelectionForm.GetGame(forceGamePrompt);
                 if (game == null)
                     break;
 
@@ -34,10 +34,10 @@ namespace TrRebootTools.ModManager
                 if (gameFolderPath == null)
                     break;
 
-                if (args.Length == 1)
+                if (args.Length > 0)
                 {
-                    HandleCommandLine(gameFolderPath, args[0], game.Value);
-                    break;
+                    bool success = HandleCommandLine(args, gameFolderPath, game.Value);
+                    return success ? 0 : 1;
                 }
 
                 MainForm form = new MainForm(gameFolderPath, game.Value);
@@ -47,9 +47,21 @@ namespace TrRebootTools.ModManager
 
                 forceGamePrompt = true;
             }
+            return 0;
         }
 
-        private static void HandleCommandLine(string gameFolderPath, string modPath, CdcGame game)
+        private static CdcGame? ShiftGameFromCommandLine(ref string[] args)
+        {
+            if (args.Length == 0 || !Enum.TryParse(args[0], out CdcGame game))
+                return null;
+
+            string[] newArgs = new string[args.Length - 1];
+            Array.Copy(args, 1, newArgs, 0, args.Length - 1);
+            args = newArgs;
+            return game;
+        }
+
+        private static bool HandleCommandLine(string[] args, string gameFolderPath, CdcGame game)
         {
             using ArchiveSet archiveSet = ArchiveSet.Open(gameFolderPath, true, true, game);
             ResourceUsageCache resourceUsageCache = new ResourceUsageCache();
@@ -69,14 +81,63 @@ namespace TrRebootTools.ModManager
                 if (reinstallMods)
                 {
                     ModInstaller installer = new ModInstaller(archiveSet, resourceUsageCache);
-                    RunTaskWithProgress((progress, cancellationToken) => installer.ReinstallAll(progress, cancellationToken));
+                    RunTaskWithProgress(installer.ReinstallAll);
                 }
 
-                InstallMod(archiveSet, resourceUsageCache, modPath);
+                HandleCommandLine(args, archiveSet, resourceUsageCache, game);
+                return true;
             }
             catch (Exception ex) when (!(ex is OperationCanceledException))
             {
                 MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                return false;
+            }
+        }
+
+        private static void HandleCommandLine(string[] args, ArchiveSet archiveSet, ResourceUsageCache resourceUsageCache, CdcGame game)
+        {
+            if (args.Length == 1 && (File.Exists(args[0]) || Directory.Exists(args[0])))
+            {
+                string modPath = args[0];
+                InstallMod(archiveSet, resourceUsageCache, modPath);
+            }
+            else if (args.Length == 2)
+            {
+                string action = args[0];
+                string modName = args[1];
+                int? archiveId = archiveSet.Archives.FirstOrDefault(a => a.ModName == modName)?.Id;
+                if (archiveId == null)
+                    throw new Exception($"No mod found with name {modName}");
+
+                switch (action)
+                {
+                    case "enable":
+                        RunTaskWithProgress((progress, cancellationToken) => archiveSet.Enable(archiveId.Value, resourceUsageCache, progress, cancellationToken));
+                        break;
+                    case "disable":
+                        RunTaskWithProgress((progress, cancellationToken) => archiveSet.Disable(archiveId.Value, resourceUsageCache, progress, cancellationToken));
+                        break;
+                    case "uninstall":
+                        RunTaskWithProgress(
+                            (progress, cancellationToken) =>
+                            {
+                                archiveSet.Disable(archiveId.Value, resourceUsageCache, progress, cancellationToken);
+                                archiveSet.Delete(archiveId.Value, resourceUsageCache, progress, cancellationToken);
+                            }
+                        );
+                        break;
+                }
+            }
+            else
+            {
+                throw new Exception("Invalid command line");
+            }
+
+            archiveSet.GetFlattenedModArchiveDetails(out _, out string flattenedArchiveFileName);
+            if (flattenedArchiveFileName != null)
+            {
+                ModInstaller installer = new ModInstaller(archiveSet, resourceUsageCache);
+                RunTaskWithProgress(installer.UpdateFlatModArchive);
             }
         }
 

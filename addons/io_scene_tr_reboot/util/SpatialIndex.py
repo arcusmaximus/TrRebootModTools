@@ -31,8 +31,8 @@ class SpatialIndex(Generic[T]):
         self.cell_size = cell_size
         self.search_in_neighboring_cells = search_in_neighboring_cells
 
-        self.grid_min_coords = [ 100000,  100000,  100000]
-        self.grid_max_coords = [-100000, -100000, -100000]
+        self.grid_min_coords = [ 5000000,  5000000,  5000000]
+        self.grid_max_coords = [-5000000, -5000000, -5000000]
 
     def add(self, position: Vector, item: T) -> None:
         cell_coords = self.__position_to_cell_coords(position)
