@@ -15,23 +15,30 @@ namespace TrRebootTools.HookTool
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
-            CdcGame? game = GameSelectionForm.GetGame(true);
-            if (game == null)
-                return;
-
-            string gameFolderPath = GameFolderFinder.Find(game.Value);
-            if (gameFolderPath == null)
-                return;
-
-            string exePath = Path.Combine(gameFolderPath, CdcGameInfo.Get(game.Value).ExeName);
-            if (!GameProcess.SupportsHooking(exePath, game.Value, out string unsupportedReason))
+            try
             {
-                MessageBox.Show(unsupportedReason, "Can't launch game", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
-                return;
-            }
+                CdcGame? game = GameSelectionForm.GetGame(true);
+                if (game == null)
+                    return;
 
-            using MainForm form = new MainForm(gameFolderPath, game.Value);
-            Application.Run(form);
+                string gameFolderPath = GameFolderFinder.Find(game.Value);
+                if (gameFolderPath == null)
+                    return;
+
+                string exePath = Path.Combine(gameFolderPath, CdcGameInfo.Get(game.Value).ExeName);
+                if (!GameProcess.SupportsHooking(exePath, game.Value, out string unsupportedReason))
+                {
+                    MessageBox.Show(unsupportedReason, "Can't launch game", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                    return;
+                }
+
+                using MainForm form = new MainForm(gameFolderPath, game.Value);
+                Application.Run(form);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString(), "Error", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+            }
         }
     }
 }

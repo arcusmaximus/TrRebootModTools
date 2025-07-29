@@ -39,6 +39,9 @@
   <PropertyGroup>
     <AssemblyOriginatorKeyFile>..\dummykey.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
+  <PropertyGroup>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
@@ -178,7 +181,7 @@
       <Version>13.0.3</Version>
     </PackageReference>
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe">
-      <Version>6.0.0</Version>
+      <Version>6.1.2</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>

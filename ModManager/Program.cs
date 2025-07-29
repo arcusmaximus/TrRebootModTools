@@ -17,37 +17,42 @@ namespace TrRebootTools.ModManager
         [STAThread]
         public static int Main(string[] args)
         {
-            //GenerateCineEyePatchFiles();
-            //return;
-
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
-            bool forceGamePrompt = false;
-            while (true)
+            try
             {
-                CdcGame? game = ShiftGameFromCommandLine(ref args) ?? GameSelectionForm.GetGame(forceGamePrompt);
-                if (game == null)
-                    break;
-
-                string gameFolderPath = GameFolderFinder.Find(game.Value);
-                if (gameFolderPath == null)
-                    break;
-
-                if (args.Length > 0)
+                bool forceGamePrompt = false;
+                while (true)
                 {
-                    bool success = HandleCommandLine(args, gameFolderPath, game.Value);
-                    return success ? 0 : 1;
+                    CdcGame? game = ShiftGameFromCommandLine(ref args) ?? GameSelectionForm.GetGame(forceGamePrompt);
+                    if (game == null)
+                        break;
+
+                    string gameFolderPath = GameFolderFinder.Find(game.Value);
+                    if (gameFolderPath == null)
+                        break;
+
+                    if (args.Length > 0)
+                    {
+                        bool success = HandleCommandLine(args, gameFolderPath, game.Value);
+                        return success ? 0 : 1;
+                    }
+
+                    MainForm form = new MainForm(gameFolderPath, game.Value);
+                    Application.Run(form);
+                    if (!form.GameSelectionRequested)
+                        break;
+
+                    forceGamePrompt = true;
                 }
-
-                MainForm form = new MainForm(gameFolderPath, game.Value);
-                Application.Run(form);
-                if (!form.GameSelectionRequested)
-                    break;
-
-                forceGamePrompt = true;
+                return 0;
             }
-            return 0;
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString(), "Error", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                return 1;
+            }
         }
 
         private static CdcGame? ShiftGameFromCommandLine(ref string[] args)

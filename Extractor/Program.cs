@@ -14,23 +14,30 @@ namespace TrRebootTools.Extractor
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
-            bool forceGamePrompt = false;
-            while (true)
+            try
             {
-                CdcGame? game = GameSelectionForm.GetGame(forceGamePrompt);
-                if (game == null)
-                    break;
+                bool forceGamePrompt = false;
+                while (true)
+                {
+                    CdcGame? game = GameSelectionForm.GetGame(forceGamePrompt);
+                    if (game == null)
+                        break;
 
-                string gameFolderPath = GameFolderFinder.Find(game.Value);
-                if (gameFolderPath == null)
-                    break;
+                    string gameFolderPath = GameFolderFinder.Find(game.Value);
+                    if (gameFolderPath == null)
+                        break;
 
-                using MainForm form = new MainForm(gameFolderPath, game.Value);
-                Application.Run(form);
-                if (!form.GameSelectionRequested)
-                    break;
+                    using MainForm form = new MainForm(gameFolderPath, game.Value);
+                    Application.Run(form);
+                    if (!form.GameSelectionRequested)
+                        break;
 
-                forceGamePrompt = true;
+                    forceGamePrompt = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString(), "Error", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
             }
         }
     }
