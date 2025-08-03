@@ -731,6 +731,24 @@ It has a few requirements:
 - The game must have the latest version (so make sure you're not on an old beta).
 - ROTTR and SOTTR must have DirectX 12 enabled.
 
+> [!TIP]
+> Steam may decide to be annoying and block the hook tool's attempt to launch the game.
+> In this case, you can install the [Goldberg Emulator](https://mr_goldberg.gitlab.io/goldberg_emulator/)
+> so the game can run without Steam getting involved. Simply extract the correct DLL into the
+> game's folder (overwriting the original) and create a file called "steam_appid.txt" containing
+> the game's Steam ID:
+>
+> |        | Goldberg DLL    | Steam ID |
+> | ------ | --------------- | -------- |
+> | TR2013 | steam_api.dll   | 203160   |
+> | ROTTR  | steam_api64.dll | 391220   |
+> | SOTTR  | steam_api64.dll | 750920   |
+>
+> If you now launch the game, you'll get a new profile without any savegames. For TR2013 and ROTTR,
+> you can move your saves from your Documents folder to
+> C:\\Users\\&lt;user&gt;\\AppData\\Roaming\\Goldberg SteamEmu Saves\\&lt;Steam ID&gt;. For SOTTR,
+> simply move them to the new profile subfolder in the Documents folder.
+
 For convenience, you may want to disable the Fullscreen option so you can place the game window
 and the hook tool window next to each other.
 
