@@ -26,21 +26,24 @@ namespace TrRebootTools.Extractor
             folderPath = @"\\?\" + Path.GetFullPath(folderPath);
 
             progress = new MultiStepTaskProgress(progress, fileRefs.Count);
-            foreach (ArchiveFileReference fileRef in fileRefs)
+            foreach (var fileRefsOfName in fileRefs.GroupBy(f => f.NameHash))
             {
-                string filePath = GetFilePath(folderPath, fileRef);
-                ResourceCollection collection = Path.GetExtension(filePath) == ".drm" ? _archiveSet.GetResourceCollection(fileRef) : null;
-                if (collection != null)
-                    ExtractResourceCollection(filePath, collection, progress, cancellationToken);
-                else
-                    ExtractFile(filePath, fileRef, progress);
+                foreach (ArchiveFileReference fileRef in fileRefsOfName)
+                {
+                    string filePath = GetFilePath(folderPath, fileRef, fileRefsOfName.Count() > 1);
+                    ResourceCollection collection = Path.GetExtension(filePath) == ".drm" ? _archiveSet.GetResourceCollection(fileRef) : null;
+                    if (collection != null)
+                        ExtractResourceCollection(filePath, collection, progress, cancellationToken);
+                    else
+                        ExtractFile(filePath, fileRef, progress);
+                }
             }
         }
 
-        private string GetFilePath(string baseFolderPath, ArchiveFileReference fileRef)
+        private string GetFilePath(string baseFolderPath, ArchiveFileReference fileRef, bool forceLocaleFolder)
         {
             string fileName = CdcHash.Lookup(fileRef.NameHash, _archiveSet.Game) ?? fileRef.NameHash.ToString("X016");
-            if ((fileRef.Locale & 0xFFFFFFF) != 0xFFFFFFF)
+            if (forceLocaleFolder || (fileRef.Locale & 0xFFFFFFF) != 0xFFFFFFF)
                 fileName += "\\" + CdcGameInfo.Get(_archiveSet.Game).LocaleToLanguageCode(fileRef.Locale) + Path.GetExtension(fileName);
             
             return Path.Combine(baseFolderPath, fileName);

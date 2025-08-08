@@ -1,4 +1,5 @@
-﻿using TrRebootTools.Shared;
+﻿using System;
+using TrRebootTools.Shared;
 
 namespace TrRebootTools.Shared
 {
@@ -28,6 +29,7 @@ namespace TrRebootTools.Shared
         public void End()
         {
             _currentStep++;
+            _inner.Report((float)_currentStep / _numSteps);
             if (_currentStep == _numSteps)
                 _inner.End();
         }

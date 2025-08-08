@@ -19,7 +19,7 @@ namespace TrRebootTools.Shared.Cdc.Shadow
                 { (ResourceType.Model, ResourceSubType.ModelData), [".tr11modeldata"] },
                 { (ResourceType.Model, ResourceSubType.ShResource), [".tr11shresource"] },
                 { (ResourceType.ObjectReference, 0), [".tr11objectref"] },
-                { (ResourceType.PoseSpaceDeformer, 0), [".tr11psdres"] },
+                { (ResourceType.BlendShapeDriver, 0), [".tr11drivers"] },
                 { (ResourceType.Script, 0), [".tr11script"] },
                 { (ResourceType.ShaderLib, 0), [".tr11shaderlib"] },
                 { (ResourceType.SoundBank, 0), [".bnk"] },

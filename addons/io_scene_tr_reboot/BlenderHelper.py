@@ -1,7 +1,9 @@
 from types import TracebackType
-from typing import Any, Iterable, NamedTuple, Sequence, cast
+from typing import Any, Iterable, Literal, NamedTuple, Sequence, cast
 import bpy
 import bmesh
+import math
+from mathutils import Matrix, Quaternion, Vector
 from io_scene_tr_reboot.util.Enumerable import Enumerable
 from io_scene_tr_reboot.util.SlotsBase import SlotsBase
 
@@ -234,6 +236,77 @@ class BlenderHelper:
 
             with bpy.context.temp_override(area = bl_area, region = bl_region):
                 bpy.ops.view3d.view_all()
+
+    @staticmethod
+    def make_driver_expr_for_obj_attr(
+        bl_driver: bpy.types.Driver,
+        bl_obj: bpy.types.Object,
+        bone_name: str | None,
+        attr_name: Literal["location"] | Literal["rotation_quaternion"]
+    ) -> str:
+        coords: str
+        transform_type_prefix: str
+        match attr_name:
+            case "location":
+                coords = "xyz"
+                transform_type_prefix = "LOC_"
+            case "rotation_quaternion":
+                coords = "wxyz"
+                transform_type_prefix = "ROT_"
+
+        expr = "("
+        for i, coord in enumerate(coords):
+            bl_var = bl_driver.variables.new()
+            bl_var.name = f"v{len(bl_driver.variables)}"
+            bl_var.type = "TRANSFORMS"
+            bl_var.targets[0].id = bl_obj
+            if bone_name is not None:
+                bl_var.targets[0].bone_target = bone_name
+
+            bl_var.targets[0].transform_type = cast(Any, transform_type_prefix + coord.upper())
+            bl_var.targets[0].rotation_mode = "QUATERNION"
+
+            if i > 0:
+                expr += ","
+
+            expr += bl_var.name
+
+        expr += ")"
+        return expr
+
+    @staticmethod
+    def float_list_to_string(values: list[float]) -> str:
+        return "[" + ",".join(Enumerable(values).select(BlenderHelper.float_to_string)) + "]"
+
+    @staticmethod
+    def vector_to_string(value: tuple[float, ...] | Vector | Quaternion, num_components: int = 0) -> str:
+        if isinstance(value, Vector):
+            if num_components == 4:
+                value = (value.x, value.y, value.z, value.w)
+            else:
+                value = (value.x, value.y, value.z)
+        elif isinstance(value, Quaternion):
+            value = (value.w, value.x, value.y, value.z)
+
+        return "(" + ",".join(Enumerable(value).select(BlenderHelper.float_to_string)) + ")"
+
+    @staticmethod
+    def matrix_to_string(value: Matrix) -> str:
+        dimensions = len(value.col)
+        return "(" + ",".join(Enumerable(value.row).select(lambda r: BlenderHelper.vector_to_string(r, dimensions))) + ")"
+
+    @staticmethod
+    def float_to_string(value: float) -> str:
+        if abs(value) < 0.00001:
+            return "0"
+
+        fpart, _ = math.modf(value)
+        if fpart == 0:
+            value = int(value)
+        else:
+            value = round(value, 5)
+
+        return str(value)
 
 class BlenderEditContext(SlotsBase):
     def __init__(self) -> None:

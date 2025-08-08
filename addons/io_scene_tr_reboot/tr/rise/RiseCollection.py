@@ -10,6 +10,7 @@ from io_scene_tr_reboot.tr.Hair import Hair
 from io_scene_tr_reboot.tr.Hashes import Hashes
 from io_scene_tr_reboot.tr.Material import Material
 from io_scene_tr_reboot.tr.Model import IModel
+from io_scene_tr_reboot.tr.BlendshapeDriverSet import BlendShapeDriverSet
 from io_scene_tr_reboot.tr.ResourceKey import ResourceKey
 from io_scene_tr_reboot.tr.ResourceReader import ResourceReader
 from io_scene_tr_reboot.tr.ResourceReference import ResourceReference
@@ -49,7 +50,7 @@ class _ObjectHeader(CStruct64):
     skeleton_ref: ResourceReference | None
     skeleton_item_id: CInt
     field_84: CInt
-    pose_space_deformers_ref: ResourceReference | None
+    blend_shape_drivers_ref: ResourceReference | None
     cloth_definition_ref: ResourceReference | None
     hair_data_ref: ResourceReference | None
     stream_layers_ref: ResourceReference | None
@@ -279,6 +280,18 @@ class RiseCollection(Collection):
         model = RiseModel(resource.id)
         model.read(reader)
         return model
+
+    def get_blend_shape_drivers(self) -> BlendShapeDriverSet | None:
+        if not isinstance(self._header, _ObjectHeader) or self._header.blend_shape_drivers_ref is None:
+            return None
+
+        reader = self.get_resource_reader(self._header.blend_shape_drivers_ref, True)
+        if reader is None:
+            return None
+
+        drivers = BlendShapeDriverSet()
+        drivers.read(reader)
+        return drivers
 
     def _create_material(self) -> Material:
         return RiseMaterial()

@@ -1,4 +1,5 @@
 import bpy
+import math
 from typing import ClassVar, cast
 from mathutils import Matrix, Vector, Quaternion
 
@@ -35,12 +36,7 @@ class DriverFunctions:
 
     @staticmethod
     def tr_rotate(vector: tuple[float, ...], rotation: tuple[float, ...]) -> tuple[float, ...]:
-        matrix = Quaternion(rotation).to_matrix()
-        quat = Matrix((
-            (matrix[0][2], matrix[0][0], matrix[0][1]),
-            (matrix[1][2], matrix[1][0], matrix[1][1]),
-            (matrix[2][2], matrix[2][0], matrix[2][1]),
-        )).to_quaternion()
+        quat = DriverFunctions.convert_blender_rotation_to_tr(Quaternion(rotation)).to_quaternion()
         return (quat @ Vector(vector)).normalized().to_tuple()
 
     @staticmethod
@@ -132,8 +128,106 @@ class DriverFunctions:
         return DriverFunctions.world_rotation_to_bone_rotation(bl_target_pose_bone, result)
 
     @staticmethod
+    def tr_blendshape_cone_angle(
+        bone_rotation: tuple[float, ...],
+        bone_flipped: int,
+        parent_bone_rotation: tuple[float, ...],
+        parent_bone_flipped: int,
+        relative_bone_axis: tuple[float, ...],
+        relative_attachment_matrix: tuple[tuple[float, ...], ...],
+        cone_angle: float
+    ) -> float:
+        bone_quat = Quaternion(bone_rotation)
+        if bone_flipped != 0:
+            bone_quat.invert()
+
+        parent_bone_quat = Quaternion(parent_bone_rotation)
+        if parent_bone_flipped != 0:
+            parent_bone_quat.invert()
+
+        bone_matrix = DriverFunctions.convert_blender_rotation_to_tr(bone_quat)
+        parent_bone_matrix = DriverFunctions.convert_blender_rotation_to_tr(parent_bone_quat)
+
+        absolute_attachment_matrix = parent_bone_matrix @ Matrix(relative_attachment_matrix)
+
+        absolute_bone_axis = bone_matrix @ Vector(relative_bone_axis)
+        absolute_bone_axis.normalize()
+
+        attached_bone_axis = absolute_attachment_matrix @ Vector(relative_bone_axis)
+        attached_bone_axis.normalize()
+
+        angle = math.acos(min(max(attached_bone_axis.dot(absolute_bone_axis), 0), 1))
+        return 1 - min(max(angle / cone_angle, 0), 1)
+
+    @staticmethod
+    def tr_blendshape_primary_axis(
+        bone_rotation: tuple[float, ...],
+        bone_flipped: int,
+        parent_bone_rotation: tuple[float, ...],
+        parent_bone_flipped: int,
+        relative_bone_axis: tuple[float, ...],
+        relative_primary_axis: tuple[float, ...],
+        relative_attachment_matrix: tuple[tuple[float, ...], ...],
+        min_positive_angle: float,
+        max_positive_angle: float,
+        min_negative_angle: float,
+        max_negative_angle: float
+    ) -> float:
+        bone_quat = Quaternion(bone_rotation)
+        if bone_flipped != 0:
+            bone_quat.invert()
+
+        parent_bone_quat = Quaternion(parent_bone_rotation)
+        if parent_bone_flipped != 0:
+            parent_bone_quat.invert()
+
+        bone_matrix = DriverFunctions.convert_blender_rotation_to_tr(bone_quat)
+        parent_bone_matrix = DriverFunctions.convert_blender_rotation_to_tr(parent_bone_quat)
+
+        absolute_attachment_matrix = parent_bone_matrix @ Matrix(relative_attachment_matrix)
+
+        absolute_bone_axis = bone_matrix @ Vector(relative_bone_axis)
+        absolute_bone_axis.normalize()
+
+        attached_bone_axis = absolute_attachment_matrix @ Vector(relative_bone_axis)
+        attached_bone_axis.normalize()
+
+        rotation = absolute_bone_axis.rotation_difference(attached_bone_axis)
+
+        attached_primary_axis = absolute_attachment_matrix @ Vector(relative_primary_axis)
+        attached_primary_axis.normalize()
+
+        absolute_primary_axis = bone_matrix @ Vector(relative_primary_axis)
+        absolute_primary_axis.normalize()
+        rotated_primary_axis = rotation @ absolute_primary_axis
+
+        angle = math.degrees(math.acos(min(max(attached_primary_axis.dot(rotated_primary_axis), -1), 1)))
+
+        crossed_primary_axis = cast(Vector, attached_primary_axis.cross(rotated_primary_axis))
+        if crossed_primary_axis.dot(attached_bone_axis) < 0:
+            angle = -angle
+
+        if angle > min_positive_angle:
+            result = max(1 - (angle - min_positive_angle) / (max_positive_angle - min_positive_angle), 0)
+        elif angle < min_negative_angle:
+            result = max(1 - (angle - min_negative_angle) / (max_negative_angle - min_negative_angle), 0)
+        else:
+            result = 1
+
+        return result
+
+    @staticmethod
     def convert_tr_rotation_to_blender(rotation: Quaternion) -> Quaternion:
         return Quaternion((rotation.w, rotation.x, -rotation.z, rotation.y))
+
+    @staticmethod
+    def convert_blender_rotation_to_tr(rotation: Quaternion) -> Matrix:
+        matrix = rotation.to_matrix()
+        return Matrix((
+            (matrix[0][2], matrix[0][0], matrix[0][1]),
+            (matrix[1][2], matrix[1][0], matrix[1][1]),
+            (matrix[2][2], matrix[2][0], matrix[2][1]),
+        ))
 
     @staticmethod
     def world_position_to_bone_position(bl_pose_bone: bpy.types.PoseBone, world_space_position: Vector) -> tuple[float, ...]:
@@ -149,3 +243,4 @@ class DriverFunctions:
         bone_space_matrix  = bl_armature_obj.convert_space(pose_bone = bl_pose_bone, matrix = world_space_matrix, from_space = "WORLD", to_space = "LOCAL")
         bone_space_rotation = bone_space_matrix.to_quaternion()
         return (bone_space_rotation.w, bone_space_rotation.x, bone_space_rotation.y, bone_space_rotation.z)
+

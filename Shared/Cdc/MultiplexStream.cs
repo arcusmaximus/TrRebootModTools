@@ -87,7 +87,9 @@ namespace TrRebootTools.Shared.Cdc
             while (stream.Position < stream.Length)
             {
                 Packet packet = ReadPacket(reader);
-                Packets.Add(packet);
+                if (packet != null)
+                    Packets.Add(packet);
+
                 reader.Align(0x10);
             }
         }
@@ -102,9 +104,13 @@ namespace TrRebootTools.Shared.Cdc
             {
                 PacketType.Cinematic => new CinePacket(),
                 PacketType.Sound => new SoundPacket(),
-                _ => throw new NotSupportedException($".mul packet type {type} is not supported")
+                _ => null
             };
-            packet.Read(reader, this);
+            if (packet != null)
+                packet.Read(reader, this);
+            else
+                reader.Skip(size);
+
             return packet;
         }
 
@@ -296,7 +302,7 @@ namespace TrRebootTools.Shared.Cdc
 
                 int subtitleEndPos = reader.Tell() + subtitleSize;
                 Subtitles = new();
-                byte[] buffer = new byte[0x200];
+                byte[] buffer = new byte[0x1000];
                 while (reader.Tell() < subtitleEndPos)
                 {
                     string language = ReadLine();
@@ -327,7 +333,7 @@ namespace TrRebootTools.Shared.Cdc
                 if (Subtitles == null)
                     return;
 
-                byte[] buffer = new byte[0x200];
+                byte[] buffer = new byte[0x1000];
                 Encoding encoding = new UTF8Encoding(false);
                 foreach ((string language, string text) in Subtitles)
                 {

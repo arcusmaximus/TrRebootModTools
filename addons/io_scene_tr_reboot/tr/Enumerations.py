@@ -7,7 +7,7 @@ class CdcGame(IntEnum):
 
 class ResourceType(IntEnum):
     ANIMATION = 2
-    PSDRES = 4
+    BLENDSHAPEDRIVERS = 4
     TEXTURE = 5
     SOUND = 6
     DTP = 7

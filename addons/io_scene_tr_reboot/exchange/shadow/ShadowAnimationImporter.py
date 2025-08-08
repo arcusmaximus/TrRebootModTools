@@ -104,6 +104,9 @@ class ShadowAnimationImporter(SlotsBase):
                 for element_idx in range(attr_idx == 0 and 4 or 3):
                     bl_element_fcurves.append(bl_action.fcurves.new(f'pose.bones["{bl_bone.name}"].{attr_name}', index = element_idx, action_group = bl_bone.name))
 
+        if hasattr(bl_action, "slots") and len(bl_action.slots) > 0:
+            bl_armature_obj.animation_data.action_slot = bl_action.slots[0]
+
         return bl_attr_fcurves
 
     def get_armature_space_rest_matrices(self, bl_armature_obj: bpy.types.Object) -> dict[int, Matrix]:

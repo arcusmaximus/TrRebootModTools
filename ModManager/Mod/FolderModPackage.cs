@@ -102,6 +102,9 @@ namespace TrRebootTools.ModManager.Mod
 
                 if (TryGetResourceKey(baseFolderPath, filePath, out ResourceKey resourceKey, usageCache, game))
                 {
+                    if (resources.TryGetValue(resourceKey, out string existingFilePath))
+                        throw new Exception($"The mod contains a duplicate resource:\r\n{existingFilePath.Substring(baseFolderPath.Length)}\r\n{filePath.Substring(baseFolderPath.Length)}");
+
                     resources[resourceKey] = filePath;
                     continue;
                 }

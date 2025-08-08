@@ -3,9 +3,11 @@ import bpy
 from typing import Callable, ClassVar, Iterable, TypeVar, cast
 from mathutils import Vector
 from io_scene_tr_reboot.BlenderHelper import BlenderHelper
-from io_scene_tr_reboot.BlenderNaming import BlenderNaming
+from io_scene_tr_reboot.BlenderNaming import BlenderBoneIdSet, BlenderNaming
+from io_scene_tr_reboot.properties.BoneProperties import BoneProperties
 from io_scene_tr_reboot.properties.ObjectProperties import ObjectProperties
 from io_scene_tr_reboot.properties.SceneProperties import SceneProperties
+from io_scene_tr_reboot.tr.BlendshapeDriverSet import BlendShapeDriverBone, BlendShapeDriverCurveMap
 from io_scene_tr_reboot.tr.Collection import Collection
 from io_scene_tr_reboot.tr.Hashes import Hashes
 from io_scene_tr_reboot.tr.Mesh import IMesh
@@ -40,6 +42,7 @@ class ModelImporter(SlotsBase):
         bl_armature_objs: dict[ResourceKey, bpy.types.Object]
     ) -> list[bpy.types.Object]:
         bl_mesh_objs = self.import_model_instances(tr_collection, bl_collection_obj, bl_armature_objs)
+        #self.import_shape_key_drivers(tr_collection, bl_mesh_objs)
         self.store_collection_files(tr_collection)
         return bl_mesh_objs
 
@@ -328,6 +331,104 @@ class ModelImporter(SlotsBase):
                     break
 
                 used_bone_names.add(bl_bone.name)
+
+    def import_shape_key_drivers(self, tr_collection: Collection, bl_mesh_objs: list[bpy.types.Object]) -> None:
+        tr_driver_set = tr_collection.get_blend_shape_drivers()
+        if tr_driver_set is None:
+            return
+
+        for bl_mesh_obj in bl_mesh_objs:
+            bl_armature_obj = bl_mesh_obj.parent
+            bl_mesh = cast(bpy.types.Mesh, bl_mesh_obj.data)
+            if bl_armature_obj is None or bl_armature_obj.pose is None or bl_mesh.shape_keys is None:
+                continue
+
+            bl_pose_bones_by_global_id = Enumerable(bl_armature_obj.pose.bones).select(lambda b: (BlenderNaming.try_parse_bone_name(b.name), b)) \
+                                                                               .where(lambda p: p[0] is not None and p[0].global_id is not None)      \
+                                                                               .to_dict(lambda p: cast(int, cast(BlenderBoneIdSet, p[0]).global_id), lambda p: p[1])
+            bl_shape_keys_by_id = Enumerable(bl_mesh.shape_keys.key_blocks).skip(1).to_dict(lambda k: BlenderNaming.parse_shape_key_name(k.name).global_id)
+
+            for tr_driver_output in tr_driver_set.outputs:
+                blend_shape_id = tr_driver_output.global_blend_shape_id
+                bl_shape_key = bl_shape_keys_by_id.get(blend_shape_id)
+                if bl_shape_key is None:
+                    continue
+
+                tr_node_props = tr_driver_output.node.properties
+                node_slot = tr_driver_output.slot
+                if isinstance(tr_node_props, BlendShapeDriverCurveMap):
+                    tr_curve_map_inputs = tr_driver_output.node.inputs
+                    if len(tr_curve_map_inputs) != 1:
+                        continue
+
+                    tr_node_props = tr_curve_map_inputs[0].node.properties
+                    node_slot = tr_curve_map_inputs[0].from_slot
+
+                if not isinstance(tr_node_props, BlendShapeDriverBone):
+                    continue
+
+                bl_pose_bone = bl_pose_bones_by_global_id.get(tr_node_props.global_bone_id)
+                if bl_pose_bone is None:
+                    continue
+
+                self.create_shape_key_driver(bl_shape_key, tr_node_props, node_slot, bl_armature_obj, bl_pose_bone)
+
+    def create_shape_key_driver(
+        self,
+        bl_shape_key: bpy.types.ShapeKey,
+        tr_node_props: BlendShapeDriverBone,
+        driver_type: int,
+        bl_armature_obj: bpy.types.Object,
+        bl_pose_bone: bpy.types.PoseBone
+    ) -> None:
+        if bl_pose_bone.parent is None:
+            return
+
+        bl_curve  = cast(bpy.types.FCurve, bl_shape_key.driver_add("value"))
+        bl_driver = cast(bpy.types.Driver, bl_curve.driver)
+
+        bone_rotation_expr        = BlenderHelper.make_driver_expr_for_obj_attr(bl_driver, bl_armature_obj, bl_pose_bone.name,        "rotation_quaternion")
+        bone_flipped              = int(BoneProperties.get_instance(bl_pose_bone.bone).is_flipped)
+
+        parent_bone_rotation_expr = BlenderHelper.make_driver_expr_for_obj_attr(bl_driver, bl_armature_obj, bl_pose_bone.parent.name, "rotation_quaternion")
+        parent_bone_flipped       = int(BoneProperties.get_instance(bl_pose_bone.parent.bone).is_flipped)
+
+        if driver_type == 0:
+            bl_driver.expression = self.make_driver_expr_for_cone_angle_shape_key(tr_node_props, bone_rotation_expr, bone_flipped, parent_bone_rotation_expr, parent_bone_flipped)
+        else:
+            bl_driver.expression = self.make_driver_expr_for_primary_axis_shape_key(tr_node_props, bone_rotation_expr, bone_flipped, parent_bone_rotation_expr, parent_bone_flipped)
+
+    def make_driver_expr_for_cone_angle_shape_key(
+        self,
+        tr_node_props: BlendShapeDriverBone,
+        bone_rotation_expr: str,
+        bone_flipped: int,
+        parent_bone_rotation_expr: str,
+        parent_bone_flipped: int
+    ) -> str:
+        bone_axis         = BlenderHelper.vector_to_string(tr_node_props.bone_axis)
+        attachment_matrix = BlenderHelper.matrix_to_string(tr_node_props.attachment_matrix.to_3x3())
+        cone_angle        = BlenderHelper.float_to_string(tr_node_props.cone_angle)
+        return f"tr_blendshape_cone_angle({bone_rotation_expr},{bone_flipped},{parent_bone_rotation_expr},{parent_bone_flipped},{bone_axis},{attachment_matrix},{cone_angle})"
+
+    def make_driver_expr_for_primary_axis_shape_key(
+        self,
+        tr_node_props: BlendShapeDriverBone,
+        bone_rotation_expr: str,
+        bone_flipped: int,
+        parent_bone_rotation_expr: str,
+        parent_bone_flipped: int
+    ) -> str:
+        bone_axis          = BlenderHelper.vector_to_string(tr_node_props.bone_axis)
+        primary_axis       = BlenderHelper.vector_to_string(tr_node_props.primary_axis)
+        attachment_matrix  = BlenderHelper.matrix_to_string(tr_node_props.attachment_matrix.to_3x3())
+        min_positive_angle = BlenderHelper.float_to_string(tr_node_props.min_positive_angle)
+        max_positive_angle = BlenderHelper.float_to_string(tr_node_props.max_positive_angle)
+        min_negative_angle = BlenderHelper.float_to_string(tr_node_props.min_negative_angle)
+        max_negative_angle = BlenderHelper.float_to_string(tr_node_props.max_negative_angle)
+
+        return f"tr_blendshape_primary_axis({bone_rotation_expr},{bone_flipped},{parent_bone_rotation_expr},{parent_bone_flipped}," + \
+               f"{bone_axis},{primary_axis},{attachment_matrix},{min_positive_angle},{max_positive_angle},{min_negative_angle},{max_negative_angle})"
 
     def remove_shadow_meshes(self, tr_model: IModel) -> None:
         for i in range(len(tr_model.meshes) - 1, -1, -1):

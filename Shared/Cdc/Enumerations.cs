@@ -12,7 +12,7 @@
         Unknown = 0,
         Empty = 1,
         Animation = 2,
-        PoseSpaceDeformer = 4,
+        BlendShapeDriver = 4,
         Texture = 5,
         SoundBank = 6,
         Dtp = 7,

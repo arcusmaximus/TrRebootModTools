@@ -9,6 +9,7 @@ from io_scene_tr_reboot.tr.CollisionShape import CollisionShape
 from io_scene_tr_reboot.tr.Hair import Hair
 from io_scene_tr_reboot.tr.Material import Material
 from io_scene_tr_reboot.tr.Model import IModel
+from io_scene_tr_reboot.tr.BlendshapeDriverSet import BlendShapeDriverSet
 from io_scene_tr_reboot.tr.ResourceReference import ResourceReference
 from io_scene_tr_reboot.tr.Skeleton import ISkeleton
 from io_scene_tr_reboot.tr.Cloth import Cloth
@@ -40,15 +41,15 @@ class Collection(SlotsBase):
         hair_resource: ResourceKey
 
     __resource_type_extensions: ClassVar[dict[ResourceType, list[str]]] = {
-        ResourceType.ANIMATION:     [".trXanim"],
-        ResourceType.DTP:           [".trXdtp", ".trXlevel", ".trXlayer"],
-        ResourceType.MATERIAL:      [".trXmaterial"],
-        ResourceType.MODEL:         [".trXmodel", ".trXmodeldata"],
-        ResourceType.PSDRES:        [".trXpsdres"],
-        ResourceType.SCRIPT:        [".trXscript"],
-        ResourceType.SHADERLIB:     [".trXshaderlib"],
-        ResourceType.TEXTURE:       [".dds"],
-        ResourceType.TRIGGER:       [".trXtrigger"]
+        ResourceType.ANIMATION:         [".trXanim"],
+        ResourceType.DTP:               [".trXdtp", ".trXlevel", ".trXlayer"],
+        ResourceType.MATERIAL:          [".trXmaterial"],
+        ResourceType.MODEL:             [".trXmodel", ".trXmodeldata"],
+        ResourceType.BLENDSHAPEDRIVERS: [".trXdrivers"],
+        ResourceType.SCRIPT:            [".trXscript"],
+        ResourceType.SHADERLIB:         [".trXshaderlib"],
+        ResourceType.TEXTURE:           [".dds"],
+        ResourceType.TRIGGER:           [".trXtrigger"]
     }
 
     game: ClassVar[CdcGame]
@@ -107,6 +108,9 @@ class Collection(SlotsBase):
 
     @abstractmethod
     def get_model(self, resource: ResourceKey) -> IModel | None: ...
+
+    @abstractmethod
+    def get_blend_shape_drivers(self) -> BlendShapeDriverSet | None: ...
 
     @abstractmethod
     def get_collision_model(self, resource: ResourceKey) -> CollisionModel | None: ...

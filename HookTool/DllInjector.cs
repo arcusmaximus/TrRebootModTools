@@ -18,7 +18,7 @@ namespace TrRebootTools.HookTool
             PROCESS_INFORMATION processInfo;
             bool started = CreateProcess(
                 exePath,
-                exePath + " " + commandLine,
+                !string.IsNullOrEmpty(commandLine) ? $"\"{exePath}\" {commandLine}" : null,
                 IntPtr.Zero,
                 IntPtr.Zero,
                 false,

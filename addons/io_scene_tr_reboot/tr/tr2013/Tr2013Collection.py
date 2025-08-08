@@ -9,6 +9,7 @@ from io_scene_tr_reboot.tr.Enumerations import CdcGame, ResourceType
 from io_scene_tr_reboot.tr.Hair import Hair
 from io_scene_tr_reboot.tr.Material import Material
 from io_scene_tr_reboot.tr.Model import IModel
+from io_scene_tr_reboot.tr.BlendshapeDriverSet import BlendShapeDriverSet
 from io_scene_tr_reboot.tr.ResourceKey import ResourceKey
 from io_scene_tr_reboot.tr.ResourceReader import ResourceReader
 from io_scene_tr_reboot.tr.ResourceReference import ResourceReference
@@ -213,6 +214,9 @@ class Tr2013Collection(Collection):
         model.read(reader)
         self.__models[resource] = model
         return model
+
+    def get_blend_shape_drivers(self) -> BlendShapeDriverSet | None:
+        return None
 
     def get_collision_model(self, resource: ResourceKey) -> CollisionModel | None:
         return None

@@ -46,7 +46,7 @@ namespace TrRebootTools.ModManager.Mod
 
         public InstalledMod InstallFromFolder(string modName, string folderPath, ITaskProgress progress, CancellationToken cancellationToken)
         {
-            Archive existingArchive = _archiveSet.Archives.FirstOrDefault(a => a.ModName == modName);
+            Archive existingArchive = _archiveSet.Archives.FirstOrDefault(a => a.ModName != null && Regex.Replace(a.ModName, @" \(.+\)$", "") == modName);
             if (existingArchive != null)
                 _archiveSet.Delete(existingArchive.Id, _gameResourceUsageCache, progress, cancellationToken);
 
@@ -184,7 +184,7 @@ namespace TrRebootTools.ModManager.Mod
 
                 List<ResourceKey> modResourceKeys = modPackage.Resources.ToList();
                 if (modVariation != null)
-                    modResourceKeys.AddRange(modVariation.Resources);
+                    AddModVariationResources(modResourceKeys, modVariation.Resources);
 
                 Dictionary<ResourceKey, List<ResourceCollectionItemReference>> modResourceUsages =
                     modResourceKeys.ToDictionary(r => r, r => resourceUsageCache.GetResourceUsages(archiveSet, r).ToList());
@@ -255,6 +255,19 @@ namespace TrRebootTools.ModManager.Mod
                 fullResourceUsageCache.AddArchiveSet(modArchiveSet, null, CancellationToken.None);
             }
             return fullResourceUsageCache;
+        }
+
+        private void AddModVariationResources(List<ResourceKey> modResourceKeys, IEnumerable<ResourceKey> variationResourceKeys)
+        {
+            foreach (ResourceKey resourceKey in variationResourceKeys)
+            {
+                if (modResourceKeys.Contains(resourceKey))
+                {
+                    string extension = ResourceNaming.GetExtension(resourceKey.Type, resourceKey.SubType, _archiveSet.Game);
+                    throw new Exception($"The resource {resourceKey.Id}{extension} exists in both the base mod and the selected variation.");
+                }
+                modResourceKeys.Add(resourceKey);
+            }
         }
 
         private Dictionary<ArchiveFileKey, HashSet<ResourceKey>> GetResourceRefsToAdd(

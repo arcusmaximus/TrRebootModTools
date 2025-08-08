@@ -1,6 +1,6 @@
 import bpy
 import math
-from typing import Any, ClassVar, Literal, NamedTuple, cast
+from typing import ClassVar, Literal, NamedTuple, cast
 from mathutils import Matrix, Quaternion, Vector
 from io_scene_tr_reboot.BlenderHelper import BlenderHelper
 from io_scene_tr_reboot.BlenderNaming import BlenderNaming
@@ -201,10 +201,9 @@ class SkeletonImporter(SlotsBase):
         for elem_idx, bl_curve in enumerate(bl_curves):
             bl_driver = cast(bpy.types.Driver, bl_curve.driver)
             bl_driver.use_self = True
-            #armature_rotation = self.make_driver_expr_for_obj_attr(bl_driver, bl_armature_obj, None, "rotation_quaternion")
             looker_position   = self.make_driver_expr_for_bone_attr(bl_driver, bl_armature_obj, bone_transforms, tr_constraint.target_bone_local_id, "location")
             look_at_positions = self.make_driver_expr_for_bones_attr(bl_driver, bl_armature_obj, bone_transforms, tr_constraint.source_bone_local_ids, "location")
-            look_at_weights   = self.float_list_to_string(tr_constraint.source_bone_weights)
+            look_at_weights   = BlenderHelper.float_list_to_string(tr_constraint.source_bone_weights)
 
             pole_dir_expr: str
             if tr_constraint.pole_bone_local_id is not None and tr_constraint.pole_dir is None:
@@ -215,11 +214,11 @@ class SkeletonImporter(SlotsBase):
                 if bone_transforms[tr_constraint.pole_bone_local_id].is_flipped:
                     pole_dir = SkeletonImporter.tr_flip_quat @ pole_dir
 
-                pole_dir_expr = self.float_tuple_to_string(pole_dir)
+                pole_dir_expr = BlenderHelper.vector_to_string(pole_dir)
                 pole_bone_rotation = self.make_driver_expr_for_bone_attr(bl_driver, bl_armature_obj, bone_transforms, tr_constraint.pole_bone_local_id, "rotation_quaternion")
                 pole_dir_expr = f"tr_rotate({pole_dir_expr},{pole_bone_rotation})"
             elif tr_constraint.pole_dir is not None:
-                pole_dir_expr = self.float_tuple_to_string(tr_constraint.pole_dir)
+                pole_dir_expr = BlenderHelper.vector_to_string(tr_constraint.pole_dir)
             else:
                 pole_dir_expr = "(0,0,1)"
 
@@ -229,8 +228,8 @@ class SkeletonImporter(SlotsBase):
                 bone_local_tangent = SkeletonImporter.tr_flip_quat @ bone_local_tangent
                 bone_local_normal  = SkeletonImporter.tr_flip_quat @ bone_local_normal
 
-            bone_local_tangent_expr = self.float_tuple_to_string(bone_local_tangent)
-            bone_local_normal_expr  = self.float_tuple_to_string(bone_local_normal)
+            bone_local_tangent_expr = BlenderHelper.vector_to_string(bone_local_tangent)
+            bone_local_normal_expr  = BlenderHelper.vector_to_string(bone_local_normal)
             bl_driver.expression = f"tr_look_at(self,{looker_position},{look_at_positions},{look_at_weights},{pole_dir_expr},{bone_local_tangent_expr},{bone_local_normal_expr})[{elem_idx}]"
 
     def create_weighted_position_constraint(
@@ -288,12 +287,10 @@ class SkeletonImporter(SlotsBase):
         for elem_idx, bl_curve in enumerate(bl_curves):
             bl_driver = cast(bpy.types.Driver, bl_curve.driver)
             bl_driver.use_self = True
-            #armature_position = self.make_driver_expr_for_obj_attr(bl_driver, bl_armature_obj, None, "location")
-            #armature_rotation = self.make_driver_expr_for_obj_attr(bl_driver, bl_armature_obj, None, "rotation_quaternion")
             bone_attrs        = self.make_driver_expr_for_bones_attr(bl_driver, bl_armature_obj, bone_transforms, source_bone_local_ids, attr_name)
             bone_flip_flags   = self.bone_flip_flags_to_string(bone_transforms, source_bone_local_ids)
-            weights_expr      = self.float_list_to_string(source_bone_weights)
-            offset_expr       = self.float_tuple_to_string(offset)
+            weights_expr      = BlenderHelper.float_list_to_string(source_bone_weights)
+            offset_expr       = BlenderHelper.vector_to_string(offset)
             bl_driver.expression = f"{driver_func_name}(self,{bone_attrs},{bone_flip_flags},{weights_expr},{offset_expr})[{elem_idx}]"
 
     def make_driver_expr_for_bones_attr(
@@ -323,67 +320,7 @@ class SkeletonImporter(SlotsBase):
         attr_name: Literal["location"] | Literal["rotation_quaternion"]
     ) -> str:
         bone_name = BlenderNaming.make_bone_name(None, bone_transforms[local_bone_id].global_id, local_bone_id)
-        return self.make_driver_expr_for_obj_attr(bl_driver, bl_armature_obj, bone_name, attr_name)
-
-    def make_driver_expr_for_obj_attr(
-        self,
-        bl_driver: bpy.types.Driver,
-        bl_obj: bpy.types.Object,
-        bone_name: str | None,
-        attr_name: Literal["location"] | Literal["rotation_quaternion"]
-    ) -> str:
-        coords: str
-        transform_type_prefix: str
-        match attr_name:
-            case "location":
-                coords = "xyz"
-                transform_type_prefix = "LOC_"
-            case "rotation_quaternion":
-                coords = "wxyz"
-                transform_type_prefix = "ROT_"
-
-        expr = "("
-        for i, coord in enumerate(coords):
-            bl_var = bl_driver.variables.new()
-            bl_var.name = f"v{len(bl_driver.variables)}"
-            bl_var.type = "TRANSFORMS"
-            bl_var.targets[0].id = bl_obj
-            if bone_name is not None:
-                bl_var.targets[0].bone_target = bone_name
-
-            bl_var.targets[0].transform_type = cast(Any, transform_type_prefix + coord.upper())
-            bl_var.targets[0].rotation_mode = "QUATERNION"
-
-            if i > 0:
-                expr += ","
-
-            expr += bl_var.name
-
-        expr += ")"
-        return expr
-
-    def float_list_to_string(self, values: list[float]) -> str:
-        return "[" + ",".join(Enumerable(values).select(self.float_to_string)) + "]"
-
-    def float_tuple_to_string(self, value: tuple[float, ...] | Vector | Quaternion) -> str:
-        if isinstance(value, Vector):
-            value = (value.x, value.y, value.z)
-        elif isinstance(value, Quaternion):
-            value = (value.w, value.x, value.y, value.z)
-
-        return "(" + ",".join(Enumerable(value).select(self.float_to_string)) + ")"
-
-    def float_to_string(self, value: float) -> str:
-        if abs(value) < 0.00001:
-            return "0"
-
-        fpart, _ = math.modf(value)
-        if fpart == 0:
-            value = int(value)
-        else:
-            value = round(value, 5)
-
-        return str(value)
+        return BlenderHelper.make_driver_expr_for_obj_attr(bl_driver, bl_armature_obj, bone_name, attr_name)
 
     def bone_flip_flags_to_string(self, bone_transforms: list[_BoneTransform], local_bone_ids: list[int]) -> str:
         result = "["

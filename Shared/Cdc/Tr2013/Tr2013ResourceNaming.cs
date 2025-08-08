@@ -16,7 +16,7 @@ namespace TrRebootTools.Shared.Cdc.Tr2013
                 { (ResourceType.Material, 0), [".tr9material"] },
                 { (ResourceType.Model, 0), [".tr9modeldata", ".mesh"] },
                 { (ResourceType.ObjectReference, 0), [".tr9objectref"] },
-                { (ResourceType.PoseSpaceDeformer, 0), [".tr9psdres"] },
+                { (ResourceType.BlendShapeDriver, 0), [".tr9drivers"] },
                 { (ResourceType.Script, 0), [".tr9script"] },
                 { (ResourceType.ShaderLib, 0), [".tr9shaderlib"] },
                 { (ResourceType.SoundBank, 0), [".tr9sound"] },
