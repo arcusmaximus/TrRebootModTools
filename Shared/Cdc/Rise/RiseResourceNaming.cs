@@ -10,23 +10,23 @@ namespace TrRebootTools.Shared.Cdc.Rise
         private static readonly Dictionary<(ResourceType, ResourceSubType), string[]> _mappings =
             new()
             {
-                { (ResourceType.Animation, 0), [".tr10anim", ".anim"] },
-                { (ResourceType.AnimationLib, 0), [".tr10animlib", ".trigger"] },
-                { (ResourceType.CollisionMesh, 0), [".tr10cmesh", ".tr2cmesh"] },
-                { (ResourceType.Dtp, 0), [".tr10dtp", ".dtp"] },
-                { (ResourceType.Dtp, ResourceSubType.StreamLayer), [".tr10layer"] },
-                { (ResourceType.GlobalContentReference, 0), [".tr10contentref", ".object"] },
-                { (ResourceType.Material, 0), [".tr10material", ".material"] },
-                { (ResourceType.Model, ResourceSubType.CubeLut), [".tr10cubelut"] },
-                { (ResourceType.Model, ResourceSubType.Model), [".tr10modeldata", ".tr2mesh"] },
-                { (ResourceType.Model, ResourceSubType.ModelData), [".tr10modeldata", ".tr2mesh"] },
+                { (ResourceType.Animation, 0),                      [".tr10anim", ".anim"] },
+                { (ResourceType.AnimationLib, 0),                   [".tr10animlib", ".trigger"] },
+                { (ResourceType.CollisionModel, 0),                 [".tr10cmodel", ".tr2cmesh"] },
+                { (ResourceType.Dtp, 0),                            [".tr10dtp", ".dtp"] },
+                { (ResourceType.Dtp, ResourceSubType.StreamLayer),  [".tr10layer"] },
+                { (ResourceType.GlobalContentReference, 0),         [".tr10contentref", ".object"] },
+                { (ResourceType.Material, 0),                       [".tr10material", ".material"] },
+                { (ResourceType.Model, ResourceSubType.CubeLut),    [".tr10cubelut"] },
+                { (ResourceType.Model, ResourceSubType.Model),      [".tr10modeldata", ".tr2mesh"] },
+                { (ResourceType.Model, ResourceSubType.ModelData),  [".tr10modeldata", ".tr2mesh"] },
                 { (ResourceType.Model, ResourceSubType.ShResource), [".tr10shresource"] },
-                { (ResourceType.ObjectReference, 0), [".tr10objectref", ".grplist"] },
-                { (ResourceType.BlendShapeDriver, 0), [".tr10drivers", ".psdres"] },
-                { (ResourceType.Script, 0), [".tr10script", ".script"] },
-                { (ResourceType.ShaderLib, 0), [".tr10shaderlib"] },
-                { (ResourceType.SoundBank, 0), [".tr10sound", ".sound"] },
-                { (ResourceType.Texture, 0), [".dds", ".tr2pcd"] }
+                { (ResourceType.ObjectReference, 0),                [".tr10objectref", ".grplist"] },
+                { (ResourceType.BlendShapeDriver, 0),               [".tr10drivers", ".psdres"] },
+                { (ResourceType.Script, 0),                         [".tr10script", ".script"] },
+                { (ResourceType.ShaderLib, 0),                      [".tr10shaderlib"] },
+                { (ResourceType.SoundBank, 0),                      [".tr10sound", ".sound"] },
+                { (ResourceType.Texture, 0),                        [".dds", ".tr2pcd"] }
             };
 
         protected override Dictionary<(ResourceType, ResourceSubType), string[]> Mappings => _mappings;

@@ -21,7 +21,7 @@
         Material = 10,
         GlobalContentReference = 11,
         Model = 12,
-        CollisionMesh = 13,
+        CollisionModel = 13,
         ObjectReference = 14,
         AnimationLib = 15,
         Max

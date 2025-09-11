@@ -304,7 +304,7 @@ namespace TrRebootTools.ModManager.Mod
                 return;
 
             ResourceReference resourceRef = fullResourceUsageCache.GetResourceReference(_archiveSet, resourceKey);
-            if (resourceRef == null || resourceRef.RefDefinitionsSize == 0)
+            if (resourceRef != null && resourceRef.RefDefinitionsSize == 0)
                 return;
 
             List<ResourceKey> externalResourceKeys;
@@ -313,8 +313,10 @@ namespace TrRebootTools.ModManager.Mod
             {
                 if (modResourceKeys.Contains(resourceKey))
                     resourceStream = modVariation?.OpenResource(resourceKey) ?? modPackage.OpenResource(resourceKey);
-                else
+                else if (resourceRef != null)
                     resourceStream = _archiveSet.OpenResource(resourceRef);
+                else
+                    return;
 
                 if (!resourceStream.CanSeek)
                 {
@@ -522,7 +524,6 @@ namespace TrRebootTools.ModManager.Mod
         {
             if (resourceKey.Type == ResourceType.Texture ||
                 resourceKey.Type == ResourceType.ShaderLib ||
-                resourceKey.SubType == ResourceSubType.ModelData ||
                 resourceKey.Type == ResourceType.SoundBank)
                 return false;
 

@@ -160,7 +160,7 @@ namespace TrRebootTools.Shared.Cdc
                 identification.BodySize = resourceRef.BodySize - identification.RefDefinitionsSize;
             }
             if (resourceRef.Enabled)
-                identification.Type = (byte)(resourceRef.Type < ResourceType.Max ? resourceRef.Type : ResourceType.CollisionMesh);
+                identification.Type = (byte)(resourceRef.Type < ResourceType.Max ? resourceRef.Type : ResourceType.CollisionModel);
             else
                 identification.Type = (byte)ResourceType.Empty;
             

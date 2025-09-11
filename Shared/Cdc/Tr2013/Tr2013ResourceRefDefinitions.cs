@@ -14,15 +14,17 @@ namespace TrRebootTools.Shared.Cdc.Tr2013
         public override ResourceKey? GetExternalRefTarget(int refPos)
         {
             ResourceKey? resourceKey = base.GetExternalRefTarget(refPos);
-            if (resourceKey == null)
-                return null;
+            if (resourceKey == null || _resourceRef == null)
+                return resourceKey;
 
             return Tr2013ResourceCollection.AdjustResourceKeyAfterRead(_resourceRef.ArchiveId, resourceKey.Value);
         }
 
         public override void SetExternalRefTarget(int refPos, ResourceKey resourceKey)
         {
-            resourceKey = Tr2013ResourceCollection.AdjustResourceKeyBeforeWrite(_resourceRef.ArchiveId, resourceKey);
+            if (_resourceRef != null)
+                resourceKey = Tr2013ResourceCollection.AdjustResourceKeyBeforeWrite(_resourceRef.ArchiveId, resourceKey);
+
             base.SetExternalRefTarget(refPos, resourceKey);
         }
     }
