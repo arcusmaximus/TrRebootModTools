@@ -333,7 +333,7 @@ namespace TrRebootTools.ModManager.Mod
             }
             finally
             {
-                resourceStream.Close();
+                resourceStream?.Close();
             }
 
             foreach (ResourceKey externalResourceKey in externalResourceKeys)
