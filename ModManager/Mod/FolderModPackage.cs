@@ -17,6 +17,7 @@ namespace TrRebootTools.ModManager.Mod
         private const string VariationImageFileName = "variation.png";
 
         private readonly string _folderPath;
+        private readonly bool _checkForDuplicates;
         private readonly ArchiveSet _archiveSet;
         private readonly Dictionary<ulong, ulong?> _gameFileLocales = new();
         private readonly ResourceUsageCache _resourceUsageCache;
@@ -24,15 +25,16 @@ namespace TrRebootTools.ModManager.Mod
         private readonly Dictionary<ResourceKey, string> _physicalResources = new();
         private readonly Dictionary<ResourceKey, MemoryStream> _virtualResources = new();
 
-        public FolderModPackage(string folderPath, ArchiveSet archiveSet, ResourceUsageCache resourceUsageCache)
-            : this(Path.GetFileName(folderPath), folderPath, archiveSet, resourceUsageCache)
+        public FolderModPackage(string folderPath, bool checkForDuplicates, ArchiveSet archiveSet, ResourceUsageCache resourceUsageCache)
+            : this(Path.GetFileName(folderPath), folderPath, checkForDuplicates, archiveSet, resourceUsageCache)
         {
         }
 
-        public FolderModPackage(string name, string folderPath, ArchiveSet archiveSet, ResourceUsageCache resourceUsageCache)
+        public FolderModPackage(string name, string folderPath, bool checkForDuplicates, ArchiveSet archiveSet, ResourceUsageCache resourceUsageCache)
         {
             Name = name;
             _folderPath = folderPath;
+            _checkForDuplicates = checkForDuplicates;
             _archiveSet = archiveSet;
             _resourceUsageCache = resourceUsageCache;
             foreach (ArchiveFileKey fileKey in archiveSet.Files)
@@ -66,14 +68,14 @@ namespace TrRebootTools.ModManager.Mod
 
         private void ScanFolder(string baseFolderPath, string folderPath)
         {
-            AddFilesAndResourcesFromFolder(baseFolderPath, folderPath, _files, _physicalResources, false, _gameFileLocales, _resourceUsageCache, _archiveSet.Game);
+            AddFilesAndResourcesFromFolder(baseFolderPath, folderPath, _files, _physicalResources, false, _checkForDuplicates, _gameFileLocales, _resourceUsageCache, _archiveSet.Game);
 
             foreach (string subFolderPath in Directory.EnumerateDirectories(folderPath))
             {
                 if (File.Exists(Path.Combine(subFolderPath, VariationDescriptionFileName)) ||
                     File.Exists(Path.Combine(subFolderPath, VariationImageFileName)))
                 {
-                    Variations.Add(new FolderModVariation(subFolderPath, _archiveSet, _resourceUsageCache, _gameFileLocales));
+                    Variations.Add(new FolderModVariation(subFolderPath, _archiveSet, _checkForDuplicates, _resourceUsageCache, _gameFileLocales));
                 }
                 else
                 {
@@ -88,6 +90,7 @@ namespace TrRebootTools.ModManager.Mod
             Dictionary<ArchiveFileKey, string> files,
             Dictionary<ResourceKey, string> resources,
             bool recursive,
+            bool checkForDuplicates,
             Dictionary<ulong, ulong?> gameFileLocales,
             ResourceUsageCache usageCache,
             CdcGame game)
@@ -102,7 +105,7 @@ namespace TrRebootTools.ModManager.Mod
 
                 if (TryGetResourceKey(baseFolderPath, filePath, out ResourceKey resourceKey, usageCache, game))
                 {
-                    if (resources.TryGetValue(resourceKey, out string existingFilePath))
+                    if (checkForDuplicates && resources.TryGetValue(resourceKey, out string existingFilePath))
                         throw new Exception($"The mod contains a duplicate resource:\r\n{existingFilePath.Substring(baseFolderPath.Length)}\r\n{filePath.Substring(baseFolderPath.Length)}");
 
                     resources[resourceKey] = filePath;
@@ -472,13 +475,13 @@ namespace TrRebootTools.ModManager.Mod
             private readonly Dictionary<ResourceKey, string> _physicalResources = new();
             private readonly Dictionary<ResourceKey, MemoryStream> _virtualResources = new();
 
-            public FolderModVariation(string folderPath, ArchiveSet archiveSet, ResourceUsageCache resourceUsageCache, Dictionary<ulong, ulong?> gameFileLocales)
+            public FolderModVariation(string folderPath, ArchiveSet archiveSet, bool checkForDuplicates, ResourceUsageCache resourceUsageCache, Dictionary<ulong, ulong?> gameFileLocales)
                 : base(Path.GetFileName(folderPath), GetDescription(folderPath), GetImage(folderPath))
             {
                 FolderPath = folderPath;
                 _archiveSet = archiveSet;
                 _resourceUsageCache = resourceUsageCache;
-                AddFilesAndResourcesFromFolder(FolderPath, FolderPath, _files, _physicalResources, true, gameFileLocales, _resourceUsageCache, _archiveSet.Game);
+                AddFilesAndResourcesFromFolder(FolderPath, FolderPath, _files, _physicalResources, true, checkForDuplicates, gameFileLocales, _resourceUsageCache, _archiveSet.Game);
                 AddVirtualResources(_virtualResources, _physicalResources, _files, _archiveSet, _resourceUsageCache);
             }
 

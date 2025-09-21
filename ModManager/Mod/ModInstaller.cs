@@ -34,7 +34,7 @@ namespace TrRebootTools.ModManager.Mod
             using ZipTempExtractor extractor = new ZipTempExtractor(filePath);
             extractor.Extract(progress, cancellationToken);
 
-            using ModPackage modPackage = new FolderModPackage(modName, extractor.FolderPath, _archiveSet, _gameResourceUsageCache);
+            using ModPackage modPackage = new FolderModPackage(modName, extractor.FolderPath, false, _archiveSet, _gameResourceUsageCache);
             return Install(modPackage, progress, cancellationToken);
         }
 
@@ -50,7 +50,7 @@ namespace TrRebootTools.ModManager.Mod
             if (existingArchive != null)
                 _archiveSet.Delete(existingArchive.Id, _gameResourceUsageCache, progress, cancellationToken);
 
-            using ModPackage modPackage = new FolderModPackage(modName, folderPath, _archiveSet, _gameResourceUsageCache);
+            using ModPackage modPackage = new FolderModPackage(modName, folderPath, true, _archiveSet, _gameResourceUsageCache);
             return Install(modPackage, progress, cancellationToken);
         }
 
