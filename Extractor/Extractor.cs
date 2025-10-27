@@ -282,7 +282,7 @@ namespace TrRebootTools.Extractor
                 new ProcessStartInfo
                 {
                     FileName = vgmstreamPath,
-                    Arguments = $"-o \"{Path.ChangeExtension(soundFilePath, ".wav")}\" \"{soundFilePath}\"",
+                    Arguments = $"-i -o \"{Path.ChangeExtension(soundFilePath, ".wav")}\" \"{soundFilePath}\"",
                     CreateNoWindow = true,
                     UseShellExecute = false
                 }

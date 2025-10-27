@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using TrRebootTools.Shared.Cdc;
@@ -25,14 +26,18 @@ namespace TrRebootTools.SoundConverter
                 );
             sourcesXml.Save(sourcesFilePath);
 
-            await RunConsoleToolAsync($"convert-external-source \"{ProjectFilePath}\" --source-file \"{sourcesFilePath}\"");
+            string wwiseLog = await RunConsoleToolAsync($"convert-external-source \"{ProjectFilePath}\" --source-file \"{sourcesFilePath}\"");
 
-            return Path.Combine(
+            string wemFilePath = Path.Combine(
                 ProjectFolderPath,
                 "GeneratedSoundBanks",
                 "Windows",
                 Path.ChangeExtension(Path.GetFileName(wavFilePath), ".wem")
             );
+            if (!File.Exists(wemFilePath))
+                throw new Exception("Wwise conversion failed.\r\n\r\n" + wwiseLog);
+
+            return wemFilePath;
         }
 
         protected override string ConsoleToolAppSettingsKey => "WwiseConsole";

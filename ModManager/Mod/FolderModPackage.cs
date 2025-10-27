@@ -8,6 +8,7 @@ using Newtonsoft.Json.Linq;
 using TrRebootTools.Shared.Cdc;
 using TrRebootTools.Shared.Util;
 using System.Text.RegularExpressions;
+using TrRebootTools.Shared;
 
 namespace TrRebootTools.ModManager.Mod
 {
@@ -100,9 +101,6 @@ namespace TrRebootTools.ModManager.Mod
 
             foreach (string filePath in Directory.EnumerateFiles(folderPath, "*", recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly))
             {
-                if (new FileInfo(filePath).Length == 0)
-                    continue;
-
                 if (TryGetResourceKey(baseFolderPath, filePath, out ResourceKey resourceKey, usageCache, game))
                 {
                     if (checkForDuplicates && resources.TryGetValue(resourceKey, out string existingFilePath))
@@ -265,7 +263,7 @@ namespace TrRebootTools.ModManager.Mod
                 if (filePath.EndsWith(".json") && Path.GetFileName(Path.GetDirectoryName(filePath)) == "locals.bin")
                     resultStream = GetPatchedLocalsBin(fileStream, fileKey, archiveSet);
                 else if (filePath.EndsWith(".wem"))
-                    resultStream = GetPatchedSound(fileStream, fileKey, archiveSet);
+                    resultStream = GetPatchedSound(filePath, fileStream, fileKey, archiveSet);
                 else if (filePath.EndsWith(".ips32"))
                     resultStream = GetIps32PatchedStream(fileStream, fileKey, archiveSet);
                 else
@@ -315,12 +313,12 @@ namespace TrRebootTools.ModManager.Mod
             return patchedStream;
         }
 
-        private static Stream GetPatchedSound(Stream modSoundFileStream, ArchiveFileKey fileKey, ArchiveSet archiveSet)
+        private static Stream GetPatchedSound(string modSoundFilePath, Stream modSoundFileStream, ArchiveFileKey fileKey, ArchiveSet archiveSet)
         {
             if (modSoundFileStream.Length == 0)
                 return modSoundFileStream;
 
-            WwiseSound modSound = new WwiseSound(modSoundFileStream);
+            WwiseSound modSound = new WwiseSound(modSoundFileStream, modSoundFilePath);
             modSoundFileStream.Position = 0;
 
             if (modSound.Chunks.OfType<WwiseSound.CueChunk>().Any())
@@ -333,7 +331,7 @@ namespace TrRebootTools.ModManager.Mod
             WwiseSound origSound;
             using (Stream origSoundStream = archiveSet.OpenFile(fileRef))
             {
-                origSound = new WwiseSound(origSoundStream);
+                origSound = new WwiseSound(origSoundStream, "Vanilla " + Path.GetFileName(modSoundFilePath));
             }
 
             int modSampleFreq = modSound.Format.SampleFrequency;

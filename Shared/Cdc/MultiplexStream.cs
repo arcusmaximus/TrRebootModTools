@@ -156,10 +156,10 @@ namespace TrRebootTools.Shared.Cdc
         private int GetNumAudioSamples()
         {
             SoundPacket soundPacket = Packets.OfType<SoundPacket>().FirstOrDefault();
-            if (soundPacket == null)
+            if (soundPacket == null || soundPacket.ChannelData.Length == 0)
                 return int.MaxValue;
 
-            return BitConverter.ToInt32(soundPacket.ChannelData[0], 0x50);
+            return soundPacket.ChannelData.Max(c => BitConverter.ToInt32(c, 0x50));
         }
 
         private void WritePacket(BinaryWriter writer, Packet packet)

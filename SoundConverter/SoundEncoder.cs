@@ -114,9 +114,9 @@ namespace TrRebootTools.SoundConverter
 
         protected abstract Task CreateProjectAsync(string projectFilePath);
 
-        protected async Task RunConsoleToolAsync(string arguments)
+        protected async Task<string> RunConsoleToolAsync(string arguments)
         {
-            await ProcessHelper.RunAsync(_consoleToolPath, arguments);
+            return await ProcessHelper.RunAsync(_consoleToolPath, arguments);
         }
 
         public virtual void Dispose()

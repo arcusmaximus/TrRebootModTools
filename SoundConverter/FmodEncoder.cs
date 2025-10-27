@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Xml;
@@ -33,7 +34,7 @@ namespace TrRebootTools.SoundConverter
             }
             doc.Save(ProjectFilePath);
 
-            await RunConsoleToolAsync($"-pc \"{ProjectFilePath}\"");
+            string fmodLog = await RunConsoleToolAsync($"-pc \"{ProjectFilePath}\"");
 
             string cacheFolderPath = Path.Combine(ProjectFolderPath, ".fsbcache");
             if (Directory.Exists(cacheFolderPath))
@@ -41,7 +42,7 @@ namespace TrRebootTools.SoundConverter
 
             string fromFsbPath = Path.Combine(ProjectFolderPath, "proj_bank00.fsb");
             if (!File.Exists(fromFsbPath))
-                return null;
+                throw new Exception("FMOD conversion failed.\r\n\r\n" + fmodLog);
 
             string toFsbPath = Path.ChangeExtension(wavFilePath, ".fsb");
             if (File.Exists(toFsbPath))

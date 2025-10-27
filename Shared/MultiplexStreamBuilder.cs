@@ -8,6 +8,9 @@ namespace TrRebootTools.Shared
 {
     public class MultiplexStreamBuilder
     {
+        private const float Mp3FrameDuration = 1152f / 44100f;      // (Samples per MP3 frame) divided by (samples per second)
+        private const float AnimationFrameDuration = 1f / 30f;      // 30FPS animation
+
         private readonly CdcGame _game;
 
         public MultiplexStreamBuilder(CdcGame game)
@@ -72,8 +75,18 @@ namespace TrRebootTools.Shared
             int[] fsbPositions = new int[numChannels];
 
             List<MultiplexStream.SoundPacket> packets = new();
+            float cineTime = 0;
+            float soundTime = 0;
             while (true)
             {
+                int numMp3Frames = 0;
+                cineTime += AnimationFrameDuration;
+                while (soundTime < cineTime)
+                {
+                    numMp3Frames++;
+                    soundTime += Mp3FrameDuration;
+                }
+
                 var packet = new MultiplexStream.SoundPacket { ChannelData = new byte[numChannels][] };
 
                 bool packetHasData = false;
@@ -81,7 +94,11 @@ namespace TrRebootTools.Shared
                 {
                     byte[] fsbContent = fsbContents[channel];
                     int startPos = fsbPositions[channel];
-                    int endPos = FindNextMp3Frame(fsbContent, startPos == 0 ? 0x80 : startPos);
+                    int endPos = startPos == 0 ? 0x80 : startPos;
+                    for (int i = 0; i < numMp3Frames; i++)
+                    {
+                        endPos = FindNextMp3Frame(fsbContent, endPos);
+                    }
 
                     byte[] frame = new byte[endPos - startPos];
                     Array.Copy(fsbContent, startPos, frame, 0, frame.Length);

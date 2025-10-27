@@ -217,7 +217,7 @@ namespace TrRebootTools.ModManager.Mod
                 AddResourcesToArchive(archives[0xFFFFFFFFFFFFFFFF], modPackage, modVariation, modResourceCollectionItems, progress, cancellationToken);
                 AddFilesToArchives(archives, modPackage, modVariation, modResourceCollections.Values);
 
-                foreach (Archive archive in archives.Values.OrderBy(a => a.SubId))
+                foreach (Archive archive in archives.Values.Distinct())
                 {
                     archive.CloseStreams();
                     if (!flattened)
@@ -229,7 +229,7 @@ namespace TrRebootTools.ModManager.Mod
             {
                 if (archives != null)
                 {
-                    foreach (Archive archive in archives.Values)
+                    foreach (Archive archive in archives.Values.Distinct())
                     {
                         archive.CloseStreams();
                         if (archive.MetaData != null)

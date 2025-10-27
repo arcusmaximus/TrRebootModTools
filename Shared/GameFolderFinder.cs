@@ -59,7 +59,7 @@ namespace TrRebootTools.Shared
         {
             MessageBox.Show(
                 $"Could not automatically determine the {gameInfo.ShortName} installation folder. Please select it manually.",
-                $"{gameInfo.ShortName} Mod Manager",
+                $"{gameInfo.ShortName} Modding Tools",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Information
             );

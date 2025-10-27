@@ -141,12 +141,18 @@ namespace TrRebootTools.Shared.Cdc
 
                 Dictionary<ulong, Archive> archives = new();
                 SpecMasksToc toc = new SpecMasksToc();
-                foreach ((ulong locale, int maxFiles) in maxFilesByLocale.OrderByDescending(p => p.Key))
+                foreach (var localesOfSuffix in maxFilesByLocale.Keys.GroupBy(MakeLocaleSuffix))
                 {
-                    string archiveFileName = $"{ModArchivePrefix}{simplifiedName}.000{MakeLocaleSuffix(locale)}.000.tiger";
-                    toc.Entries.Add(locale, archiveFileName);
-                    archives.Add(locale, Archive.Create(Path.Combine(FolderPath, archiveFileName), id, subId, metaData, maxFiles, Game));
+                    string archiveFileName = $"{ModArchivePrefix}{simplifiedName}.000{localesOfSuffix.Key}.000.tiger";
+                    int maxFiles = localesOfSuffix.Sum(l => maxFilesByLocale[l]);
+                    Archive archive = Archive.Create(Path.Combine(FolderPath, archiveFileName), id, subId, metaData, maxFiles, Game);
                     subId++;
+
+                    foreach (ulong locale in localesOfSuffix)
+                    {
+                        toc.Entries.Add(locale, archiveFileName);
+                        archives.Add(locale, archive);
+                    }
                 }
 
                 if (toc.Entries.Count > 1 && RequiresSpecMaskFiles)

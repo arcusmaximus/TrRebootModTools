@@ -71,9 +71,9 @@ namespace TrRebootTools.SoundConverter
             this._lblOutputFolder.AutoSize = true;
             this._lblOutputFolder.Location = new System.Drawing.Point(6, 320);
             this._lblOutputFolder.Name = "_lblOutputFolder";
-            this._lblOutputFolder.Size = new System.Drawing.Size(74, 12);
+            this._lblOutputFolder.Size = new System.Drawing.Size(99, 12);
             this._lblOutputFolder.TabIndex = 2;
-            this._lblOutputFolder.Text = "Output folder:";
+            this._lblOutputFolder.Text = "Output mod folder:";
             // 
             // _btnAddInputFiles
             // 

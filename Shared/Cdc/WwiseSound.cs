@@ -30,7 +30,7 @@ namespace TrRebootTools.Shared.Cdc
                 { FourCC.labl, () => new LabelChunk() }
             };
 
-        public WwiseSound(Stream stream)
+        public WwiseSound(Stream stream, string fileNameForErrors)
         {
             BinaryReader reader = new BinaryReader(stream);
             Chunk chunk = ReadChunk(reader);
@@ -38,7 +38,7 @@ namespace TrRebootTools.Shared.Cdc
                 rootChunk.Id != FourCC.RIFF ||
                 rootChunk.Type != FourCC.WAVE)
             {
-                throw new InvalidDataException();
+                throw new InvalidDataException(fileNameForErrors + " is not a valid .wem file");
             }
 
             Chunks = rootChunk.Chunks;
