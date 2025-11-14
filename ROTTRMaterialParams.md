@@ -15,7 +15,7 @@ This list will keep getting updated from time to time.
 
         passRefs[3]
             psConstants[34]
-                psConstants[1] = x.R y.G z.B w.?
+                psConstants[1] = x.ColorR y.ColorG z.ColorB w.?
                 psConstants[23] = x.? y.? z.TilingMapRedDiffuseX w.TilingMapRedDiffuseY (detail diffuse map, RED colored part of detail mask ID 10374, diffuse being ID 233)
                 psConstants[24] = x.TilingDetailRoughnessX y.TilingDetailRoughnessY z.? w.?
 
