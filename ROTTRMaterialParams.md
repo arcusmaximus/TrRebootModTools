@@ -15,6 +15,7 @@ This list will keep getting updated from time to time.
 
         passRefs[3]
             psConstants[34]
+                psConstants[1] = x.R y.G z.B w.?
                 psConstants[23] = x.? y.? z.TilingMapRedDiffuseX w.TilingMapRedDiffuseY (detail diffuse map, RED colored part of detail mask ID 10374, diffuse being ID 233)
                 psConstants[24] = x.TilingDetailRoughnessX y.TilingDetailRoughnessY z.? w.?
 
@@ -29,11 +30,11 @@ This list will keep getting updated from time to time.
         
         passRefs[8]
             psConstants[14]
-                psConstants[0] = x.ColorR y.ColorG z.ColorB ?.w 
-                psConstants[1] = x.SpecularR y.SpecularG z.SpecularB ?.w 
-                psConstants[3] = x.SpecularR y.SpecularG z.SpecularB ?.w
+                psConstants[0] = x.ColorR y.ColorG z.ColorB w.?
+                psConstants[1] = x.SpecularR y.SpecularG z.SpecularB w.?
+                psConstants[3] = x.SpecularR y.SpecularG z.SpecularB w.?
                 psConstants[9] = x.? y.SpecularStrength z.? w.?
-                psConstants[12] = x.Something_About_Specularity ?.y ?.z w.SpecularSpread (lower value, more spread specularity)
+                psConstants[12] = x.Something_About_Specularity y.? z.? w.SpecularSpread (lower value, more spread specularity)
         
 ----------------------------------------------------------------------------------------
 
