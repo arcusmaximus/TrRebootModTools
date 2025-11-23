@@ -4,7 +4,7 @@ This is a documentation of Rise of the Tomb Raider materials, with all the known
 
 This list will get updated from time to time.
 
-# Please note that the naming and understanding of material parameter names is approximative. This means that I may incorrectly label some parameters.
+## Please note that the naming and understanding of material parameter names is approximative. This means that I may incorrectly label some parameters.
 
 ## Please note that this documentation should only be relevant for an "advanced" level of modding. In most of the cases, you won't need to know all this info.
 
