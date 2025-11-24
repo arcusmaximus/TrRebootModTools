@@ -12,8 +12,28 @@ This list will get updated from time to time.
 
 ----------------------------------------------------------------------------------------
 
-- **Lara boot laces (267149.tr10material in laracroft.drm)**
+- **Lara pants (267146.tr10material in laracroft.drm)**
 
+        passRefs[3]
+            psConstants[22]
+                psConstants[1] = x.ColorR y.ColorG z.ColorB w.?
+                psConstants[4] = x.FresnelColorR y.FresnelColorG z.FresnelColorB w.?
+                psConstants[7] = x.? y.? z.DirtIntensity w.?
+                psConstants[11] = x.? y.? z.ColorX w.ColorY
+                psConstants[11] = x.? y.? z.TilingDetail1X w.TilingDetail1Y
+                psConstants[17] = x.FresnelIntensity1 y.FresnelIntensity2 z.? w.FresnelIntensity3
+                psConstants[13] = x.? y.? z.TilingDetail1 w.?
+                psConstants[21] = x.FresnelIntensity4 y.FresnelIntensity5 z.? w.?
+
+        passRefs[7]
+            psConstants[16]
+                psConstants[7] = x.? y.? z.TilingDetail2X w.TilingDetail2Y
+                psConstants[13] = x.? y.? z.? w.Detail2Intensity
+                psConstants[15] = x.? y.NormalIntensity z.? w.?
+        
+----------------------------------------------------------------------------------------
+
+- **Lara boot laces (267149.tr10material in laracroft.drm)**
 
         passRefs[3]
             psConstants[34]
