@@ -17,15 +17,29 @@ This list will get updated from time to time.
 
         passRefs[3]
             psConstants[34]
-                psConstants[1] = x.ColorR y.ColorG z.ColorB w.?
-                psConstants[6] = x.DetailRoughnessIntensity y.? z.? w.?
+                psConstants[1] = x.GlobalColorR y.GlobalColorG z.GlobalColorB w.?
+                psConstants[2] = x.GreenDetailMaskColorR y.GreenDetailMaskColorG z.GreenDetailMaskColorB w.?
+                psConstants[3] = x.BlueDetailMaskColorR y.BlueDetailMaskColorG z.BlueDetailMaskColorB w.?
+                psConstants[4] = x.? y.GlobalDirtIntensity1 z.GlobalDirtIntensity2 w.?
+                psConstants[5] = x.BlueDetailDirtMask y.GlobalDirtMaskIntensity1 z.GlobalDirtMaskIntensity2 w.?
+                psConstants[6] = x.GreenDetailIntensity y.GlobalDetailIntensity1 z.GlobalDetailIntensity2 w.?
+                psConstants[7] = x.GlobalRefrectanceColorR y.GlobalRefrectanceColorG z.GlobalRefrectanceColorB w.RedDetailRefrectance
+                psConstants[8] = x.? y.SnowMaskIntensity1 z.SnowMaskIntensity2 w.?
+                psConstants[12] = x.RedDetailRefrectanceColorR y.RedDetailRefrectanceColorG z.RedDetailRefrectanceColorB w.RedDetailRefrectance
+                psConstants[14] = x.? y.GlobalBloodMaskIntensity1 z.GlobalBloodMaskIntensity2 w.?
+                psConstants[15] = x.? y.? z.? w.GlobalDetailMapIntensity
+                psConstants[19] = x.? y.? z.DetailMaskX w.DetailMaskY
+                psConstants[21] = x.RefrectanceRoughnessX y.RefrectanceRoughnessY z. w.
+                psConstants[22] = x.ColorX y.ColorY z. w.
                 psConstants[23] = x.? y.? z.TilingMapRedDiffuseX w.TilingMapRedDiffuseY (detail diffuse map, RED colored part of detail mask ID 10374, diffuse being ID 233)
-                psConstants[24] = x.TilingDetailRoughnessX y.TilingDetailRoughnessY z.? w.?
+                psConstants[25] = x.DetailRedRefrectanceRoughnessX y.DetailRedRefrectanceRoughnessY z.? w.?
                 psConstants[31] = x.? y.RefrectanceIntensity z.? w.?
 
         passRefs[7]
             psConstants[25]
                 psConstants[8] = x.TilingDetailRefrectanceX y.TilingDetailRefrectanceY z.? w.?
+                psConstants[1] = x.? y.? z.? w.DetailRedRefrectanceRoughnessScale
+                psConstants[2] = x.? y.? z.? w.DetailRedRoughnessIntensityInverted
                 psConstants[10] = x.? y.? z.TilingMapGreenX w.TilingMapGreenY (detail normal map, GREEN colored part of detail mask texture ID 10374)
                 psConstants[13] = x.TilingMapRedX y.TilingMapRedY z.? w.? (detail normal map, RED colored part of detail mask texture ID 10374)
                 psConstants[19] = x.Detailintensity y.? z.? w.?
