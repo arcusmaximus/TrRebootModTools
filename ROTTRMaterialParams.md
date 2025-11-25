@@ -57,9 +57,9 @@ This list will get updated from time to time.
 
         passRefs[7]
             psConstants[25]
-                psConstants[8] = x.TilingDetailRefrectanceX y.TilingDetailRefrectanceY z.? w.?
                 psConstants[1] = x.? y.? z.? w.DetailRedRefrectanceRoughnessScale
                 psConstants[2] = x.? y.? z.? w.DetailRedRoughnessIntensityInverted
+                psConstants[8] = x.TilingDetailRefrectanceX y.TilingDetailRefrectanceY z.? w.?
                 psConstants[10] = x.? y.? z.TilingMapGreenX w.TilingMapGreenY (detail normal map, GREEN colored part of detail mask texture ID 10374)
                 psConstants[13] = x.TilingMapRedX y.TilingMapRedY z.? w.? (detail normal map, RED colored part of detail mask texture ID 10374)
                 psConstants[19] = x.Detailintensity y.? z.? w.?
