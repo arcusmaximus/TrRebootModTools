@@ -45,6 +45,7 @@ This list will get updated from time to time.
                 psConstants[6] = x.GreenDetailIntensity y.GlobalDetailIntensity1 z.GlobalDetailIntensity2 w.?
                 psConstants[7] = x.GlobalRefrectanceColorR y.GlobalRefrectanceColorG z.GlobalRefrectanceColorB w.RedDetailRefrectance
                 psConstants[8] = x.? y.SnowMaskIntensity1 z.SnowMaskIntensity2 w.?
+                psConstants[11] = x.? y.? z.? w.RefrectanceSpecularIntensity
                 psConstants[12] = x.RedDetailRefrectanceColorR y.RedDetailRefrectanceColorG z.RedDetailRefrectanceColorB w.RedDetailRefrectance
                 psConstants[14] = x.? y.GlobalBloodMaskIntensity1 z.GlobalBloodMaskIntensity2 w.?
                 psConstants[15] = x.? y.? z.? w.GlobalDetailMapIntensity
