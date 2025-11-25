@@ -22,7 +22,7 @@ This list will get updated from time to time.
                 psConstants[11] = x.? y.? z.ColorX w.ColorY
                 psConstants[11] = x.? y.? z.TilingDetail1X w.TilingDetail1Y
                 psConstants[17] = x.FresnelIntensity1 y.FresnelIntensity2 z.? w.FresnelIntensity3
-                psConstants[13] = x.? y.? z.TilingDetail1 w.?
+                psConstants[13] = x.? y.? z.TilingDetail1Intensity w.?
                 psConstants[21] = x.FresnelIntensity4 y.FresnelIntensity5 z.? w.?
 
         passRefs[7]
