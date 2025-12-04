@@ -624,8 +624,8 @@ they embed them in two custom formats:
 Once you have an extracted sound, you can edit or replace the .wav and edit the subtitles if desired.
 
 To pack these into a new .trXsound resource or .mul file, you'll first need to install FMOD Designer version
-[4.36.04](https://archive.org/details/fmoddesigner43604win-installer) for converting the .wavs
-to .fsbs. Then launch the modding toolset's TrRebootTools.SoundConverter.exe, drag the .wav (for .trXsound)
+[4.36.04](https://archive.org/details/fmoddesigner43604win-installer) so the tools can call it for converting
+.wav to .fsb. Then launch the modding toolset's TrRebootTools.SoundConverter.exe, drag the .wav (for .trXsound)
 or .json (for .mul) onto the input list, specify your mod folder as the output location, and click Convert.
 
 
