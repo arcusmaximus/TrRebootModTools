@@ -10,10 +10,11 @@ namespace TrRebootTools.Shared.Cdc
     public class ResourceUsageCache
     {
         private const string FileName = "resourceusage.bin";
-        private const int Version = 7;
+        private const int Version = 9;  // Bumped to store archive ID for fast priority selection
 
         protected readonly ResourceUsageCache _baseCache;
-        protected readonly Dictionary<ResourceKey, Dictionary<ArchiveFileKey, int>> _resourceUsages = new();
+        // Value is (resourceIndex, archiveId) - archiveId is where the resource data is stored
+        protected readonly Dictionary<ResourceKey, Dictionary<ArchiveFileKey, (int resourceIdx, int archiveId)>> _resourceUsages = new();
         protected readonly Dictionary<string, ResourceKey> _resourceKeysByOriginalFilePath = new();
         protected readonly Dictionary<int, HashSet<WwiseSoundBankItemReference>> _wwiseSoundUsages = new();
 
@@ -101,7 +102,7 @@ namespace TrRebootTools.Shared.Cdc
                     _resourceKeysByOriginalFilePath[originalFilePath] = resourceRef;
             }
 
-            Dictionary<ArchiveFileKey, int> usages = _resourceUsages.GetOrAdd(resourceRef, () => new());
+            Dictionary<ArchiveFileKey, (int resourceIdx, int archiveId)> usages = _resourceUsages.GetOrAdd(resourceRef, () => new());
 
             ArchiveFileKey collectionKey = new ArchiveFileKey(collection.NameHash, collection.Locale);
             if (collection.Locale == 0xFFFFFFFFFFFFFFFF)
@@ -120,7 +121,8 @@ namespace TrRebootTools.Shared.Cdc
                     return;
             }
 
-            usages[collectionKey] = resourceIdx;
+            // Store both the resource index and the archive ID where the resource data is stored
+            usages[collectionKey] = (resourceIdx, resourceRef.ArchiveId);
         }
 
         private void AddWwiseSoundBank(ArchiveSet archiveSet, ResourceReference resourceRef)
@@ -154,7 +156,7 @@ namespace TrRebootTools.Shared.Cdc
         public IEnumerable<ResourceCollectionItemReference> GetResourceUsages(ArchiveSet archiveSet, ResourceKey resourceKey)
         {
             IEnumerable<ResourceCollectionItemReference> baseUsages = _baseCache?.GetResourceUsages(archiveSet, resourceKey);
-            Dictionary<ArchiveFileKey, int> usages = _resourceUsages.GetOrDefault(resourceKey);
+            Dictionary<ArchiveFileKey, (int resourceIdx, int archiveId)> usages = _resourceUsages.GetOrDefault(resourceKey);
 
             if (baseUsages != null)
             {
@@ -176,21 +178,75 @@ namespace TrRebootTools.Shared.Cdc
 
             if (usages != null)
             {
-                foreach ((ArchiveFileKey collectionKey, int resourceIdx) in usages)
+                foreach ((ArchiveFileKey collectionKey, (int resourceIdx, int archiveId)) in usages)
                 {
-                    yield return new ResourceCollectionItemReference(archiveSet.GetFileReference(collectionKey.NameHash, collectionKey.Locale), resourceIdx);
+                    yield return new ResourceCollectionItemReference(
+                        archiveSet.GetFileReference(collectionKey.NameHash, collectionKey.Locale),
+                        resourceIdx,
+                        archiveId);
                 }
             }
         }
 
         public ResourceReference GetResourceReference(ArchiveSet archiveSet, ResourceKey resourceKey)
         {
-            ResourceCollectionItemReference collectionItem = GetResourceUsages(archiveSet, resourceKey).FirstOrDefault();
-            if (collectionItem == null)
+            // Select the best reference by preferring DLC archives (4-8) over jcontent (66)
+            // This is critical for TR2013 after the Dec 2025 update
+            //
+            // OPTIMIZATION: Use cached ResourceArchiveId for priority selection to avoid
+            // loading collections. Only load the winning collection at the end.
+            ResourceCollectionItemReference bestUsage = null;
+            int bestPriority = int.MaxValue;
+
+            foreach (var usage in GetResourceUsages(archiveSet, resourceKey))
+            {
+                if (usage.CollectionReference == null)
+                    continue;
+
+                // Use the cached archive ID for priority selection (no collection loading needed)
+                int archiveId = usage.ResourceArchiveId;
+                if (archiveId < 0)
+                {
+                    // Fallback for usages without cached archive ID (e.g., from base cache)
+                    // Use collection's archive ID as approximation
+                    archiveId = usage.CollectionReference.ArchiveId;
+                }
+
+                int priority = GetArchivePriority(archiveId);
+
+                if (priority < bestPriority)
+                {
+                    bestPriority = priority;
+                    bestUsage = usage;
+
+                    // Early exit if we found DLC (highest priority) - can't do better
+                    if (priority == 0)
+                        break;
+                }
+            }
+
+            // Only load the collection for the winning usage
+            if (bestUsage == null)
                 return null;
 
-            ResourceCollection collection = archiveSet.GetResourceCollection(collectionItem.CollectionReference);
-            return collection?.ResourceReferences[collectionItem.ResourceIndex];
+            ResourceCollection collection = archiveSet.GetResourceCollection(bestUsage.CollectionReference);
+            if (collection == null || bestUsage.ResourceIndex >= collection.ResourceReferences.Count)
+                return null;
+
+            return collection.ResourceReferences[bestUsage.ResourceIndex];
+        }
+
+        /// <summary>
+        /// Returns a priority value for archive selection (lower = preferred).
+        /// DLC archives (4-8) are preferred over jcontent (66).
+        /// </summary>
+        private static int GetArchivePriority(int archiveId)
+        {
+            if (archiveId >= 4 && archiveId <= 8) return 0;  // DLC archives
+            if (archiveId == 0 || archiveId == 64 || archiveId == 65 || archiveId == 67) return 1;  // Core game
+            if (archiveId == 69) return 2;  // patch3
+            if (archiveId == 66) return 3;  // jcontent - lowest priority
+            return 4;
         }
 
         public IEnumerable<int> WwiseSoundIds => _wwiseSoundUsages.Keys;
@@ -226,13 +282,14 @@ namespace TrRebootTools.Shared.Cdc
                 ResourceType type = (ResourceType)reader.ReadByte();
                 int id = reader.ReadInt32();
                 int numCollections = reader.ReadUInt16();
-                Dictionary<ArchiveFileKey, int> usages = new(numCollections);
+                Dictionary<ArchiveFileKey, (int resourceIdx, int archiveId)> usages = new(numCollections);
                 for (int j = 0; j < numCollections; j++)
                 {
                     ulong collectionNameHash = reader.ReadUInt64();
                     ulong collectionLocale = reader.ReadByte() == 0 ? 0xFFFFFFFFFFFFFFFF : reader.ReadUInt64();
                     int resourceIdx = reader.ReadUInt16();
-                    usages.Add(new ArchiveFileKey(collectionNameHash, collectionLocale), resourceIdx);
+                    int archiveId = reader.ReadByte();  // Archive ID where resource data is stored
+                    usages.Add(new ArchiveFileKey(collectionNameHash, collectionLocale), (resourceIdx, archiveId));
                 }
                 _resourceUsages.Add(new ResourceKey(type, id), usages);
             }
@@ -284,12 +341,12 @@ namespace TrRebootTools.Shared.Cdc
         private void WriteResourceUsages(BinaryWriter writer)
         {
             writer.Write(_resourceUsages.Count);
-            foreach ((ResourceKey resource, Dictionary<ArchiveFileKey, int> usages) in _resourceUsages)
+            foreach ((ResourceKey resource, Dictionary<ArchiveFileKey, (int resourceIdx, int archiveId)> usages) in _resourceUsages)
             {
                 writer.Write((byte)resource.Type);
                 writer.Write(resource.Id);
                 writer.Write((ushort)usages.Count);
-                foreach ((ArchiveFileKey collectionKey, int resourceIdx) in usages)
+                foreach ((ArchiveFileKey collectionKey, (int resourceIdx, int archiveId)) in usages)
                 {
                     writer.Write(collectionKey.NameHash);
                     if (collectionKey.Locale == 0xFFFFFFFFFFFFFFFF)
@@ -302,6 +359,7 @@ namespace TrRebootTools.Shared.Cdc
                         writer.Write(collectionKey.Locale);
                     }
                     writer.Write((ushort)resourceIdx);
+                    writer.Write((byte)archiveId);  // Archive ID where resource data is stored
                 }
             }
         }

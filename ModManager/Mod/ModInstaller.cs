@@ -16,6 +16,9 @@ namespace TrRebootTools.ModManager.Mod
     {
         private record struct ResourceCollectionItem(ResourceCollection Collection, int ResourceIndex);
 
+        // For TR2013: Archive 66 (jcontent) resources that need to be embedded in the mod
+        private const int JcontentArchiveId = 66;
+
         private readonly ArchiveSet _archiveSet;
         private readonly ResourceUsageCache _gameResourceUsageCache;
 
@@ -205,7 +208,19 @@ namespace TrRebootTools.ModManager.Mod
                 );
 
                 Dictionary<ArchiveFileKey, HashSet<ResourceKey>> resourceRefsToAdd = GetResourceRefsToAdd(modPackage, modVariation, modResourceKeys, resourceUsageCache);
-                AddResourceReferencesToCollections(modResourceCollections, modResourceCollectionItems, resourceRefsToAdd);
+
+                // TR2013 FIX: Track jcontent (archive 66) resources that need to be embedded
+                // After December 2025, the game has issues with mod DRMs referencing archive 66
+                Dictionary<ResourceKey, ResourceReference> jcontentResourcesToEmbed = new();
+
+                AddResourceReferencesToCollections(modResourceCollections, modResourceCollectionItems, resourceRefsToAdd, jcontentResourcesToEmbed);
+
+                // TR2013 FIX: Scan ALL existing references in mod collections for archive 66 references
+                // The collections copied from the game may already have references to jcontent
+                if (_archiveSet.Game == CdcGame.Tr2013)
+                {
+                    ScanCollectionsForJcontentReferences(modResourceCollections, jcontentResourcesToEmbed);
+                }
 
                 IEnumerable<ArchiveFileKey> fileKeys = modResourceCollections.Keys.Concat(modPackage.Files).Concat(modVariation?.Files ?? []);
                 Dictionary<ulong, int> fileCountsByLocale = fileKeys.GroupBy(f => f.Locale).ToDictionary(g => g.Key, g => g.Count());
@@ -215,6 +230,13 @@ namespace TrRebootTools.ModManager.Mod
                                       : new() { { 0xFFFFFFFFFFFFFFFF, archiveSet.CreateFlattenedModArchive(fileCountsByLocale.Values.Sum()) } };
 
                 AddResourcesToArchive(archives[0xFFFFFFFFFFFFFFFF], modPackage, modVariation, modResourceCollectionItems, progress, cancellationToken);
+
+                // TR2013 FIX: Embed jcontent resources into the mod archive to avoid archive 66 references
+                if (jcontentResourcesToEmbed.Count > 0)
+                {
+                    EmbedJcontentResources(archives[0xFFFFFFFFFFFFFFFF], jcontentResourcesToEmbed, modResourceCollections);
+                }
+
                 AddFilesToArchives(archives, modPackage, modVariation, modResourceCollections.Values);
 
                 foreach (Archive archive in archives.Values.Distinct())
@@ -367,7 +389,8 @@ namespace TrRebootTools.ModManager.Mod
         private void AddResourceReferencesToCollections(
             Dictionary<ArchiveFileKey, ResourceCollection> modResourceCollections,
             Dictionary<ResourceKey, List<ResourceCollectionItem>> modResourceCollectionItems,
-            Dictionary<ArchiveFileKey, HashSet<ResourceKey>> resourceRefsToAdd)
+            Dictionary<ArchiveFileKey, HashSet<ResourceKey>> resourceRefsToAdd,
+            Dictionary<ResourceKey, ResourceReference> jcontentResourcesToEmbed)
         {
             foreach ((ArchiveFileKey collectionKey, ICollection<ResourceKey> resourcesForCollection) in resourceRefsToAdd)
             {
@@ -381,12 +404,24 @@ namespace TrRebootTools.ModManager.Mod
                         continue;
 
                     int modCollectionResourceIdx = -1;
-                    ResourceCollectionItemReference existingUsage = _gameResourceUsageCache.GetResourceUsages(_archiveSet, resourceKey).FirstOrDefault();
+                    var usages = _gameResourceUsageCache.GetResourceUsages(_archiveSet, resourceKey).ToList();
+                    ResourceCollectionItemReference existingUsage = GetBestResourceUsage(usages);
+
                     if (existingUsage != null)
                     {
                         ResourceCollection sourceCollection = _archiveSet.GetResourceCollection(existingUsage.CollectionReference);
                         if (sourceCollection != null)
+                        {
                             modCollectionResourceIdx = modCollection.AddResourceReference(sourceCollection, existingUsage.ResourceIndex);
+
+                            // TR2013 FIX: Track jcontent resources for embedding
+                            if (existingUsage.ResourceArchiveId == JcontentArchiveId && _archiveSet.Game == CdcGame.Tr2013)
+                            {
+                                ResourceReference resourceRef = sourceCollection.ResourceReferences[existingUsage.ResourceIndex];
+                                if (!jcontentResourcesToEmbed.ContainsKey(resourceKey))
+                                    jcontentResourcesToEmbed[resourceKey] = resourceRef;
+                            }
+                        }
                     }
                     modResourceCollectionItems.GetOrAdd(resourceKey, () => new()).Add(new ResourceCollectionItem(modCollection, modCollectionResourceIdx));
                 }
@@ -457,7 +492,115 @@ namespace TrRebootTools.ModManager.Mod
                 }
             }
         }
-        
+
+        /// <summary>
+        /// TR2013 FIX: Scans all resource collections for references to archive 66 (jcontent).
+        /// These references need to be embedded in the mod archive to avoid cross-archive issues.
+        /// </summary>
+        private void ScanCollectionsForJcontentReferences(
+            Dictionary<ArchiveFileKey, ResourceCollection> modResourceCollections,
+            Dictionary<ResourceKey, ResourceReference> jcontentResourcesToEmbed)
+        {
+            foreach (ResourceCollection collection in modResourceCollections.Values)
+            {
+                for (int i = 0; i < collection.ResourceReferences.Count; i++)
+                {
+                    ResourceReference resourceRef = collection.ResourceReferences[i];
+                    if (resourceRef.ArchiveId == JcontentArchiveId)
+                    {
+                        ResourceKey resourceKey = new ResourceKey(resourceRef.Type, resourceRef.SubType, resourceRef.Id);
+                        if (!jcontentResourcesToEmbed.ContainsKey(resourceKey))
+                        {
+                            jcontentResourcesToEmbed[resourceKey] = resourceRef;
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// TR2013 FIX: Embeds jcontent (archive 66) resources into the mod archive.
+        /// After the December 2025 update, the game has issues when mod DRMs reference archive 66.
+        /// By embedding these resources directly in the mod archive, we avoid the cross-archive reference issue.
+        /// </summary>
+        private void EmbedJcontentResources(
+            Archive archive,
+            Dictionary<ResourceKey, ResourceReference> jcontentResources,
+            Dictionary<ArchiveFileKey, ResourceCollection> modResourceCollections)
+        {
+            string logPath = Path.Combine(_archiveSet.FolderPath, "modinstall_debug.log");
+            using var log = new StreamWriter(logPath, true);
+            log.WriteLine($"[EMBED] Embedding {jcontentResources.Count} jcontent resources into mod archive");
+
+            // Map from original (type, id) to new reference for updating collections
+            Dictionary<(ResourceType, int), ResourceReference> embeddedResources = new();
+
+            foreach ((ResourceKey resourceKey, ResourceReference originalRef) in jcontentResources)
+            {
+                try
+                {
+                    // Load resource data from jcontent (archive 66)
+                    using Stream resourceStream = _archiveSet.OpenResource(originalRef);
+                    if (resourceStream == null)
+                    {
+                        log.WriteLine($"[WARN] Could not open jcontent resource {resourceKey}");
+                        continue;
+                    }
+
+                    // Copy to memory stream (in case source stream isn't seekable)
+                    MemoryStream memStream = new MemoryStream();
+                    resourceStream.CopyTo(memStream);
+                    memStream.Position = 0;
+
+                    // Add resource to mod archive
+                    ArchiveBlobReference newResource = archive.AddResource(memStream);
+
+                    // Create new reference pointing to mod archive
+                    ResourceReference newRef = new ResourceReference(
+                        originalRef.Type,
+                        originalRef.SubType,
+                        originalRef.Id,
+                        originalRef.Locale,
+                        newResource.ArchiveId,
+                        newResource.ArchiveSubId,
+                        newResource.ArchivePart,
+                        newResource.Offset,
+                        newResource.Length,
+                        originalRef.DecompressionOffset,
+                        originalRef.RefDefinitionsSize,
+                        originalRef.BodySize
+                    );
+
+                    embeddedResources[(originalRef.Type, originalRef.Id)] = newRef;
+                    log.WriteLine($"[OK] Embedded {resourceKey}: archive {originalRef.ArchiveId} -> {newResource.ArchiveId}");
+                }
+                catch (Exception ex)
+                {
+                    log.WriteLine($"[ERROR] Failed to embed {resourceKey}: {ex.Message}");
+                }
+            }
+
+            // Update ALL references in ALL collections that point to jcontent
+            int updatedCount = 0;
+            foreach (ResourceCollection collection in modResourceCollections.Values)
+            {
+                for (int i = 0; i < collection.ResourceReferences.Count; i++)
+                {
+                    ResourceReference resourceRef = collection.ResourceReferences[i];
+                    if (resourceRef.ArchiveId == JcontentArchiveId)
+                    {
+                        if (embeddedResources.TryGetValue((resourceRef.Type, resourceRef.Id), out ResourceReference newRef))
+                        {
+                            collection.UpdateResourceReference(i, newRef);
+                            updatedCount++;
+                        }
+                    }
+                }
+            }
+
+            log.WriteLine($"[EMBED] Done. Updated {updatedCount} references in collections");
+        }
+
         private int GetResourceRefDefinitionsSize(ModPackage modPackage, ModVariation modVariation, ResourceKey resourceKey)
         {
             using Stream stream = modVariation?.OpenResource(resourceKey) ?? modPackage.OpenResource(resourceKey);
@@ -518,6 +661,74 @@ namespace TrRebootTools.ModManager.Mod
             stream.Close();
 
             (archives.GetOrDefault(fileKey.Locale) ?? archives[0xFFFFFFFFFFFFFFFF]).AddFile(fileKey, data);
+        }
+
+        /// <summary>
+        /// Selects the best resource usage from multiple options.
+        /// Prefers DLC archives (IDs 4-8) over jcontent (ID 66) to avoid incorrect archive references.
+        /// This is critical for TR2013 after the December 2025 update which added jcontent.
+        ///
+        /// OPTIMIZATION: Uses cached ResourceArchiveId for priority selection to avoid loading collections.
+        /// </summary>
+        private ResourceCollectionItemReference GetBestResourceUsage(IEnumerable<ResourceCollectionItemReference> usages)
+        {
+            ResourceCollectionItemReference bestUsage = null;
+            int bestPriority = int.MaxValue;
+
+            foreach (var usage in usages)
+            {
+                if (usage.CollectionReference == null)
+                    continue;
+
+                // Use the cached archive ID for priority selection (no collection loading needed)
+                int archiveId = usage.ResourceArchiveId;
+                if (archiveId < 0)
+                {
+                    // Fallback for usages without cached archive ID
+                    // Use collection's archive ID as approximation
+                    archiveId = usage.CollectionReference.ArchiveId;
+                }
+
+                int priority = GetArchivePriority(archiveId);
+
+                if (priority < bestPriority)
+                {
+                    bestPriority = priority;
+                    bestUsage = usage;
+
+                    // Early exit if we found DLC (highest priority) - can't do better
+                    if (priority == 0)
+                        break;
+                }
+            }
+
+            return bestUsage;
+        }
+
+        /// <summary>
+        /// Returns a priority value for archive selection (lower = preferred).
+        /// DLC archives (4-8) are preferred over jcontent (66) and other high-ID archives.
+        /// </summary>
+        private static int GetArchivePriority(int archiveId)
+        {
+            // DLC archives (PACK4-8) have highest priority - original DLC content
+            if (archiveId >= 4 && archiveId <= 8)
+                return 0;
+
+            // Core game archives (bigfile=0, title=64, patch=65, patch2=67)
+            if (archiveId == 0 || archiveId == 64 || archiveId == 65 || archiveId == 67)
+                return 1;
+
+            // patch3 (69) - Dec 2025 update
+            if (archiveId == 69)
+                return 2;
+
+            // jcontent (66) - Dec 2025, lowest priority as it may have resources that conflict with DLC
+            if (archiveId == 66)
+                return 3;
+
+            // Everything else (unknown archives, mods, etc.)
+            return 4;
         }
 
         private static bool MightHaveRefDefinitions(ResourceKey resourceKey)
