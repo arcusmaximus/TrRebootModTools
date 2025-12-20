@@ -61,6 +61,7 @@
     <Compile Include="Cdc\ArchiveFileKey.cs" />
     <Compile Include="Cdc\ArchiveFileReference.cs" />
     <Compile Include="Cdc\ArchiveMetaData.cs" />
+    <Compile Include="Cdc\ArchiveIdentity.cs" />
     <Compile Include="Cdc\ArchiveSet.cs" />
     <Compile Include="Cdc\CdcHash.cs" />
     <Compile Include="Cdc\CdcGameInfo.cs" />

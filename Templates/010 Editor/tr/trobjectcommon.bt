@@ -6,8 +6,8 @@
 //   Purpose: Common structures for parsing object metadata
 //------------------------------------------------
 
-#ifndef TR_OBJECT_COMMON
-#define TR_OBJECT_COMMON
+#ifndef TR_OBJECT_COMMON_BT
+#define TR_OBJECT_COMMON_BT
 
 enum TypeNameHash
 {
@@ -224,6 +224,7 @@ typedef struct
     Ref reference;
 } Component <read=EnumToString(type), optimize=false>;
 
+struct ActionGraphPlacement;
 struct CollisionMarker;
 struct GenericCapsuleShape;
 struct MeshRef;
@@ -258,6 +259,9 @@ typedef struct
         SeekToRef(propertiesRef);
         switch (parentof(this).type)
         {
+            case ACTIONGRAPHS:
+                ActionGraphPlacement properties;
+                break;
             case COLLISIONMARKER:
                 CollisionMarker properties;
                 break;
@@ -350,7 +354,7 @@ typedef struct
     Ref skeletonRef;
     int skeletonItemId;
     FSkip(4);
-    Ref poseSpaceDeformersRef;
+    Ref blendShapeDriversRef;
     Ref clothDefinitionRef;
     Ref hairDataRef;
     Ref streamLayerListRef;

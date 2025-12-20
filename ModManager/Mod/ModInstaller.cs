@@ -113,13 +113,13 @@ namespace TrRebootTools.ModManager.Mod
 
         public void UpdateFlatModArchive(ITaskProgress progress, CancellationToken cancellationToken)
         {
-            _archiveSet.GetFlattenedModArchiveDetails(out int flattenedArchiveId, out string flattenedArchiveFileName);
-            if (flattenedArchiveFileName == null)
+            ArchiveIdentity flattenedArchiveIdent = _archiveSet.GetActiveFlattenedModArchiveIdentity();
+            if (flattenedArchiveIdent == null)
                 return;
 
             List<TigerModPackage> modPackages = new();
 
-            Archive origGameArchive = _archiveSet.GetArchive(flattenedArchiveId, 0);
+            Archive origGameArchive = _archiveSet.GetArchive(flattenedArchiveIdent.Id, 0);
             modPackages.Add(new TigerModPackage([origGameArchive], _archiveSet.Game));
 
             foreach (IGrouping<int, Archive> archivesOfId in _archiveSet.Archives
@@ -130,7 +130,7 @@ namespace TrRebootTools.ModManager.Mod
                 modPackages.Add(new TigerModPackage(archivesOfId, _archiveSet.Game));
             }
 
-            using var modPackage = new MultiTigerModPackage(flattenedArchiveFileName.Replace(".000.tiger", ""), modPackages);
+            using var modPackage = new MultiTigerModPackage(flattenedArchiveIdent.FileName.Replace(".000.tiger", ""), modPackages);
             Install(modPackage, null, true, progress, cancellationToken);
         }
 
@@ -182,12 +182,17 @@ namespace TrRebootTools.ModManager.Mod
                 ResourceUsageCache resourceUsageCache = !flattened ? GetFullResourceUsageCache() : _gameResourceUsageCache;
                 archiveSet = !flattened ? _archiveSet : ArchiveSet.Open(_archiveSet.FolderPath, true, false, _archiveSet.Game);
 
-                List<ResourceKey> modResourceKeys = modPackage.Resources.ToList();
+                ResourceKeyLookup modResourceKeys = new(modPackage.Resources);
                 if (modVariation != null)
                     AddModVariationResources(modResourceKeys, modVariation.Resources);
 
                 Dictionary<ResourceKey, List<ResourceCollectionItemReference>> modResourceUsages =
-                    modResourceKeys.ToDictionary(r => r, r => resourceUsageCache.GetResourceUsages(archiveSet, r).ToList());
+                    modResourceKeys.ToDictionary(
+                        r => r,
+                        r => (r.Locale == 0xFFFFFFFFFFFFFFFF ? resourceUsageCache.GetResourceUsages(archiveSet, r.Type, r.Id)
+                                                             : resourceUsageCache.GetResourceUsages(archiveSet, r)
+                             ).ToList()
+                );
                 modResourceUsages.RemoveAll(p => p.Value.Count == 0);
 
                 Dictionary<ArchiveFileKey, ResourceCollection> modResourceCollections = modResourceUsages.Values
@@ -257,7 +262,7 @@ namespace TrRebootTools.ModManager.Mod
             return fullResourceUsageCache;
         }
 
-        private void AddModVariationResources(List<ResourceKey> modResourceKeys, IEnumerable<ResourceKey> variationResourceKeys)
+        private void AddModVariationResources(ResourceKeyLookup modResourceKeys, IEnumerable<ResourceKey> variationResourceKeys)
         {
             foreach (ResourceKey resourceKey in variationResourceKeys)
             {
@@ -273,7 +278,7 @@ namespace TrRebootTools.ModManager.Mod
         private Dictionary<ArchiveFileKey, HashSet<ResourceKey>> GetResourceRefsToAdd(
             ModPackage modPackage,
             ModVariation modVariation,
-            List<ResourceKey> modResourceKeys,
+            ResourceKeyLookup modResourceKeys,
             ResourceUsageCache fullResourceUsageCache)
         {
             Dictionary<ArchiveFileKey, HashSet<ResourceKey>> resourceRefsToAdd = new();
@@ -286,7 +291,7 @@ namespace TrRebootTools.ModManager.Mod
 
                 foreach (ResourceCollectionItemReference modResourceUsage in fullResourceUsageCache.GetResourceUsages(_archiveSet, modResourceKey))
                 {
-                    resourceRefsToAdd.GetOrAdd(modResourceUsage.CollectionReference, () => new()).UnionWith(externalResourceKeys);
+                    resourceRefsToAdd.GetOrAdd(modResourceUsage.CollectionReference, () => []).UnionWith(externalResourceKeys);
                 }
             }
             return resourceRefsToAdd;
@@ -295,7 +300,7 @@ namespace TrRebootTools.ModManager.Mod
         private void CollectExternalResourceKeys(
             ModPackage modPackage,
             ModVariation modVariation,
-            List<ResourceKey> modResourceKeys,
+            ResourceKeyLookup modResourceKeys,
             ResourceKey resourceKey,
             HashSet<ResourceKey> allExternalResourceKeys,
             ResourceUsageCache fullResourceUsageCache)
@@ -329,7 +334,9 @@ namespace TrRebootTools.ModManager.Mod
 
                 externalResourceKeys = ResourceRefDefinitions.Create(resourceRef, resourceStream, _archiveSet.Game)
                                                              .ExternalRefs
-                                                             .Select(r => GetResourceKeyWithAddedSubType(r.ResourceKey, modResourceKeys)).ToList();
+                                                             .SelectMany(r => GetLocaleSpecificResourceKeys(r.ResourceKey, modResourceKeys, fullResourceUsageCache))
+                                                             .Select(r => GetResourceKeyWithAddedSubType(r, modResourceKeys))
+                                                             .ToList();
             }
             finally
             {
@@ -346,22 +353,45 @@ namespace TrRebootTools.ModManager.Mod
             }
         }
 
-        private static ResourceKey GetResourceKeyWithAddedSubType(ResourceKey resourceKey, List<ResourceKey> modResourceKeys)
+        private static IEnumerable<ResourceKey> GetLocaleSpecificResourceKeys(ResourceKey resourceKey, ResourceKeyLookup modResourceKeys, ResourceUsageCache resourceUsageCache)
+        {
+            if (resourceKey.Locale != 0xFFFFFFFFFFFFFFFF)
+            {
+                yield return resourceKey;
+                yield break;
+            }
+
+            IReadOnlyCollection<ulong> cacheLocales = resourceUsageCache.GetResourceLocales(resourceKey.Type, resourceKey.Id) ?? [];
+            IReadOnlyCollection<ulong> modLocales = modResourceKeys.GetLocales(resourceKey.Type, resourceKey.Id) ?? [];
+            if (cacheLocales.Count == 0 && modLocales.Count == 0)
+            {
+                yield return resourceKey;
+                yield break;
+            }
+
+            foreach (ulong locale in cacheLocales.Union(modLocales))
+            {
+                yield return new ResourceKey(resourceKey.Type, resourceKey.SubType, resourceKey.Id, locale);
+            }
+        }
+
+        private static ResourceKey GetResourceKeyWithAddedSubType(ResourceKey resourceKey, ResourceKeyLookup modResourceKeys)
         {
             switch (resourceKey.Type)
             {
                 case ResourceType.Texture:
-                    return new ResourceKey(ResourceType.Texture, ResourceSubType.Texture, resourceKey.Id);
+                    return new ResourceKey(ResourceType.Texture, ResourceSubType.Texture, resourceKey.Id, resourceKey.Locale);
 
                 case ResourceType.Model:
                 {
-                    int index = modResourceKeys.IndexOf(resourceKey);
-                    return index >= 0 ? modResourceKeys[index] : resourceKey;
-                }
+                    ResourceSubType? subType = modResourceKeys.GetSubType(resourceKey.Type, resourceKey.Id);
+                    if (subType != null)
+                        return new ResourceKey(resourceKey.Type, subType.Value, resourceKey.Id, resourceKey.Locale);
 
-                default:
-                    return resourceKey;
+                    break;
+                }
             }
+            return resourceKey;
         }
 
         private void AddResourceReferencesToCollections(
@@ -377,7 +407,7 @@ namespace TrRebootTools.ModManager.Mod
 
                 foreach (ResourceKey resourceKey in resourcesForCollection)
                 {
-                    if (modCollection.ResourceReferences.Any(r => r.Type == resourceKey.Type && r.Id == resourceKey.Id))
+                    if (modCollection.Contains(resourceKey))
                         continue;
 
                     int modCollectionResourceIdx = -1;
@@ -388,7 +418,7 @@ namespace TrRebootTools.ModManager.Mod
                         if (sourceCollection != null)
                             modCollectionResourceIdx = modCollection.AddResourceReference(sourceCollection, existingUsage.ResourceIndex);
                     }
-                    modResourceCollectionItems.GetOrAdd(resourceKey, () => new()).Add(new ResourceCollectionItem(modCollection, modCollectionResourceIdx));
+                    modResourceCollectionItems.GetOrAdd(resourceKey, () => []).Add(new ResourceCollectionItem(modCollection, modCollectionResourceIdx));
                 }
             }
         }
@@ -430,7 +460,7 @@ namespace TrRebootTools.ModManager.Mod
                             modResourceKey.Type,
                             modResourceKey.SubType,
                             modResourceKey.Id,
-                            0xFFFFFFFFFFFFFFFF,
+                            modResourceKey.Locale,
                             newResource.ArchiveId,
                             newResource.ArchiveSubId,
                             newResource.ArchivePart,

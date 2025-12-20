@@ -82,6 +82,7 @@
     <Compile Include="TaskProgressForm.Designer.cs">
       <DependentUpon>TaskProgressForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Util\ResourceKeyLookup.cs" />
     <Compile Include="Util\ZipTempExtractor.cs" />
     <Compile Include="VariationSelectionForm.cs">
       <SubType>Form</SubType>

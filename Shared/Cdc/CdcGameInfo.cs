@@ -55,7 +55,7 @@ namespace TrRebootTools.Shared.Cdc
             return lang?.Name;
         }
 
-        public ulong LanguageCodeToLocale(string languageCode)
+        public ulong? LanguageCodeToLocale(string languageCode)
         {
             if (languageCode.Length == 16 && ulong.TryParse(languageCode, NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture, out ulong locale))
                 return locale;
@@ -64,7 +64,7 @@ namespace TrRebootTools.Shared.Cdc
             if (lang != null)
                 return lang.Locale;
 
-            return 0xFFFFFFFFFFFFFFFF;
+            return null;
         }
 
         public record Language(ulong Locale, string Code, string Name);

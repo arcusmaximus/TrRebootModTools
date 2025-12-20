@@ -1,0 +1,228 @@
+#define TR_VERSION 10
+#include "../trcommon.bt"
+
+typedef struct
+{
+    int type : 3;
+    uint screenTime : 5;
+    uint minDist : 11;
+    uint minHeight : 11;
+    int _Bitfieldpadding0 : 2;
+    byte distanceIs2D : 1;
+    byte checkDistance : 1;
+    byte checkHeight : 1;
+    byte checkVisibility : 1;
+    byte onScreen : 1;
+    byte _Bitfieldpadding4 : 3;
+} InstanceProcessLOD <optimize=false>;
+
+typedef struct
+{
+    Ref lodsRef;
+    unsigned int lodsCount;
+    if (CanSeekTo(lodsRef))
+    {
+        SeekToRef(lodsRef);
+        InstanceProcessLOD lods[lodsCount];
+        ReturnFromRef();
+    }
+} InstanceProcessSpec <optimize=false>;
+
+typedef struct
+{
+    uint platform : 1;
+    uint dontDeactivate : 1;
+    uint dontPauseInPause : 1;
+    uint waitForCommand : 1;
+    uint noDump : 1;
+    uint hasLod : 1;
+    uint dontStartFx : 1;
+    uint noSave : 1;
+    uint noDeaddead : 1;
+    uint lookatme : 1;
+    uint stayInPlayerUnit : 1;
+    uint canMoveToNewUnits : 1;
+    uint incrementalRemove : 1;
+    uint boundsphereOnTNode : 1;
+    uint alwaysUseBoundingSphere : 1;
+    uint useAnimatedBoundingBox : 1;
+    uint closeCameraFadeable : 1;
+    uint playerObject : 1;
+    uint enemyObject : 1;
+    uint vehicleObject : 1;
+    uint aimTransparent : 1;
+    uint skydome : 1;
+    uint modelviewOnly : 1;
+    uint megaObject : 1;
+    uint applyWetLight : 1;
+    uint doNotCreateAsStaticmesh : 1;
+    uint drawInSHCaptures : 1;
+    uint noSaveUnlessMoved : 1;
+    uint purgeableSave : 1;
+    uint npcObject : 1;
+    uint useBoneUsageMap : 1;
+    uint activateReticle : 1;
+    uint duplicated : 1;
+    uint npcAimTransparent : 1;
+    uint increasedLoadPriority : 1;
+    uint platformAffectsJump : 1;
+    uint scaleLODDistancesWhenFOVChanges : 1;
+    uint noEdgeGrab : 1;
+    uint pushpullDisableAutoDetach : 1;
+    uint isRollyBall : 1;
+    uint breaksGrappleRope : 1;
+    uint laraUpdatesJumpVelWhenJumpingFrom : 1;
+    uint laraCanTrapeze : 1;
+    uint isCombatObject : 1;
+    int _Bitfieldpadding32 : 20;
+} ObjectFlags <optimize=false>;
+
+typedef struct
+{
+    float min;
+    float max;
+} DefaultDATCurveWithLimits__YAxisValue <optimize=false>;
+
+typedef struct
+{
+    float min;
+    float max;
+} DefaultDATCurveWithLimits__XAxisValue <optimize=false>;
+
+typedef struct
+{
+    float x;
+    float y;
+} DATCurvePoint <optimize=false>;
+
+typedef struct
+{
+    DefaultDATCurveWithLimits__YAxisValue xAxis;
+    DefaultDATCurveWithLimits__XAxisValue yAxis;
+    unsigned int numPoints;
+    FSkip(4);
+    Ref pointsRef;
+    if (CanSeekTo(pointsRef))
+    {
+        SeekToRef(pointsRef);
+        DATCurvePoint points[numPoints];
+        ReturnFromRef();
+    }
+} DefaultDATCurveWithLimits <optimize=false>;
+
+typedef struct
+{
+    float duration;
+    FSkip(4);
+    Ref curveRef;
+    if (CanSeekTo(curveRef))
+    {
+        SeekToRef(curveRef);
+        DefaultDATCurveWithLimits curve;
+        ReturnFromRef();
+    }
+} UpdateIntervalModification <optimize=false>;
+
+typedef struct
+{
+    byte bSyncPos;
+    byte bSyncPosX;
+    byte bSyncPosY;
+    byte bSyncPosZ;
+    byte bAllowLocalPos;
+    byte bSyncRot;
+    byte bSyncRotX;
+    byte bSyncRotY;
+    byte bSyncRotZ;
+    byte bAllowLocalRot;
+    byte bSyncAnim;
+    FSkip(1);
+    float fSyncAnimTime;
+    float fSyncAnimCorrectionFactor;
+    byte bAutoDetectContinuityBreaks;
+    byte bDetectRotationSuddenStart;
+    byte bDetectRotationSuddenStop;
+    byte bDetectRotationTeleport;
+    float fRotationTeleportAngle;
+    byte bUsePosExtrapolationOverwrites;
+    FSkip(3);
+    float fPosErrorTolerance;
+    float fPosMinUpdateInterval;
+    float fPosMaxUpdateInterval;
+    FSkip(4);
+    Ref posUpdateIntervalModificationRef;
+    if (CanSeekTo(posUpdateIntervalModificationRef))
+    {
+        SeekToRef(posUpdateIntervalModificationRef);
+        UpdateIntervalModification posUpdateIntervalModification;
+        ReturnFromRef();
+    }
+    byte bUseRotExtrapolationOverwrites;
+    FSkip(3);
+    float fRotMinErrorTolerance;
+    float fRotMaxErrorTolerance;
+    float fRotMinUpdateInterval;
+    float fRotMaxUpdateInterval;
+    FSkip(4);
+    Ref rotUpdateIntervalModificationRef;
+    if (CanSeekTo(rotUpdateIntervalModificationRef))
+    {
+        SeekToRef(rotUpdateIntervalModificationRef);
+        UpdateIntervalModification rotUpdateIntervalModification;
+        ReturnFromRef();
+    }
+    byte bSyncPlatformAttach;
+} NetSectionData <optimize=false>;
+
+typedef struct
+{
+    int type;
+    FSkip(4);
+    NetSectionData sync;
+} NetObjectData <optimize=false>;
+
+typedef struct
+{
+    float min;
+    float minOpaque;
+    float maxOpaque;
+    float max;
+} LODLevel <optimize=false>;
+
+typedef struct
+{
+    Vector4 relativePivot;
+    LODLevel levels[5];
+    ubyte enabledLevels;
+    ubyte flags;
+} LODLevels <optimize=false>;
+
+typedef struct
+{
+    byte stream;
+    FSkip(3);
+    int instanceType;
+    float triggerZOffset;
+    int vvRemoveDist;
+    int removeDist;
+    FSkip(4);
+    InstanceProcessSpec activationSpec;
+    FSkip(4);
+    float skinThickness;
+    float maxRad;
+    byte introduceRadially;
+    byte useLODDistanceForRadialIntro;
+    FSkip(2);
+    float introductionDistance;
+    float introductionRemoveSlack;
+    float introductionFadeRange;
+    int introductionType;
+    ObjectFlags objectFlags;
+    FSkip(4);
+    NetObjectData netData;
+    FSkip(0xF);
+    LODLevels lodLevels;
+} Object <optimize=false>;
+
+RefDefinitions refDefinitions;
+Object root <open=true>;

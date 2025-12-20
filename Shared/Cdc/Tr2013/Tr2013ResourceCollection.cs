@@ -91,10 +91,10 @@ namespace TrRebootTools.Shared.Cdc.Tr2013
                 case ResourceType.ShaderLib:
                 case ResourceType.Dtp:
                 case ResourceType.Script:
-                    return new ResourceKey(resourceKey.Type, resourceKey.SubType, resourceKey.Id + (add ? 1 : -1) * 400000);
+                    return new ResourceKey(resourceKey.Type, resourceKey.SubType, resourceKey.Id + (add ? 1 : -1) * 400000, resourceKey.Locale);
 
                 case ResourceType.GlobalContentReference:
-                    return new ResourceKey(resourceKey.Type, resourceKey.SubType, resourceKey.Id + (add ? 1 : -1) * 40000);
+                    return new ResourceKey(resourceKey.Type, resourceKey.SubType, resourceKey.Id + (add ? 1 : -1) * 40000, resourceKey.Locale);
 
                 default:
                     return resourceKey;

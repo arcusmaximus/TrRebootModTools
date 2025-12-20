@@ -41,6 +41,7 @@ class ObjectClothProperties(BlenderPropertyGroup):
     mass_scale: Annotated[float, Prop("Mass Scale", min = 0, default = 20)]
     time_delta_scale: Annotated[float, Prop("Time Delta Scale", min = 0, default = 1)]
     blend_to_bind_time: Annotated[float, Prop("Blend to Bind Time", min = 0, default = 8)]
+    collision_enabled: Annotated[bool, Prop("Collision Enabled", default = True)]
     is_hair_collider: Annotated[bool, Prop("Hair Collider")]
 
 class ObjectCollisionShapeProperties(BlenderPropertyGroup):

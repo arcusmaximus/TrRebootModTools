@@ -19,7 +19,7 @@ namespace TrRebootTools.Shared.Cdc
         private readonly object _lock = new();
         private readonly Dictionary<(int, int), Archive> _archives = new();
         private readonly List<Archive> _duplicateArchives = new List<Archive>();
-        private readonly Dictionary<ArchiveFileKey, ArchiveFileReference> _files = new Dictionary<ArchiveFileKey, ArchiveFileReference>();
+        private readonly Dictionary<ArchiveFileKey, ArchiveFileReference> _files = new();
 
         public static ArchiveSet Open(string folderPath, bool includeGame, bool includeMods, CdcGame game)
         {
@@ -35,14 +35,7 @@ namespace TrRebootTools.Shared.Cdc
         {
             FolderPath = folderPath;
 
-            GetFlattenedModArchiveDetails(out int flattenedModArchiveId, out string flattenedModArchiveFileName);
-            if (flattenedModArchiveFileName != null)
-            {
-                string flattenedModArchiveFilePath = Path.Combine(FolderPath, flattenedModArchiveFileName);
-                string origGameArchiveFilePath = Path.Combine(FolderPath, OriginalGameArchivePrefix + flattenedModArchiveFileName);
-                if (File.Exists(flattenedModArchiveFilePath) && !File.Exists(origGameArchiveFilePath))
-                    File.Copy(flattenedModArchiveFilePath, origGameArchiveFilePath);
-            }
+            EnsureFlattenedModArchiveBackup();
 
             Dictionary<int, ArchiveMetaData> metaDatas = new();
             foreach (string nfoFilePath in Directory.EnumerateFiles(folderPath))
@@ -54,12 +47,9 @@ namespace TrRebootTools.Shared.Cdc
                 metaDatas[metaData.DlcIndex] = metaData;
             }
 
-            foreach (string archiveFilePath in Directory.EnumerateFiles(folderPath, "*.000.tiger"))
+            foreach (string archiveFilePath in Directory.EnumerateFiles(folderPath, "*.000.tiger", SearchOption.AllDirectories))
             {
-                if (Path.GetFileName(archiveFilePath).StartsWith(ModArchivePrefix) ? !includeMods : !includeGame)
-                    continue;
-
-                if (flattenedModArchiveFileName != null && Path.GetFileName(archiveFilePath) == flattenedModArchiveFileName)
+                if (!ShouldLoad(archiveFilePath, includeGame, includeMods))
                     continue;
 
                 using Stream stream = File.OpenRead(archiveFilePath);
@@ -99,6 +89,36 @@ namespace TrRebootTools.Shared.Cdc
 
         public IReadOnlyCollection<ArchiveFileReference> Files => _files.Values;
 
+        private void EnsureFlattenedModArchiveBackup()
+        {
+            string archiveFileName = GetActiveFlattenedModArchiveIdentity()?.FileName;
+            if (archiveFileName == null)
+                return;
+
+            string archiveFilePath = Path.Combine(FolderPath, archiveFileName);
+            string backupFilePath = Path.Combine(FolderPath, OriginalGameArchivePrefix + archiveFileName);
+            if (File.Exists(archiveFilePath) && !File.Exists(backupFilePath))
+                File.Copy(archiveFilePath, backupFilePath);
+        }
+
+        private bool ShouldLoad(string archiveFilePath, bool includeGame, bool includeMods)
+        {
+            string archiveFileName = Path.GetFileName(archiveFilePath);
+            if (archiveFileName.StartsWith(ModArchivePrefix) ? !includeMods : !includeGame)
+                return false;
+
+            if (archiveFileName.StartsWith(OriginalGameArchivePrefix) &&
+                archiveFileName.Substring(OriginalGameArchivePrefix.Length) != GetActiveFlattenedModArchiveIdentity()?.FileName)
+            {
+                return false;
+            }
+
+            if (GetAllFlattenedModArchiveIdentities().Any(i => i.FileName == archiveFileName))
+                return false;
+
+            return true;
+        }
+
         private void Load(string archiveFilePath, ArchiveMetaData metaData)
         {
             Archive archive = Archive.Open(archiveFilePath, metaData, Game);
@@ -111,8 +131,8 @@ namespace TrRebootTools.Shared.Cdc
 
         public Archive CreateFlattenedModArchive(int maxFiles)
         {
-            GetFlattenedModArchiveDetails(out int archiveId, out string archiveFileName);
-            return Archive.Create(Path.Combine(FolderPath, archiveFileName), archiveId, 0, null, maxFiles, Game);
+            ArchiveIdentity ident = GetActiveFlattenedModArchiveIdentity();
+            return Archive.Create(Path.Combine(FolderPath, ident.FileName), ident.Id, 0, null, maxFiles, Game);
         }
 
         public Dictionary<ulong, Archive> CreateModArchives(string modName, Dictionary<ulong, int> maxFilesByLocale)
@@ -162,10 +182,14 @@ namespace TrRebootTools.Shared.Cdc
             }
         }
 
-        public virtual void GetFlattenedModArchiveDetails(out int archiveId, out string archiveFileName)
+        public virtual ICollection<ArchiveIdentity> GetAllFlattenedModArchiveIdentities()
         {
-            archiveId = 0;
-            archiveFileName = null;
+            return [];
+        }
+
+        public virtual ArchiveIdentity GetActiveFlattenedModArchiveIdentity()
+        {
+            return null;
         }
 
         protected abstract string MakeLocaleSuffix(ulong locale);

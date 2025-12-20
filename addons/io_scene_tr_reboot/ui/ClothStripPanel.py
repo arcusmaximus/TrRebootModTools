@@ -65,5 +65,7 @@ class ClothStripPanel(bpy.types.Panel):
             if cloth_class.supports.strip_blend_to_bind_time:
                 advanced_content.prop(props, "blend_to_bind_time")
 
+            advanced_content.prop(props, "collision_enabled")
+
             if cloth_class.supports.hair_collision:
                 advanced_content.prop(props, "is_hair_collider")

@@ -7,13 +7,15 @@
             Type = type;
             SubType = 0;
             Id = id;
+            Locale = 0xFFFFFFFFFFFFFFFF;
         }
 
-        public ResourceKey(ResourceType type, ResourceSubType subType, int id)
+        public ResourceKey(ResourceType type, ResourceSubType subType, int id, ulong locale)
         {
             Type = type;
             SubType = subType;
             Id = id;
+            Locale = locale;
         }
 
         public ResourceType Type
@@ -31,9 +33,14 @@
             get;
         }
 
+        public ulong Locale
+        {
+            get;
+        }
+
         public override readonly bool Equals(object obj)
         {
-            return obj is ResourceKey other && other.Type == Type && other.Id == Id;
+            return obj is ResourceKey other && other.Type == Type && other.Id == Id && other.Locale == Locale;
         }
 
         public override readonly int GetHashCode()
@@ -43,7 +50,11 @@
 
         public override string ToString()
         {
-            return $"{Type}:{Id}";
+            string result = $"{Type}:{Id}";
+            if (Locale != 0xFFFFFFFFFFFFFFFF)
+                result += $":{Locale:X016}";
+
+            return result;
         }
     }
 }

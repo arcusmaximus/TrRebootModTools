@@ -1,6 +1,4 @@
-﻿using TrRebootTools.Shared.Cdc;
-
-namespace TrRebootTools.Shared.Cdc.Rise
+﻿namespace TrRebootTools.Shared.Cdc.Rise
 {
     internal class RiseHash : CdcHash
     {

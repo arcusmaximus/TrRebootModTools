@@ -138,8 +138,7 @@ namespace TrRebootTools.ModManager
                 throw new Exception("Invalid command line");
             }
 
-            archiveSet.GetFlattenedModArchiveDetails(out _, out string flattenedArchiveFileName);
-            if (flattenedArchiveFileName != null)
+            if (archiveSet.GetActiveFlattenedModArchiveIdentity() != null)
             {
                 ModInstaller installer = new ModInstaller(archiveSet, resourceUsageCache);
                 RunTaskWithProgress(installer.UpdateFlatModArchive);

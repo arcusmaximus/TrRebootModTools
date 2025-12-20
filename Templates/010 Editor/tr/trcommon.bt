@@ -34,6 +34,11 @@ typedef struct
     Vector4 a, b, c, d;
 } Matrix;
 
+typedef struct
+{
+    local string value;
+} String;
+
 enum <byte> RefType
 {
     REFTYPE_NONE,
@@ -46,7 +51,7 @@ enum ResourceType
 {
     RESOURCETYPE_NONE             = 0,
     RESOURCETYPE_ANIMATION        = 2,
-    RESOURCETYPE_PSDRES           = 4,
+    RESOURCETYPE_BLENDSHAPEDRIVER = 4,
     RESOURCETYPE_TEXTURE          = 5,
     RESOURCETYPE_SOUND            = 6,
     RESOURCETYPE_DTP              = 7,
@@ -55,19 +60,14 @@ enum ResourceType
     RESOURCETYPE_MATERIAL         = 10,
     RESOURCETYPE_GLOBALCONTENTREF = 11,
     RESOURCETYPE_MODEL            = 12,
-    RESOURCETYPE_COLLISIONMESH    = 13,
+    RESOURCETYPE_COLLISIONMODEL   = 13,
     RESOURCETYPE_OBJECTREF        = 14,
     RESOURCETYPE_ANIMLIB          = 15
 };
 
-typedef struct
-{
-    string value;
-} String <optimize=false>;
-
 local String gResourceTypeExtensions[16];
 gResourceTypeExtensions[RESOURCETYPE_ANIMATION].value         = Str(".tr%danim",        TR_VERSION);
-gResourceTypeExtensions[RESOURCETYPE_PSDRES].value            = Str(".tr%dpsdres",      TR_VERSION);
+gResourceTypeExtensions[RESOURCETYPE_BLENDSHAPEDRIVER].value  = Str(".tr%ddrivers",     TR_VERSION);
 gResourceTypeExtensions[RESOURCETYPE_TEXTURE].value           = ".dds";
 gResourceTypeExtensions[RESOURCETYPE_SOUND].value             = Str(".tr%dsound",       TR_VERSION);
 gResourceTypeExtensions[RESOURCETYPE_DTP].value               = Str(".tr%ddtp",         TR_VERSION);
@@ -76,7 +76,7 @@ gResourceTypeExtensions[RESOURCETYPE_SHADERLIB].value         = Str(".tr%dshader
 gResourceTypeExtensions[RESOURCETYPE_MATERIAL].value          = Str(".tr%dmaterial",    TR_VERSION);
 gResourceTypeExtensions[RESOURCETYPE_GLOBALCONTENTREF].value  = Str(".tr%dcontentref",  TR_VERSION);
 gResourceTypeExtensions[RESOURCETYPE_MODEL].value             = Str(".tr%dmodel(data)", TR_VERSION);
-gResourceTypeExtensions[RESOURCETYPE_COLLISIONMESH].value     = Str(".tr%dcmesh",       TR_VERSION);
+gResourceTypeExtensions[RESOURCETYPE_COLLISIONMODEL].value    = Str(".tr%dcmodel",      TR_VERSION);
 gResourceTypeExtensions[RESOURCETYPE_OBJECTREF].value         = Str(".tr%dobjectref",   TR_VERSION);
 gResourceTypeExtensions[RESOURCETYPE_ANIMLIB].value           = Str(".tr%danimlib",     TR_VERSION);
 
@@ -190,7 +190,7 @@ typedef struct
     
     local int i, refPos;
     
-    for (i = 0; i < refDefinitions.numInternalRefs; i++)
+    for (i = 0; i < numInternalRefs; i++)
     {
         refPos = gResourceBodyPos + internalRefs[i].refOffset;
         gRefTypeByFilePos[refPos / 4] = REFTYPE_INTERNAL;
@@ -201,7 +201,7 @@ typedef struct
         #endif
     }
     
-    for (i = 0; i < refDefinitions.numWideExternalRefs; i++)
+    for (i = 0; i < numWideExternalRefs; i++)
     {
         refPos = gResourceBodyPos + wideExternalRefs[i].refOffset * 4;
         gRefTypeByFilePos[refPos / 4] = REFTYPE_WIDE_EXTERNAL;
@@ -212,7 +212,7 @@ typedef struct
         #endif
     }
     
-    for (i = 0; i < refDefinitions.numPackedExternalRefs; i++)
+    for (i = 0; i < numPackedExternalRefs; i++)
     {
         refPos = gResourceBodyPos + packedExternalRefs[i].refOffset * 4;
         gRefTypeByFilePos[refPos / 4] = REFTYPE_PACKED_EXTERNAL;
@@ -226,7 +226,7 @@ typedef struct
     FSeek(gResourceBodyPos);
 } RefDefinitions <style=sHeading1>;
 
-local int gFilePosStack[10];
+local int gFilePosStack[50];
 local int gFilePosStackIdx = 0;
 
 void FAlign(int alignment)

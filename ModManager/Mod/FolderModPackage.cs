@@ -9,6 +9,7 @@ using TrRebootTools.Shared.Cdc;
 using TrRebootTools.Shared.Util;
 using System.Text.RegularExpressions;
 using TrRebootTools.Shared;
+using System.Globalization;
 
 namespace TrRebootTools.ModManager.Mod
 {
@@ -115,8 +116,8 @@ namespace TrRebootTools.ModManager.Mod
                     continue;
 
                 string filePathToHash = filePath.Substring(baseFolderPath.Length);
-                ulong locale = CdcGameInfo.Get(game).LanguageCodeToLocale(Path.GetFileNameWithoutExtension(filePathToHash));
-                if (locale != 0xFFFFFFFFFFFFFFFF)
+                ulong? locale = CdcGameInfo.Get(game).LanguageCodeToLocale(Path.GetFileNameWithoutExtension(filePathToHash));
+                if (locale != null)
                     filePathToHash = Path.GetDirectoryName(filePathToHash);
 
                 if (Path.GetExtension(filePathToHash) == ".ips32")
@@ -124,7 +125,7 @@ namespace TrRebootTools.ModManager.Mod
 
                 ulong nameHash = CdcHash.Calculate(filePathToHash, game);
                 locale = gameFileLocales.GetOrDefault(nameHash) ?? locale;
-                files[new ArchiveFileKey(nameHash, locale)] = filePath;
+                files[new ArchiveFileKey(nameHash, locale ?? 0xFFFFFFFFFFFFFFFF)] = filePath;
             }
         }
 
@@ -132,7 +133,7 @@ namespace TrRebootTools.ModManager.Mod
         {
             return ResourceNaming.TryGetResourceKey(filePath, out resourceKey, game) || 
                    TryGetResourceKeyByOriginalFilePath(filePath, out resourceKey, usageCache, game) ||
-                   TryGetResourceKeyFromIndex(baseFolderPath, filePath, out resourceKey, game);
+                   TryGetResourceKeyFromRefIndex(baseFolderPath, filePath, out resourceKey, game);
         }
 
         private static bool TryGetResourceKeyByOriginalFilePath(string filePath, out ResourceKey resourceKey, ResourceUsageCache usageCache, CdcGame game)
@@ -152,10 +153,21 @@ namespace TrRebootTools.ModManager.Mod
                 return false;
             }
 
-            return usageCache.TryGetResourceKeyByOriginalFilePath(origFilePath, out resourceKey);
+            if (!usageCache.TryGetResourceKeyByOriginalFilePath(origFilePath, out resourceKey))
+                return false;
+
+            ulong locale = resourceKey.Locale;
+            if (Path.GetExtension(filePath) == Path.GetExtension(Path.GetDirectoryName(filePath)))
+            {
+                ulong? newLocale = CdcGameInfo.Get(game).LanguageCodeToLocale(Path.GetFileNameWithoutExtension(filePath));
+                if (newLocale != null)
+                    locale = newLocale.Value;
+            }
+            resourceKey = new(resourceKey.Type, resourceKey.SubType, resourceKey.Id, locale);
+            return true;
         }
 
-        private static bool TryGetResourceKeyFromIndex(string baseFolderPath, string resourceFilePath, out ResourceKey resourceKey, CdcGame game)
+        private static bool TryGetResourceKeyFromRefIndex(string baseFolderPath, string resourceFilePath, out ResourceKey resourceKey, CdcGame game)
         {
             Match match = Regex.Match(Path.GetFileNameWithoutExtension(resourceFilePath), @"^(?:Section|Replace)\s+(\d+)$");
             if (!match.Success)

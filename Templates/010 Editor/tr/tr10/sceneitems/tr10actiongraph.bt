@@ -1,8 +1,60 @@
+#ifndef TR10_ACTION_GRAPH_BT
+#define TR10_ACTION_GRAPH_BT
+
+#ifndef TR_VERSION
+    #define TR_VERSION 10
+    #define TR_OBJECT_NO_INSTANTIATE
+    #include "../../trcommon.bt"
+    #include "../../trobjectcommon.bt"
+    #include "tr10actiongraph-nodetypes.bt"
+#else
+    #define TR_ACTION_GRAPH_NO_INSTANTIATE
+#endif
+
+struct PlacementPath;
+
 typedef struct
 {
-    short nodeType;
+    int subGraphDtpId;
+} AGSubGraphNode;
+
+typedef struct
+{
+    PlacementPath placement;
+    uquad placementId;
+    int defaultInstanceType;
+    int vocalsIdOverride;
+    int barkId;
+    int useVocalsIdOverride;
+    uint datFile;
+    int networkTransmissionType;
+} AGSoundVocalNode;
+
+void ReadNodeArgs(NodeType type)
+{
+    switch (type)
+    {
+        case NT_AGSubGraphNode:
+            AGSubGraphNode args;
+            break;
+        
+        case NT_AGSoundVocalNode:
+            AGSoundVocalNode args;
+            break;
+    }
+}
+
+typedef struct
+{
+    NodeType type;
     FSkip(6);
-    Ref propertiesRef;
+    Ref argsRef;
+    if (CanSeekTo(argsRef))
+    {
+        SeekToRef(argsRef);
+        ReadNodeArgs(type);
+        ReturnFromRef();
+    }
     byte enabled;
     FSkip(7);
     Ref debugNameRef;
@@ -12,7 +64,7 @@ typedef struct
         string debugName;
         ReturnFromRef();
     }
-} Node <optimize=false>;
+} Node <optimize=false, read=EnumToString(type)>;
 
 typedef struct
 {
@@ -26,11 +78,11 @@ typedef struct
 {
     unsigned int numNodes;
     unsigned int numEdges;
-    Ref nodeListRef;
-    if (CanSeekTo(nodeListRef))
+    Ref nodesRef;
+    if (CanSeekTo(nodesRef))
     {
-        SeekToRef(nodeListRef);
-        Node nodeList[numNodes];
+        SeekToRef(nodesRef);
+        Node nodes[numNodes];
         ReturnFromRef();
     }
     Ref edgeListRef;
@@ -40,4 +92,43 @@ typedef struct
         Edge edges[numEdges];
         ReturnFromRef();
     }
+    int numInputs;
+    int numOutputs;
+    Ref inputsRef;
+    Ref outputsRef;
+    int numIntroInputs;
+    FSkip(4);
+    Ref introInputsRef;
+    int numIntroOutputs;
+    FSkip(4);
+    Ref introOutputsRef;
 } ActionGraph <optimize=false>;
+
+typedef struct
+{
+    int uniqueId;
+    FSkip(4);
+    Ref debugNameRef;
+    if (CanSeekTo(debugNameRef))
+    {
+        SeekToRef(debugNameRef);
+        string debugName;
+        ReturnFromRef();
+    }
+    byte type;
+    FSkip(7);
+    Ref actionGraphRef;
+    if (CanSeekTo(actionGraphRef))
+    {
+        SeekToRef(actionGraphRef);
+        ActionGraph actionGraph;
+        ReturnFromRef();
+    }
+} ActionGraphPlacement <optimize=false>;
+
+#ifndef TR_ACTION_GRAPH_NO_INSTANTIATE
+    RefDefinitions refDefinitions;
+    ActionGraph graph <open=true>;
+#endif
+
+#endif

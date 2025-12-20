@@ -8,6 +8,7 @@ from mathutils import Vector
 from io_scene_tr_reboot.BlenderHelper import BlenderHelper
 from io_scene_tr_reboot.BlenderNaming import BlenderBoneIdSet, BlenderModelIdSet, BlenderNaming
 from io_scene_tr_reboot.operator.OperatorContext import OperatorContext
+from io_scene_tr_reboot.properties.MaterialProperties import MaterialProperties
 from io_scene_tr_reboot.properties.ObjectProperties import ObjectProperties, ObjectSkeletonProperties
 from io_scene_tr_reboot.tr.BlendShape import BlendShape
 from io_scene_tr_reboot.tr.Enumerations import CdcGame, ResourceType
@@ -320,6 +321,7 @@ class ModelExporter(SlotsBase):
                 raise Exception(f"Mesh {bl_obj.name} has faces referencing an empty material slot. Please populate or delete any such slots.")
 
             tr_material_id = BlenderNaming.parse_material_name(bl_material.name)
+            double_sided = MaterialProperties.get_instance(bl_material).double_sided
 
             tr_mesh_part = self.factory.create_mesh_part()
             tr_mesh_part.center = Vector()
@@ -332,7 +334,8 @@ class ModelExporter(SlotsBase):
             for i in range(len(tr_mesh_part.texture_indices)):
                 tr_mesh_part.texture_indices[i] = 0xFFFFFFFF
 
-            tr_mesh_part.indices = array("H", [0]) * (len(bl_faces) * 3)
+            num_single_side_indices = len(bl_faces) * 3
+            tr_mesh_part.indices = array("H", [0]) * (num_single_side_indices * (2 if double_sided else 1))
             tr_index_idx = 0
             for bl_face in bl_faces:
                 if bl_face.loop_total != 3:
@@ -345,6 +348,12 @@ class ModelExporter(SlotsBase):
 
                     tr_mesh_part.indices[tr_index_idx] = tr_vertex_idx
                     tr_index_idx += 1
+
+            if double_sided:
+                for tr_index_idx in range(0, len(bl_faces) * 3, 3):
+                    tr_mesh_part.indices[num_single_side_indices + tr_index_idx + 0] = tr_mesh_part.indices[tr_index_idx + 2]
+                    tr_mesh_part.indices[num_single_side_indices + tr_index_idx + 1] = tr_mesh_part.indices[tr_index_idx + 1]
+                    tr_mesh_part.indices[num_single_side_indices + tr_index_idx + 2] = tr_mesh_part.indices[tr_index_idx + 0]
 
             tr_mesh.parts.append(tr_mesh_part)
 

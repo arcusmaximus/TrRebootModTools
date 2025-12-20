@@ -1,0 +1,7 @@
+typedef struct
+{
+    int numEnums;
+    int enumDtpIds[numEnums];
+} EnumDb;
+
+EnumDb db <open=true>;

@@ -34,16 +34,17 @@ typedef struct
 
 typedef struct
 {
-    int soundPlexDtpId;
-} Reference;
+    int soundPlexId;
+} Reference <read=Str("%d.tr10dtp", soundPlexId)>;
 
 typedef struct
 {
-    int soundPlexDtpId;
+    int soundPlexId;
+    FSkip(4);
     Ref soundRef;
-    if (CanSeekTo(dataRef))
+    if (CanSeekTo(soundRef))
     {
-        SeekToRef(dataRef);
+        SeekToRef(soundRef);
         SoundPlex sound;
         ReturnFromRef();
     }
@@ -55,30 +56,538 @@ typedef struct
     ubyte priority;
     ubyte curVoices;
     ubyte bVirtualDelayStart;
-} Wave;
+} Wave <read=Str("%d.tr10sound", waveId)>;
 
 typedef struct
 {
-    Ref streamNameRef;
-    if (CanSeekTo(streamNamRef))
+    Ref mulPathRef;
+    if (CanSeekTo(mulPathRef))
     {
-        SeekToRef(streamNameRef);
-        string streamName;
+        SeekToRef(mulPathRef);
+        string mulPath;
         ReturnFromRef();
     }
-    int m_channelCount;
-    char m_subtitlemode;
-    char m_priorityStream;
-    bool m_bCullStream;
-} Stream;
+    int channelCount;
+    char subtitlemode;
+    char priorityStream;
+    byte cullStream;
+} MultiplexStreamReference <read=mulPath>;
 
 typedef struct 
 {
-    unsigned int multiplex;
+    unsigned int multiplexDtpId;
     ubyte controlType;
     FSkip(3);
     Ref dataRef;
 } Multiplex;
+
+typedef struct
+{
+    Ref nextRef;
+    Ref prevRef;
+} ListNodeDouble;
+
+typedef struct
+{
+    float volume;
+    float pitch;
+    float reverb;
+    float lowPass;
+    float highPass;
+    float rolloffScale;
+    float rolloffScaleReverb;
+    ubyte bPause : 1;
+    ubyte bMute : 1;
+    ubyte bSolo : 1;
+    ubyte bMuteVolume : 1;
+    ubyte bSoloVolume : 1;
+    ubyte bMeter : 1;
+    ubyte bDrawingMeters : 1;
+    ubyte bDebugShow : 1;
+    ubyte bIsMusic : 1;
+    ubyte bNoSubtitle : 1;
+    ubyte bCuePause : 1;
+    ubyte bPadSpeaker : 1;
+    byte _Bitfieldpadding15 : 4;
+} SoundControls;
+
+typedef struct
+{
+    float distanceOuter;
+    float distanceInner;
+    float cullRadiusOffset;
+    float levelOfWide3D;
+    float _3Douter2Dblend;
+    float levelOfLFE;
+    float centerSpeakerFill;
+    float angleInner;
+    float angleOuter;
+    float angleOuterVolume;
+    float _3DemitterWidth;
+    float _2DfrontPan;
+    float _2DLtoL;
+    float _2DLtoR;
+    float _2DLtoC;
+    float _2DLtoLFE;
+    float _2DLtoSL;
+    float _2DLtoSR;
+    float _2DLtoSBL;
+    float _2DLtoSBR;
+    float _2DRtoL;
+    float _2DRtoR;
+    float _2DRtoC;
+    float _2DRtoLFE;
+    float _2DRtoSL;
+    float _2DRtoSR;
+    float _2DRtoSBL;
+    float _2DRtoSBR;
+    float directionalAttenScalar;
+    float nearDistFilterLevel;
+    float farDistFilterLevel;
+    float farDistFilterLPF;
+    float dopplerScalar;
+    unsigned int group;
+    ubyte playbackType;
+    ubyte distVolCurve;
+    ubyte nopath;
+    char forwardAxis;
+    byte bNegateForward;
+} SoundControls3D;
+
+typedef struct
+{
+    ListNodeDouble listNode;
+    Ref controlARef;
+    if (CanSeekTo(controlARef))
+    {
+        SeekToRef(controlARef);
+        SoundControls controlA;
+        ReturnFromRef();
+    }
+    Ref controlBRef;
+    if (CanSeekTo(controlBRef))
+    {
+        SeekToRef(controlBRef);
+        SoundControls controlB;
+        ReturnFromRef();
+    }
+    Ref control3dARef;
+    if (CanSeekTo(control3dARef))
+    {
+        SeekToRef(control3dARef);
+        SoundControls3D control3dA;
+        ReturnFromRef();
+    }
+    Ref control3dBRef;
+    if (CanSeekTo(control3dBRef))
+    {
+        SeekToRef(control3dBRef);
+        SoundControls3D control3dB;
+        ReturnFromRef();
+    }
+    SoundControls c;
+    FSkip(3);
+    SoundControls3D c3d;
+} SoundMix <optimize=false>;
+
+typedef struct
+{
+    SoundPlex _Parent;
+    FSkip(1);
+    Ref dtpDataRef;
+    ListNodeDouble maxInstListNode;
+    SoundControls localControls;
+    FSkip(7);
+    Ref localControls3dRef;
+    if (CanSeekTo(localControls3dRef))
+    {
+        SeekToRef(localControls3dRef);
+        SoundControls localControls3d;
+        ReturnFromRef();
+    }
+    Ref mixRef;
+    if (CanSeekTo(mixRef))
+    {
+        SeekToRef(mixRef);
+        SoundMix mix;
+        ReturnFromRef();
+    }
+    float timeout;
+    byte cullchecked;
+    byte bInMaxList;
+} Assignment <optimize=false>;
+
+typedef struct
+{
+    float initialDelay;
+    float initialDelayVariation;
+    float volumeVariation;
+    float pitchVariation;
+    float reverb;
+    ushort lowPass;
+    ushort highPass;
+    float rolloffScale;
+    float rolloffScaleReverb;
+    float timeout;
+    float timeoutVariation;
+    unsigned int soundGroup;
+    float pan;
+    float levelOfWide3D;
+    float levelOfLFE;
+    float maxDistance;
+    float minDistance;
+    float cullRadiusOffset;
+    ubyte distVolCurve;
+    ubyte playbackType;
+    ubyte maxInstances;
+    ubyte maxInstancePolicy : 3;
+    ubyte vary : 3;
+    ubyte nopath : 1;
+    byte oldValues : 1;
+} AssignmentOptions <optimize=false>;
+
+typedef struct
+{
+    Ref soundRef;
+    if (CanSeekTo(soundRef))
+    {
+        SeekToRef(soundRef);
+        SoundPlex sound;
+        ReturnFromRef();
+    }
+    Ref headRef;
+    Ref tailRef;
+    int count;
+    if (CanSeekTo(headRef))
+    {
+        SeekToRef(headRef);
+        Assignment assignments[count];
+        ReturnFromRef();
+    }
+    int curInstances;
+    FSkip(8);
+    Ref panningOptionsRef;
+    Ref optionsRef;
+    if (CanSeekTo(optionsRef))
+    {
+        SeekToRef(optionsRef);
+        AssignmentOptions options;
+        ReturnFromRef();
+    }
+    float volume;
+    float pitch;
+    unsigned int lastResourceDumpCheck;
+} AssignmentList <optimize=false>;
+
+typedef struct
+{
+    float time;
+    float value;
+    ubyte loopState;
+} EnvelopVolumeCurvePoint;
+
+typedef struct
+{
+    int loopStart;
+    int loopEnd;
+    unsigned int numPoints;
+    EnvelopVolumeCurvePoint points[numPoints];
+} EnvelopeVolumeCurve <optimize=false>;
+
+typedef struct
+{
+    Ref curveRef;
+    if (CanSeekTo(curveRef))
+    {
+        SeekToRef(curveRef);
+        EnvelopeVolumeCurve curve;
+        ReturnFromRef();
+    }
+    ubyte output;
+    ubyte bEndNaturally;
+} Envelope <optimize=false>;
+
+typedef struct
+{
+    Ref soundRef;
+    if (CanSeekTo(soundRef))
+    {
+        SeekToRef(soundRef);
+        SoundPlex sound;
+        ReturnFromRef();
+    }
+    Ref envelopeRefsRef;
+    Ref envelopesRef;
+    unsigned int count;
+    if (CanSeekTo(envelopesRef))
+    {
+        SeekToRef(envelopesRef);
+        Envelope envelopes[count];
+        ReturnFromRef();
+    }
+} EnvelopeList <optimize=false>;
+
+typedef struct
+{
+    unsigned int soundPlexId;
+    byte hardReference;
+    FSkip(3);
+    Ref selectionNameRef;
+    if (CanSeekTo(nameRef))
+    {
+        SeekToRef(nameRef);
+        string name;
+        ReturnFromRef();
+    }
+    Ref idRef;
+    if (CanSeekTo(idRef))
+    {
+        SeekToRef(idRef);
+        int zoneOrDtpId;
+        byte enabled;
+        ReturnFromRef();
+    }
+} Selector <optimize=false, read=name>;
+
+typedef struct
+{
+    Ref nameRef;
+    if (CanSeekTo(nameRef))
+    {
+        SeekToRef(nameRef);
+        string name;
+        ReturnFromRef();
+    }
+    Ref selectorsRef;
+    unsigned int count;
+    if (CanSeekTo(selectorsRef))
+    {
+        SeekToRef(selectorsRef);
+        Selector selectors[count];
+        ReturnFromRef();
+    }
+    ubyte selectorClass;
+    ubyte selectorType;
+    ubyte bChangeWhilePlaying;
+    ubyte debugLog;
+} SelectorList <optimize=false>;
+
+typedef struct
+{
+    unsigned int count;
+    FSkip(4);
+    Ref soundRefsRef;
+    if (CanSeekTo(soundRefsRef))
+    {
+        SeekToRef(soundRefsRef);
+        Ref soundRefs[count];
+        ReturnFromRef();
+    }
+    Ref soundsRef;
+    if (CanSeekTo(soundsRef))
+    {
+        SeekToRef(soundsRef);
+        SoundPlex sounds[count];
+        ReturnFromRef();
+    }
+    char sequence;
+    char trackType;
+    FSkip(2);
+    unsigned int counter;
+} ChoiceList <optimize=false>;
+
+typedef struct
+{
+    unsigned int soundID;
+    unsigned int material;
+} Material;
+
+typedef struct
+{
+    float retrigger;
+    unsigned int count;
+    Material list[count];
+} MaterialList <optimize=false>;
+
+typedef struct
+{
+    float x;
+    float y;
+} ReactionCurvePoint;
+
+typedef struct
+{
+    Ref pointsRef;
+    unsigned int numPoints;
+    if (CanSeekTo(pointsRef))
+    {
+        SeekToRef(pointsRef);
+        ReactionCurvePoint points[numPoints];
+        ReturnFromRef();
+    }
+} ReactionCurve <optimize=false>;
+
+typedef struct
+{
+    Ref nameRef;
+    if (CanSeekTo(nameRef))
+    {
+        SeekToRef(nameRef);
+        string name;
+        ReturnFromRef();
+    }
+    Ref inputNameRef;
+    if (CanSeekTo(inputNameRef))
+    {
+        SeekToRef(inputNameRef);
+        string inputName;
+        ReturnFromRef();
+    }
+    Ref outputNameRef;
+    if (CanSeekTo(outputNameRef))
+    {
+        SeekToRef(outputNameRef);
+        string outputName;
+        ReturnFromRef();
+    }
+    ReactionCurve curve;
+    float minInput;
+    float maxInput;
+    float minOutput;
+    float maxOutput;
+    ubyte inputType;
+    ubyte outputType : 4;
+    ubyte inputClass : 2;
+    ubyte inputDirection : 2;
+    ubyte minEndMode : 3;
+    ubyte maxEndMode : 3;
+    byte _Bitfieldpadding12 : 2;
+    ubyte debugShow : 3;
+    ubyte minCutoff : 1;
+    ubyte maxCutoff : 1;
+    ubyte disable : 1;
+    byte _Bitfieldpadding14 : 2;
+} Reaction <optimize=false>;
+
+typedef struct
+{
+    Ref soundRef;
+    if (CanSeekTo(soundRef))
+    {
+        SeekToRef(soundRef);
+        SoundPlex sound;
+        ReturnFromRef();
+    }
+    Ref reactionsRef;
+    int numReactions;
+    if (CanSeekTo(reactionsRef))
+    {
+        SeekToRef(reactionsRef);
+        Reaction reactions[numReactions];
+        ReturnFromRef();
+    }
+    ubyte cullWhenSilent;
+} ReactionList <optimize=false>;
+
+typedef struct
+{
+    unsigned int count;
+    FSkip(4);
+    Ref soundRefsRef;
+    if (CanSeekTo(soundRefsRef))
+    {
+        SeekToRef(soundRefsRef);
+        Ref soundRefs[count];
+        ReturnFromRef();
+    }
+    Ref soundsRef;
+    if (CanSeekTo(soundsRef))
+    {
+        SeekToRef(soundsRef);
+        SoundPlex sounds[count];
+        ReturnFromRef();
+    }
+    char count_;
+    char order;
+    char advance;
+} Sequence <optimize=false>;
+
+typedef struct
+{
+    float time;
+    float timeVariation;
+} OverlapDelay;
+
+typedef struct
+{
+    float min;
+    float max;
+} OverlapDistance;
+
+typedef struct
+{
+    unsigned int count;
+    FSkip(4);
+    Ref soundRefsRef;
+    if (CanSeekTo(soundRefsRef))
+    {
+        SeekToRef(soundRefsRef);
+        Ref soundRefs[count];
+        ReturnFromRef();
+    }
+    Ref soundsRef;
+    if (CanSeekTo(soundsRef))
+    {
+        SeekToRef(soundsRef);
+        SoundPlex sounds[count];
+        ReturnFromRef();
+    }
+    float endTime;
+    ubyte endMode;
+    ubyte vary;
+    byte stopSilent;
+    FSkip(1);
+    unsigned int numDelays;
+    FSkip(4);
+    Ref delaysRef;
+    if (CanSeekTo(delaysRef))
+    {
+        SeekToRef(delaysRef);
+        OverlapDelay delays[numDelays];
+        ReturnFromRef();
+    }
+    unsigned int numDistances;
+    FSkip(4);
+    Ref distancesRef;
+    if (CanSeekTo(distancesRef))
+    {
+        SeekToRef(distancesRef);
+        OverlapDistance distances[numDistances];
+        ReturnFromRef();
+    }
+} OverlapList <optimize=false>;
+
+typedef struct
+{
+    Ref soundRef;
+    if (CanSeekTo(soundRef))
+    {
+        SeekToRef(soundRef);
+        SoundPlex sound;
+        ReturnFromRef();
+    }
+    Ref dataRef;
+    Ref fmodDspRef;
+    ubyte effectType;
+} Effect <optimize=false>;
+
+
+typedef struct
+{
+    float rate;
+    float length;
+    char type;
+} Oscillator;
 
 typedef struct
 {
@@ -92,28 +601,66 @@ typedef struct
         switch (type)
         {
             case SoundPlexType_Silence:
-                Silence data;
+                Silence silence;
                 break;
             case SoundPlexType_Reference:
-                Reference data;
+                Reference reference;
                 break;
             case SoundPlexType_Derived:
-                Derived data;
+                Derived derived;
                 break;
             case SoundPlexType_Wave:
-                Wave data;
+                Wave wave;
                 break;
             case SoundPlexType_Stream:
-                Stream data;
+                MultiplexStreamReference stream;
                 break;
             case SoundPlexType_Multiplex:
-                Multiplex data;
+                Multiplex multiplex;
+                break;
+            case SoundPlexType_Assignment:
+                AssignmentList assignmentList;
+                break;
+            case SoundPlexType_Envelope:
+                EnvelopeList envelopeList;
+                break;
+            case SoundPlexType_Selector:
+                SelectorList selectorList;
+                break;
+            case SoundPlexType_ChoiceList:
+                ChoiceList choiceList;
+                break;
+            case SoundPlexType_MaterialList:
+                MaterialList materialList;
+                break;
+            case SoundPlexType_Reaction:
+                ReactionList reactionList;
+                break;
+            case SoundPlexType_Sequence:
+                Sequence sequence;
+                break;
+            case SoundPlexType_Overlap:
+                OverlapList overlapList;
+                break;
+            case SoundPlexType_Effect:
+                Effect effect;
+                break;
+            case SoundPlexType_Oscillator:
+                Oscillator oscillator;
+                break;
+            case SoundPlexType_Talea:
+                break;
+            case SoundPlexType_NewTest:
+                int newValue;
                 break;
         }
         ReturnFromRef();
     }
     unsigned int ownerID;
+    FSkip(4);
 } SoundPlex <optimize=false>;
 
-RefDefinitions refDefinitions;
-SoundPlex root <open=true>;
+#ifndef TR_SOUNDPLEX_NO_INSTANTIATE
+    RefDefinitions refDefinitions;
+    SoundPlex root <open=true>;
+#endif

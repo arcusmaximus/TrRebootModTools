@@ -1,6 +1,4 @@
-﻿using TrRebootTools.Shared.Cdc;
-
-namespace TrRebootTools.Shared.Cdc.Shadow
+﻿namespace TrRebootTools.Shared.Cdc.Shadow
 {
     internal class ShadowHash : CdcHash
     {

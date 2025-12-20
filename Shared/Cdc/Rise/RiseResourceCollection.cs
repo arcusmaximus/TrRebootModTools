@@ -43,7 +43,7 @@ namespace TrRebootTools.Shared.Cdc.Rise
                 Type = (byte)resourceRef.Type,
                 SubType = (int)resourceRef.SubType,
                 Id = resourceRef.Id,
-                Locale = 0xFFFFFFFF
+                Locale = (uint)resourceRef.Locale
             };
         }
 

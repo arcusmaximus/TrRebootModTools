@@ -19,13 +19,15 @@ namespace TrRebootTools.SoundConverter
             if (!await InitAsync())
                 return false;
 
-            string gameFolderPath = "";
+            string subFolderPath = "";
             int gamePathIndex = inputFilePath.IndexOf("\\pc-w\\");
             if (gamePathIndex < 0)
                 gamePathIndex = inputFilePath.IndexOf("\\pcx64-w\\");
 
             if (gamePathIndex >= 0)
-                gameFolderPath = Path.GetDirectoryName(inputFilePath.Substring(gamePathIndex + 1));
+                subFolderPath = Path.GetDirectoryName(inputFilePath.Substring(gamePathIndex + 1));
+            else if (CdcGameInfo.Get(Game).LanguageCodeToLocale(Path.GetFileNameWithoutExtension(inputFilePath)) != null)
+                subFolderPath = Path.GetFileName(Path.GetDirectoryName(inputFilePath));
 
             string tempOutputFilePath = await ConvertInternalAsync(inputFilePath);
             if (tempOutputFilePath == null || !File.Exists(tempOutputFilePath))
@@ -33,7 +35,7 @@ namespace TrRebootTools.SoundConverter
 
             string outputExtension = Path.GetExtension(tempOutputFilePath);
             string outputFileName = Path.GetFileNameWithoutExtension(inputFilePath) + outputExtension;
-            string outputFilePath = Path.Combine(outputFolderPath, gameFolderPath, outputFileName);
+            string outputFilePath = Path.Combine(outputFolderPath, subFolderPath, outputFileName);
             if (outputFilePath != tempOutputFilePath)
             {
                 if (File.Exists(outputFilePath))

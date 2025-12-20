@@ -1,0 +1,679 @@
+#define TR_VERSION 10
+#include "../../trcommon.bt"
+#include "../lists/tr10statecontrol.bt"
+#include "../lists/tr10enums.bt"
+
+typedef struct
+{
+    Ref nameRef;
+    if (CanSeekTo(nameRef))
+    {
+        SeekToRef(nameRef);
+        string name;
+        ReturnFromRef();
+    }
+    unsigned int hash <format=hex>;
+} NameWithHash <optimize=false, read=name>;
+
+typedef struct
+{
+    unsigned int vocalsDtpId;
+    int barkId;
+    byte useObj;
+    FSkip(3);
+    unsigned int datFile;
+} StateControlBark <optimize=false>;
+
+typedef struct
+{
+    unsigned int cameraComponent;
+} CameraSCData <optimize=false>;
+
+typedef struct
+{
+    short min;
+    short max;
+} CameraMoveStick <optimize=false>;
+
+typedef struct
+{
+    float min;
+    float max;
+} AxisLimits;
+
+typedef struct
+{
+    float x;
+    float y;
+} DATCurvePoint <optimize=false>;
+
+typedef struct
+{
+    AxisLimits xAxis;
+    AxisLimits yAxis;
+    unsigned int numPoints;
+    FSkip(4);
+    Ref pointsRef;
+    if (CanSeekTo(pointsRef))
+    {
+        SeekToRef(pointsRef);
+        DATCurvePoint points[numPoints];
+        ReturnFromRef();
+    }
+} DefaultDATCurveWithLimits <optimize=false>;
+
+typedef struct
+{
+    int threatType;
+    int threatAmount;
+    float threatRadius;
+    float threatDecay;
+    byte threatMemory;
+    FSkip(3);
+    float threatInvestigationRange;
+    Ref threatFalloffRef;
+    if (CanSeekTo(threatFalloffRef))
+    {
+        SeekToRef(threatFalloffRef);
+        DefaultDATCurveWithLimits threatFalloff;
+        ReturnFromRef();
+    }
+    Ref debugNameRef;
+    if (CanSeekTo(debugNameRef))
+    {
+        SeekToRef(debugNameRef);
+        string debugName;
+        ReturnFromRef();
+    }
+} ThreatResourceData <optimize=false, read=debugName>;
+
+string ReadSCPropertyValue(SCPropertyType type)
+{
+    local int endPos = FTell() + 0x10;
+    local string valueStr = "";
+    switch (type)
+    {
+        case SCPropType_Accuracy:
+        case SCPropType_Action:
+        case SCPropType_ActionType:
+        case SCPropType_Calculated:
+        case SCPropType_CameraShake:
+        case SCPropType_CameraSyncType:
+        case SCPropType_CameraTransitionType:
+        case SCPropType_ContactDataType:
+        case SCPropType_ControlMode:
+        case SCPropType_CraftingRecipe:
+        case SCPropType_DevelopmentProgress:
+        case SCPropType_EventTarget:
+        case SCPropType_EventTime:
+        case SCPropType_FallHeights:
+        case SCPropType_GymnasticsMove:
+        case SCPropType_HitDamageType:
+        case SCPropType_Integer:
+        case SCPropType_IntegerDistanceCm:
+        case SCPropType_InteractMode:
+        case SCPropType_InteractProfile:
+        case SCPropType_InventoryGroup:
+        case SCPropType_InventoryPriority:
+        case SCPropType_InventoryUrgency:
+        case SCPropType_InventoryRelease:
+        case SCPropType_Inventory:
+        case SCPropType_InventoryResourceSet:
+        case SCPropType_InventoryAnim:
+        case SCPropType_InventoryItemAnim:
+        case SCPropType_JumpDetectionDir:
+        case SCPropType_JumpDetectionVel:
+        case SCPropType_MarkerID:
+        case SCPropType_LimbLock:
+        case SCPropType_LimbLockGroups:
+        case SCPropType_MarkupDetectionParams:
+        case SCPropType_SeizeAttack:
+        case SCPropType_SeizeAttackNPC:
+        case SCPropType_MeleeMove:
+        case SCPropType_MeleeMoveGroup:
+        case SCPropType_JumpMode:
+        case SCPropType_JumpVelocity:
+        case SCPropType_JumpAirSteerTuneData:
+        case SCPropType_Message:
+        case SCPropType_MovementSafety:
+        case SCPropType_MoveSet:
+        case SCPropType_NpcMoverMode:
+        case SCPropType_NpcProcessTime:
+        case SCPropType_PortableAnim:
+        case SCPropType_ProxyParams:
+        case SCPropType_ReactiveDodgeParam:
+        case SCPropType_ReactiveDodgeParamNPC:
+        case SCPropType_SCComparison:
+        case SCPropType_SCStateTag:
+        case SCPropType_SensibleProfile:
+        case SCPropType_SenseType:
+        case SCPropType_SenseUnit:
+        case SCPropType_SensoryType:
+        case SCPropType_SpatialProbe:
+        case SCPropType_SteeringMode:
+        case SCPropType_SteeringDirection:
+        case SCPropType_SteeringCurveGeneric:
+        case SCPropType_SteeringCurveCustom:
+        case SCPropType_TuningData:
+        case SCPropType_UseAgent:
+        case SCPropType_WetDirtyMode:
+        case SCPropType_NpcActionStatus:
+        case SCPropType_WeaponProjectileType:
+        case SCPropType_TurnType:
+            int value;
+            valueStr = Str("%d", value);
+            break;
+        
+        case SCPropType_AnimGraphGoalCluster:
+        case SCPropType_AnimGraphGoalMoveset:
+        case SCPropType_AnimGraphGoalState:
+        case SCPropType_AnimGraphGoalOverlay:
+        case SCPropType_AnimGraphGoalMainhand:
+        case SCPropType_AnimGraphGoalOffhand:
+            NameWithHash value;
+            valueStr = value.name;
+            break;
+        
+        case SCPropType_AnimGraphGoalFromInteract:
+        case SCPropType_AnimGraphGoalBBeam_or_TightRope:
+        case SCPropType_Boolean:
+        case SCPropType_MeleeMoveFromInteract:
+        case SCPropType_MotionSource:
+        case SCPropType_NetworkContinuityBreak:
+        case SCPropType_Unchanged:
+        case SCPropType_UseParent:
+        case SCPropType_VisionModeAllowedCustomCodeCheck:
+            byte value;
+            valueStr = Str("%d", value);
+            break;
+        
+        case SCPropType_AnimGraphTrigger:
+        case SCPropType_Event:
+            uint value <format=hex>;
+            valueStr = Str("%X", value);
+            break;
+        
+        case SCPropType_Bark:
+            Ref barkRef;
+            if (CanSeekTo(barkRef))
+            {
+                SeekToRef(barkRef);
+                StateControlBark bark;
+                valueStr = Str("%d.tr10dtp -> bark %d", bark.vocalsDtpId, bark.barkId);
+                ReturnFromRef();
+            }
+            break;
+        
+        case SCPropType_CameraComponent:
+            CameraSCData cameraData;
+            break;
+        
+        case SCPropType_CameraMoveStick:
+            CameraMoveStick cameraMoveStick;
+            break;
+        
+        case SCPropType_Float:
+        case SCPropType_FloatDistanceCm:
+            float value;
+            valueStr = Str("%f", value);
+            break;
+        
+        case SCPropType_InteractAnim:
+        case SCPropType_HostedSCTimer:
+        case SCPropType_Orientation:
+        case SCPropType_Object:
+            short value;
+            valueStr = Str("%d", value);
+            break;
+        
+        case SCPropType_InventoryState:
+            inventorystate value;
+            valueStr = EnumToString(value);
+            break;
+        
+        case SCPropType_PlayNotification:
+            playnotifications value;
+            valueStr = EnumToString(value);
+            break;
+        
+        case SCPropType_Stance:
+            characterstance value;
+            valueStr = EnumToString(value);
+            break;
+        
+        case SCPropType_String:
+            Ref valueRef;
+            if (CanSeekTo(valueRef))
+            {
+                SeekToRef(valueRef);
+                string value;
+                ReturnFromRef();
+                valueStr = value;
+            }
+            break;
+        
+        case SCPropType_ThreatProfile:
+            Ref threatProfileRef;
+            if (CanSeekTo(threatProfileRef))
+            {
+                SeekToRef(threatProfileRef);
+                ThreatResourceData threatProfile;
+                ReturnFromRef();
+            }
+            break;
+        
+        case SCPropType_WeaponCameraType:
+            weaponcameratype value;
+            valueStr = EnumToString(value);
+            break;
+        
+        case SCPropType_StatusMenuState:
+            statusmenustate value;
+            valueStr = EnumToString(value);
+            break;
+    }
+    FSeek(endPos);
+    return valueStr;
+}
+
+typedef struct
+{
+    SCStateProperty property;
+    SCPropertyType dataType;
+    FSkip(4);
+    local string valueStr = ReadSCPropertyValue(dataType);
+    Ref debugNameRef;
+    if (CanSeekTo(debugNameRef))
+    {
+        SeekToRef(debugNameRef);
+        string debugName;
+        ReturnFromRef();
+    }
+} SCPropertyData <optimize=false, read=Str("%s = %s", debugName, valueStr)>;
+
+typedef struct
+{
+    short parentStateId;
+    ushort ignoreChildSettings;
+    ushort numProperties;
+    ushort numActivities;
+    ushort numTransitions;
+    ushort numEventHandlers;
+    ushort numEventSenders;
+    FSkip(2);
+    Ref propertiesRef;
+    if (CanSeekTo(propertiesRef))
+    {
+        SeekToRef(propertiesRef);
+        SCPropertyData properties[numProperties];
+        ReturnFromRef();
+    }
+    Ref activitiesRef;
+    if (CanSeekTo(activitiesRef))
+    {
+        SeekToRef(activitiesRef);
+        SCStateActivity activities[numActivities];
+        ReturnFromRef();
+    }
+    Ref transitionsRef;
+    if (CanSeekTo(transitionsRef))
+    {
+        SeekToRef(transitionsRef);
+        ushort transitions[numTransitions] <read=parentof(parentof(this)).transitions[this].debugName>;
+        ReturnFromRef();
+    }
+    Ref eventHandlersRef;
+    if (CanSeekTo(eventHandlersRef))
+    {
+        SeekToRef(eventHandlersRef);
+        ushort eventHandlers[numEventHandlers] <read=parentof(parentof(this)).eventHandlers[this].debugName>;
+        ReturnFromRef();
+    }
+    Ref eventSendersRef;
+    if (CanSeekTo(eventSendersRef))
+    {
+        SeekToRef(eventSendersRef);
+        event eventSenders[numEventSenders];
+        ReturnFromRef();
+    }
+    Ref debugNameRef;
+    if (CanSeekTo(debugNameRef))
+    {
+        SeekToRef(debugNameRef);
+        string debugName;
+        ReturnFromRef();
+    }
+} SCStateData <optimize=false, read=debugName>;
+
+typedef struct
+{
+    int property;
+    int comparison;
+    byte not;
+} SCConditionTest;
+
+typedef struct
+{
+    int property;
+    threatmood comparison;
+    byte not;
+} SCConditionTestNpcThreatMood;
+
+typedef struct
+{
+    int property;
+    ammo comparison;
+    byte not;
+} SCConditionTestAmmo;
+
+typedef struct
+{
+    int property;
+    unsigned int category;
+    unsigned int categoryHash;
+    byte not;
+} SCConditionTestCameraCategoryEnabled;
+
+typedef struct
+{
+    int property;
+    characterstance comparison;
+    byte not;
+} SCConditionTestStance;
+
+
+typedef struct
+{
+    ushort symbolID;
+    FSkip(2);
+    int comparison;
+    byte not;
+} SCConditionTestSymbolToConstant;
+
+typedef struct
+{
+    ushort symbolID1;
+    ushort symbolID2;
+    byte not;
+} SCConditionTestSymbolToSymbol;
+
+typedef struct
+{
+    int property;
+    event event_;
+    byte not;
+} SCConditionTestProcessAnimGraphTrigger;
+
+typedef struct
+{
+    unsigned int hash <format=hex>;
+    FSkip(4);
+    Ref enumFileNameRef;
+    if (CanSeekTo(enumFileNameRef))
+    {
+        SeekToRef(enumFileNameRef);
+        string enumFileName;
+        ReturnFromRef();
+    }
+} MovesetProfile_MoveTypeEnum;
+
+typedef struct
+{
+    int property;
+    MovesetProfile_MoveTypeEnum moveEnum;
+    byte not;
+} SCConditionTestMovesetProfile;
+
+typedef struct
+{
+    int property;
+    float comparison;
+    byte not;
+} SCConditionTestSCPropertyNumeric;
+
+typedef struct
+{
+    int miPlatform;
+    byte not;
+} SCConditionTestPlatform;
+
+typedef struct
+{
+    int vrMode;
+    byte not;
+} SCConditionTestVrMode;
+
+typedef struct
+{
+    SCCondContext context;
+    
+    local int endPos = FTell() + 0x10;
+    switch (context)
+    {
+        case SCCondContext_NpcThreatMood:
+            SCConditionTestNpcThreatMood test;
+            break;
+        
+        case SCCondContext_Ammo:
+            SCConditionTestAmmo test;
+            break;
+        
+        case SCCondContext_CameraCategory:
+            SCConditionTestCameraCategoryEnabled test;
+            break;
+        
+        case SCCondContext_Stance:
+            SCConditionTestStance test;
+            break;
+            
+        case SCCondContext_NamedValue_Boolean:
+        case SCCondContext_NamedValue_Scalar_EQ:
+        case SCCondContext_NamedValue_Scalar_GT:
+        case SCCondContext_NamedValue_Scalar_GTE:
+            SCConditionTestSymbolToConstant test;
+            break;
+        
+        case SCCondContext_NamedValue_Symbol_Comp:
+            SCConditionTestSymbolToSymbol test;
+            break;
+        
+        case SCCondContext_ProcessAnimGraphTrigger:
+            SCConditionTestProcessAnimGraphTrigger test;
+            break;
+        
+        case SCCondContext_MovesetProfile:
+            SCConditionTestMovesetProfile test;
+            break;
+        
+        case SCCondContext_SCPropertyNumeric:
+            SCConditionTestSCPropertyNumeric test;
+            break;
+        
+        case SCCondContext_Platform:
+            SCConditionTestPlatform test;
+            break;
+        
+        case SCCondContext_VrMode:
+            SCConditionTestVrMode vrMode;
+            break;
+        
+        default:
+            SCConditionTest condition;
+            break;
+    }
+    FSeek(endPos);
+} SCConditionData <optimize=false>;
+
+typedef struct
+{
+    ushort desiredState;
+    ushort numModifiers;
+    ushort numConditions;
+    ushort modifierMask;
+    Ref modifiersRef;
+    if (CanSeekTo(modifiersRef))
+    {
+        SeekToRef(modifiersRef);
+        short modifiers[numModifiers];
+        ReturnFromRef();
+    }
+    Ref conditionsRef;
+    if (CanSeekTo(conditionsRef))
+    {
+        SeekToRef(conditionsRef);
+        SCConditionData conditions[numConditions];
+        ReturnFromRef();
+    }
+    Ref debugNameRef;
+    if (CanSeekTo(debugNameRef))
+    {
+        SeekToRef(debugNameRef);
+        string debugName;
+        ReturnFromRef();
+    }
+    byte debugShowPassFail;
+    FSkip(7);
+} SCTransitionData <optimize=false, read=debugName>;
+
+typedef struct
+{
+    event event_;
+    unsigned int eventHash <format=hex>;
+    byte dropThoughOnSuccess;
+    byte dropThoughOnFail;
+    byte recordEventTime;
+    FSkip(1);
+    ushort numTransitions;
+    FSkip(2);
+    Ref transitionsRef;
+    if (CanSeekTo(transitionsRef))
+    {
+        SeekToRef(transitionsRef);
+        unsigned int transitions[numTransitions] <read=parentof(parentof(this)).transitions[this].debugName>;
+        ReturnFromRef();
+    }
+    Ref debugNameRef;
+    if (CanSeekTo(debugNameRef))
+    {
+        SeekToRef(debugNameRef);
+        string debugName;
+        ReturnFromRef();
+    }
+} SCEventHandlerData <optimize=false, read=debugName>;
+
+typedef struct
+{
+    ushort miDefaultStateRef;
+    FSkip(6);
+    Ref mpParentAgentRef;
+    byte mbIndependentAgent;
+    byte mbNetwork;
+    FSkip(2);
+    int mSCAgentID;
+    ushort numStates;
+    ushort numTransitions;
+    ushort numEventHandlers;
+    FSkip(2);
+    Ref stateRefsRef;
+    if (CanSeekTo(stateRefsRef))
+    {
+        SeekToRef(stateRefsRef);
+        Ref stateRefs[numStates];
+        ReturnFromRef();
+    }
+    Ref transitionRefsRef;
+    if (CanSeekTo(transitionRefsRef))
+    {
+        SeekToRef(transitionRefsRef);
+        Ref transitionRefs[numTransitions];
+        ReturnFromRef();
+    }
+    Ref eventHandlerRefsRef;
+    if (CanSeekTo(eventHandlerRefsRef))
+    {
+        SeekToRef(eventHandlerRefsRef);
+        Ref eventHandlerRefs[numEventHandlers];
+        ReturnFromRef();
+    }
+    Ref statesRef;
+    if (CanSeekTo(statesRef))
+    {
+        SeekToRef(statesRef);
+        SCStateData states[numStates];
+        ReturnFromRef();
+    }
+    Ref transitionsRef;
+    if (CanSeekTo(transitionsRef))
+    {
+        SeekToRef(transitionsRef);
+        SCTransitionData transitions[numTransitions];
+        ReturnFromRef();
+    }
+    Ref eventHandlersRef;
+    if (CanSeekTo(eventHandlersRef))
+    {
+        SeekToRef(eventHandlersRef);
+        SCEventHandlerData eventHandlers[numEventHandlers];
+        ReturnFromRef();
+    }
+    Ref debugNameRef;
+    if (CanSeekTo(debugNameRef))
+    {
+        SeekToRef(debugNameRef);
+        string debugName;
+        ReturnFromRef();
+    }
+    uint debugAgentFlag : 1;
+    uint debugActivationFlag : 1;
+    uint debugStateFlag : 1;
+    uint debugStateChangeFlag : 1;
+    uint debugStatePropertiesFlag : 1;
+    uint debugStateActivitiesFlag : 1;
+    uint debugConditionCheckFlag : 1;
+    uint debugConditionPassFlag : 1;
+    uint debugConditionFailFlag : 1;
+    uint debugConditionDetailFlag : 1;
+    uint debugTransitionDetailFlag : 1;
+    uint debugPropertyDetailFlag : 1;
+    uint debugActivityDetailFlag : 1;
+    uint debugEventHandlerPassFlag : 1;
+    uint debugEventHandlerFailFlag : 1;
+    uint debugAgentOnScreenFlag : 1;
+    uint debugScriptSendEvent : 1;
+    int _Bitfieldpadding15 : 15;
+    unsigned int debugEvents;
+    uint debugPad : 15;
+    int _Bitfieldpadding33 : 17;
+    int debugActivityConfirmation;
+    int debugPropertyConfirmation;
+    int debugConditionConfirmation;
+    Ref debugDataFileNameRef;
+    if (CanSeekTo(debugDataFileNameRef))
+    {
+        SeekToRef(debugDataFileNameRef);
+        string debugDataFileName;
+        ReturnFromRef();
+    }
+    Ref debugDataPathRef;
+    if (CanSeekTo(debugDataPathRef))
+    {
+        SeekToRef(debugDataPathRef);
+        string debugDataPath;
+        ReturnFromRef();
+    }
+} SCAgentData <optimize=false, read=debugName>;
+
+typedef struct
+{
+    Ref stateControlAgentsRef;
+    unsigned int numStateControlAgents;
+    if (CanSeekTo(stateControlAgentsRef))
+    {
+        SeekToRef(stateControlAgentsRef);
+        SCAgentData stateControlAgents[numStateControlAgents];
+        ReturnFromRef();
+    }
+} StateControlComponent <optimize=false>;
+
+RefDefinitions refDefinitions;
+StateControlComponent root <open=true>;

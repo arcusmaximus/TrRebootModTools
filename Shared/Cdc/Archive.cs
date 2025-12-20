@@ -128,11 +128,17 @@ namespace TrRebootTools.Shared.Cdc
             {
                 if (_partStreams == null)
                 {
-                    _partStreams = new List<Stream>();
-                    for (int i = 0; i < _numParts; i++)
+                    lock (this)
                     {
-                        string partFilePath = GetPartFilePath(i);
-                        _partStreams.Add(File.Open(partFilePath, FileMode.Open, ModName != null ? FileAccess.ReadWrite : FileAccess.Read, FileShare.ReadWrite));
+                        if (_partStreams == null)
+                        {
+                            _partStreams = new List<Stream>();
+                            for (int i = 0; i < _numParts; i++)
+                            {
+                                string partFilePath = GetPartFilePath(i);
+                                _partStreams.Add(File.Open(partFilePath, FileMode.Open, ModName != null ? FileAccess.ReadWrite : FileAccess.Read, FileShare.ReadWrite));
+                            }
+                        }
                     }
                 }
                 return _partStreams;
@@ -176,6 +182,10 @@ namespace TrRebootTools.Shared.Cdc
         {
             if (file.ArchiveId != Id || file.ArchiveSubId != SubId)
                 throw new ArgumentException();
+
+            string filePath = CdcHash.Lookup(file.NameHash, Game);
+            if (filePath == null || Path.GetExtension(filePath) != ".drm")
+                return null;
 
             Stream stream = PartStreams[file.ArchivePart];
             stream.Position = file.Offset;

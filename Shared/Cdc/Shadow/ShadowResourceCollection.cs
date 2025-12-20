@@ -43,7 +43,7 @@ namespace TrRebootTools.Shared.Cdc.Shadow
                 Type = (byte)resourceRef.Type,
                 SubType = (int)resourceRef.SubType,
                 Id = resourceRef.Id,
-                Locale = 0xFFFFFFFFFFFFFFFF
+                Locale = resourceRef.Locale
             };
         }
 

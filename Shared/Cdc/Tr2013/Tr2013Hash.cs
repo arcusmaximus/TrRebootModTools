@@ -1,6 +1,4 @@
-﻿using TrRebootTools.Shared.Cdc;
-
-namespace TrRebootTools.Shared.Cdc.Tr2013
+﻿namespace TrRebootTools.Shared.Cdc.Tr2013
 {
     internal class Tr2013Hash : CdcHash
     {

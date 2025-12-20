@@ -1,14 +1,19 @@
 ﻿using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
 using System.Linq;
+using TrRebootTools.Shared.Util;
 
 namespace TrRebootTools.Shared.Cdc.Tr2013
 {
     internal class Tr2013ArchiveSet : ArchiveSet
     {
-        private const int Patch2ArchiveId = 67;
-        private const string Patch2ArchiveName = "patch2.000.tiger";
-
-        private const int Patch3ArchiveId = 69;
+        private static readonly Dictionary<CultureInfo, ArchiveIdentity> FlattedModArchiveIdentities =
+            new()
+            {
+                { CultureInfo.GetCultureInfo(1041), new(66, "jcontent.000.tiger") },
+                { CultureInfo.InvariantCulture, new(67, "patch2.000.tiger") }
+            };
 
         public Tr2013ArchiveSet(string folderPath, bool includeGame, bool includeMods)
             : base(folderPath, includeGame, includeMods)
@@ -23,16 +28,25 @@ namespace TrRebootTools.Shared.Cdc.Tr2013
 
         public override List<Archive> GetSortedArchives()
         {
-            return Archives.Where(a => a.Id <= Patch2ArchiveId)
+            int lastArchiveId = FlattedModArchiveIdentities.Max(p => p.Value.Id);
+            return Archives.Where(a => a.Id <= lastArchiveId)
                            .OrderBy(a => a.Id)
                            .Concat(base.GetSortedArchives())
                            .ToList();
         }
 
-        public override void GetFlattenedModArchiveDetails(out int archiveId, out string archiveFileName)
+        public override ICollection<ArchiveIdentity> GetAllFlattenedModArchiveIdentities()
         {
-            archiveId = Patch2ArchiveId;
-            archiveFileName = Patch2ArchiveName;
+            return FlattedModArchiveIdentities.Values;
+        }
+
+        public override ArchiveIdentity GetActiveFlattenedModArchiveIdentity()
+        {
+            ArchiveIdentity langSpecificArchive = FlattedModArchiveIdentities.GetOrDefault(CultureInfo.InstalledUICulture);
+            if (langSpecificArchive != null && File.Exists(Path.Combine(FolderPath, langSpecificArchive.FileName)))
+                return langSpecificArchive;
+
+            return FlattedModArchiveIdentities.GetOrDefault(CultureInfo.InvariantCulture);
         }
 
         protected override string MakeLocaleSuffix(ulong locale)

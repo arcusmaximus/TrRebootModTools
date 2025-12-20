@@ -1,0 +1,33 @@
+#define TR_VERSION 10
+#include "tr/trcommon.bt"
+
+typedef struct
+{
+    Ref nameRef;
+    if (CanSeekTo(nameRef))
+    {
+        SeekToRef(nameRef);
+        string name;
+        ReturnFromRef();
+    }
+    uint hash <format=hex>;
+    FSkip(4);
+} EnumItem <optimize=false, read=name>;
+
+RefDefinitions refDefinitions;
+Ref nameRef;
+if (CanSeekTo(nameRef))
+{
+    SeekToRef(nameRef);
+    string name;
+    ReturnFromRef();
+}
+
+Ref itemsRef;
+int numItems;
+if (CanSeekTo(itemsRef))
+{
+    SeekToRef(itemsRef);
+    EnumItem items[numItems];
+    ReturnFromRef();
+}

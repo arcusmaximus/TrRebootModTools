@@ -1,0 +1,146 @@
+//------------------------------------------------
+//--- 010 Editor v15.0 Binary Template
+//
+//      File: tr10drivers.bt
+//   Authors: arc_
+//   Purpose: Parse ROTTR blendshape drivers
+//  Category: ROTTR
+// File Mask: *.tr10drivers
+//------------------------------------------------
+
+#define TR_VERSION 10
+#include "../trcommon.bt"
+
+enum NodeType
+{
+    NodeType_PoseReader,
+    NodeType_Multiply,
+    NodeType_Normalize,
+    NodeType_CurveMap
+};
+
+enum <byte> MultiplyNodeOperation
+{
+    MultiplyOpType_Multiply,
+    MultiplyOpType_Divide
+};
+
+void AddReaderNodeFields()
+{
+    int globalBoneId;
+    float coneAngle;
+    float minPositiveAngle;
+    float maxPositiveAngle;
+    float minNegativeAngle;
+    float maxNegativeAngle;
+    FSkip(4);
+    Vector4 boneAxis;
+    Vector4 primaryAxis;
+    Matrix attachmentMatrix;
+}
+
+void AddMultiplyNodeFields()
+{
+    MultiplyNodeOperation operation;
+}
+
+void AddNormalizeNodeFields()
+{
+    float multiplyDefault;
+}
+
+void AddCurveMapNodeFields()
+{
+    float curvePoints[11];
+}
+
+typedef struct
+{
+    NodeType type;
+    switch (type)
+    {
+        case NodeType_PoseReader:
+            AddReaderNodeFields();
+            break;
+        case NodeType_Multiply:
+            AddMultiplyNodeFields();
+            break;
+        case NodeType_Normalize:
+            AddNormalizeNodeFields();
+            break;
+        case NodeType_CurveMap:
+            AddCurveMapNodeFields();
+            break;
+    }
+} Node <read=EnumToString(type)>;
+
+typedef struct (int numNodes)
+{
+    Ref nodeRefs[numNodes];
+    
+    local int i;
+    for (i = 0; i < numNodes; i++)
+    {
+        if (CanSeekTo(nodeRefs[i]))
+        {
+            SeekToRef(nodeRefs[i]);
+            Node nodes;
+            ReturnFromRef();
+        }
+    }
+} NodeRefList;
+
+enum <short> DefaultNodeSlot
+{
+    DefaultNodeSlot_Output = 0,
+    DefaultNodeSlot_Twist = 1
+};
+
+enum <short> NormalizeNodeInputSlot
+{
+    NormalizeNodeInputSlot_Multiply = 0
+};
+
+enum <short> NormalizeNodeOutputSlot
+{
+    NormalizeNodeOutputSlot_Remainder = 0,
+    NormalizeNodeOutputSlot_ArrayStart = 10
+};
+
+typedef struct
+{
+    short fromNodeIdx;
+    short toNodeIdx;
+    short fromSlotIdx;
+    short toSlotIdx;
+} Link <read=Str("%d.%d -> %d.%d", fromNodeIdx, fromSlotIdx, toNodeIdx, toSlotIdx)>;
+
+typedef struct
+{
+    int numNodes;
+    int numLinks;
+    Ref nodeRefsRef;
+    if (CanSeekTo(nodeRefsRef))
+    {
+        SeekToRef(nodeRefsRef);
+        NodeRefList nodeRefs(numNodes);
+        ReturnFromRef();
+    }
+    Ref linksRef;
+    if (CanSeekTo(linksRef))
+    {
+        SeekToRef(linksRef);
+        Link links[numLinks];
+        ReturnFromRef();
+    }
+} Graph <optimize=false>;
+
+typedef struct
+{
+    int numGraphs;
+    FSkip(4);
+    Graph graphs[numGraphs];
+} GraphList;
+
+RefDefinitions refDefinitions;
+GraphList graphList <open=true>;

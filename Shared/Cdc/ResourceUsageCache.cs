@@ -10,12 +10,13 @@ namespace TrRebootTools.Shared.Cdc
     public class ResourceUsageCache
     {
         private const string FileName = "resourceusage.bin";
-        private const int Version = 7;
+        private const int Version = 8;
 
-        protected readonly ResourceUsageCache _baseCache;
-        protected readonly Dictionary<ResourceKey, Dictionary<ArchiveFileKey, int>> _resourceUsages = new();
-        protected readonly Dictionary<string, ResourceKey> _resourceKeysByOriginalFilePath = new();
-        protected readonly Dictionary<int, HashSet<WwiseSoundBankItemReference>> _wwiseSoundUsages = new();
+        private readonly ResourceUsageCache _baseCache;
+        private readonly Dictionary<ResourceKey, Dictionary<ArchiveFileKey, int>> _resourceUsages = new();
+        private readonly Dictionary<(ResourceType, int), List<ulong>> _resourceLocales = new();
+        private readonly Dictionary<string, ResourceKey> _resourceKeysByOriginalFilePath = new();
+        private readonly Dictionary<int, HashSet<WwiseSoundBankItemReference>> _wwiseSoundUsages = new();
 
         public ResourceUsageCache()
         {
@@ -101,7 +102,7 @@ namespace TrRebootTools.Shared.Cdc
                     _resourceKeysByOriginalFilePath[originalFilePath] = resourceRef;
             }
 
-            Dictionary<ArchiveFileKey, int> usages = _resourceUsages.GetOrAdd(resourceRef, () => new());
+            Dictionary<ArchiveFileKey, int> usages = _resourceUsages.GetOrAdd(resourceRef, () => []);
 
             ArchiveFileKey collectionKey = new ArchiveFileKey(collection.NameHash, collection.Locale);
             if (collection.Locale == 0xFFFFFFFFFFFFFFFF)
@@ -121,6 +122,13 @@ namespace TrRebootTools.Shared.Cdc
             }
 
             usages[collectionKey] = resourceIdx;
+
+            if (resourceRef.Locale != 0xFFFFFFFFFFFFFFFF)
+            {
+                List<ulong> locales = _resourceLocales.GetOrAdd((resourceRef.Type, resourceRef.Id), () => []);
+                if (!locales.Contains(resourceRef.Locale))
+                    locales.Add(resourceRef.Locale);
+            }
         }
 
         private void AddWwiseSoundBank(ArchiveSet archiveSet, ResourceReference resourceRef)
@@ -134,14 +142,14 @@ namespace TrRebootTools.Shared.Cdc
             int index = 0;
             foreach (int soundId in bank.EmbeddedSounds.Keys)
             {
-                _wwiseSoundUsages.GetOrAdd(soundId, () => new())
+                _wwiseSoundUsages.GetOrAdd(soundId, () => [])
                                  .Add(new WwiseSoundBankItemReference(resourceRef.Id, WwiseSoundBankItemReferenceType.DataIndex, index++));
             }
 
             index = 0;
             foreach (int soundId in bank.ReferencedSoundIds)
             {
-                _wwiseSoundUsages.GetOrAdd(soundId, () => new())
+                _wwiseSoundUsages.GetOrAdd(soundId, () => [])
                                  .Add(new WwiseSoundBankItemReference(resourceRef.Id, WwiseSoundBankItemReferenceType.Event, index++));
             }
         }
@@ -149,6 +157,20 @@ namespace TrRebootTools.Shared.Cdc
         public bool TryGetResourceKeyByOriginalFilePath(string filePath, out ResourceKey resourceKey)
         {
             return _resourceKeysByOriginalFilePath.TryGetValue(filePath, out resourceKey);
+        }
+
+        public IReadOnlyCollection<ulong> GetResourceLocales(ResourceType type, int id)
+        {
+            return _resourceLocales.GetOrDefault((type, id));
+        }
+
+        public IEnumerable<ResourceCollectionItemReference> GetResourceUsages(ArchiveSet archiveSet, ResourceType resourceType, int resourceId)
+        {
+            List<ulong> locales = _resourceLocales.GetOrDefault((resourceType, resourceId));
+            if (locales == null)
+                return GetResourceUsages(archiveSet, new ResourceKey(resourceType, resourceId));
+
+            return locales.SelectMany(l => GetResourceUsages(archiveSet, new ResourceKey(resourceType, 0, resourceId, l)));
         }
 
         public IEnumerable<ResourceCollectionItemReference> GetResourceUsages(ArchiveSet archiveSet, ResourceKey resourceKey)
@@ -225,17 +247,26 @@ namespace TrRebootTools.Shared.Cdc
             {
                 ResourceType type = (ResourceType)reader.ReadByte();
                 int id = reader.ReadInt32();
+                ulong locale = ReadLocale(reader);
                 int numCollections = reader.ReadUInt16();
                 Dictionary<ArchiveFileKey, int> usages = new(numCollections);
                 for (int j = 0; j < numCollections; j++)
                 {
                     ulong collectionNameHash = reader.ReadUInt64();
-                    ulong collectionLocale = reader.ReadByte() == 0 ? 0xFFFFFFFFFFFFFFFF : reader.ReadUInt64();
+                    ulong collectionLocale = ReadLocale(reader);
                     int resourceIdx = reader.ReadUInt16();
                     usages.Add(new ArchiveFileKey(collectionNameHash, collectionLocale), resourceIdx);
                 }
-                _resourceUsages.Add(new ResourceKey(type, id), usages);
+                _resourceUsages.Add(new ResourceKey(type, 0, id, locale), usages);
+
+                if (locale != 0xFFFFFFFFFFFFFFFF)
+                    _resourceLocales.GetOrAdd((type, id), () => []).Add(locale);
             }
+        }
+
+        private static ulong ReadLocale(BinaryReader reader)
+        {
+            return reader.ReadByte() == 0 ? 0xFFFFFFFFFFFFFFFF : reader.ReadUInt64();
         }
 
         private void ReadOriginalResourceFilePaths(BinaryReader reader)
@@ -288,21 +319,27 @@ namespace TrRebootTools.Shared.Cdc
             {
                 writer.Write((byte)resource.Type);
                 writer.Write(resource.Id);
+                WriteLocale(writer, resource.Locale);
                 writer.Write((ushort)usages.Count);
                 foreach ((ArchiveFileKey collectionKey, int resourceIdx) in usages)
                 {
                     writer.Write(collectionKey.NameHash);
-                    if (collectionKey.Locale == 0xFFFFFFFFFFFFFFFF)
-                    {
-                        writer.Write((byte)0);
-                    }
-                    else
-                    {
-                        writer.Write((byte)1);
-                        writer.Write(collectionKey.Locale);
-                    }
+                    WriteLocale(writer, collectionKey.Locale);
                     writer.Write((ushort)resourceIdx);
                 }
+            }
+        }
+
+        private static void WriteLocale(BinaryWriter writer, ulong locale)
+        {
+            if (locale == 0xFFFFFFFFFFFFFFFF)
+            {
+                writer.Write((byte)0);
+            }
+            else
+            {
+                writer.Write((byte)1);
+                writer.Write(locale);
             }
         }
 

@@ -50,6 +50,8 @@ namespace TrRebootTools.Shared.Cdc
 
         public abstract IReadOnlyList<ResourceReference> ResourceReferences { get; }
 
+        public abstract bool Contains(ResourceKey resourceKey);
+
         public abstract int AddResourceReference(ResourceCollection otherCollection, int otherResourceId);
         public abstract int AddResourceReference(ResourceReference resourceRef);
         public abstract void UpdateResourceReference(int resourceIdx, ResourceReference resourceRef);
@@ -71,6 +73,7 @@ namespace TrRebootTools.Shared.Cdc
         private readonly List<TResourceLocation> _resourceLocations = new();
 
         private List<ResourceReference> _resourceReferences;
+        private HashSet<ResourceKey> _resourceKeyLookup;
 
         protected ResourceCollection(ulong nameHash, ulong locale, Stream stream)
             : base(nameHash, locale)
@@ -125,13 +128,22 @@ namespace TrRebootTools.Shared.Cdc
             }
         }
 
+        public override bool Contains(ResourceKey resourceKey)
+        {
+            _resourceKeyLookup ??= [.. _resourceIdentifications];
+            return _resourceKeyLookup.Contains(resourceKey);
+        }
+
         public override int AddResourceReference(ResourceCollection otherCollection, int otherResourceId)
         {
             var otherSpecificCollection = (ResourceCollection<TResourceLocation, TLocale>)otherCollection;
             int resourceIdx = _resourceIdentifications.Count;
-            _resourceIdentifications.Add(otherSpecificCollection._resourceIdentifications[otherResourceId]);
-            _resourceLocations.Add(otherSpecificCollection._resourceLocations[otherResourceId]);
+            var identification = otherSpecificCollection._resourceIdentifications[otherResourceId];
+            var location = otherSpecificCollection._resourceLocations[otherResourceId];
+            _resourceIdentifications.Add(identification);
+            _resourceLocations.Add(location);
             _resourceReferences = null;
+            _resourceKeyLookup?.Add(identification);
             return resourceIdx;
         }
 
@@ -140,8 +152,8 @@ namespace TrRebootTools.Shared.Cdc
             int resourceIdx = _resourceIdentifications.Count;
             _resourceIdentifications.Add(MakeResourceIdentification(resourceRef));
             _resourceLocations.Add(MakeResourceLocation(resourceRef));
-            if (_resourceReferences != null)
-                _resourceReferences.Add(resourceRef);
+            _resourceReferences?.Add(resourceRef);
+            _resourceKeyLookup?.Add(resourceRef);
 
             UpdateResourceReference(resourceIdx, resourceRef);
             return resourceIdx;
@@ -163,7 +175,7 @@ namespace TrRebootTools.Shared.Cdc
                 identification.Type = (byte)(resourceRef.Type < ResourceType.Max ? resourceRef.Type : ResourceType.CollisionModel);
             else
                 identification.Type = (byte)ResourceType.Empty;
-            
+
             _resourceIdentifications[resourceIdx] = identification;
 
             TResourceLocation location = _resourceLocations[resourceIdx];
@@ -303,6 +315,24 @@ namespace TrRebootTools.Shared.Cdc
             {
                 get { return SubTypeAndRefDefinitionsSize >> 8; }
                 set { SubTypeAndRefDefinitionsSize = (SubTypeAndRefDefinitionsSize & 0xFF) | (value << 8); }
+            }
+
+            public static implicit operator ResourceKey(ResourceIdentification<TLocale> identification)
+            {
+                ulong locale;
+                if (identification.Locale is uint uintLocale)
+                    locale = 0xFFFFFFFF00000000 | uintLocale;
+                else if (identification.Locale is ulong ulongLocale)
+                    locale = ulongLocale;
+                else
+                    throw new NotSupportedException();
+
+                return new ResourceKey(
+                    (ResourceType)identification.Type,
+                    (ResourceSubType)identification.SubType,
+                    identification.Id,
+                    locale
+                );
             }
         }
     }

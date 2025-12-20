@@ -1,0 +1,53 @@
+//------------------------------------------------
+//--- 010 Editor v15.0 Binary Template
+//
+//      File: tr10animlibrary.bt
+//   Authors: arc_
+//   Purpose: Parse ROTTR animation library files
+//  Category: ROTTR
+// File Mask: *.tr10animlib
+//------------------------------------------------
+
+#define TR_VERSION 10
+#include "../trcommon.bt"
+
+typedef struct
+{
+    short id;
+    short num;
+    FSkip(4);
+    Ref fxListRef;
+    Ref debugNameRef;
+    if (CanSeekTo(debugNameRef))
+    {
+        SeekToRef(debugNameRef);
+        string debugName;
+        ReturnFromRef();
+    }
+} AnimEntry <optimize=false, read=debugName>;
+
+typedef struct
+{
+    unsigned int zoneId;
+    FSkip(4);
+    Ref animListRef;
+    unsigned int numAnimations;
+    FSkip(4);
+    Ref animationsRef;
+    if (CanSeekTo(animationsRef))
+    {
+        SeekToRef(animationsRef);
+        AnimEntry animations[numAnimations];
+        ReturnFromRef();
+    }
+    Ref debugNameRef;
+    if (CanSeekTo(debugNameRef))
+    {
+        SeekToRef(debugNameRef);
+        string debugName;
+        ReturnFromRef();
+    }
+} AnimLibrary <optimize=false>;
+
+RefDefinitions refDefinitions;
+AnimLibrary root <open=true>;

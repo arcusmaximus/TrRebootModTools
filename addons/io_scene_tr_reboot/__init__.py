@@ -3,7 +3,7 @@ bl_info = {
     "description": "Import/export files for the Tomb Raider Reboot games",
     "author": "arc_",
     "blender": (4, 0, 0),
-    "version": (1, 8, 1),
+    "version": (1, 8, 4),
     "location": "File > Import-Export",
     "support": "COMMUNITY",
     "category": "Import-Export"
@@ -31,6 +31,7 @@ from io_scene_tr_reboot.operator.ToggleCollisionVisibilityOperator import Toggle
 from io_scene_tr_reboot.operator.UnpinClothBonesOperator import UnpinClothBonesOperator
 from io_scene_tr_reboot.properties.BlenderPropertyGroup import BlenderPropertyGroup
 from io_scene_tr_reboot.properties.BoneProperties import BoneClothProperties, BoneConstraintProperties, BoneProperties
+from io_scene_tr_reboot.properties.MaterialProperties import MaterialProperties
 from io_scene_tr_reboot.properties.ObjectProperties import ObjectClothProperties, ObjectCollisionModelProperties, ObjectCollisionShapeProperties, ObjectMeshProperties, ObjectProperties, ObjectSkeletonProperties
 from io_scene_tr_reboot.properties.SceneProperties import SceneFileProperties, SceneProperties
 from io_scene_tr_reboot.properties.ToolSettingProperties import ToolSettingProperties
@@ -41,6 +42,7 @@ from io_scene_tr_reboot.ui.ClothStripPanel import ClothStripPanel
 from io_scene_tr_reboot.ui.CollisionModelPanel import CollisionModelPanel
 from io_scene_tr_reboot.ui.CollisionsPanel import CollisionsPanel
 from io_scene_tr_reboot.ui.HairPanel import HairPanel
+from io_scene_tr_reboot.ui.MaterialPanel import MaterialPanel
 from io_scene_tr_reboot.ui.MeshPanel import MeshPanel
 from io_scene_tr_reboot.ui.ScenePanel import ScenePanel
 
@@ -72,6 +74,7 @@ other_classes: list[type] = [
     CollisionModelPanel,
     CollisionsPanel,
     HairPanel,
+    MaterialPanel,
     MeshPanel,
     ScenePanel
 ]
@@ -80,6 +83,7 @@ custom_property_groups: list[type[BlenderPropertyGroup]] = [
     BoneClothProperties,
     BoneConstraintProperties,
     BoneProperties,
+    MaterialProperties,
     ObjectClothProperties,
     ObjectCollisionModelProperties,
     ObjectCollisionShapeProperties,

@@ -276,6 +276,7 @@ class ModelImporter(SlotsBase):
 
             global_blend_shape_id = tr_skeleton.global_blend_shape_ids.get(local_blend_shape_id) if tr_skeleton is not None else None
             bl_shape_key = bl_obj.shape_key_add(name = BlenderNaming.make_shape_key_name(tr_blendshape.name, global_blend_shape_id, local_blend_shape_id), from_mix = False)
+            bl_shape_key.value = 0
             for vertex_idx, offsets in tr_blendshape.vertices.items():
                 shape_key_point = cast(bpy.types.ShapeKeyPoint, bl_shape_key.data[vertex_idx])
                 base_pos = Vector(tr_mesh.vertices[vertex_idx].attributes[Hashes.position])

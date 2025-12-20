@@ -51,8 +51,8 @@ typedef struct
     int hasCinematic;
     int hasSubtitles;
     int faceFxSize;
-    int loopStartFileOffset;
-    int loopStartBundleOffset;
+    int loopStartFileOffset <format=hex>;
+    int loopStartBundleOffset <format=hex>;
     int maxEEBytesPerRead;
     float mediaLength;
     float volLeft[12];

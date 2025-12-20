@@ -20,6 +20,14 @@ namespace TrRebootTools.Shared.Cdc
                 { CdcGame.Shadow, new ShadowResourceNaming() }
             };
 
+        static ResourceNaming()
+        {
+            foreach ((CdcGame game, ResourceNaming instance) in Instances)
+            {
+                instance.Game = game;
+            }
+        }
+
         private static ResourceNaming For(CdcGame game)
         {
             return Instances[game];
@@ -74,6 +82,8 @@ namespace TrRebootTools.Shared.Cdc
             }
         }
 
+        protected CdcGame Game { get; private set; }
+
         protected abstract Dictionary<(ResourceType, ResourceSubType), string[]> Mappings { get; }
 
         private (ResourceType, ResourceSubType) GetType(string filePath)
@@ -95,12 +105,16 @@ namespace TrRebootTools.Shared.Cdc
             if (type == 0)
                 return false;
 
-            Match match = Regex.Match(filePath, @"(?:^|[\\/\.])(\d+)\.\w+$");
-            if (!match.Success)
+            ulong? locale = CdcGameInfo.Get(Game).LanguageCodeToLocale(Path.GetFileNameWithoutExtension(filePath));
+            if (locale != null)
+                filePath = Path.GetDirectoryName(filePath);
+
+            Match idMatch = Regex.Match(filePath, @"(?:^|[\\/\.])(\d+)\.\w+$");
+            if (!idMatch.Success)
                 return false;
 
-            int id = int.Parse(match.Groups[1].Value);
-            resourceKey = new ResourceKey(type, subType, id);
+            int id = int.Parse(idMatch.Groups[1].Value);
+            resourceKey = new ResourceKey(type, subType, id, locale ?? 0xFFFFFFFFFFFFFFFF);
             return true;
         }
 
@@ -121,7 +135,12 @@ namespace TrRebootTools.Shared.Cdc
 
         private string GetFilePathInstance(ArchiveSet archiveSet, ResourceReference resourceRef, bool useOriginalFilePath)
         {
-            return $"{resourceRef.Type}\\{GetFileNameInstance(archiveSet, resourceRef, useOriginalFilePath)}";
+            string fileName = GetFileNameInstance(archiveSet, resourceRef, useOriginalFilePath);
+            string filePath = $"{resourceRef.Type}\\{fileName}";
+            if (resourceRef.Locale != 0xFFFFFFFFFFFFFFFF)
+                filePath += "\\" + CdcGameInfo.Get(Game).LocaleToLanguageCode(resourceRef.Locale) + GetExtension(resourceRef.Type, resourceRef.SubType);
+
+            return filePath;
         }
 
         protected virtual string ReadOriginalFilePathInstance(ArchiveSet archiveSet, ResourceReference resourceRef)

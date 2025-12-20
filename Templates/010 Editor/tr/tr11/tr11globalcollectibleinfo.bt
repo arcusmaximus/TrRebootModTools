@@ -1,5 +1,7 @@
 #define TR_VERSION 11
+#define TR_OBJECT_NO_INSTANTIATE
 #include "../trcommon.bt"
+#include "../trobjectcommon.bt"
 
 typedef struct
 {

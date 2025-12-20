@@ -425,8 +425,12 @@ class Tr2013Cloth(Cloth):
             dtp_strip_group.strip_ids_ref = writer.make_internal_ref()
             dtp_strip_group.num_strip_ids = 1
             dtp_strip_group.collide_with_dynamic_hair = self.supports.hair_collision and strip.is_hair_collider
-            dtp_strip_group.collision_group_indices_ref = writer.make_internal_ref()
-            dtp_strip_group.num_collision_group_indices = 1
+            if len(strip.collisions) > 0:
+                dtp_strip_group.collision_group_indices_ref = writer.make_internal_ref()
+                dtp_strip_group.num_collision_group_indices = 1
+            else:
+                dtp_strip_group.collision_group_indices_ref = None
+
             writer.write_struct(cast(CStruct, dtp_strip_group))
 
             dtp_strip_groups.append(dtp_strip_group)
@@ -435,8 +439,9 @@ class Tr2013Cloth(Cloth):
             cast(ResourceReference, dtp_strip_group.strip_ids_ref).offset = writer.position
             self.write_tune_strip_id(writer, strip.id)
 
-            cast(ResourceReference, dtp_strip_group.collision_group_indices_ref).offset = writer.position
-            writer.write_uint32(i)
+            if dtp_strip_group.collision_group_indices_ref is not None:
+                dtp_strip_group.collision_group_indices_ref.offset = writer.position
+                writer.write_uint32(i)
 
         writer.align(0x10)
 

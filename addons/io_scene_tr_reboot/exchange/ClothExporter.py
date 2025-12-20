@@ -264,6 +264,10 @@ class ClothExporter:
         skeleton_id: int,
         collision_bounding_boxes: dict[CollisionShape, _BoundingBox]
     ) -> None:
+        props = ObjectProperties.get_instance(bl_cloth_strip_obj).cloth
+        if not props.collision_enabled:
+            return
+
         cloth_strip_bounding_box = self.get_world_bounding_box(bl_cloth_strip_obj)
         padding_size = 20 * self.scale_factor
         padding_vector = Vector((padding_size, padding_size, padding_size))

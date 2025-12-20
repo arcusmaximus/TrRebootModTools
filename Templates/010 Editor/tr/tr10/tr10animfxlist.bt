@@ -1,0 +1,86 @@
+#define TR_VERSION 10
+#include "../trcommon.bt"
+
+#define TR_SOUNDPLEX_NO_INSTANTIATE
+#include "tr10soundplex.bt"
+
+typedef struct
+{
+    ushort type : 2;
+    ushort flag1 : 1;
+    ushort flag2 : 1;
+    ushort unknown : 6;
+    ushort triggerMode : 2;
+    ushort size : 4;
+} AnimTriggerHeaderFields;
+
+typedef union
+{
+    AnimTriggerHeaderFields fields;
+    ushort value <format=hex>;
+} AnimFxTriggerHeader;
+
+typedef struct
+{
+    AnimFxTriggerHeader header;
+    short keyframeId;
+    ubyte fxId;
+    FSkip(3);
+    if (header.value == 0xFFFF)
+    {
+        return;
+    }
+    local int endPos = FTell() + ((header.fields.size + 1) & ~1) * 4;
+    if (!header.fields.flag1 && !header.fields.flag2)
+    {
+        byte soundType;
+        FSkip(3);
+        switch (soundType)
+        {
+            case 0:
+                FSkip(4);
+                Ref soundPlexRef;
+                if (CanSeekTo(soundPlexRef))
+                {
+                    SeekToRef(soundPlexRef);
+                    SoundPlex sound;
+                    ReturnFromRef();
+                }
+                break;
+            case 1:
+                int vocalsIdOverride;
+                int barkId;
+                int useVocalsIdOverride;
+                int fxListDtpId;
+                break;
+        }
+    }
+    FSeek(endPos);
+} AnimFxTrigger <optimize=false>;
+
+typedef struct
+{
+    while (true)
+    {
+        AnimFxTrigger trigger;
+        if (trigger.header.value == 0xFFFF)
+        {
+            break;
+        }
+    }
+} AnimFxTriggerList;
+
+typedef struct
+{
+    Ref effectLibRef;
+    Ref triggersRef;
+    if (CanSeekTo(triggersRef))
+    {
+        SeekToRef(triggersRef);
+        AnimFxTriggerList triggers;
+        ReturnFromRef();
+    }
+} AnimFxList <optimize=false>;
+
+RefDefinitions refDefinitions;
+AnimFxList root <open=true>;

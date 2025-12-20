@@ -74,7 +74,7 @@
 
         public static implicit operator ResourceKey(ResourceReference resourceRef)
         {
-            return new ResourceKey(resourceRef.Type, resourceRef.SubType, resourceRef.Id);
+            return new ResourceKey(resourceRef.Type, resourceRef.SubType, resourceRef.Id, resourceRef.Locale);
         }
     }
 }
