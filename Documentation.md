@@ -15,7 +15,7 @@ This toolset allows modding the games from the Tomb Raider Reboot trilogy. The f
 | Level geometry importing                   | ~                  | ✓                       | ✓                         |
 | Animations                                 |                    |                         | ✓                         |
 
-<small>\* For Tomb Raider (2013), the "Definitive Edition" that can only be bought on the Xbox store is **not** supported.
+<small>\* For Tomb Raider (2013), the Definitive Edition that can only be bought on the Xbox store is **not** supported.
 Only the GOTY edition from e.g. Steam or the EGS is.</small>
 
 This page will give a quick introduction to the various file types involved, and then explain how to create and package mods.
