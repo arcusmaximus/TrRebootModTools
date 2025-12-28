@@ -208,9 +208,9 @@ that only contains the necessary bones.
 
 #### Bone hiding
 
-TR skeletons contain quite a few bones that aren't used for deforming the model. To reduce clutter, the addon hides
-these bones by either moving them to the second bone layer (Blender 3) or into a hidden bone collection (Blender 4).
-So, if you import a file that seems to have way too few bones (like tr11_lara.drm), check this layer/bone collection.
+TR skeletons contain quite a few bones that aren't used for deforming the model. To reduce clutter, the addon moves these bones
+into a hidden bone collection. So, if you import a file that seems to have way too few bones (like tr11_lara.drm),
+check this bone collection.
 
 #### Twist bones
 
