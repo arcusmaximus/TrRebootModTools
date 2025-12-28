@@ -41,10 +41,10 @@ The file extensions are as follows:
   (Previous modding tools have referred to resources as "sections," which is also what the games call them internally.
   However, this page will refer to them as "resources" for simplicity's sake.)
 
-  If two archives contain the same file, the archive with the highest version number in its .nfo takes precedence. This makes it
-  possible to mod the game by creating new archives rather than modifying existing ones. The exception is TR2013, which
-  doesn't have .nfo files: in this case, the mod manager automatically creates a backup of patch2.000.tiger,
-  then replaces it by a modded one.
+  If two archives contain the same resource or file, the archive with the highest version number in its .nfo takes precedence.
+  This makes it possible to mod the game by creating new archives rather than modifying existing ones. The exception is TR2013,
+  which doesn't have .nfo files: in this case, the mod manager automatically creates a backup of patch2.000.tiger
+  (or jcontent.000.tiger for Japanese players), then replaces it by a modded one.
 
 - **.drm**
 
