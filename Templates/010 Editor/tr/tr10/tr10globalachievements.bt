@@ -1,0 +1,633 @@
+#define TR_VERSION 10
+#include "../trcommon.bt"
+
+typedef struct
+{
+    unsigned int imageRes;
+    FSkip(4);
+    Ref filepathRef;
+    if (CanSeekTo(filepathRef))
+    {
+        SeekToRef(filepathRef);
+        string filepath;
+        ReturnFromRef();
+    }
+} ImageLoader <optimize=false, read=filepath>;
+
+typedef struct
+{
+    ushort trait;
+    FSkip(2);
+    int not;
+} PlayerTraitListIndexComparison <optimize=false>;
+
+typedef struct
+{
+    int xp;
+    ushort trait;
+} ExperienceByTrait <optimize=false>;
+
+typedef struct
+{
+    int count;
+    int xp;
+    int health;
+    int adrenaline;
+    byte bGiveXPOnlyWhenEarningAchivement;
+    byte bGiveHealthOnlyWhenEarningAchivement;
+    byte bGiveAdrenalineOnlyWhenEarningAchivement;
+    byte retroSave;
+    byte bAlwaysSendPlatformEvent;
+    FSkip(3);
+    unsigned int achievementHash <format=hex>;
+    int modifierRequired;
+    Ref validTraitListRef;
+    unsigned int validTraitListCount;
+    if (CanSeekTo(validTraitListRef))
+    {
+        SeekToRef(validTraitListRef);
+        PlayerTraitListIndexComparison validTraitList[validTraitListCount];
+        ReturnFromRef();
+    }
+    short awardUIName;
+    FSkip(2);
+    Ref bonusXpListRef;
+    unsigned int bonusXpListCount;
+    if (CanSeekTo(bonusXpListRef))
+    {
+        SeekToRef(bonusXpListRef);
+        ExperienceByTrait bonusXpList[bonusXpListCount];
+        ReturnFromRef();
+    }
+} ExperienceAward <optimize=false>;
+
+typedef struct
+{
+    Ref nameRef;
+    if (CanSeekTo(nameRef))
+    {
+        SeekToRef(nameRef);
+        string name;
+        ReturnFromRef();
+    }
+    ushort id;
+    FSkip(2);
+    int gameClipType;
+    unsigned int durationInSecs;
+} GameClip <optimize=false, read=name>;
+
+typedef struct
+{
+    int name;
+    int description;
+    ImageLoader iconImgLoader;
+    int xbone;
+    int xbox;
+    int ps3;
+    int ps4;
+    int steam;
+    int windowsLive;
+    ExperienceAward experienceAward;
+    FSkip(4);
+    byte recordMovieClip;
+    FSkip(7);
+    GameClip gameClip;
+    FSkip(4);
+    byte rewardTwitchSpectators;
+    FSkip(3);
+    unsigned int twitchRewardCardEvent <format=hex>;
+    Ref debugNameRef;
+    if (CanSeekTo(debugNameRef))
+    {
+        SeekToRef(debugNameRef);
+        string debugName;
+        ReturnFromRef();
+    }
+} Achievement <optimize=false, read=debugName>;
+
+typedef struct
+{
+    unsigned int hash;
+} EnumAmmoType <optimize=false>;
+
+typedef struct
+{
+    unsigned int imageRes;
+    FSkip(4);
+    Ref filepathRef;
+    if (CanSeekTo(filepathRef))
+    {
+        SeekToRef(filepathRef);
+        string filepath;
+        ReturnFromRef();
+    }
+    int offSetX;
+    int offSetY;
+    int width;
+    int height;
+    Ref actionRef;
+    if (CanSeekTo(actionRef))
+    {
+        SeekToRef(actionRef);
+        string action;
+        ReturnFromRef();
+    }
+    unsigned int imageResVR;
+    FSkip(4);
+    Ref filepathVRRef;
+    if (CanSeekTo(filepathVRRef))
+    {
+        SeekToRef(filepathVRRef);
+        string filepathVR;
+        ReturnFromRef();
+    }
+    int offSetXVR;
+    int offSetYVR;
+    int widthVR;
+    int heightVR;
+} ImagePath <optimize=false, read=filepath>;
+
+typedef struct
+{
+    ushort uiObjectID;
+    FSkip(2);
+    float uiWeaponPositionOffset[3];
+    float uiWeaponRotation[3];
+} UIPositionOverride <optimize=false>;
+
+typedef struct
+{
+    Ref sourceMaterialRef;
+    Ref newMaterialRef;
+} MaterialSwapData <optimize=false>;
+
+typedef struct
+{
+    ushort objectID;
+    FSkip(6);
+    MaterialSwapData materialSwapData;
+} RimShaderObjectAttemptTwo <optimize=false>;
+
+typedef struct
+{
+    Ref _stringRef;
+    if (CanSeekTo(_stringRef))
+    {
+        SeekToRef(_stringRef);
+        string _string;
+        ReturnFromRef();
+    }
+    float value;
+} AnimationNamedValue <optimize=false>;
+
+typedef struct
+{
+    uint bit01 : 1;
+    uint bit02 : 1;
+    uint bit03 : 1;
+    uint bit04 : 1;
+    uint bit05 : 1;
+    uint bit06 : 1;
+    uint bit07 : 1;
+    uint bit08 : 1;
+    uint bit09 : 1;
+    uint bit10 : 1;
+    uint bit11 : 1;
+    uint bit12 : 1;
+    uint bit13 : 1;
+    uint bit14 : 1;
+    uint bit15 : 1;
+    uint bit16 : 1;
+    uint bit17 : 1;
+    uint bit18 : 1;
+    uint bit19 : 1;
+    uint bit20 : 1;
+    uint bit21 : 1;
+    uint bit22 : 1;
+    uint bit23 : 1;
+    uint bit24 : 1;
+    uint bit25 : 1;
+    uint bit26 : 1;
+    uint bit27 : 1;
+    uint bit28 : 1;
+    uint bit29 : 1;
+    uint bit30 : 1;
+    uint bit31 : 1;
+    uint bit32 : 1;
+} ActionGraphBitFlags <optimize=false>;
+
+typedef struct
+{
+    uint bit01 : 1;
+    uint bit02 : 1;
+    uint bit03 : 1;
+    uint bit04 : 1;
+    uint bit05 : 1;
+    uint bit06 : 1;
+    uint bit07 : 1;
+    uint bit08 : 1;
+    uint bit09 : 1;
+    uint bit10 : 1;
+    uint bit11 : 1;
+    uint bit12 : 1;
+    uint bit13 : 1;
+    uint bit14 : 1;
+    uint bit15 : 1;
+    uint bit16 : 1;
+    uint bit17 : 1;
+    uint bit18 : 1;
+    uint bit19 : 1;
+    uint bit20 : 1;
+    uint bit21 : 1;
+    uint bit22 : 1;
+    uint bit23 : 1;
+    uint bit24 : 1;
+    uint bit25 : 1;
+    uint bit26 : 1;
+    uint bit27 : 1;
+    uint bit28 : 1;
+    uint bit29 : 1;
+    uint bit30 : 1;
+    uint bit31 : 1;
+    uint bit32 : 1;
+} ActionGraphExtraBitFlags <optimize=false>;
+
+typedef struct
+{
+    Ref traitsRef;
+    unsigned int traitsCount;
+    if (CanSeekTo(traitsRef))
+    {
+        SeekToRef(traitsRef);
+        PlayerTraitListIndexComparison traits[traitsCount];
+        ReturnFromRef();
+    }
+    unsigned int uiMarkerID;
+} UiMarkerIDOverride <optimize=false>;
+
+typedef struct
+{
+    Ref traitsRef;
+    unsigned int traitsCount;
+    if (CanSeekTo(traitsRef))
+    {
+        SeekToRef(traitsRef);
+        PlayerTraitListIndexComparison traits[traitsCount];
+        ReturnFromRef();
+    }
+    ActionGraphBitFlags drawGroupFlags;
+    ActionGraphBitFlags drawGroupFlagsHide;
+    ActionGraphExtraBitFlags drawGroupFlagsExtended;
+    ActionGraphExtraBitFlags drawGroupFlagsHideExtended;
+    FSkip(4);
+    Ref debugNameRef;
+    if (CanSeekTo(debugNameRef))
+    {
+        SeekToRef(debugNameRef);
+        string debugName;
+        ReturnFromRef();
+    }
+} GatedDrawGroup <optimize=false>;
+
+typedef struct
+{
+    short screenName;
+    short screenDesc;
+    int traitCategory;
+    int trait;
+    int skillPointCost;
+    int salvageCost;
+    int craftingRequirement;
+    int specialCost;
+    FSkip(4);
+    Ref specialTypeRef;
+    if (CanSeekTo(specialTypeRef))
+    {
+        SeekToRef(specialTypeRef);
+        EnumAmmoType specialType;
+        ReturnFromRef();
+    }
+    byte hidden;
+    byte hideIfMissingPrereqs;
+    byte hideIfMissingTier;
+    byte isWeaponAttachment;
+    byte isASharedUpgrade;
+    FSkip(3);
+    int sortOrder;
+    int tier;
+    short chainPrerequisite;
+    FSkip(6);
+    Ref prerequisitesRef;
+    unsigned int numPrerequisites;
+    if (CanSeekTo(prerequisitesRef))
+    {
+        SeekToRef(prerequisitesRef);
+        ushort prerequisites[numPrerequisites];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref blockingPrerequisitesRef;
+    unsigned int numBlockingPrerequisites;
+    if (CanSeekTo(blockingPrerequisitesRef))
+    {
+        SeekToRef(blockingPrerequisitesRef);
+        ushort blockingPrerequisites[numBlockingPrerequisites];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    ImagePath imagePath;
+    byte hasMoreInfo;
+    FSkip(7);
+    ImagePath moreInfoImagePath;
+    short moreInfoText;
+    FSkip(6);
+    Ref iconIDRef;
+    if (CanSeekTo(iconIDRef))
+    {
+        SeekToRef(iconIDRef);
+        string iconID;
+        ReturnFromRef();
+    }
+    byte exemptFromUnlockAll;
+    FSkip(3);
+    float uiWeaponPositionOffset[3];
+    float uiWeaponRotation[3];
+    FSkip(4);
+    Ref uIPositionOverrideRef;
+    unsigned int uIPositionOverrideCount;
+    if (CanSeekTo(uIPositionOverrideRef))
+    {
+        SeekToRef(uIPositionOverrideRef);
+        UIPositionOverride uIPositionOverride[uIPositionOverrideCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref rimShaderSwapIndicesRef;
+    unsigned int rimShaderSwapIndicesCount;
+    if (CanSeekTo(rimShaderSwapIndicesRef))
+    {
+        SeekToRef(rimShaderSwapIndicesRef);
+        RimShaderObjectAttemptTwo rimShaderSwapIndices[rimShaderSwapIndicesCount];
+        ReturnFromRef();
+    }
+    unsigned int numNamedValues;
+    Ref namedValuesRef;
+    if (CanSeekTo(namedValuesRef))
+    {
+        SeekToRef(namedValuesRef);
+        AnimationNamedValue namedValues[numNamedValues];
+        ReturnFromRef();
+    }
+    ActionGraphBitFlags drawGroupFlags;
+    ActionGraphBitFlags drawGroupFlagsHide;
+    ActionGraphExtraBitFlags drawGroupFlagsExtended;
+    ActionGraphExtraBitFlags drawGroupFlagsHideExtended;
+    unsigned int uiMarkerID;
+    FSkip(4);
+    Ref uiMarkerIDOverrideRef;
+    unsigned int uiMarkerIDOverrideCount;
+    if (CanSeekTo(uiMarkerIDOverrideRef))
+    {
+        SeekToRef(uiMarkerIDOverrideRef);
+        UiMarkerIDOverride uiMarkerIDOverride[uiMarkerIDOverrideCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref gatedDrawGroupsRef;
+    unsigned int gatedDrawGroupsCount;
+    if (CanSeekTo(gatedDrawGroupsRef))
+    {
+        SeekToRef(gatedDrawGroupsRef);
+        GatedDrawGroup gatedDrawGroups[gatedDrawGroupsCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref debugNameRef;
+    if (CanSeekTo(debugNameRef))
+    {
+        SeekToRef(debugNameRef);
+        string debugName;
+        ReturnFromRef();
+    }
+    short tutorialSkillsTitle;
+    short tutorialSkillsText;
+    float tutorialSkillsItemTimer;
+    Ref tutorialSkillsItemListRef;
+    unsigned int tutorialSkillsItemListCount;
+    if (CanSeekTo(tutorialSkillsItemListRef))
+    {
+        SeekToRef(tutorialSkillsItemListRef);
+        ImageLoader tutorialSkillsItemList[tutorialSkillsItemListCount];
+        ReturnFromRef();
+    }
+    byte canBeDLCUnlocked;
+    FSkip(3);
+    unsigned int dlcRef <format=hex>;
+    byte dontSaveForChapterReplay;
+    FSkip(1);
+    ushort globalOutfits;
+    short outfit;
+    short outfitCampsiteViewer;
+    int sortIndex;
+    unsigned int survivalGuideType;
+    byte includeInSurvivalGuide;
+    FSkip(3);
+} PlayerTrait <optimize=false, read=debugName>;
+
+typedef struct
+{
+    int category;
+    unsigned int numTraitsAwarded;
+    Ref traitsAwardedRef;
+    if (CanSeekTo(traitsAwardedRef))
+    {
+        SeekToRef(traitsAwardedRef);
+        ushort traitsAwarded[numTraitsAwarded];
+        ReturnFromRef();
+    }
+    int tierLevel;
+    int skillRequired;
+} Achievements__TierLockEntry <optimize=false>;
+
+typedef struct
+{
+    ushort trait;
+    FSkip(2);
+    float multiplier;
+} PlayerTraitListIndexMultiplierValue <optimize=false>;
+
+typedef struct
+{
+    int xbone;
+    int index;
+    Ref imageNameRef;
+    if (CanSeekTo(imageNameRef))
+    {
+        SeekToRef(imageNameRef);
+        string imageName;
+        ReturnFromRef();
+    }
+} OnlinePlatformAchievement <optimize=false>;
+
+typedef struct
+{
+    unsigned int numAchievements;
+    FSkip(4);
+    Ref achievementsListRef;
+    if (CanSeekTo(achievementsListRef))
+    {
+        SeekToRef(achievementsListRef);
+        Achievement achievementsList[numAchievements];
+        ReturnFromRef();
+    }
+    unsigned int numMpAchievements;
+    FSkip(4);
+    Ref mpAchievementsListRef;
+    if (CanSeekTo(mpAchievementsListRef))
+    {
+        SeekToRef(mpAchievementsListRef);
+        Achievement mpAchievementsList[numMpAchievements];
+        ReturnFromRef();
+    }
+    unsigned int numTraits;
+    FSkip(4);
+    Ref traitsListRef;
+    if (CanSeekTo(traitsListRef))
+    {
+        SeekToRef(traitsListRef);
+        PlayerTrait traitsList[numTraits];
+        ReturnFromRef();
+    }
+    unsigned int numTierLocks;
+    FSkip(4);
+    Ref tierLockListRef;
+    if (CanSeekTo(tierLockListRef))
+    {
+        SeekToRef(tierLockListRef);
+        Achievements__TierLockEntry tierLockList[numTierLocks];
+        ReturnFromRef();
+    }
+    ushort debugAchievement;
+    ushort uiBARObjectID;
+    ushort uiRevolverObjectID;
+    ushort uiPoisonGrenadeObjectID;
+    ushort uiPoisonArrowObjectID;
+    ushort uiPoisonArrowChargedObjectID;
+    ushort deerParentObjectID;
+    ushort throwableBottleObjectID;
+    ushort throwableChickenObjectID;
+    ushort animalBaseObjectID;
+    ushort animalBaseActionGraphObjectID;
+    ushort huntressLaraObjectID;
+    ushort debugTrait;
+    ushort ropeAttachToWallClimb;
+    ushort pitonArrow;
+    ushort artisticSkill;
+    ushort unavailableSkill;
+    ushort unlockLevel1;
+    ubyte numSkillsUnlockLevel1;
+    FSkip(1);
+    ushort bonusSkillForUnlockLevel1;
+    ushort unlockLevel2;
+    ubyte numSkillsUnlockLevel2;
+    FSkip(1);
+    ushort improvedSurvivalInstinct;
+    ushort tripleShotBowTrait;
+    ushort reflexiveAimingTrait;
+    FSkip(2);
+    int numberOfToolTiers;
+    ushort blockStatusRegion;
+    ushort blockStatusDocument;
+    ushort blockStatusRelic;
+    ushort blockStatusResources;
+    ushort blockCampsiteSkills;
+    ushort blockCampsiteFastTravel;
+    ushort blockCampsiteGear;
+    ushort blockCampsiteCrafting;
+    ushort blockCampsiteWeaponUpgrades;
+    ushort blockCampsiteRepairingItems;
+    ushort blockCampsiteBackingOut;
+    ushort campsiteTutorialPoisonArrow;
+    ushort campsiteTutorialWeaponUpgrade;
+    ushort blockCampsiteNavTutorialCrafting;
+    ushort blockCampsiteNavTutorialGear;
+    ushort blockCampsiteNavTutorialSkills;
+    ushort remnantResistanceHardcoreMode;
+    FSkip(6);
+    Ref brokenBowUpgradeListRef;
+    unsigned int numBrokenBowUpgrades;
+    if (CanSeekTo(brokenBowUpgradeListRef))
+    {
+        SeekToRef(brokenBowUpgradeListRef);
+        ushort brokenBowUpgradeList[numBrokenBowUpgrades];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref brokenPistolUpgradeListRef;
+    unsigned int numBrokenPistolUpgrades;
+    if (CanSeekTo(brokenPistolUpgradeListRef))
+    {
+        SeekToRef(brokenPistolUpgradeListRef);
+        ushort brokenPistolUpgradeList[numBrokenPistolUpgrades];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref brokenShotgunUpgradeListRef;
+    unsigned int numBrokenShotgunUpgrades;
+    if (CanSeekTo(brokenShotgunUpgradeListRef))
+    {
+        SeekToRef(brokenShotgunUpgradeListRef);
+        ushort brokenShotgunUpgradeList[numBrokenShotgunUpgrades];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref brokenSmgUpgradeListRef;
+    unsigned int numBrokenSmgUpgrades;
+    if (CanSeekTo(brokenSmgUpgradeListRef))
+    {
+        SeekToRef(brokenSmgUpgradeListRef);
+        ushort brokenSmgUpgradeList[numBrokenSmgUpgrades];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref meleeWeaponUpgradeListRef;
+    unsigned int numMeleeWeaponUpgrades;
+    if (CanSeekTo(meleeWeaponUpgradeListRef))
+    {
+        SeekToRef(meleeWeaponUpgradeListRef);
+        ushort meleeWeaponUpgradeList[numMeleeWeaponUpgrades];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref hackingSkillValueMappingsListRef;
+    unsigned int numHackingSkillValueMappings;
+    if (CanSeekTo(hackingSkillValueMappingsListRef))
+    {
+        SeekToRef(hackingSkillValueMappingsListRef);
+        PlayerTraitListIndexMultiplierValue hackingSkillValueMappingsList[numHackingSkillValueMappings];
+        ReturnFromRef();
+    }
+    short firstBowName;
+    short firstPistolName;
+    short firstShotgunName;
+    short firstSmgName;
+    short firstMeleeWeaponName;
+    FSkip(2);
+    Ref onlinePlatformAchievementListRef;
+    unsigned int onlinePlatformAchievementCount;
+    if (CanSeekTo(onlinePlatformAchievementListRef))
+    {
+        SeekToRef(onlinePlatformAchievementListRef);
+        OnlinePlatformAchievement onlinePlatformAchievementList[onlinePlatformAchievementCount];
+        ReturnFromRef();
+    }
+} Achievements <optimize=false>;
+
+RefDefinitions refDefinitions;
+Ref rootRef;
+if (CanSeekTo(rootRef))
+{
+    SeekToRef(rootRef);
+    Achievements root <open=true>;
+    ReturnFromRef();
+}

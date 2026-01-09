@@ -205,7 +205,7 @@ typedef struct
     short description;
     ushort playerObject;
     FSkip(2);
-    unsigned int parent <format=hex>;
+    int parent;
     FSkip(4);
     Ref flashIconRef;
     if (CanSeekTo(flashIconRef))
