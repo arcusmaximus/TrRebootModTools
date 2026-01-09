@@ -1,6 +1,4 @@
-﻿using TrRebootTools.Shared.Cdc;
-
-namespace TrRebootTools.Shared.Cdc
+﻿namespace TrRebootTools.Shared.Cdc
 {
     public enum WwiseSoundBankItemReferenceType
     {
@@ -8,5 +6,5 @@ namespace TrRebootTools.Shared.Cdc
         Event
     }
 
-    public record WwiseSoundBankItemReference(int BankResourceId, WwiseSoundBankItemReferenceType Type, int Index);
+    public record WwiseSoundBankItemReference(int BankResourceId, ulong BankResourceLocale, WwiseSoundBankItemReferenceType Type, int Index);
 }

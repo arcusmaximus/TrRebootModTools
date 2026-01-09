@@ -10,7 +10,7 @@ namespace TrRebootTools.Shared.Cdc
     public class ResourceUsageCache
     {
         private const string FileName = "resourceusage.bin";
-        private const int Version = 8;
+        private const int Version = 9;
 
         private readonly ResourceUsageCache _baseCache;
         private readonly Dictionary<ResourceKey, Dictionary<ArchiveFileKey, int>> _resourceUsages = new();
@@ -143,14 +143,14 @@ namespace TrRebootTools.Shared.Cdc
             foreach (int soundId in bank.EmbeddedSounds.Keys)
             {
                 _wwiseSoundUsages.GetOrAdd(soundId, () => [])
-                                 .Add(new WwiseSoundBankItemReference(resourceRef.Id, WwiseSoundBankItemReferenceType.DataIndex, index++));
+                                 .Add(new WwiseSoundBankItemReference(resourceRef.Id, resourceRef.Locale, WwiseSoundBankItemReferenceType.DataIndex, index++));
             }
 
             index = 0;
             foreach (int soundId in bank.ReferencedSoundIds)
             {
                 _wwiseSoundUsages.GetOrAdd(soundId, () => [])
-                                 .Add(new WwiseSoundBankItemReference(resourceRef.Id, WwiseSoundBankItemReferenceType.Event, index++));
+                                 .Add(new WwiseSoundBankItemReference(resourceRef.Id, resourceRef.Locale, WwiseSoundBankItemReferenceType.Event, index++));
             }
         }
 
@@ -264,11 +264,6 @@ namespace TrRebootTools.Shared.Cdc
             }
         }
 
-        private static ulong ReadLocale(BinaryReader reader)
-        {
-            return reader.ReadByte() == 0 ? 0xFFFFFFFFFFFFFFFF : reader.ReadUInt64();
-        }
-
         private void ReadOriginalResourceFilePaths(BinaryReader reader)
         {
             int numPaths = reader.ReadInt32();
@@ -292,12 +287,18 @@ namespace TrRebootTools.Shared.Cdc
                 for (int j = 0; j < numUsages; j++)
                 {
                     int soundBankResourceId = reader.ReadInt32();
+                    ulong soundBankLocale = ReadLocale(reader);
                     WwiseSoundBankItemReferenceType type = (WwiseSoundBankItemReferenceType)reader.ReadByte();
                     int index = reader.ReadInt32();
-                    usages.Add(new WwiseSoundBankItemReference(soundBankResourceId, type, index));
+                    usages.Add(new WwiseSoundBankItemReference(soundBankResourceId, soundBankLocale, type, index));
                 }
                 _wwiseSoundUsages.Add(id, usages);
             }
+        }
+
+        private static ulong ReadLocale(BinaryReader reader)
+        {
+            return reader.ReadByte() == 0 ? 0xFFFFFFFFFFFFFFFF : reader.ReadUInt64();
         }
 
         public void Save(string archiveFolderPath)
@@ -330,19 +331,6 @@ namespace TrRebootTools.Shared.Cdc
             }
         }
 
-        private static void WriteLocale(BinaryWriter writer, ulong locale)
-        {
-            if (locale == 0xFFFFFFFFFFFFFFFF)
-            {
-                writer.Write((byte)0);
-            }
-            else
-            {
-                writer.Write((byte)1);
-                writer.Write(locale);
-            }
-        }
-
         private void WriteOriginalResourceFilePaths(BinaryWriter writer)
         {
             writer.Write(_resourceKeysByOriginalFilePath.Count);
@@ -364,9 +352,23 @@ namespace TrRebootTools.Shared.Cdc
                 foreach (WwiseSoundBankItemReference usage in usages)
                 {
                     writer.Write(usage.BankResourceId);
+                    WriteLocale(writer, usage.BankResourceLocale);
                     writer.Write((byte)usage.Type);
                     writer.Write(usage.Index);
                 }
+            }
+        }
+
+        private static void WriteLocale(BinaryWriter writer, ulong locale)
+        {
+            if (locale == 0xFFFFFFFFFFFFFFFF)
+            {
+                writer.Write((byte)0);
+            }
+            else
+            {
+                writer.Write((byte)1);
+                writer.Write(locale);
             }
         }
     }

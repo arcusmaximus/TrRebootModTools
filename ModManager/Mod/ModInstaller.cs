@@ -210,7 +210,7 @@ namespace TrRebootTools.ModManager.Mod
                 );
 
                 Dictionary<ArchiveFileKey, HashSet<ResourceKey>> resourceRefsToAdd = GetResourceRefsToAdd(modPackage, modVariation, modResourceKeys, resourceUsageCache);
-                AddResourceReferencesToCollections(modResourceCollections, modResourceCollectionItems, resourceRefsToAdd);
+                AddResourceReferencesToCollections(modResourceCollections, modResourceCollectionItems, resourceRefsToAdd, resourceUsageCache);
 
                 IEnumerable<ArchiveFileKey> fileKeys = modResourceCollections.Keys.Concat(modPackage.Files).Concat(modVariation?.Files ?? []);
                 Dictionary<ulong, int> fileCountsByLocale = fileKeys.GroupBy(f => f.Locale).ToDictionary(g => g.Key, g => g.Count());
@@ -397,7 +397,8 @@ namespace TrRebootTools.ModManager.Mod
         private void AddResourceReferencesToCollections(
             Dictionary<ArchiveFileKey, ResourceCollection> modResourceCollections,
             Dictionary<ResourceKey, List<ResourceCollectionItem>> modResourceCollectionItems,
-            Dictionary<ArchiveFileKey, HashSet<ResourceKey>> resourceRefsToAdd)
+            Dictionary<ArchiveFileKey, HashSet<ResourceKey>> resourceRefsToAdd,
+            ResourceUsageCache resourceUsageCache)
         {
             foreach ((ArchiveFileKey collectionKey, ICollection<ResourceKey> resourcesForCollection) in resourceRefsToAdd)
             {
@@ -411,7 +412,7 @@ namespace TrRebootTools.ModManager.Mod
                         continue;
 
                     int modCollectionResourceIdx = -1;
-                    ResourceCollectionItemReference existingUsage = _gameResourceUsageCache.GetResourceUsages(_archiveSet, resourceKey).FirstOrDefault();
+                    ResourceCollectionItemReference existingUsage = resourceUsageCache.GetResourceUsages(_archiveSet, resourceKey).FirstOrDefault();
                     if (existingUsage != null)
                     {
                         ResourceCollection sourceCollection = _archiveSet.GetResourceCollection(existingUsage.CollectionReference);

@@ -141,7 +141,8 @@ class ModelExporter(SlotsBase):
     def create_mesh(self, tr_model: IModel, bl_obj: bpy.types.Object, blend_shape_global_ids: dict[int, int] | None) -> IMesh | None:
         with BlenderHelper.prepare_for_model_export(bl_obj):
             if not Enumerable(bl_obj.modifiers).of_type(bpy.types.TriangulateModifier).any():
-                bl_obj.modifiers.new("Triangulate", "TRIANGULATE")
+                bl_modifier = cast(bpy.types.TriangulateModifier, bl_obj.modifiers.new("Triangulate", "TRIANGULATE"))
+                bl_modifier.keep_custom_normals = True
 
             bl_mesh = self.get_evaluated_bl_mesh(bl_obj)
             if len(bl_mesh.polygons) == 0:

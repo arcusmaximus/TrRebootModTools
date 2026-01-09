@@ -124,7 +124,7 @@ namespace TrRebootTools.ModManager.Mod
                     filePathToHash = filePathToHash.Substring(0, filePathToHash.Length - 6);
 
                 ulong nameHash = CdcHash.Calculate(filePathToHash, game);
-                locale = gameFileLocales.GetOrDefault(nameHash) ?? locale;
+                locale ??= gameFileLocales.GetOrDefault(nameHash);
                 files[new ArchiveFileKey(nameHash, locale ?? 0xFFFFFFFFFFFFFFFF)] = filePath;
             }
         }
@@ -220,7 +220,7 @@ namespace TrRebootTools.ModManager.Mod
                     if (soundUsage.Type != WwiseSoundBankItemReferenceType.DataIndex)
                         continue;
 
-                    ResourceKey bankResourceKey = new ResourceKey(ResourceType.SoundBank, soundUsage.BankResourceId);
+                    ResourceKey bankResourceKey = new(ResourceType.SoundBank, 0, soundUsage.BankResourceId, soundUsage.BankResourceLocale);
                     if (physicalResources.ContainsKey(bankResourceKey))
                         continue;
 
