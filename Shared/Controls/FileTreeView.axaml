@@ -5,20 +5,22 @@
              xmlns:controls="using:TrRebootTools.Shared.Controls"
              mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="300"
              x:Class="TrRebootTools.Shared.Controls.FileTreeViewBase">
-    <Grid RowDefinitions="30,*">
-		<Grid ColumnDefinitions="30,*" Grid.Row="0">
-			<Image Source="/Resources/Search.png" Grid.Column="0" Stretch="None" />
-            <TextBox Name="_txtSearch" Margin="0 2" Grid.Column="1"/>
-            <Button Name="_btnClearSearch" Grid.Column="1" Width="22" HorizontalAlignment="Right" Margin="4" Padding="0" Background="Transparent">
-                <Button.Styles>
-					<Style Selector="Button">
-						<Setter Property="BorderBrush" Value="Transparent"/>
-                    </Style>
-                </Button.Styles>
-				&#0215;
-            </Button>
-        </Grid>
-        <controls:FastTreeView Name="_treeView" x:FieldModifier="protected" Grid.Row="1">
-        </controls:FastTreeView>
-    </Grid>
+	<DockPanel LastChildFill="True">
+		<DockPanel LastChildFill="True" DockPanel.Dock="Top" HorizontalSpacing="2">
+			<Image Source="/Resources/Search.png" Stretch="None" DockPanel.Dock="Left" />
+			<Panel>
+				<TextBox Name="_txtSearch" Margin="0 2" />				
+				<Button Name="_btnClearSearch" Grid.Column="1" Width="22" HorizontalAlignment="Right" Margin="4" Padding="0" Background="Transparent">
+					<Button.Styles>
+						<Style Selector="Button">
+							<Setter Property="BorderBrush" Value="Transparent"/>
+						</Style>
+					</Button.Styles>
+					&#0215;
+				</Button>
+			</Panel>
+		</DockPanel>
+		
+		<controls:FastTreeView Name="_treeView" x:FieldModifier="protected" />
+	</DockPanel>
 </UserControl>

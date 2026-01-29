@@ -15,6 +15,7 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <PublishAot>true</PublishAot>
     <BuiltInComInteropSupport>false</BuiltInComInteropSupport>
+    <AssemblyOriginatorKeyFile>..\dummykey.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   
   <ItemGroup>
