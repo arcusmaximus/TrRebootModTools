@@ -59,8 +59,7 @@ namespace TrRebootTools.SoundConverter
                            .ToDictionary(
                                 c => c.InputExtension,
                                 c => new string[] { "*" + c.InputExtension }
-                            ),
-                this
+                            )
             );
             foreach (string filePath in filePaths.Where(IsInputFileAllowed))
             {
@@ -137,7 +136,7 @@ namespace TrRebootTools.SoundConverter
 
         private async void OnBrowseOutputFolderClick(object? sender, RoutedEventArgs e)
         {
-            string? folderPath = await App.OpenFolderPickerAsync("Select output folder", this);
+            string? folderPath = await App.OpenFolderPickerAsync("Select output folder");
             if (folderPath != null)
                 _txtOutputFolder.Text = folderPath;
         }
