@@ -1,7 +1,6 @@
-﻿using System;
-using System.IO;
-using System.Reflection;
+﻿using System.IO;
 using System.Threading.Tasks;
+using TrRebootTools.Shared;
 using TrRebootTools.Shared.Cdc;
 
 namespace TrRebootTools.SoundConverter
@@ -21,7 +20,7 @@ namespace TrRebootTools.SoundConverter
             ulong? locale = CdcGameInfo.Get(Game).LanguageCodeToLocale(Path.GetFileNameWithoutExtension(inputFilePath));
             if (locale != null)
             {
-                outputFolderPath = Path.Combine(outputFolderPath, Path.GetFileName(Path.GetDirectoryName(inputFilePath)));
+                outputFolderPath = Path.Combine(outputFolderPath, Path.GetFileName(Path.GetDirectoryName(inputFilePath))!);
                 Directory.CreateDirectory(outputFolderPath);
             }
 
@@ -35,16 +34,15 @@ namespace TrRebootTools.SoundConverter
                 trsoundStream.CopyTo(fsbStream);
             }
 
-            string vgmstreamPath = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), @"vgmstream\vgmstream-cli.exe");
-            if (!File.Exists(vgmstreamPath))
-                throw new FileNotFoundException($"Couldn't find {vgmstreamPath}");
-
             File.Delete(wavFilePath);
-            await ProcessHelper.RunAsync(vgmstreamPath, $"-o \"{wavFilePath}\" \"{fsbFilePath}\"");
-            File.Delete(fsbFilePath);
-            if (!File.Exists(wavFilePath))
-                throw new Exception($"Failed to convert {fsbFilePath} to {wavFilePath}");
-
+            try
+            {
+                await ProcessHelper.RunVgmStreamAsync(fsbFilePath, wavFilePath, true);
+            }
+            finally
+            {
+                File.Delete(fsbFilePath);
+            }
             return true;
         }
 

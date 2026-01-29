@@ -9,12 +9,12 @@ namespace TrRebootTools.Shared.Cdc
     {
         private readonly bool _leaveOpen;
 
-        private readonly List<Chunk> _chunks = new List<Chunk>();
+        private readonly List<Chunk> _chunks = [];
         private long _position;
         private readonly long _length;
 
         private int _currentChunkIndex;
-        private Stream _currentChunkStream;
+        private Stream? _currentChunkStream;
         private int _remainingChunkSize;
 
         public ResourceReadStream(Stream archivePartStream, ResourceReference resourceRef, bool leaveOpen)

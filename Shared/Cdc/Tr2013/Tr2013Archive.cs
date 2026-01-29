@@ -6,7 +6,7 @@ namespace TrRebootTools.Shared.Cdc.Tr2013
 {
     internal class Tr2013Archive : Archive
     {
-        public Tr2013Archive(string baseFilePath, ArchiveMetaData metaData)
+        public Tr2013Archive(string baseFilePath, ArchiveMetaData? metaData)
             : base(baseFilePath, metaData)
         {
         }

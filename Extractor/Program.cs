@@ -1,43 +1,54 @@
-﻿using System;
-using System.Windows.Forms;
+﻿using Avalonia;
+using System;
+using System.Threading.Tasks;
 using TrRebootTools.Shared;
 using TrRebootTools.Shared.Cdc;
 using TrRebootTools.Shared.Forms;
+using TrRebootTools.Shared.Util;
 
 namespace TrRebootTools.Extractor
 {
-    public static class Program
+    internal static class Program
     {
-        [STAThread]
-        public static void Main()
+        public static AppBuilder BuildAvaloniaApp()
         {
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
+            return App.Build(() => new MainWindow());
+        }
 
+        [STAThread]
+        public static int Main(string[] args)
+        {
+            return App.Run(() => MainInternalAsync(args));
+        }
+
+        private static async Task<int> MainInternalAsync(string[] args)
+        {
             try
             {
                 bool forceGamePrompt = false;
                 while (true)
                 {
-                    CdcGame? game = GameSelectionForm.GetGame(forceGamePrompt);
+                    CdcGame? game = await GameSelectionWindow.GetGameAsync(forceGamePrompt);
                     if (game == null)
                         break;
 
-                    string gameFolderPath = GameFolderFinder.Find(game.Value);
+                    string? gameFolderPath = await GameFolderFinder.FindAsync(game.Value);
                     if (gameFolderPath == null)
                         break;
 
-                    using MainForm form = new MainForm(gameFolderPath, game.Value);
-                    Application.Run(form);
-                    if (!form.GameSelectionRequested)
+                    MainWindow window = new(gameFolderPath, game.Value);
+                    await App.ShowDialogAsync(window);
+                    if (!window.GameSelectionRequested)
                         break;
 
                     forceGamePrompt = true;
                 }
+                return 0;
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.ToString(), "Error", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                await MessageBox.ShowErrorAsync(ex);
+                return 1;
             }
         }
     }

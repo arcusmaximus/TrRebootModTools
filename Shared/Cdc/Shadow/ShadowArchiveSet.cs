@@ -23,7 +23,7 @@
             if (textFlags == 0xFFFFFFF)
                 textLanguage = "alltxt";
             else
-                textLanguage = CdcGameInfo.Get(Game).LocaleToLanguageName(0xFFFFFFFFF0000000 | textFlags).ToLower();
+                textLanguage = CdcGameInfo.Get(Game).LocaleToLanguageName(0xFFFFFFFFF0000000 | textFlags)?.ToLower() ?? "alltxt";
 
             uint voiceFlags = (uint)((locale >> 28) & 0xFFFFFFF);
             string voiceLanguage;

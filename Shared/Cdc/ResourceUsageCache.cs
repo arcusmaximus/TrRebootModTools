@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.AccessControl;
 using System.Threading;
 using TrRebootTools.Shared.Util;
 
@@ -12,8 +13,8 @@ namespace TrRebootTools.Shared.Cdc
         private const string FileName = "resourceusage.bin";
         private const int Version = 9;
 
-        private readonly ResourceUsageCache _baseCache;
-        private readonly Dictionary<ResourceKey, Dictionary<ArchiveFileKey, int>> _resourceUsages = new();
+        private readonly ResourceUsageCache? _baseCache;
+        private Dictionary<ResourceKey, Dictionary<ArchiveFileKey, int>> _resourceUsages = new();
         private readonly Dictionary<(ResourceType, int), List<ulong>> _resourceLocales = new();
         private readonly Dictionary<string, ResourceKey> _resourceKeysByOriginalFilePath = new();
         private readonly Dictionary<int, HashSet<WwiseSoundBankItemReference>> _wwiseSoundUsages = new();
@@ -27,7 +28,7 @@ namespace TrRebootTools.Shared.Cdc
             _baseCache = baseCache;
         }
 
-        public void AddArchiveSet(ArchiveSet archiveSet, ITaskProgress progress, CancellationToken cancellationToken)
+        public void AddArchiveSet(ArchiveSet archiveSet, ITaskProgress? progress, CancellationToken cancellationToken)
         {
             try
             {
@@ -53,7 +54,7 @@ namespace TrRebootTools.Shared.Cdc
             AddFiles(archive.Files, archiveSet, null, CancellationToken.None);
         }
 
-        private void AddFiles(IEnumerable<ArchiveFileReference> files, ArchiveSet archiveSet, ITaskProgress progress, CancellationToken cancellationToken)
+        private void AddFiles(IEnumerable<ArchiveFileReference> files, ArchiveSet archiveSet, ITaskProgress? progress, CancellationToken cancellationToken)
         {
             List<ArchiveFileReference> collectionRefs = files.Where(f => CdcHash.Lookup(f.NameHash, archiveSet.Game)?.EndsWith(".drm") ?? false).ToList();
             int collectionIdx = 0;
@@ -61,7 +62,7 @@ namespace TrRebootTools.Shared.Cdc
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                ResourceCollection collection = archiveSet.GetResourceCollection(collectionRef);
+                ResourceCollection? collection = archiveSet.GetResourceCollection(collectionRef);
                 if (collection != null)
                     AddResourceCollection(archiveSet, collection);
 
@@ -75,7 +76,7 @@ namespace TrRebootTools.Shared.Cdc
             ArchiveFileKey fileKey = new ArchiveFileKey(collection.NameHash, collection.Locale);
             foreach (ResourceReference resourceRef in collection.ResourceReferences)
             {
-                _resourceUsages.GetOrDefault(resourceRef)?.Remove(fileKey);
+                _resourceUsages.GetValueOrDefault(resourceRef)?.Remove(fileKey);
             }
 
             ulong localePlatformMask = CdcGameInfo.Get(collection.Game).LocalePlatformMask;
@@ -97,14 +98,14 @@ namespace TrRebootTools.Shared.Cdc
             ResourceReference resourceRef = collection.ResourceReferences[resourceIdx];
             if (!_resourceUsages.ContainsKey(resourceRef))
             {
-                string originalFilePath = ResourceNaming.ReadOriginalFilePath(archiveSet, resourceRef);
+                string? originalFilePath = ResourceNaming.ReadOriginalFilePath(archiveSet, resourceRef);
                 if (originalFilePath != null)
                     _resourceKeysByOriginalFilePath[originalFilePath] = resourceRef;
             }
 
             Dictionary<ArchiveFileKey, int> usages = _resourceUsages.GetOrAdd(resourceRef, () => []);
 
-            ArchiveFileKey collectionKey = new ArchiveFileKey(collection.NameHash, collection.Locale);
+            ArchiveFileKey collectionKey = new(collection.NameHash, collection.Locale);
             if (collection.Locale == 0xFFFFFFFFFFFFFFFF)
             {
                 if (!usages.ContainsKey(collectionKey))
@@ -159,14 +160,19 @@ namespace TrRebootTools.Shared.Cdc
             return _resourceKeysByOriginalFilePath.TryGetValue(filePath, out resourceKey);
         }
 
-        public IReadOnlyCollection<ulong> GetResourceLocales(ResourceType type, int id)
+        public IReadOnlyCollection<ulong>? GetResourceLocales(ResourceType type, int id)
         {
-            return _resourceLocales.GetOrDefault((type, id));
+            List<ulong>? myLocales = _resourceLocales.GetValueOrDefault((type, id));
+            List<ulong>? baseLocales = _baseCache?._resourceLocales.GetValueOrDefault((type, id));
+            if (myLocales != null && baseLocales != null)
+                return myLocales.Union(baseLocales).ToList();
+
+            return myLocales ?? baseLocales;
         }
 
         public IEnumerable<ResourceCollectionItemReference> GetResourceUsages(ArchiveSet archiveSet, ResourceType resourceType, int resourceId)
         {
-            List<ulong> locales = _resourceLocales.GetOrDefault((resourceType, resourceId));
+            IReadOnlyCollection<ulong>? locales = GetResourceLocales(resourceType, resourceId);
             if (locales == null)
                 return GetResourceUsages(archiveSet, new ResourceKey(resourceType, resourceId));
 
@@ -175,8 +181,8 @@ namespace TrRebootTools.Shared.Cdc
 
         public IEnumerable<ResourceCollectionItemReference> GetResourceUsages(ArchiveSet archiveSet, ResourceKey resourceKey)
         {
-            IEnumerable<ResourceCollectionItemReference> baseUsages = _baseCache?.GetResourceUsages(archiveSet, resourceKey);
-            Dictionary<ArchiveFileKey, int> usages = _resourceUsages.GetOrDefault(resourceKey);
+            IEnumerable<ResourceCollectionItemReference>? baseUsages = _baseCache?.GetResourceUsages(archiveSet, resourceKey);
+            Dictionary<ArchiveFileKey, int>? usages = _resourceUsages.GetValueOrDefault(resourceKey);
 
             if (baseUsages != null)
             {
@@ -200,18 +206,20 @@ namespace TrRebootTools.Shared.Cdc
             {
                 foreach ((ArchiveFileKey collectionKey, int resourceIdx) in usages)
                 {
-                    yield return new ResourceCollectionItemReference(archiveSet.GetFileReference(collectionKey.NameHash, collectionKey.Locale), resourceIdx);
+                    ArchiveFileReference? collectionRef = archiveSet.GetFileReference(collectionKey.NameHash, collectionKey.Locale);
+                    if (collectionRef != null)
+                        yield return new ResourceCollectionItemReference(collectionRef, resourceIdx);
                 }
             }
         }
 
-        public ResourceReference GetResourceReference(ArchiveSet archiveSet, ResourceKey resourceKey)
+        public ResourceReference? GetResourceReference(ArchiveSet archiveSet, ResourceKey resourceKey)
         {
-            ResourceCollectionItemReference collectionItem = GetResourceUsages(archiveSet, resourceKey).FirstOrDefault();
+            ResourceCollectionItemReference? collectionItem = GetResourceUsages(archiveSet, resourceKey).FirstOrDefault();
             if (collectionItem == null)
                 return null;
 
-            ResourceCollection collection = archiveSet.GetResourceCollection(collectionItem.CollectionReference);
+            ResourceCollection? collection = archiveSet.GetResourceCollection(collectionItem.CollectionReference);
             return collection?.ResourceReferences[collectionItem.ResourceIndex];
         }
 
@@ -219,7 +227,7 @@ namespace TrRebootTools.Shared.Cdc
 
         public IEnumerable<WwiseSoundBankItemReference> GetWwiseSoundUsages(int soundId)
         {
-            return _wwiseSoundUsages.GetOrDefault(soundId) ?? Enumerable.Empty<WwiseSoundBankItemReference>();
+            return _wwiseSoundUsages.GetValueOrDefault(soundId) ?? Enumerable.Empty<WwiseSoundBankItemReference>();
         }
 
         public bool Load(string archiveFolderPath)
@@ -243,6 +251,7 @@ namespace TrRebootTools.Shared.Cdc
         private void ReadResourceUsages(BinaryReader reader)
         {
             int numResources = reader.ReadInt32();
+            _resourceUsages = new(numResources);
             for (int i = 0; i < numResources; i++)
             {
                 ResourceType type = (ResourceType)reader.ReadByte();

@@ -1,7 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using TrRebootTools.Shared.Util;
 
 namespace TrRebootTools.Shared.Cdc.Tr2013
 {
@@ -63,7 +63,7 @@ namespace TrRebootTools.Shared.Cdc.Tr2013
 
             for (int i = 0; i < numStringPositions; i++)
             {
-                string str = Strings.GetOrDefault(i.ToString());
+                string? str = Strings.GetValueOrDefault(i.ToString());
                 if (str == null)
                     continue;
 

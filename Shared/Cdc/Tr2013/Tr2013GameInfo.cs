@@ -1,18 +1,24 @@
-﻿using System.Drawing;
+﻿using System;
+using System.IO;
 
 namespace TrRebootTools.Shared.Cdc.Tr2013
 {
     internal class Tr2013GameInfo : CdcGameInfo
     {
         public override CdcGame Game => CdcGame.Tr2013;
-
-        public override string ExeName => "TombRaider.exe";
+        
+        public override string[] ExeNames => ["TombRaider.exe", "gamelaunchhelper.exe"];
+        
+        public override string LinuxSteamFolderPath => Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+            ".local/share/Steam/steamapps/common/Tomb Raider"
+        );
 
         public override int PointerSize => 4;
 
         public override string ShortName => "TR2013";
 
-        public override Image Icon => Properties.Resources.Tr2013;
+        protected override string IconResourcePath => "/Resources/Tr2013.png";
 
         public override string RegistryDisplayName => "Tomb Raider";
 

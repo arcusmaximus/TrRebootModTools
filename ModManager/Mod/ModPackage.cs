@@ -17,19 +17,19 @@ namespace TrRebootTools.ModManager.Mod
             get;
         }
 
-        public abstract Stream OpenFile(ArchiveFileKey fileKey);
+        public abstract Stream? OpenFile(ArchiveFileKey fileKey);
 
         public abstract IEnumerable<ResourceKey> Resources
         {
             get;
         }
 
-        public abstract Stream OpenResource(ResourceKey resourceKey);
+        public abstract Stream? OpenResource(ResourceKey resourceKey);
 
         public List<ModVariation> Variations
         {
             get;
-        } = new List<ModVariation>();
+        } = [];
 
         public override string ToString()
         {
@@ -38,12 +38,9 @@ namespace TrRebootTools.ModManager.Mod
 
         public virtual void Dispose()
         {
-            if (Variations != null)
+            foreach (ModVariation variation in Variations)
             {
-                foreach (ModVariation variation in Variations)
-                {
-                    variation.Dispose();
-                }
+                variation.Dispose();
             }
         }
     }

@@ -8,7 +8,7 @@ namespace TrRebootTools.HookTool
         [DllImport("kernel32")]
         public static extern bool CreateProcess(
             string lpApplicationName,
-            string lpCommandLine,
+            string? lpCommandLine,
             IntPtr lpProcessAttributes,
             IntPtr lpThreadAttributes,
             bool bInheritHandles,

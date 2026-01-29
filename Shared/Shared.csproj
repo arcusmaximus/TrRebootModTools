@@ -1,229 +1,54 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{20068CA2-EED2-4C9E-99BE-1EDF9569777D}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>TrRebootTools.Shared</RootNamespace>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     <AssemblyName>TrRebootTools.Shared</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <Deterministic>true</Deterministic>
-    <LangVersion>12</LangVersion>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>..\Build\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>..\Build\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-  </PropertyGroup>
-  <PropertyGroup>
-    <SignAssembly>true</SignAssembly>
-  </PropertyGroup>
-  <PropertyGroup>
-    <AssemblyOriginatorKeyFile>..\dummykey.snk</AssemblyOriginatorKeyFile>
-  </PropertyGroup>
-  <PropertyGroup>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <RootNamespace>TrRebootTools.Shared</RootNamespace>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <AssemblyVersion>1.9.0</AssemblyVersion>
+    <FileVersion>1.9.0</FileVersion>
+    <BaseOutputPath>..\Build\</BaseOutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Configuration" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Xml" />
+    <EmbeddedResource Remove="Controls\ArrayControl.resx" />
+    <EmbeddedResource Remove="Controls\FileTreeViewBase.resx" />
+    <EmbeddedResource Remove="Forms\FormWithProgress.resx" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Cdc\Archive.cs" />
-    <Compile Include="Cdc\ArchiveBlobReference.cs" />
-    <Compile Include="Cdc\ArchiveFileKey.cs" />
-    <Compile Include="Cdc\ArchiveFileReference.cs" />
-    <Compile Include="Cdc\ArchiveMetaData.cs" />
-    <Compile Include="Cdc\ArchiveIdentity.cs" />
-    <Compile Include="Cdc\ArchiveSet.cs" />
-    <Compile Include="Cdc\CdcHash.cs" />
-    <Compile Include="Cdc\CdcGameInfo.cs" />
-    <Compile Include="Cdc\CdcTexture.cs" />
-    <Compile Include="Cdc\Enumerations.cs" />
-    <Compile Include="Cdc\LocalsBin.cs" />
-    <Compile Include="Cdc\Material.cs" />
-    <Compile Include="Cdc\MultiplexStream.cs" />
-    <Compile Include="Cdc\ResourceCollection.cs" />
-    <Compile Include="Cdc\ResourceCollectionDependency.cs" />
-    <Compile Include="Cdc\ResourceCollectionItemReference.cs" />
-    <Compile Include="Cdc\ResourceKey.cs" />
-    <Compile Include="Cdc\ResourceNaming.cs" />
-    <Compile Include="Cdc\ResourceReadStream.cs" />
-    <Compile Include="Cdc\ResourceRefDefinitions.cs" />
-    <Compile Include="Cdc\ResourceReference.cs" />
-    <Compile Include="Cdc\ResourceUsageCache.cs" />
-    <Compile Include="Cdc\Rise\RiseArchive.cs" />
-    <Compile Include="Cdc\Rise\RiseArchiveSet.cs" />
-    <Compile Include="Cdc\Rise\RiseGameInfo.cs" />
-    <Compile Include="Cdc\Rise\RiseHash.cs" />
-    <Compile Include="Cdc\Rise\RiseLocalsBin.cs" />
-    <Compile Include="Cdc\Rise\RiseMaterial.cs" />
-    <Compile Include="Cdc\Rise\RiseResourceCollection.cs" />
-    <Compile Include="Cdc\Rise\RiseResourceNaming.cs" />
-    <Compile Include="Cdc\Rise\RiseResourceRefDefinitions.cs" />
-    <Compile Include="Cdc\Shadow\ShadowArchive.cs" />
-    <Compile Include="Cdc\Shadow\ShadowArchiveSet.cs" />
-    <Compile Include="Cdc\Shadow\ShadowGameInfo.cs" />
-    <Compile Include="Cdc\Shadow\ShadowHash.cs" />
-    <Compile Include="Cdc\Shadow\ShadowLocalsBin.cs" />
-    <Compile Include="Cdc\Shadow\ShadowMaterial.cs" />
-    <Compile Include="Cdc\Shadow\ShadowResourceCollection.cs" />
-    <Compile Include="Cdc\Shadow\ShadowResourceNaming.cs" />
-    <Compile Include="Cdc\Shadow\ShadowResourceRefDefinitions.cs" />
-    <Compile Include="Cdc\Tr2013\Tr2013ArchiveSet.cs" />
-    <Compile Include="Cdc\Tr2013\Tr2013GameInfo.cs" />
-    <Compile Include="Cdc\Tr2013\Tr2013Hash.cs" />
-    <Compile Include="Cdc\Tr2013\Tr2013LocalsBin.cs" />
-    <Compile Include="Cdc\Tr2013\Tr2013Material.cs" />
-    <Compile Include="Cdc\Tr2013\Tr2013ResourceCollection.cs" />
-    <Compile Include="Cdc\Tr2013\Tr2013ResourceNaming.cs" />
-    <Compile Include="Cdc\Tr2013\Tr2013ResourceRefDefinitions.cs" />
-    <Compile Include="Cdc\WwiseSound.cs" />
-    <Compile Include="Cdc\WwiseSoundBankItemReference.cs" />
-    <Compile Include="Cdc\SpecMasksToc.cs" />
-    <Compile Include="Cdc\WwiseSoundBank.cs" />
-    <Compile Include="Cdc\Tr2013\Tr2013Archive.cs" />
-    <Compile Include="Controls\ArrayControl.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Controls\ArrayControl.Designer.cs">
-      <DependentUpon>ArrayControl.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Controls\BindableListView.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="Controls\DraggableNumberControl.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Controls\DraggableNumberControl.Designer.cs">
-      <DependentUpon>DraggableNumberControl.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Controls\FileTreeView.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Controls\FileTreeViewBase.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Controls\FileTreeViewBase.Designer.cs">
-      <DependentUpon>FileTreeViewBase.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Controls\FsFileTreeView.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Controls\IArrayItemControl.cs" />
-    <Compile Include="Controls\VirtualTreeView\Editors.cs" />
-    <Compile Include="Controls\VirtualTreeView\Helpers.cs" />
-    <Compile Include="Controls\VirtualTreeView\VirtualTreeColumn.cs" />
-    <Compile Include="Controls\VirtualTreeView\VirtualTreeHeader.cs" />
-    <Compile Include="Controls\VirtualTreeView\VirtualTreeNode.cs" />
-    <Compile Include="Controls\VirtualTreeView\VirtualTreeView.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Forms\FormWithProgress.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Forms\FormWithProgress.Designer.cs">
-      <DependentUpon>FormWithProgress.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Forms\GameSelectionForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Forms\GameSelectionForm.Designer.cs">
-      <DependentUpon>GameSelectionForm.cs</DependentUpon>
-    </Compile>
-    <Compile Include="GameFolderFinder.cs" />
-    <Compile Include="Ips32Patch.cs" />
-    <Compile Include="ITaskProgress.cs" />
-    <Compile Include="MultiplexStreamBuilder.cs" />
-    <Compile Include="MultiplexStreamInfo.cs" />
-    <Compile Include="MultiplexStreamSplitter.cs" />
-    <Compile Include="MultiStepTaskProgress.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
-    <Compile Include="Util\CollectionExtensions.cs" />
-    <Compile Include="Util\IoExtensions.cs" />
-    <Compile Include="Util\IsExternalInit.cs" />
-    <Compile Include="Util\PositionTrackingStream.cs" />
-    <Compile Include="Util\Vec4.cs" />
-    <Compile Include="Util\WindowStream.cs" />
+    <None Remove="Resources\Collapse.png" />
+    <None Remove="Resources\Collapse.svg" />
+    <None Remove="Resources\Expand.png" />
+    <None Remove="Resources\Expand.svg" />
+    <None Remove="Resources\File.png" />
+    <None Remove="Resources\Folder.png" />
+    <None Remove="Resources\Rise.png" />
+    <None Remove="Resources\Search.png" />
+    <None Remove="Resources\Shadow.png" />
+    <None Remove="Resources\Tr2013.png" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json">
-      <Version>13.0.3</Version>
-    </PackageReference>
-    <PackageReference Include="System.Runtime.CompilerServices.Unsafe">
-      <Version>6.1.2</Version>
-    </PackageReference>
+    <AvaloniaResource Include="Resources\Collapse.png" />
+    <AvaloniaResource Include="Resources\Expand.png" />
+    <AvaloniaResource Include="Resources\File.png" />
+    <AvaloniaResource Include="Resources\Folder.png" />
+    <AvaloniaResource Include="Resources\Rise.png" />
+    <AvaloniaResource Include="Resources\Search.png" />
+    <AvaloniaResource Include="Resources\Shadow.png" />
+    <AvaloniaResource Include="Resources\Tr2013.png" />
   </ItemGroup>
+
   <ItemGroup>
-    <EmbeddedResource Include="Controls\ArrayControl.resx">
-      <DependentUpon>ArrayControl.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Controls\DraggableNumberControl.resx">
-      <DependentUpon>DraggableNumberControl.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Controls\FileTreeView.resx">
-      <DependentUpon>FileTreeView.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Controls\FileTreeViewBase.resx">
-      <DependentUpon>FileTreeViewBase.cs</DependentUpon>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Forms\FormWithProgress.resx">
-      <DependentUpon>FormWithProgress.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Forms\GameSelectionForm.resx">
-      <DependentUpon>GameSelectionForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Properties\Resources.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
+    <PackageReference Include="Avalonia" Version="11.3.11" />
+    <PackageReference Include="Avalonia.Desktop" Version="11.3.11" />
+    <PackageReference Include="Avalonia.Themes.Simple" Version="11.3.11" />
+    <PackageReference Include="MessageBox.Avalonia" Version="3.3.1.1" />
   </ItemGroup>
+
   <ItemGroup>
-    <None Include="Resources\Tr2013.png" />
+    <Compile Update="Controls\FileTreeView.axaml.cs">
+      <DependentUpon>FileTreeView.axaml</DependentUpon>
+    </Compile>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\Rise.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\Shadow.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Resources\File.png" />
-    <Content Include="Resources\Folder.png" />
-    <Content Include="Resources\Search.png" />
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -1,178 +1,40 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{1D24B276-D654-42A2-A8BC-9F5F45150CCD}</ProjectGuid>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>TrRebootTools.HookTool</RootNamespace>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     <AssemblyName>TrRebootTools.HookTool</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <LangVersion>12</LangVersion>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>..\Build\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>false</Prefer32Bit>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>..\Build\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup>
+    <RootNamespace>TrRebootTools.HookTool</RootNamespace>
     <ApplicationIcon>icon.ico</ApplicationIcon>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <AssemblyVersion>1.9.0</AssemblyVersion>
+    <FileVersion>1.9.0</FileVersion>
+    <BaseOutputPath>..\Build\</BaseOutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <PublishAot>true</PublishAot>
+    <BuiltInComInteropSupport>false</BuiltInComInteropSupport>
   </PropertyGroup>
-  <PropertyGroup>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-  </PropertyGroup>
+  
   <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Configuration" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Design" />
-    <Reference Include="System.Numerics" />
-    <Reference Include="System.Security" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Deployment" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xml" />
+    <None Remove="icon.ico" />
+    <None Remove="Resources\ClearLists.png" />
+    <None Remove="Resources\Copy.png" />
+    <None Remove="Resources\EnableLogging.png" />
+    <None Remove="Resources\Save.png" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CommandChannel.cs" />
-    <Compile Include="DllInjector.cs" />
-    <Compile Include="GameProcess.cs" />
-    <Compile Include="Logging\AccessLogControl.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Logging\AccessLogControl.Designer.cs">
-      <DependentUpon>AccessLogControl.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Logging\AnimationAccessLogControl.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Logging\FileAccessLogControl.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Logging\LogListView.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="MainForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="MainForm.Designer.cs">
-      <DependentUpon>MainForm.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Materials\MaterialConstant.cs" />
-    <Compile Include="Materials\MaterialConstantArrayControl.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Materials\MaterialConstantArrayControl.Designer.cs">
-      <DependentUpon>MaterialConstantArrayControl.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Materials\MaterialConstantControl.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Materials\MaterialConstantControl.Designer.cs">
-      <DependentUpon>MaterialConstantControl.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Materials\MaterialControl.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Materials\MaterialControl.Designer.cs">
-      <DependentUpon>MaterialControl.cs</DependentUpon>
-    </Compile>
-    <Compile Include="NativeMethods.cs" />
-    <Compile Include="NotificationChannel.cs" />
-    <Compile Include="Program.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="Logging\AccessLogControl.resx">
-      <DependentUpon>AccessLogControl.cs</DependentUpon>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="MainForm.resx">
-      <DependentUpon>MainForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Materials\MaterialConstantControl.resx">
-      <DependentUpon>MaterialConstantControl.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Materials\MaterialControl.resx">
-      <DependentUpon>MaterialControl.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resources.resx</DependentUpon>
-      <DesignTime>True</DesignTime>
-    </Compile>
-    <None Include="Properties\Settings.settings">
-      <Generator>SettingsSingleFileGenerator</Generator>
-      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
-    </None>
-    <Compile Include="Properties\Settings.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Settings.settings</DependentUpon>
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
-    </Compile>
+    <AvaloniaResource Include="icon.ico" />
+    <AvaloniaResource Include="Resources\ClearLists.png" />
+    <AvaloniaResource Include="Resources\Copy.png" />
+    <AvaloniaResource Include="Resources\EnableLogging.png" />
+    <AvaloniaResource Include="Resources\Save.png" />
   </ItemGroup>
+  
   <ItemGroup>
-    <None Include="App.config" />
+    <ProjectReference Include="..\Extractor\Extractor.csproj" />
+    <ProjectReference Include="..\ModManager\ModManager.csproj" />
+    <ProjectReference Include="..\Shared\Shared.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Extractor\Extractor.csproj">
-      <Project>{84682055-ce27-47e2-90ca-5acf8184097d}</Project>
-      <Name>Extractor</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\ModManager\ModManager.csproj">
-      <Project>{2ce18d23-5ed3-472f-986f-a3e957db4a7c}</Project>
-      <Name>ModManager</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Shared\Shared.csproj">
-      <Project>{20068ca2-eed2-4c9e-99be-1edf9569777d}</Project>
-      <Name>Shared</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Ookii.Dialogs.WinForms">
-      <Version>4.0.0</Version>
-    </PackageReference>
-    <PackageReference Include="System.Buffers">
-      <Version>4.6.1</Version>
-    </PackageReference>
-    <PackageReference Include="System.Memory">
-      <Version>4.6.3</Version>
-    </PackageReference>
-    <PackageReference Include="System.Runtime.CompilerServices.Unsafe">
-      <Version>6.1.2</Version>
-    </PackageReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="icon.ico" />
-  </ItemGroup>
-  <ItemGroup />
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

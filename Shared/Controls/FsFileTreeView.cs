@@ -5,18 +5,15 @@ namespace TrRebootTools.Shared.Controls
 {
     public class FsFileTreeView : FileTreeView<FileInfo>
     {
-        public void Populate(DirectoryInfo rootDirectory, string searchPattern = null, Func<FileInfo, bool> filter = null)
+        public void Populate(DirectoryInfo rootDirectory, string? searchPattern = null, Func<FileInfo, bool>? filter = null)
         {
-            Populate(CreateNode(rootDirectory, searchPattern, filter));
+            FileTreeNode rootNode = CreateNode(rootDirectory, searchPattern, filter);
+            Populate(rootNode.Children);
         }
 
-        private FileTreeNode CreateNode(DirectoryInfo directory, string searchPattern, Func<FileInfo, bool> filter)
+        private FileTreeNode CreateNode(DirectoryInfo directory, string? searchPattern, Func<FileInfo, bool>? filter)
         {
-            FileTreeNode directoryNode = new FileTreeNode(directory.Name)
-                                         {
-                                             Type = FileTreeNodeType.Folder,
-                                             Image = FolderImage
-                                         };
+            FileTreeNode directoryNode = new(directory.Name, FileTreeNodeType.Folder);
             foreach (DirectoryInfo subDir in directory.EnumerateDirectories())
             {
                 directoryNode.Add(CreateNode(subDir, searchPattern, filter));
@@ -27,10 +24,8 @@ namespace TrRebootTools.Shared.Controls
                     continue;
 
                 directoryNode.Add(
-                    new FileTreeNode(file.Name)
+                    new FileTreeNode(file.Name, FileTreeNodeType.File)
                     {
-                        Type = FileTreeNodeType.File,
-                        Image = FileImage,
                         File = file
                     }
                 );

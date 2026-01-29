@@ -1,13 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using TrRebootTools.Shared.Cdc;
-using TrRebootTools.Shared.Util;
 
 namespace TrRebootTools.ModManager.Mod
 {
     internal class MultiTigerModPackage : ModPackage
     {
-        private readonly List<TigerModPackage> _packages = new();
+        private readonly List<TigerModPackage> _packages = [];
         private readonly Dictionary<ArchiveFileKey, TigerModPackage> _files = new();
         private readonly Dictionary<ResourceKey, TigerModPackage> _resources = new();
 
@@ -40,14 +39,14 @@ namespace TrRebootTools.ModManager.Mod
 
         public override IEnumerable<ResourceKey> Resources => _resources.Keys;
 
-        public override Stream OpenFile(ArchiveFileKey fileKey)
+        public override Stream? OpenFile(ArchiveFileKey fileKey)
         {
-            return _files.GetOrDefault(fileKey)?.OpenFile(fileKey);
+            return _files.GetValueOrDefault(fileKey)?.OpenFile(fileKey);
         }
 
-        public override Stream OpenResource(ResourceKey resourceKey)
+        public override Stream? OpenResource(ResourceKey resourceKey)
         {
-            return _resources.GetOrDefault(resourceKey)?.OpenResource(resourceKey);
+            return _resources.GetValueOrDefault(resourceKey)?.OpenResource(resourceKey);
         }
 
         public override void Dispose()

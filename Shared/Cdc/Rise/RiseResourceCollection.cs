@@ -18,7 +18,7 @@ namespace TrRebootTools.Shared.Cdc.Rise
 
         protected override int DependencyLocaleSize => 4;
 
-        protected override ResourceReference MakeResourceReference(ResourceIdentification<uint> identification, ResourceLocation location)
+        protected override ResourceReference MakeResourceReference(ResourceIdentification identification, ResourceLocation location)
         {
             return new ResourceReference(
                 (ResourceType)location.Type,
@@ -36,9 +36,9 @@ namespace TrRebootTools.Shared.Cdc.Rise
             );
         }
 
-        protected override ResourceIdentification<uint> MakeResourceIdentification(ResourceReference resourceRef)
+        protected override ResourceIdentification MakeResourceIdentification(ResourceReference resourceRef)
         {
-            return new ResourceIdentification<uint>
+            return new ResourceIdentification
             {
                 Type = (byte)resourceRef.Type,
                 SubType = (int)resourceRef.SubType,

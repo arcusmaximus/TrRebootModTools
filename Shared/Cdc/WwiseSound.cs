@@ -47,9 +47,9 @@ namespace TrRebootTools.Shared.Cdc
         public List<Chunk> Chunks
         {
             get;
-        } = new();
+        } = [];
 
-        public FormatChunk Format => Chunks.OfType<FormatChunk>().FirstOrDefault();
+        public FormatChunk Format => Chunks.OfType<FormatChunk>().First();
 
         public void Write(Stream stream)
         {
@@ -88,7 +88,7 @@ namespace TrRebootTools.Shared.Cdc
             {
                 get;
                 private set;
-            }
+            } = [];
 
             public override void Read(BinaryReader reader, int size)
             {
@@ -121,7 +121,7 @@ namespace TrRebootTools.Shared.Cdc
             public List<CuePoint> Points
             {
                 get;
-            } = new();
+            } = [];
 
             public override void Read(BinaryReader reader, int size)
             {
@@ -167,7 +167,7 @@ namespace TrRebootTools.Shared.Cdc
             public List<Chunk> Chunks
             {
                 get;
-            } = new();
+            } = [];
 
             public override void Read(BinaryReader reader, int size)
             {
@@ -216,7 +216,7 @@ namespace TrRebootTools.Shared.Cdc
             {
                 get;
                 set;
-            }
+            } = "";
 
             public override void Read(BinaryReader reader, int size)
             {
@@ -254,7 +254,7 @@ namespace TrRebootTools.Shared.Cdc
             int chunkType = reader.ReadInt32();
             int chunkLength = reader.ReadInt32();
             long chunkStartPos = stream.Position;
-            Chunk chunk = ChunkFactories.GetOrDefault(chunkType)?.Invoke() ?? new GenericChunk(chunkType);
+            Chunk chunk = ChunkFactories.GetValueOrDefault(chunkType)?.Invoke() ?? new GenericChunk(chunkType);
             chunk.Read(reader, chunkLength);
             if (stream.Position != chunkStartPos + chunkLength)
                 throw new InvalidDataException();

@@ -17,13 +17,13 @@ namespace TrRebootTools.Shared.Cdc
         private const int MaxResourceChunkSize = 0x40000;
 
         private int _numParts = 1;
-        private List<Stream> _partStreams;
-        private readonly List<ArchiveFileReference> _fileRefs = new List<ArchiveFileReference>();
+        private List<Stream>? _partStreams;
+        private readonly List<ArchiveFileReference> _fileRefs = [];
         private long _nextFileRefPos;
         private int _maxFiles;
         private bool _hasWrittenResources;
 
-        protected Archive(string baseFilePath, ArchiveMetaData metaData)
+        protected Archive(string baseFilePath, ArchiveMetaData? metaData)
         {
             BaseFilePath = baseFilePath;
             MetaData = metaData;
@@ -36,7 +36,7 @@ namespace TrRebootTools.Shared.Cdc
         protected abstract void WriteFileReference(BinaryWriter writer, ArchiveFileReference fileRef);
         protected virtual int ContentAlignment => 0x10;
 
-        public static Archive Create(string baseFilePath, int id, int subId, ArchiveMetaData metaData, int maxFiles, CdcGame game)
+        public static Archive Create(string baseFilePath, int id, int subId, ArchiveMetaData? metaData, int maxFiles, CdcGame game)
         {
             Archive archive = InstantiateArchive(baseFilePath, metaData, game);
             archive.Id = id;
@@ -44,9 +44,9 @@ namespace TrRebootTools.Shared.Cdc
             archive._maxFiles = maxFiles;
 
             Stream stream = File.Open(baseFilePath, FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite);
-            archive._partStreams = new List<Stream> { stream };
+            archive._partStreams = [stream];
 
-            BinaryWriter writer = new BinaryWriter(stream);
+            BinaryWriter writer = new(stream);
             ArchiveHeader header =
                 new ArchiveHeader
                 {
@@ -75,7 +75,7 @@ namespace TrRebootTools.Shared.Cdc
             return archive;
         }
 
-        public static Archive Open(string baseFilePath, ArchiveMetaData metaData, CdcGame game)
+        public static Archive Open(string baseFilePath, ArchiveMetaData? metaData, CdcGame game)
         {
             Archive archive = InstantiateArchive(baseFilePath, metaData, game);
 
@@ -112,13 +112,14 @@ namespace TrRebootTools.Shared.Cdc
             return archive;
         }
 
-        private static Archive InstantiateArchive(string baseFilePath, ArchiveMetaData metaData, CdcGame game)
+        private static Archive InstantiateArchive(string baseFilePath, ArchiveMetaData? metaData, CdcGame game)
         {
             return game switch
             {
                 CdcGame.Tr2013 => new Tr2013Archive(baseFilePath, metaData),
                 CdcGame.Rise => new RiseArchive(baseFilePath, metaData),
                 CdcGame.Shadow => new ShadowArchive(baseFilePath, metaData),
+                _ => throw new NotSupportedException()
             };
         }
 
@@ -132,7 +133,7 @@ namespace TrRebootTools.Shared.Cdc
                     {
                         if (_partStreams == null)
                         {
-                            _partStreams = new List<Stream>();
+                            _partStreams = [];
                             for (int i = 0; i < _numParts; i++)
                             {
                                 string partFilePath = GetPartFilePath(i);
@@ -162,36 +163,36 @@ namespace TrRebootTools.Shared.Cdc
             private set;
         }
 
-        public ArchiveMetaData MetaData
+        public ArchiveMetaData? MetaData
         {
             get;
         }
 
-        public string ModName
+        public string? ModName
         {
             get
             {
-                string entry = MetaData?.CustomEntries.FirstOrDefault(c => c.StartsWith("mod:"));
+                string? entry = MetaData?.CustomEntries.FirstOrDefault(c => c.StartsWith("mod:"));
                 return entry?.Substring("mod:".Length);
             }
         }
 
         public IReadOnlyCollection<ArchiveFileReference> Files => _fileRefs;
 
-        public ResourceCollection GetResourceCollection(ArchiveFileReference file)
+        public ResourceCollection? GetResourceCollection(ArchiveFileReference fileRef)
         {
-            if (file.ArchiveId != Id || file.ArchiveSubId != SubId)
-                throw new ArgumentException();
+            if (fileRef.ArchiveId != Id || fileRef.ArchiveSubId != SubId)
+                throw new ArgumentException("File reference does not match archive", nameof(fileRef));
 
-            string filePath = CdcHash.Lookup(file.NameHash, Game);
+            string? filePath = CdcHash.Lookup(fileRef.NameHash, Game, true);
             if (filePath == null || Path.GetExtension(filePath) != ".drm")
                 return null;
 
-            Stream stream = PartStreams[file.ArchivePart];
-            stream.Position = file.Offset;
+            Stream stream = PartStreams[fileRef.ArchivePart];
+            stream.Position = fileRef.Offset;
             try
             {
-                return ResourceCollection.Open(file.NameHash, file.Locale, stream, Game);
+                return ResourceCollection.Open(fileRef.NameHash, fileRef.Locale, stream, Game);
             }
             catch
             {
@@ -202,7 +203,7 @@ namespace TrRebootTools.Shared.Cdc
         public Stream OpenFile(ArchiveFileReference fileRef)
         {
             if (fileRef.ArchiveId != Id || fileRef.ArchiveSubId != SubId)
-                throw new ArgumentException();
+                throw new ArgumentException("File reference does not match archive", nameof(fileRef));
 
             return new WindowedStream(PartStreams[fileRef.ArchivePart], fileRef.Offset, fileRef.Length);
         }
@@ -210,7 +211,7 @@ namespace TrRebootTools.Shared.Cdc
         public Stream OpenResource(ResourceReference resourceRef)
         {
             if (resourceRef.ArchiveId != Id || resourceRef.ArchiveSubId != SubId)
-                throw new ArgumentException();
+                throw new ArgumentException("Resource reference does not match archive", nameof(resourceRef));
 
             Stream stream = PartStreams[resourceRef.ArchivePart];
             if (resourceRef.RefDefinitionsSize + resourceRef.BodySize == resourceRef.Length)
@@ -238,6 +239,9 @@ namespace TrRebootTools.Shared.Cdc
         {
             if (_fileRefs.Count == _maxFiles)
                 throw new InvalidOperationException("Can't add any further files");
+
+            if (data.Array == null)
+                throw new ArgumentNullException("No file data specified", nameof(data));
 
             Stream contentStream = PartStreams.Last();
             BinaryWriter contentWriter = new BinaryWriter(contentStream);
@@ -372,7 +376,9 @@ namespace TrRebootTools.Shared.Cdc
         {
             if (SubId == 0)
             {
-                File.Delete(MetaData.FilePath);
+                if (MetaData != null)
+                    File.Delete(MetaData.FilePath);
+
                 File.Delete(SpecMasksToc.GetFilePathForArchive(BaseFilePath));
             }
 

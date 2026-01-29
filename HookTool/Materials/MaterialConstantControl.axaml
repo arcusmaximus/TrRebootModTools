@@ -1,0 +1,21 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:materials="using:TrRebootTools.HookTool.Materials"
+             mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="40"
+             x:Class="TrRebootTools.HookTool.Materials.MaterialConstantControl"
+             x:DataType="materials:MaterialConstant">
+    <Panel>
+        <Panel Background="{StaticResource NotificationCardWarningBackgroundBrush}" Opacity="0.4" IsVisible="{Binding Dirty}" />
+        <Grid ColumnDefinitions="50,*,*,*,*" Margin="4" ColumnSpacing="4">
+            <Label Name="_lblIndex" FontWeight="DemiBold" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="0">
+                0
+            </Label>
+		    <materials:DraggableNumberControl Grid.Column="1" Value="{Binding X, Mode=TwoWay}" />
+            <materials:DraggableNumberControl Grid.Column="2" Value="{Binding Y, Mode=TwoWay}" />
+            <materials:DraggableNumberControl Grid.Column="3" Value="{Binding Z, Mode=TwoWay}" />
+            <materials:DraggableNumberControl Grid.Column="4" Value="{Binding W, Mode=TwoWay}" />
+        </Grid>
+    </Panel>
+</UserControl>

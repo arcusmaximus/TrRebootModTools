@@ -1,15 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
 using System.Linq;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using TrRebootTools.Shared.Cdc;
 using TrRebootTools.Shared.Util;
 using System.Text.RegularExpressions;
 using TrRebootTools.Shared;
-using System.Globalization;
+using Avalonia.Media.Imaging;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace TrRebootTools.ModManager.Mod
 {
@@ -56,14 +55,14 @@ namespace TrRebootTools.ModManager.Mod
 
         public override IEnumerable<ArchiveFileKey> Files => _files.Keys;
 
-        public override Stream OpenFile(ArchiveFileKey fileKey)
+        public override Stream? OpenFile(ArchiveFileKey fileKey)
         {
             return OpenFile(_files, fileKey, _archiveSet);
         }
 
         public override IEnumerable<ResourceKey> Resources => _physicalResources.Keys.Concat(_virtualResources.Keys);
 
-        public override Stream OpenResource(ResourceKey resourceKey)
+        public override Stream? OpenResource(ResourceKey resourceKey)
         {
             return OpenResource(_physicalResources, _virtualResources, resourceKey, _archiveSet, _resourceUsageCache);
         }
@@ -97,14 +96,14 @@ namespace TrRebootTools.ModManager.Mod
             ResourceUsageCache usageCache,
             CdcGame game)
         {
-            if (!baseFolderPath.EndsWith("\\"))
-                baseFolderPath += "\\";
+            if (!baseFolderPath.EndsWith(Path.DirectorySeparatorChar))
+                baseFolderPath += Path.DirectorySeparatorChar;
 
             foreach (string filePath in Directory.EnumerateFiles(folderPath, "*", recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly))
             {
                 if (TryGetResourceKey(baseFolderPath, filePath, out ResourceKey resourceKey, usageCache, game))
                 {
-                    if (checkForDuplicates && resources.TryGetValue(resourceKey, out string existingFilePath))
+                    if (checkForDuplicates && resources.TryGetValue(resourceKey, out string? existingFilePath))
                         throw new Exception($"The mod contains a duplicate resource:\r\n{existingFilePath.Substring(baseFolderPath.Length)}\r\n{filePath.Substring(baseFolderPath.Length)}");
 
                     resources[resourceKey] = filePath;
@@ -118,13 +117,13 @@ namespace TrRebootTools.ModManager.Mod
                 string filePathToHash = filePath.Substring(baseFolderPath.Length);
                 ulong? locale = CdcGameInfo.Get(game).LanguageCodeToLocale(Path.GetFileNameWithoutExtension(filePathToHash));
                 if (locale != null)
-                    filePathToHash = Path.GetDirectoryName(filePathToHash);
+                    filePathToHash = Path.GetDirectoryName(filePathToHash)!;
 
                 if (Path.GetExtension(filePathToHash) == ".ips32")
                     filePathToHash = filePathToHash.Substring(0, filePathToHash.Length - 6);
 
-                ulong nameHash = CdcHash.Calculate(filePathToHash, game);
-                locale ??= gameFileLocales.GetOrDefault(nameHash);
+                ulong nameHash = CdcHash.Calculate(filePathToHash, game, true);
+                locale ??= gameFileLocales.GetValueOrDefault(nameHash);
                 files[new ArchiveFileKey(nameHash, locale ?? 0xFFFFFFFFFFFFFFFF)] = filePath;
             }
         }
@@ -146,7 +145,7 @@ namespace TrRebootTools.ModManager.Mod
             }
 
             using Stream stream = File.OpenRead(filePath);
-            string origFilePath = ResourceNaming.ReadOriginalFilePath(stream, type, game);
+            string? origFilePath = ResourceNaming.ReadOriginalFilePath(stream, type, game);
             if (origFilePath == null)
             {
                 resourceKey = new();
@@ -176,15 +175,15 @@ namespace TrRebootTools.ModManager.Mod
                 return false;
             }
 
-            string collectionFilePath = null;
+            string? collectionFilePath = null;
             string folderPath = resourceFilePath;
             do
             {
-                folderPath = Path.GetDirectoryName(folderPath);
+                folderPath = Path.GetDirectoryName(folderPath)!;
                 collectionFilePath = Directory.EnumerateFiles(folderPath, "*.drm").FirstOrDefault();
                 if (collectionFilePath != null)
                     break;
-            } while (folderPath.TrimEnd('\\') != baseFolderPath.TrimEnd('\\'));
+            } while (folderPath.TrimEnd(Path.DirectorySeparatorChar) != baseFolderPath.TrimEnd(Path.DirectorySeparatorChar));
 
             if (collectionFilePath == null)
             {
@@ -211,7 +210,7 @@ namespace TrRebootTools.ModManager.Mod
                 if (!int.TryParse(Path.GetFileNameWithoutExtension(wemFilePath), out int soundId))
                     continue;
 
-                ArchiveFileReference fileRef = archiveSet.GetFileReference(wemFileKey);
+                ArchiveFileReference? fileRef = archiveSet.GetFileReference(wemFileKey);
                 if (fileRef == null)
                     throw new Exception($"{Path.GetFileName(wemFilePath)} in the mod was not found in the game's original files; incorrect subfolder?");
 
@@ -224,10 +223,10 @@ namespace TrRebootTools.ModManager.Mod
                     if (physicalResources.ContainsKey(bankResourceKey))
                         continue;
 
-                    WwiseSoundBank bank = virtualSoundBanks.GetOrDefault(bankResourceKey);
+                    WwiseSoundBank? bank = virtualSoundBanks.GetValueOrDefault(bankResourceKey);
                     if (bank == null)
                     {
-                        ResourceReference bankResourceRef = resourceUsageCache.GetResourceReference(archiveSet, bankResourceKey);
+                        ResourceReference? bankResourceRef = resourceUsageCache.GetResourceReference(archiveSet, bankResourceKey);
                         if (bankResourceRef == null)
                             continue;
 
@@ -238,9 +237,9 @@ namespace TrRebootTools.ModManager.Mod
                         virtualSoundBanks.Add(bankResourceKey, bank);
                     }
 
-                    if (bank.EmbeddedSounds.GetOrDefault(soundId).Count == fileRef.Length)
+                    if (bank.EmbeddedSounds.GetValueOrDefault(soundId).Count == fileRef.Length)
                     {
-                        using (Stream stream = OpenFile(files, wemFileKey, archiveSet))
+                        using (Stream stream = OpenFile(files, wemFileKey, archiveSet)!)
                         {
                             bank.EmbeddedSounds[soundId] = stream.GetContent();
                         }
@@ -261,14 +260,14 @@ namespace TrRebootTools.ModManager.Mod
             }
         }
 
-        private static Stream OpenFile(Dictionary<ArchiveFileKey, string> files, ArchiveFileKey fileKey, ArchiveSet archiveSet)
+        private static Stream? OpenFile(Dictionary<ArchiveFileKey, string> files, ArchiveFileKey fileKey, ArchiveSet archiveSet)
         {
-            string filePath = files.GetOrDefault(fileKey);
+            string? filePath = files.GetValueOrDefault(fileKey);
             if (filePath == null)
                 return null;
 
             Stream fileStream = File.OpenRead(filePath);
-            Stream resultStream = null;
+            Stream? resultStream = null;
 
             try
             {
@@ -292,7 +291,7 @@ namespace TrRebootTools.ModManager.Mod
 
         private static Stream GetPatchedLocalsBin(Stream jsonStream, ArchiveFileKey fileKey, ArchiveSet archiveSet)
         {
-            ArchiveFileReference fileRef = archiveSet.GetFileReference(fileKey);
+            ArchiveFileReference? fileRef = archiveSet.GetFileReference(fileKey);
             if (fileRef == null)
                 throw new Exception($"File {fileKey} not found for locals.bin");
 
@@ -302,24 +301,24 @@ namespace TrRebootTools.ModManager.Mod
                 locals = LocalsBin.Open(origStream, archiveSet.Game);
             }
 
-            JObject json;
+            JsonDocument json;
             try
             {
-                using StreamReader streamReader = new StreamReader(jsonStream);
-                using JsonReader jsonReader = new JsonTextReader(streamReader);
-                json = JObject.Load(jsonReader);
+                json = JsonDocument.Parse(jsonStream);
             }
             catch (Exception ex)
             {
                 throw new Exception("Failed to parse JSON file for locals.bin:\r\n" + ex.Message);
             }
 
-            foreach ((string key, JToken value) in json)
+            foreach (JsonProperty entry in json.RootElement.EnumerateObject())
             {
-                locals.Strings[key] = (string)value;
+                string? value = entry.Value.GetString();
+                if (value != null)
+                    locals.Strings[entry.Name] = value;
             }
 
-            MemoryStream patchedStream = new MemoryStream();
+            MemoryStream patchedStream = new();
             locals.Write(patchedStream);
             patchedStream.Position = 0;
             return patchedStream;
@@ -336,7 +335,7 @@ namespace TrRebootTools.ModManager.Mod
             if (modSound.Chunks.OfType<WwiseSound.CueChunk>().Any())
                 return modSoundFileStream;
 
-            ArchiveFileReference fileRef = archiveSet.GetFileReference(fileKey);
+            ArchiveFileReference? fileRef = archiveSet.GetFileReference(fileKey);
             if (fileRef == null)
                 return modSoundFileStream;
 
@@ -374,7 +373,7 @@ namespace TrRebootTools.ModManager.Mod
 
         private static Stream GetIps32PatchedStream(Stream ipsStream, ArchiveFileKey fileKey, ArchiveSet archiveSet)
         {
-            ArchiveFileReference fileRef = archiveSet.GetFileReference(fileKey);
+            ArchiveFileReference? fileRef = archiveSet.GetFileReference(fileKey);
             if (fileRef == null)
                 throw new Exception($"File {fileKey} not found for IPS32 patching");
 
@@ -388,18 +387,18 @@ namespace TrRebootTools.ModManager.Mod
             return new MemoryStream(data);
         }
 
-        private static Stream OpenResource(
+        private static Stream? OpenResource(
             Dictionary<ResourceKey, string> physicalResources,
             Dictionary<ResourceKey, MemoryStream> virtualResources,
             ResourceKey resourceKey,
             ArchiveSet archiveSet,
             ResourceUsageCache resourceUsageCache)
         {
-            Stream virtualStream = virtualResources.GetOrDefault(resourceKey);
+            Stream? virtualStream = virtualResources.GetValueOrDefault(resourceKey);
             if (virtualStream != null)
                 return virtualStream;
 
-            string filePath = physicalResources.GetOrDefault(resourceKey);
+            string? filePath = physicalResources.GetValueOrDefault(resourceKey);
             if (filePath == null)
                 return null;
 
@@ -450,12 +449,12 @@ namespace TrRebootTools.ModManager.Mod
         {
             MemoryStream dtpStream = new MemoryStream(8 + (int)bnkStream.Length);
             
-            BinaryWriter writer = new BinaryWriter(dtpStream);
+            BinaryWriter writer = new(dtpStream);
             writer.Write(0);
             writer.Write((int)bnkStream.Length);
             bnkStream.CopyTo(dtpStream);
 
-            BinaryReader reader = new BinaryReader(dtpStream);
+            BinaryReader reader = new(dtpStream);
             dtpStream.Position = 0x14;
             uint soundBankId = reader.ReadUInt32();
             dtpStream.Position = 0;
@@ -467,7 +466,7 @@ namespace TrRebootTools.ModManager.Mod
 
         private static uint GetOriginalTextureFormat(ResourceKey resourceKey, ArchiveSet archiveSet, ResourceUsageCache resourceUsageCache)
         {
-            ResourceReference resourceRef = resourceUsageCache.GetResourceReference(archiveSet, resourceKey);
+            ResourceReference? resourceRef = resourceUsageCache.GetResourceReference(archiveSet, resourceKey);
             if (resourceRef == null)
                 return 0;
 
@@ -500,32 +499,28 @@ namespace TrRebootTools.ModManager.Mod
                 get;
             }
 
-            private static string GetDescription(string folderPath)
+            private static string? GetDescription(string folderPath)
             {
                 string filePath = Path.Combine(folderPath, VariationDescriptionFileName);
                 return File.Exists(filePath) ? File.ReadAllText(filePath) : null;
             }
 
-            private static Image GetImage(string folderPath)
+            private static Bitmap? GetImage(string folderPath)
             {
                 string filePath = Path.Combine(folderPath, VariationImageFileName);
-                if (!File.Exists(filePath))
-                    return null;
-
-                using Image image = Image.FromFile(filePath);
-                return new Bitmap(image);
+                return File.Exists(filePath) ? new Bitmap(filePath) : null;
             }
 
             public override IEnumerable<ArchiveFileKey> Files => _files.Keys;
 
-            public override Stream OpenFile(ArchiveFileKey fileKey)
+            public override Stream? OpenFile(ArchiveFileKey fileKey)
             {
                 return FolderModPackage.OpenFile(_files, fileKey, _archiveSet);
             }
 
             public override IEnumerable<ResourceKey> Resources => _physicalResources.Keys.Concat(_virtualResources.Keys);
 
-            public override Stream OpenResource(ResourceKey resourceKey)
+            public override Stream? OpenResource(ResourceKey resourceKey)
             {
                 return FolderModPackage.OpenResource(_physicalResources, _virtualResources, resourceKey, _archiveSet, _resourceUsageCache);
             }

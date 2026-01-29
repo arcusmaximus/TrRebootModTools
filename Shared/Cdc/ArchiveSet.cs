@@ -18,7 +18,7 @@ namespace TrRebootTools.Shared.Cdc
 
         private readonly object _lock = new();
         private readonly Dictionary<(int, int), Archive> _archives = new();
-        private readonly List<Archive> _duplicateArchives = new List<Archive>();
+        private readonly List<Archive> _duplicateArchives = [];
         private readonly Dictionary<ArchiveFileKey, ArchiveFileReference> _files = new();
 
         public static ArchiveSet Open(string folderPath, bool includeGame, bool includeMods, CdcGame game)
@@ -26,8 +26,9 @@ namespace TrRebootTools.Shared.Cdc
             return game switch
             {
                 CdcGame.Tr2013 => new Tr2013ArchiveSet(folderPath, includeGame, includeMods),
-                CdcGame.Rise => new RiseArchiveSet(folderPath, includeGame, includeMods),
-                CdcGame.Shadow => new ShadowArchiveSet(folderPath, includeGame, includeMods)
+                CdcGame.Rise   => new RiseArchiveSet(folderPath, includeGame, includeMods),
+                CdcGame.Shadow => new ShadowArchiveSet(folderPath, includeGame, includeMods),
+                _ => throw new NotSupportedException()
             };
         }
 
@@ -55,7 +56,7 @@ namespace TrRebootTools.Shared.Cdc
                 using Stream stream = File.OpenRead(archiveFilePath);
                 using BinaryReader reader = new BinaryReader(stream);
                 var header = reader.ReadStruct<Archive.ArchiveHeader>();
-                ArchiveMetaData metaData = metaDatas?.GetOrDefault(header.Id);
+                ArchiveMetaData? metaData = metaDatas?.GetValueOrDefault(header.Id);
                 if (metaData != null || !SupportsMetaData)
                     Load(archiveFilePath, metaData);
             }
@@ -82,16 +83,16 @@ namespace TrRebootTools.Shared.Cdc
 
         public IReadOnlyCollection<Archive> DuplicateArchives => _duplicateArchives;
 
-        public Archive GetArchive(int id, int subId)
+        public Archive? GetArchive(int id, int subId)
         {
-            return _archives.GetOrDefault((id, subId));
+            return _archives.GetValueOrDefault((id, subId));
         }
 
         public IReadOnlyCollection<ArchiveFileReference> Files => _files.Values;
 
         private void EnsureFlattenedModArchiveBackup()
         {
-            string archiveFileName = GetActiveFlattenedModArchiveIdentity()?.FileName;
+            string? archiveFileName = GetActiveFlattenedModArchiveIdentity()?.FileName;
             if (archiveFileName == null)
                 return;
 
@@ -119,7 +120,7 @@ namespace TrRebootTools.Shared.Cdc
             return true;
         }
 
-        private void Load(string archiveFilePath, ArchiveMetaData metaData)
+        private void Load(string archiveFilePath, ArchiveMetaData? metaData)
         {
             Archive archive = Archive.Open(archiveFilePath, metaData, Game);
             var archiveKey = (archive.Id, archive.SubId);
@@ -131,7 +132,10 @@ namespace TrRebootTools.Shared.Cdc
 
         public Archive CreateFlattenedModArchive(int maxFiles)
         {
-            ArchiveIdentity ident = GetActiveFlattenedModArchiveIdentity();
+            ArchiveIdentity? ident = GetActiveFlattenedModArchiveIdentity();
+            if (ident == null)
+                throw new InvalidOperationException();
+
             return Archive.Create(Path.Combine(FolderPath, ident.FileName), ident.Id, 0, null, maxFiles, Game);
         }
 
@@ -145,9 +149,9 @@ namespace TrRebootTools.Shared.Cdc
                 int gameId = _archives.Values.Select(a => a.MetaData?.GameId ?? 0).FirstOrDefault(id => id > 0);
                 int version = _archives.Values.Max(a => a.MetaData?.Version ?? 0) + 1;
                 int id = _archives.Values.Max(a => a.Id) + 1;
-                string steamId = _archives.Values
-                                          .SelectMany(a => (IEnumerable<string>)a.MetaData?.CustomEntries ?? [])
-                                          .FirstOrDefault(c => c.StartsWith("steamID:"));
+                string? steamId = _archives.Values
+                                           .SelectMany(a => (IEnumerable<string>?)a.MetaData?.CustomEntries ?? [])
+                                           .FirstOrDefault(c => c.StartsWith("steamID:"));
 
                 string nfoFilePath = Path.Combine(FolderPath, $"{ModArchivePrefix}{simplifiedName}.000.000.nfo");
                 ArchiveMetaData metaData = ArchiveMetaData.Create(nfoFilePath, gameId, version, id, id);
@@ -160,7 +164,7 @@ namespace TrRebootTools.Shared.Cdc
                 int subId = 0;
 
                 Dictionary<ulong, Archive> archives = new();
-                SpecMasksToc toc = new SpecMasksToc();
+                SpecMasksToc toc = new();
                 foreach (var localesOfSuffix in maxFilesByLocale.Keys.GroupBy(MakeLocaleSuffix))
                 {
                     string archiveFileName = $"{ModArchivePrefix}{simplifiedName}.000{localesOfSuffix.Key}.000.tiger";
@@ -187,7 +191,7 @@ namespace TrRebootTools.Shared.Cdc
             return [];
         }
 
-        public virtual ArchiveIdentity GetActiveFlattenedModArchiveIdentity()
+        public virtual ArchiveIdentity? GetActiveFlattenedModArchiveIdentity()
         {
             return null;
         }
@@ -196,7 +200,7 @@ namespace TrRebootTools.Shared.Cdc
 
         protected abstract bool RequiresSpecMaskFiles { get; }
 
-        public void Add(Archive archive, ResourceUsageCache gameResourceUsageCache, ITaskProgress progress, CancellationToken cancellationToken)
+        public void Add(Archive archive, ResourceUsageCache gameResourceUsageCache, ITaskProgress? progress, CancellationToken cancellationToken)
         {
             lock (_lock)
             {
@@ -205,12 +209,12 @@ namespace TrRebootTools.Shared.Cdc
             }
         }
 
-        public void Enable(int archiveId, ResourceUsageCache gameResourceUsageCache, ITaskProgress progress, CancellationToken cancellationToken)
+        public void Enable(int archiveId, ResourceUsageCache gameResourceUsageCache, ITaskProgress? progress, CancellationToken cancellationToken)
         {
             lock (_lock)
             {
                 Archive archive = _archives[(archiveId, 0)];
-                if (archive.MetaData.Enabled)
+                if (archive.MetaData == null || archive.MetaData.Enabled)
                     return;
 
                 try
@@ -227,7 +231,7 @@ namespace TrRebootTools.Shared.Cdc
             }
         }
 
-        public void Disable(int archiveId, ResourceUsageCache gameResourceUsageCache, ITaskProgress progress, CancellationToken cancellationToken)
+        public void Disable(int archiveId, ResourceUsageCache gameResourceUsageCache, ITaskProgress? progress, CancellationToken cancellationToken)
         {
             lock (_lock)
             {
@@ -236,10 +240,10 @@ namespace TrRebootTools.Shared.Cdc
             }
         }
 
-        private void Disable(int archiveId, ResourceUsageCache gameResourceUsageCache, ITaskProgress progress, string statusText, CancellationToken cancellationToken)
+        private void Disable(int archiveId, ResourceUsageCache gameResourceUsageCache, ITaskProgress? progress, string statusText, CancellationToken cancellationToken)
         {
             Archive archive = _archives[(archiveId, 0)];
-            if (!archive.MetaData.Enabled)
+            if (archive.MetaData == null || !archive.MetaData.Enabled)
                 return;
 
             try
@@ -254,7 +258,7 @@ namespace TrRebootTools.Shared.Cdc
             }
         }
 
-        public void Delete(int archiveId, ResourceUsageCache gameResourceUsageCache, ITaskProgress progress, CancellationToken cancellationToken)
+        public void Delete(int archiveId, ResourceUsageCache gameResourceUsageCache, ITaskProgress? progress, CancellationToken cancellationToken)
         {
             lock (_lock)
             {
@@ -270,7 +274,7 @@ namespace TrRebootTools.Shared.Cdc
             }
         }
 
-        private void UpdateResourceReferences(ResourceUsageCache gameResourceUsageCache, ITaskProgress progress, CancellationToken cancellationToken)
+        private void UpdateResourceReferences(ResourceUsageCache gameResourceUsageCache, ITaskProgress? progress, CancellationToken cancellationToken)
         {
             List<Archive> sortedArchives = GetSortedArchives();
             int firstModArchiveIdx = sortedArchives.IndexOf(a => a.ModName != null);
@@ -306,7 +310,7 @@ namespace TrRebootTools.Shared.Cdc
                     numUpdatedFiles++;
                     progress?.Report((float)numUpdatedFiles / numTotalFiles);
 
-                    ResourceCollection collection = archive.GetResourceCollection(file);
+                    ResourceCollection? collection = archive.GetResourceCollection(file);
                     if (collection == null)
                     {
                         _files[file] = file;
@@ -322,7 +326,7 @@ namespace TrRebootTools.Shared.Cdc
                             resourceUsageCache.AddResourceReference(this, collection, resourceIdx);
                             modResourceRefs[resourceRef] = resourceRef;
                         }
-                        else if (modResourceRefs.TryGetValue(resourceRef, out ResourceReference modResourceRef) &&
+                        else if (modResourceRefs.TryGetValue(resourceRef, out ResourceReference? modResourceRef) &&
                                  (resourceRef.ArchiveId != modResourceRef.ArchiveId || resourceRef.ArchiveSubId != modResourceRef.ArchiveSubId))
                         {
                             collection.UpdateResourceReference(resourceIdx, modResourceRef);
@@ -330,7 +334,7 @@ namespace TrRebootTools.Shared.Cdc
                         }
                         else if (!archiveIds.Contains(resourceRef.ArchiveId))
                         {
-                            ResourceReference gameResourceRef = resourceUsageCache.GetResourceReference(this, resourceRef);
+                            ResourceReference? gameResourceRef = resourceUsageCache.GetResourceReference(this, resourceRef);
                             if (gameResourceRef == null)
                             {
                                 gameResourceRef = new ResourceReference(
@@ -364,35 +368,35 @@ namespace TrRebootTools.Shared.Cdc
             }
         }
 
-        public ArchiveFileReference GetFileReference(ArchiveFileKey fileId)
+        public ArchiveFileReference? GetFileReference(ArchiveFileKey fileId)
         {
             return GetFileReference(fileId.NameHash, fileId.Locale);
         }
 
-        public ArchiveFileReference GetFileReference(ulong nameHash, ulong locale = 0xFFFFFFFFFFFFFFFF)
+        public ArchiveFileReference? GetFileReference(ulong nameHash, ulong locale = 0xFFFFFFFFFFFFFFFF)
         {
-            return _files.GetOrDefault(new ArchiveFileKey(nameHash, locale));
+            return _files.GetValueOrDefault(new ArchiveFileKey(nameHash, locale));
         }
 
-        public ArchiveFileReference GetFileReference(string name, ulong locale = 0xFFFFFFFFFFFFFFFF)
+        public ArchiveFileReference? GetFileReference(string name, ulong locale = 0xFFFFFFFFFFFFFFFF)
         {
             return GetFileReference(CdcHash.Calculate(name, Game), locale);
         }
 
-        public ResourceCollection GetResourceCollection(ArchiveFileReference file)
+        public ResourceCollection? GetResourceCollection(ArchiveFileReference file)
         {
             return _archives[(file.ArchiveId, file.ArchiveSubId)].GetResourceCollection(file);
         }
 
-        public ResourceCollection GetResourceCollection(ulong nameHash, ulong locale = 0xFFFFFFFFFFFFFFFF)
+        public ResourceCollection? GetResourceCollection(ulong nameHash, ulong locale = 0xFFFFFFFFFFFFFFFF)
         {
-            ArchiveFileReference fileRef = GetFileReference(nameHash, locale);
+            ArchiveFileReference? fileRef = GetFileReference(nameHash, locale);
             return fileRef != null ? GetResourceCollection(fileRef) : null;
         }
 
-        public ResourceCollection GetResourceCollection(string name, ulong locale = 0xFFFFFFFFFFFFFFFF)
+        public ResourceCollection? GetResourceCollection(string name, ulong locale = 0xFFFFFFFFFFFFFFFF)
         {
-            ArchiveFileReference fileRef = GetFileReference(name, locale);
+            ArchiveFileReference? fileRef = GetFileReference(name, locale);
             return fileRef != null ? GetResourceCollection(fileRef) : null;
         }
 
@@ -415,6 +419,9 @@ namespace TrRebootTools.Shared.Cdc
 
         private static int CompareArchivePriority(Archive a, Archive b)
         {
+            if (a.MetaData == null || b.MetaData == null)
+                return 0;
+
             int comparison = a.MetaData.Version.CompareTo(b.MetaData.Version);
             if (comparison != 0)
                 return comparison;

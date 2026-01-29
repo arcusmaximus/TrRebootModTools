@@ -1,6 +1,4 @@
-﻿using TrRebootTools.Shared.Cdc;
-
-namespace TrRebootTools.Shared.Cdc
+﻿namespace TrRebootTools.Shared.Cdc
 {
     public class ArchiveBlobReference
     {
@@ -47,7 +45,7 @@ namespace TrRebootTools.Shared.Cdc
                    Length == other.Length;
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return obj is ArchiveBlobReference other && Equals(other);
         }

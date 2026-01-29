@@ -38,7 +38,7 @@
             get;
         }
 
-        public override readonly bool Equals(object obj)
+        public override readonly bool Equals(object? obj)
         {
             return obj is ResourceKey other && other.Type == Type && other.Id == Id && other.Locale == Locale;
         }

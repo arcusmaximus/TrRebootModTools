@@ -52,7 +52,7 @@ namespace TrRebootTools.Shared
             }
             else
             {
-                cinePackets = new();
+                cinePackets = [];
             }
 
             for (int i = 0; i < Math.Max(soundPackets.Count, cinePackets.Count); i++)
@@ -161,7 +161,7 @@ namespace TrRebootTools.Shared
             List<MultiplexStream.CinePacket> packets = new();
             while (stream.Position < stream.Length)
             {
-                byte[] header = null;
+                byte[]? header = null;
 
                 int firstInt = reader.ReadInt32();
                 int frameSize;
@@ -195,7 +195,7 @@ namespace TrRebootTools.Shared
 
         private List<MultiplexStream.CinePacket> MakeSubtitlePackets(MultiplexStreamInfo info, int numFrames)
         {
-            List<MultiplexStream.CinePacket> packets = new();
+            List<MultiplexStream.CinePacket> packets = [];
             List<MultiplexStreamInfo.SubtitleFrame> subtitleFrames = info.SubtitleFrames.OrderBy(f => f.FrameNumber).ToList();
             numFrames = Math.Max(numFrames, subtitleFrames.Last().FrameNumber + 1);
 

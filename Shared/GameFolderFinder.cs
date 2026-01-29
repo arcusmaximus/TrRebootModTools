@@ -1,53 +1,59 @@
 ﻿using System;
-using System.Configuration;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Windows.Forms;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Win32;
 using TrRebootTools.Shared.Cdc;
+using TrRebootTools.Shared.Util;
 
 namespace TrRebootTools.Shared
 {
     public static class GameFolderFinder
     {
-        public static string Find(CdcGame game)
+        public static async Task<string?> FindAsync(CdcGame game)
         {
             CdcGameInfo gameInfo = CdcGameInfo.Get(game);
-            Func<CdcGameInfo, string>[] getters =
+            Func<CdcGameInfo, Task<string?>>[] getters =
+            [
+                GetGameFolderFromConfigurationAsync,
+                GetGameFolderFromWindowsRegistryAsync,
+                GetGameFolderFromLinuxSteamAsync,
+                GetGameFolderFromFileBrowserAsync
+            ];
+            foreach (Func<CdcGameInfo, Task<string?>> getter in getters)
             {
-                GetGameFolderFromConfiguration,
-                GetGameFolderFromRegistry,
-                GetGameFolderFromFileBrowser
-            };
-            foreach (Func<CdcGameInfo, string> getter in getters)
-            {
-                string gameFolderPath = getter(gameInfo);
-                if (string.IsNullOrEmpty(gameFolderPath) || !File.Exists(Path.Combine(gameFolderPath, gameInfo.ExeName)))
+                string? gameFolderPath = await getter(gameInfo);
+                if (!IsValidGameFolder(gameInfo, gameFolderPath))
                     continue;
 
-                Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-                config.AppSettings.Settings[gameInfo.Game + "Folder"].Value = gameFolderPath;
-                config.Save(ConfigurationSaveMode.Modified);
-                ConfigurationManager.RefreshSection(config.AppSettings.SectionInformation.Name);
+                Configuration config = Configuration.Load();
+                config.GameFolderPaths[game] = gameFolderPath;
+                config.Save();
                 return gameFolderPath;
             }
 
             return null;
         }
 
-        private static string GetGameFolderFromConfiguration(CdcGameInfo gameInfo)
+        private static async Task<string?> GetGameFolderFromConfigurationAsync(CdcGameInfo gameInfo)
         {
-            return ConfigurationManager.AppSettings[gameInfo.Game + "Folder"];
+            return Configuration.Load().GameFolderPaths.GetValueOrDefault(gameInfo.Game);
         }
 
-        private static string GetGameFolderFromRegistry(CdcGameInfo gameInfo)
+        private static async Task<string?> GetGameFolderFromWindowsRegistryAsync(CdcGameInfo gameInfo)
         {
-            using RegistryKey uninstallKey = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall");
+            if (!OperatingSystem.IsWindows())
+                return null;
+
+            using RegistryKey? uninstallKey = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall");
             if (uninstallKey == null)
                 return null;
 
             foreach (string appName in uninstallKey.GetSubKeyNames())
             {
-                using RegistryKey appKey = uninstallKey.OpenSubKey(appName);
+                using RegistryKey? appKey = uninstallKey.OpenSubKey(appName);
                 if (appKey?.GetValue("DisplayName") as string == gameInfo.RegistryDisplayName)
                     return appKey.GetValue("InstallLocation") as string;
             }
@@ -55,31 +61,55 @@ namespace TrRebootTools.Shared
             return null;
         }
 
-        private static string GetGameFolderFromFileBrowser(CdcGameInfo gameInfo)
+        private static async Task<string?> GetGameFolderFromLinuxSteamAsync(CdcGameInfo gameInfo)
         {
-            MessageBox.Show(
-                $"Could not automatically determine the {gameInfo.ShortName} installation folder. Please select it manually.",
+            if (!OperatingSystem.IsLinux())
+                return null;
+
+            return gameInfo.LinuxSteamFolderPath;
+        }
+
+        private static async Task<string?> GetGameFolderFromFileBrowserAsync(CdcGameInfo gameInfo)
+        {
+            await MessageBox.ShowAsync(
                 $"{gameInfo.ShortName} Modding Tools",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Information
+                $"Could not automatically determine the {gameInfo.ShortName} installation folder. Please select it manually.",
+                icon: MsBox.Avalonia.Enums.Icon.Info
             );
 
             while (true)
             {
-                using OpenFileDialog dialog = new OpenFileDialog
-                {
-                    Filter = $"{gameInfo.ExeName}|{gameInfo.ExeName};gamelaunchhelper.exe",
-                    FileName = gameInfo.ExeName
-                };
-                if (dialog.ShowDialog() != DialogResult.OK)
+                string? filePath = await App.OpenFilePickerAsync(
+                    $"Select {gameInfo.ShortName} game binary",
+                    new()
+                    {
+                        { gameInfo.ShortName, gameInfo.ExeNames }
+                    }
+                );
+                if (filePath == null)
                     return null;
 
-                string folderPath = Path.GetDirectoryName(dialog.FileName);
-                if (File.Exists(Path.Combine(folderPath, gameInfo.ExeName)))
+                string? folderPath = Path.GetDirectoryName(filePath);
+                if (IsValidGameFolder(gameInfo, folderPath))
                     return folderPath;
 
-                MessageBox.Show($"Could not find {gameInfo.ExeName} in the selected folder.", "Game not found", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                await MessageBox.ShowAsync(
+                    "Game not found",
+                    $"Could not find {string.Join('/', gameInfo.ExeNames)} in the selected folder.",
+                    icon: MsBox.Avalonia.Enums.Icon.Error
+                );
             }
+        }
+
+        private static bool IsValidGameFolder(CdcGameInfo gameInfo, [NotNullWhen(true)] string? folderPath)
+        {
+            if (string.IsNullOrEmpty(folderPath))
+                return false;
+            
+            if (!Directory.Exists(folderPath))
+                return false;
+
+            return gameInfo.ExeNames.Any(e => File.Exists(Path.Combine(folderPath, e)));
         }
     }
 }

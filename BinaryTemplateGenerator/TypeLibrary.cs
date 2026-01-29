@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-
-namespace TrRebootTools.BinaryTemplateGenerator
+﻿namespace TrRebootTools.BinaryTemplateGenerator
 {
     internal class TypeLibrary
     {
@@ -138,16 +134,16 @@ namespace TrRebootTools.BinaryTemplateGenerator
 
         private CType GetCType(string name)
         {
-            CType type = TryGetCType(name);
+            CType? type = TryGetCType(name);
             if (type == null)
                 throw new Exception($"Type {name} not found in header file.");
 
             return type;
         }
 
-        private CType TryGetCType(string name)
+        private CType? TryGetCType(string name)
         {
-            Types.TryGetValue(name, out CType type);
+            Types.TryGetValue(name, out CType? type);
             return type;
         }
 

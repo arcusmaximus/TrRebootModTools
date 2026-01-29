@@ -1,0 +1,14 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="150" d:DesignHeight="40"
+             x:Class="TrRebootTools.HookTool.Materials.DraggableNumberControl">
+    <Panel Cursor="SizeWestEast" PointerPressed="OnPointerPressed" PointerMoved="OnPointerMoved" PointerReleased="OnPointerReleased">
+        <ProgressBar Name="_prgValue" Maximum="1" />
+		<Label Name="_lblValue" HorizontalAlignment="Center" VerticalAlignment="Center" Padding="0 5" Grid.ColumnSpan="2">
+            0
+        </Label>
+        <TextBox Name="_txtValue" Margin="4" TextAlignment="Center" IsVisible="False" KeyDown="OnTextBoxKeyDown" LostFocus="OnTextBoxLostFocus" />
+    </Panel>
+</UserControl>

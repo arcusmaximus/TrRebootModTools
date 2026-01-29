@@ -4,7 +4,7 @@ namespace TrRebootTools.Shared.Cdc.Shadow
 {
     internal class ShadowResourceRefDefinitions : ResourceRefDefinitions
     {
-        public ShadowResourceRefDefinitions(ResourceReference resourceRef, Stream stream, bool readSizeOnly)
+        public ShadowResourceRefDefinitions(ResourceReference? resourceRef, Stream stream, bool readSizeOnly)
             : base(resourceRef, stream, readSizeOnly)
         {
         }

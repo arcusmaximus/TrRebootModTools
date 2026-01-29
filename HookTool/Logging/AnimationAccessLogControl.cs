@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Avalonia.Controls;
+using Avalonia.Threading;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -6,18 +8,15 @@ using System.Threading;
 using System.Threading.Tasks;
 using TrRebootTools.Shared;
 using TrRebootTools.Shared.Cdc;
-using TrRebootTools.Shared.Controls.VirtualTreeView;
-using TrRebootTools.Shared.Util;
-using TrRebootTools.HookTool.Logging;
-using TrRebootTools.HookTool;
+using TrRebootTools.Shared.Controls;
 
 namespace TrRebootTools.HookTool.Logging
 {
     internal class AnimationAccessLogControl : AccessLogControl
     {
-        private class AnimationLogEntry
+        private class AnimationLogEntry : IListViewEntry
         {
-            public AnimationLogEntry(DateTime timestamp, string drm, int id, string name)
+            public AnimationLogEntry(DateTime timestamp, string? drm, int id, string name)
             {
                 Timestamp = timestamp;
                 Drm = drm;
@@ -26,13 +25,28 @@ namespace TrRebootTools.HookTool.Logging
             }
 
             public DateTime Timestamp { get; }
-            public string Drm { get; }
+            public string? Drm { get; }
             public int Id { get; }
             public string Name { get; }
 
-            public override bool Equals(object other)
+            public string? this[int column]
             {
-                return Id == ((AnimationLogEntry)other).Id;
+                get
+                {
+                    return column switch
+                    {
+                        0 => Timestamp.ToShortTimeString(),
+                        1 => Drm,
+                        2 => Id.ToString(),
+                        3 => Name,
+                        _ => null
+                    };
+                }
+            }
+
+            public override bool Equals(object? other)
+            {
+                return other is AnimationLogEntry otherEntry && Id == otherEntry.Id;
             }
 
             public override int GetHashCode()
@@ -48,10 +62,12 @@ namespace TrRebootTools.HookTool.Logging
 
         public AnimationAccessLogControl()
         {
-            _tvLog.Header.Columns.Add(new VirtualTreeColumn { Name = "Time", Width = 100 });
-            _tvLog.Header.Columns.Add(new VirtualTreeColumn { Name = "DRM", Width = 300 });
-            _tvLog.Header.Columns.Add(new VirtualTreeColumn { Name = "ID", Width = 100 });
-            _tvLog.Header.Columns.Add(new VirtualTreeColumn { Name = "Name", Width = 300 });
+            _lstLog.Columns = [
+                new ListViewColumn("Time", new(40, GridUnitType.Pixel)),
+                new ListViewColumn("DRM", new(1, GridUnitType.Star)),
+                new ListViewColumn("ID", new(100, GridUnitType.Pixel)),
+                new ListViewColumn("Name", new(1, GridUnitType.Star))
+            ];
         }
 
         protected override void SubscribeToEvents(NotificationChannel events)
@@ -69,53 +85,35 @@ namespace TrRebootTools.HookTool.Logging
             if (!EnableLogging)
                 return;
 
-            if (InvokeRequired)
+            if (!Dispatcher.UIThread.CheckAccess())
             {
-                BeginInvoke(() => HandlePlayingAnimation(id, name));
+                Dispatcher.UIThread.InvokeAsync(() => HandlePlayingAnimation(id, name));
                 return;
             }
 
-            string drmName = null;
-            ResourceCollectionItemReference usage = ResourceUsages.GetResourceUsages(ArchiveSet, new ResourceKey(ResourceType.Animation, id)).FirstOrDefault();
+            string? drmName = null;
+            ResourceCollectionItemReference? usage = ResourceUsages.GetResourceUsages(ArchiveSet, new ResourceKey(ResourceType.Animation, id)).FirstOrDefault();
             if (usage != null)
             {
-                string drmPath = CdcHash.Lookup(usage.CollectionReference.NameHash, ArchiveSet.Game);
+                string? drmPath = CdcHash.Lookup(usage.CollectionReference.NameHash, ArchiveSet.Game, true);
                 if (drmPath != null)
                     drmName = Path.GetFileName(drmPath);
             }
-            _tvLog.AddItem(new AnimationLogEntry(DateTime.Now, drmName, id, name));
-        }
-
-        protected override void GetNodeCellText(VirtualTreeView tree, VirtualTreeNode node, int column, out string cellText)
-        {
-            AnimationLogEntry entry = tree.GetNodeData<AnimationLogEntry>(node);
-            if (entry == null)
-            {
-                cellText = "";
-                return;
-            }
-
-            cellText = column switch
-            {
-                0 => entry.Timestamp.ToShortTimeString(),
-                1 => entry.Drm,
-                2 => entry.Id.ToString(),
-                3 => entry.Name,
-                _ => ""
-            };
+            _lstLog.AddEntry(new AnimationLogEntry(DateTime.Now, drmName, id, name));
         }
 
         protected override async Task ExtractAsync(string folderPath, ITaskProgress progress, CancellationToken cancellationToken)
         {
             Dictionary<string, ResourceReference> animRefs = new();
-            foreach (AnimationLogEntry entry in GetSelectedItems< AnimationLogEntry>())
+            foreach (AnimationLogEntry entry in _lstLog.Selection.SelectedItems!)
             {
-                ResourceReference resourceRef = ResourceUsages.GetResourceReference(ArchiveSet, new ResourceKey(ResourceType.Animation, entry.Id));
+                ResourceReference? resourceRef = ResourceUsages.GetResourceReference(ArchiveSet, new ResourceKey(ResourceType.Animation, entry.Id));
                 if (resourceRef != null)
                     animRefs[entry.Name] = resourceRef;
             }
 
             folderPath = Path.Combine(folderPath, "Animations");
+            Directory.CreateDirectory(folderPath);
             await Task.Run(() => ExtractAnimations(folderPath, animRefs, progress, cancellationToken));
         }
 
@@ -131,10 +129,7 @@ namespace TrRebootTools.HookTool.Logging
                     if (cancellationToken.IsCancellationRequested)
                         break;
 
-                    string folderPath = Path.Combine(baseFolderPath, name);
-                    Directory.CreateDirectory(folderPath);
-
-                    string filePath = Path.Combine(folderPath, ResourceNaming.GetFileName(ArchiveSet, resourceRef));
+                    string filePath = Path.Combine(baseFolderPath, name + "." + ResourceNaming.GetFileName(ArchiveSet, resourceRef));
                     using Stream resourceStream = ArchiveSet.OpenResource(resourceRef);
                     using Stream fileStream = File.Create(filePath);
                     resourceStream.CopyTo(fileStream);
@@ -142,7 +137,6 @@ namespace TrRebootTools.HookTool.Logging
                     numExtracted++;
                     progress.Report((float)numExtracted / animRefs.Count);
                 }
-
             }
             finally
             {

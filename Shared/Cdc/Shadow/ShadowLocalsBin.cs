@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Text;
-using TrRebootTools.Shared.Util;
 
 namespace TrRebootTools.Shared.Cdc.Shadow
 {

@@ -2,12 +2,12 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using TrRebootTools.Shared.Cdc;
-using TrRebootTools.Shared.Util;
 
 namespace TrRebootTools.HookTool
 {
@@ -27,11 +27,11 @@ namespace TrRebootTools.HookTool
         private readonly string _exePath;
         private readonly CancellationTokenSource _cancellationTokenSource;
 
-        private Task _eventListenTask;
+        private Task? _eventListenTask;
 
-        public static bool SupportsHooking(string gameExePath, CdcGame game, out string unsupportedReason)
+        public static bool SupportsHooking(string gameExePath, CdcGame game, [NotNullWhen(false)] out string? unsupportedReason)
         {
-            HookInfo hookInfo = HookInfos.GetOrDefault(game);
+            HookInfo? hookInfo = HookInfos.GetValueOrDefault(game);
             if (hookInfo == null)
             {
                 unsupportedReason = $"Hooking is not supported for {CdcGameInfo.Get(game).ShortName}.";
@@ -65,12 +65,12 @@ namespace TrRebootTools.HookTool
 
         private static string GetHookDllPath(HookInfo hookInfo)
         {
-            return Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), hookInfo.DllName);
+            return Path.Combine(AppContext.BaseDirectory, hookInfo.DllName);
         }
 
         public GameProcess(string exePath, CdcGame game)
         {
-            if (!SupportsHooking(exePath, game, out string unsupportedReason))
+            if (!SupportsHooking(exePath, game, out string? unsupportedReason))
                 throw new NotSupportedException(unsupportedReason);
 
             _hookInfo = HookInfos[game];
@@ -94,7 +94,7 @@ namespace TrRebootTools.HookTool
             IntPtr hProcess = DllInjector.CreateProcessWithDll(
                 _exePath,
                 null,
-                Path.GetDirectoryName(_exePath),
+                Path.GetDirectoryName(_exePath)!,
                 GetHookDllPath(_hookInfo)
             );
             ThreadPool.RegisterWaitForSingleObject(new ProcessWaitHandle(hProcess), (state, timedOut) => Exited?.Invoke(), null, -1, true);
@@ -116,7 +116,7 @@ namespace TrRebootTools.HookTool
             get;
         }
 
-        public event Action Exited;
+        public event Action? Exited;
 
         public void Dispose()
         {

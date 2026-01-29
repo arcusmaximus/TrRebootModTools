@@ -1,45 +1,47 @@
-﻿using System.Collections.Generic;
-using System.Drawing;
+﻿using Avalonia.Media.Imaging;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using TrRebootTools.Shared.Cdc;
 using TrRebootTools.Shared.Controls;
 using TrRebootTools.Shared.Util;
 
 namespace TrRebootTools.Extractor.Controls
 {
-    internal class ArchiveFileTreeViewBase : FileTreeView<ArchiveFileReference>
+    internal class ArchiveFileTreeView : FileTreeView<ArchiveFileReference>
     {
-    }
-
-    internal class ArchiveFileTreeView : ArchiveFileTreeViewBase
-    {
-        private static readonly Dictionary<string, Image> ExtensionImages =
-            new Dictionary<string, Image>
+        private static readonly Dictionary<string, Bitmap> ExtensionImages =
+            new()
             {
-                { ".bin", Properties.Resources.Localization },
-                { ".drm", Properties.Resources.List }
+                { ".bin", TypedAssetLoader.LoadProgramBitmap("/Resources/Localization.png") },
+                { ".drm", TypedAssetLoader.LoadProgramBitmap("/Resources/List.png") }
             };
+
+        public ArchiveFileTreeView()
+        {
+            _treeView.DefaultExpandedRootNodeNames = ["pc-w", "pcx64-w"];
+        }
 
         public void Populate(ArchiveSet archiveSet)
         {
-            FileTreeNode rootFileNode = CreateFileNodes(archiveSet);
-            Populate(rootFileNode);
+            IList<FileTreeNode> nodes = CreateFileNodes(archiveSet);
+            Populate(nodes);
         }
 
-        private static FileTreeNode CreateFileNodes(ArchiveSet archiveSet)
+        private static IList<FileTreeNode> CreateFileNodes(ArchiveSet archiveSet)
         {
-            FileTreeNode rootNode = new FileTreeNode(null);
+            FileTreeNode rootNode = new("", FileTreeNodeType.Folder);
             CdcGameInfo gameInfo = CdcGameInfo.Get(archiveSet.Game);
             foreach (ArchiveFileReference file in archiveSet.Files)
             {
-                string name = CdcHash.Lookup(file.NameHash, archiveSet.Game);
+                string? name = CdcHash.Lookup(file.NameHash, archiveSet.Game);
                 if (name == null)
                     continue;
 
                 FileTreeNode fileNode = rootNode.Add(name);
-                fileNode.Image = ExtensionImages.GetOrDefault(Path.GetExtension(name)) ?? FileImage;
+                fileNode.Icon = ExtensionImages.GetValueOrDefault(Path.GetExtension(name)) ?? FileIcon;
 
-                if (fileNode.Children.Count == 0)
+                if (!fileNode.Children.Any())
                 {
                     if (fileNode.File == null)
                     {
@@ -47,19 +49,17 @@ namespace TrRebootTools.Extractor.Controls
                     }
                     else
                     {
-                        FileTreeNode prevLocaleNode = new FileTreeNode(gameInfo.LocaleToLanguageCode(fileNode.File.Locale))
+                        FileTreeNode prevLocaleNode = new(gameInfo.LocaleToLanguageCode(fileNode.File.Locale), FileTreeNodeType.Locale)
                         {
                             File = fileNode.File,
-                            Type = FileTreeNodeType.Locale,
-                            Image = fileNode.Image
+                            Icon = fileNode.Icon
                         };
                         fileNode.Add(prevLocaleNode);
 
-                        FileTreeNode localeNode = new FileTreeNode(gameInfo.LocaleToLanguageCode(file.Locale))
+                        FileTreeNode localeNode = new(gameInfo.LocaleToLanguageCode(file.Locale), FileTreeNodeType.Locale)
                         {
                             File = file,
-                            Type = FileTreeNodeType.Locale,
-                            Image = fileNode.Image
+                            Icon = fileNode.Icon
                         };
                         fileNode.Add(localeNode);
 
@@ -68,17 +68,16 @@ namespace TrRebootTools.Extractor.Controls
                 }
                 else
                 {
-                    FileTreeNode localeNode = new FileTreeNode(gameInfo.LocaleToLanguageCode(file.Locale))
+                    FileTreeNode localeNode = new(gameInfo.LocaleToLanguageCode(file.Locale), FileTreeNodeType.Locale)
                     {
                         File = file,
-                        Type = FileTreeNodeType.Locale,
-                        Image = fileNode.Image
+                        Icon = fileNode.Icon
                     };
                     fileNode.Add(localeNode);
                 }
             }
             archiveSet.CloseStreams();
-            return rootNode;
+            return rootNode.Children;
         }
     }
 }

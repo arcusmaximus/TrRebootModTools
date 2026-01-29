@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
-using System.Reflection;
 using TrRebootTools.Shared.Cdc.Rise;
 using TrRebootTools.Shared.Cdc.Shadow;
 using TrRebootTools.Shared.Cdc.Tr2013;
@@ -19,20 +19,28 @@ namespace TrRebootTools.Shared.Cdc
                 v => v switch
                 {
                     CdcGame.Tr2013 => new Tr2013Hash(),
-                    CdcGame.Rise => new RiseHash(),
-                    CdcGame.Shadow => new ShadowHash()
+                    CdcGame.Rise   => new RiseHash(),
+                    CdcGame.Shadow => new ShadowHash(),
+                    _ => throw new NotSupportedException()
                 }
             );
         }
 
-        public static ulong Calculate(string str, CdcGame game)
+        public static ulong Calculate(string filePath, CdcGame game, bool convertPathSeparators = false)
         {
-            return For(game).Calculate(str);
+            if (convertPathSeparators && OperatingSystem.IsLinux())
+                filePath = filePath.Replace('/', '\\');
+
+            return For(game).Calculate(filePath);
         }
 
-        public static string Lookup(ulong hash, CdcGame game)
+        public static string? Lookup(ulong hash, CdcGame game, bool convertPathSeparators = false)
         {
-            return For(game).Lookup(hash);
+            string? filePath = For(game).Lookup(hash);
+            if (filePath != null && convertPathSeparators && OperatingSystem.IsLinux())
+                filePath = filePath.Replace('\\', '/');
+
+            return filePath;
         }
 
 
@@ -41,13 +49,12 @@ namespace TrRebootTools.Shared.Cdc
 
         protected CdcHash()
         {
-            string exeFolderPath = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-            string filePath = Path.Combine(exeFolderPath, ListFileName);
+            string filePath = Path.Combine(AppContext.BaseDirectory, ListFileName);
             if (!File.Exists(filePath))
                 return;
 
             using StreamReader reader = new StreamReader(filePath);
-            string line;
+            string? line;
             while ((line = reader.ReadLine()) != null)
             {
                 _lookupTable[Calculate(line)] = line;
@@ -90,9 +97,9 @@ namespace TrRebootTools.Shared.Cdc
             return dwHash;
         }
 
-        public string Lookup(ulong hash)
+        public string? Lookup(ulong hash)
         {
-            return _lookupTable.GetOrDefault(hash);
+            return _lookupTable.GetValueOrDefault(hash);
         }
 
         public IEnumerable<ulong> Hashes => _lookupTable.Keys;

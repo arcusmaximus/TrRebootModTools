@@ -30,18 +30,18 @@ namespace TrRebootTools.ModManager.Util
 
         public bool Contains(ResourceKey resourceKey)
         {
-            ResourceInfo info = _lookup.GetOrDefault((resourceKey.Type, resourceKey.Id));
+            ResourceInfo? info = _lookup.GetValueOrDefault((resourceKey.Type, resourceKey.Id));
             return info != null && info.Locales.Contains(resourceKey.Locale);
         }
 
         public ResourceSubType? GetSubType(ResourceType type, int id)
         {
-            return _lookup.GetOrDefault((type, id))?.SubType;
+            return _lookup.GetValueOrDefault((type, id))?.SubType;
         }
 
-        public IReadOnlyCollection<ulong> GetLocales(ResourceType type, int id)
+        public IReadOnlyCollection<ulong>? GetLocales(ResourceType type, int id)
         {
-            return _lookup.GetOrDefault((type, id))?.Locales;
+            return _lookup.GetValueOrDefault((type, id))?.Locales;
         }
 
         public void Add(ResourceKey item)
@@ -67,7 +67,7 @@ namespace TrRebootTools.ModManager.Util
 
         public bool Remove(ResourceKey item)
         {
-            ResourceInfo info = _lookup.GetOrDefault((item.Type, item.Id));
+            ResourceInfo? info = _lookup.GetValueOrDefault((item.Type, item.Id));
             if (info == null || !info.Locales.Contains(item.Locale))
                 return false;
 

@@ -15,8 +15,9 @@ namespace TrRebootTools.Shared.Cdc
             return game switch
             {
                 CdcGame.Tr2013 => new Tr2013Material(id, stream),
-                CdcGame.Rise => new RiseMaterial(id, stream),
-                CdcGame.Shadow => new ShadowMaterial(id, stream)
+                CdcGame.Rise   => new RiseMaterial(id, stream),
+                CdcGame.Shadow => new ShadowMaterial(id, stream),
+                _ => throw new NotSupportedException()
             };
         }
 
@@ -78,7 +79,7 @@ namespace TrRebootTools.Shared.Cdc
 
         public int Id { get; private set; }
 
-        public List<Pass> Passes { get; } = new();
+        public List<Pass> Passes { get; } = [];
 
         protected abstract int NumPasses { get; }
         protected abstract int PassRefsOffset { get; }
@@ -132,6 +133,11 @@ namespace TrRebootTools.Shared.Cdc
                     ShaderType.Pixel => PsConstants,
                     ShaderType.Vertex => VsConstants
                 };
+            }
+
+            public override string ToString()
+            {
+                return $"Pass {Index}";
             }
         }
     }

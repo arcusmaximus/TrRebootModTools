@@ -1,6 +1,4 @@
 ﻿using System.Globalization;
-using System.IO;
-using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace TrRebootTools.BinaryTemplateGenerator
@@ -57,7 +55,7 @@ namespace TrRebootTools.BinaryTemplateGenerator
                     if (!line.Contains("("))
                     {
                         match = TypedefRegex.Match(line);
-                        if (match.Success && lib.Types.TryGetValue(match.Groups["source"].Value, out CType sourceType))
+                        if (match.Success && lib.Types.TryGetValue(match.Groups["source"].Value, out CType? sourceType))
                             lib.Types[match.Groups["target"].Value] = sourceType;
                     }
                     continue;

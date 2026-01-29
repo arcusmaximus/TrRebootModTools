@@ -1,0 +1,31 @@
+<shared-forms:WindowWithProgress xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:sharedcontrols="using:TrRebootTools.Shared.Controls"
+        xmlns:shared-forms="using:TrRebootTools.Shared.Forms"
+        xmlns:logging="using:TrRebootTools.HookTool.Logging"
+        xmlns:materials="using:TrRebootTools.HookTool.Materials"
+        mc:Ignorable="d"
+        Width="800" Height="500"
+        MinWidth="680" MinHeight="400"
+        x:Class="TrRebootTools.HookTool.MainWindow"
+        Icon="/icon.ico">
+    <Grid RowDefinitions="40,*" RowSpacing="4" DragDrop.DragEnter="OnDragEnter" DragDrop.Drop="OnDragDrop">
+		<Button Name="_btnBrowseModFolder" Click="OnBrowseModFolderClick" IsEnabled="False" Grid.Row="0">
+			Open mod folder...
+        </Button>
+    
+        <TabControl Grid.Row="1">
+		    <TabItem Name="_tpFileLog" Header="File log">
+			    <logging:FileAccessLogControl Name="_fileLog" />
+            </TabItem>
+            <TabItem Name="_tpAnimationLog" Header="Animation log">
+				<logging:AnimationAccessLogControl Name="_animationLog" />
+            </TabItem>
+            <TabItem Name="_tpMaterialEditor" Header="Material editor">
+			    <materials:MaterialControl Name="_materialControl" SavingMaterial="OnSavingMaterial" SavedMaterial="OnSavedMaterial" />
+            </TabItem>
+        </TabControl>
+    </Grid>
+</shared-forms:WindowWithProgress>

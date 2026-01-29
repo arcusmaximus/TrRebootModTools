@@ -12,6 +12,16 @@ namespace Tr
             throw exception();
 
         PCDX12UploadPool* pUploadPool = PCDX12RenderDevice::GetInstance()->GetUploadPool();
+        if (!pUploadPool)
+        {
+            static bool warningShown = false;
+            if (!warningShown)
+            {
+                MessageBox(nullptr, L"Please run the game in DirectX 12 mode.", L"SOTTR Hook Tool", MB_ICONINFORMATION);
+                warningShown = true;
+            }
+            return;
+        }
         pUploadPool->ExecuteBufferUpload(_pGpuNodeResourceSet, values.data(), _sizeInBytes);
     }
 }

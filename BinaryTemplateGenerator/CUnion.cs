@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace TrRebootTools.BinaryTemplateGenerator
+﻿namespace TrRebootTools.BinaryTemplateGenerator
 {
     internal class CUnion : CCompositeType
     {

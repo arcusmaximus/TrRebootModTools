@@ -12,7 +12,7 @@ namespace TrRebootTools.HookTool
     {
         private record ExeInfo(IntPtr ImageBase, IntPtr EntryPoint, IMAGE_DATA_DIRECTORY ImportDirectory, bool Is64Bit);
 
-        public static IntPtr CreateProcessWithDll(string exePath, string commandLine, string workingDirectory, string dllPath)
+        public static IntPtr CreateProcessWithDll(string exePath, string? commandLine, string workingDirectory, string dllPath)
         {
             STARTUPINFO startInfo = new() { cb = Marshal.SizeOf<STARTUPINFO>() };
             PROCESS_INFORMATION processInfo;
@@ -24,7 +24,7 @@ namespace TrRebootTools.HookTool
                 false,
                 CREATE_SUSPENDED,
                 IntPtr.Zero,
-                workingDirectory ?? Path.GetDirectoryName(exePath),
+                workingDirectory ?? Path.GetDirectoryName(exePath)!,
                 ref startInfo,
                 out processInfo
             );

@@ -1,24 +1,34 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.Timers;
-using TrRebootTools.Shared.Controls.VirtualTreeView;
+using TrRebootTools.Shared.Controls;
 
 namespace TrRebootTools.HookTool.Logging
 {
-    internal class LogListView : VirtualTreeView
+    internal class LogListView : ListView
     {
-        private readonly Timer _timer = new Timer(2000) { AutoReset = false };
-        private readonly List<object> _items = new();
-        private string _filter;
-        private bool _filterChanged;
+        private readonly List<IListViewEntry> _entries = [];
+        private string? _filter;
 
-        public LogListView()
+        public void AddEntry(IListViewEntry entry)
         {
-            _timer.Elapsed += OnTimerElapsed;
+            for (int i = Math.Max(_entries.Count - 30, 0); i < _entries.Count; i++)
+            {
+                if (entry.Equals(_entries[i]))
+                    return;
+            }
+
+            _entries.Add(entry);
+            AddItemIfMatchingFilter(entry);
+            ScrollToBottom();
         }
 
-        public string Filter
+        public void Clear()
+        {
+            _entries.Clear();
+            Items.Clear();
+        }
+
+        public string? Filter
         {
             get => _filter;
             set
@@ -27,62 +37,25 @@ namespace TrRebootTools.HookTool.Logging
                     return;
 
                 _filter = !string.IsNullOrWhiteSpace(value) ? value : null;
-                _filterChanged = true;
-                _timer.Stop();
-                BeginUpdate();
-                _timer.Start();
-            }
-        }
-
-        public void AddItem(object item)
-        {
-            for (int i = Math.Max(_items.Count - 30, 0); i < _items.Count; i++)
-            {
-                if (item.Equals(_items[i]))
-                    return;
-            }
-
-            _items.Add(item);
-
-            _timer.Stop();
-            BeginUpdate();
-            AddNodeIfMatchingFilter(item);
-            _timer.Start();
-        }
-
-        public new void Clear()
-        {
-            base.Clear();
-            _items.Clear();
-        }
-
-        private async void OnTimerElapsed(object sender, ElapsedEventArgs e)
-        {
-            if (InvokeRequired)
-            {
-                Invoke(() => OnTimerElapsed(sender, e));
-                return;
-            }
-
-            if (_filterChanged)
-            {
-                base.Clear();
-                foreach (object item in _items)
+                Items.Clear();
+                foreach (IListViewEntry entry in _entries)
                 {
-                    AddNodeIfMatchingFilter(item);
+                    AddItemIfMatchingFilter(entry);
                 }
-                _filterChanged = false;
+                ScrollToBottom();
             }
-
-            EndUpdate();
-            await Task.Delay(100);
-            ScrollToBottom();
         }
 
-        private void AddNodeIfMatchingFilter(object item)
+        private void AddItemIfMatchingFilter(IListViewEntry entry)
         {
-            if (_filter == null || item.ToString().IndexOf(_filter, StringComparison.InvariantCultureIgnoreCase) >= 0)
-                InsertNode(null, NodeAttachMode.amAddChildLast, item);
+            if (_filter == null || (entry.ToString() ?? string.Empty).IndexOf(_filter, StringComparison.InvariantCultureIgnoreCase) >= 0)
+                Items.Add(entry);
+        }
+
+        private void ScrollToBottom()
+        {
+            if (Items.Count > 0)
+                ScrollIntoView(Items.Count - 1);
         }
     }
 }

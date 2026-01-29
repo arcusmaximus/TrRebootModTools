@@ -5,7 +5,6 @@ using System.Security.Cryptography;
 using System.Threading.Tasks;
 using TrRebootTools.Shared;
 using TrRebootTools.Shared.Cdc;
-using TrRebootTools.Shared.Util;
 
 namespace TrRebootTools.SoundConverter
 {
@@ -18,7 +17,7 @@ namespace TrRebootTools.SoundConverter
 
         public override string InputExtension => ".json";
 
-        protected override async Task<string> ConvertInternalAsync(string jsonFilePath)
+        protected override async Task<string?> ConvertInternalAsync(string jsonFilePath)
         {
             MultiplexStreamInfo mulInfo = MultiplexStreamInfo.Load(jsonFilePath);
 
@@ -26,12 +25,12 @@ namespace TrRebootTools.SoundConverter
             try
             {
                 Dictionary<ulong, string> fsbsByWavHash = new();
-                for (int i = 0; i < mulInfo.AudioChannels.Length; i++)
+                for (int i = 0; i < (mulInfo.AudioChannels?.Length ?? 0); i++)
                 {
                     string wavFilePath = Path.ChangeExtension(jsonFilePath, $".channel{i}.wav");
                     ulong wavHash = CalculateFileHash(wavFilePath);
-                    string existingFsbFilePath = fsbsByWavHash.GetOrDefault(wavHash);
-                    string fsbFilePath;
+                    string? existingFsbFilePath = fsbsByWavHash.GetValueOrDefault(wavHash);
+                    string? fsbFilePath;
                     if (existingFsbFilePath != null)
                     {
                         fsbFilePath = Path.ChangeExtension(wavFilePath, ".fsb");
@@ -49,7 +48,7 @@ namespace TrRebootTools.SoundConverter
                     fsbFilePaths.Add(fsbFilePath);
                 }
 
-                string mulFilePath = Path.Combine(ProjectFolderPath, "result.mul");
+                string mulFilePath = Path.Combine(ProjectFolderPath!, "result.mul");
                 new MultiplexStreamBuilder(Game).Build(jsonFilePath, mulFilePath);
                 return mulFilePath;
             }

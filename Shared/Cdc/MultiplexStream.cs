@@ -29,7 +29,7 @@ namespace TrRebootTools.Shared.Cdc
             Read(stream);
         }
 
-        public AudioChannel[] AudioChannels
+        public AudioChannel[]? AudioChannels
         {
             get;
             set;
@@ -56,7 +56,7 @@ namespace TrRebootTools.Shared.Cdc
         public List<Packet> Packets
         {
             get;
-        } = new();
+        } = [];
 
         private unsafe void Read(Stream stream)
         {
@@ -86,7 +86,7 @@ namespace TrRebootTools.Shared.Cdc
             reader.Seek(0x2000);
             while (stream.Position < stream.Length)
             {
-                Packet packet = ReadPacket(reader);
+                Packet? packet = ReadPacket(reader);
                 if (packet != null)
                     Packets.Add(packet);
 
@@ -94,13 +94,13 @@ namespace TrRebootTools.Shared.Cdc
             }
         }
 
-        private Packet ReadPacket(BinaryReader reader)
+        private Packet? ReadPacket(BinaryReader reader)
         {
             PacketType type = (PacketType)reader.ReadInt32();
             int size = reader.ReadInt32();
             reader.Skip(8);
 
-            Packet packet = type switch
+            Packet? packet = type switch
             {
                 PacketType.Cinematic => new CinePacket(),
                 PacketType.Sound => new SoundPacket(),
@@ -155,7 +155,7 @@ namespace TrRebootTools.Shared.Cdc
 
         private int GetNumAudioSamples()
         {
-            SoundPacket soundPacket = Packets.OfType<SoundPacket>().FirstOrDefault();
+            SoundPacket? soundPacket = Packets.OfType<SoundPacket>().FirstOrDefault();
             if (soundPacket == null || soundPacket.ChannelData.Length == 0)
                 return int.MaxValue;
 
@@ -203,7 +203,7 @@ namespace TrRebootTools.Shared.Cdc
         {
             public const int HeaderMagic = 0x43494E45;
 
-            public byte[] Header
+            public byte[]? Header
             {
                 get;
                 set;
@@ -215,13 +215,13 @@ namespace TrRebootTools.Shared.Cdc
                 set;
             }
 
-            public byte[] ChannelValues
+            public byte[]? ChannelValues
             {
                 get;
                 set;
             }
 
-            public Dictionary<string, string> Subtitles
+            public Dictionary<string, string>? Subtitles
             {
                 get;
                 set;
@@ -230,11 +230,13 @@ namespace TrRebootTools.Shared.Cdc
             public static unsafe byte[] MakeEmptyHeader(int version)
             {
                 int size = Marshal.SizeOf<EmptyCineHeader>();
-
-                EmptyCineHeader header = new();
-                header.Magic = HeaderMagic;
-                header.Version = version;
-                header.HeaderSize = size - 8;
+                EmptyCineHeader header =
+                    new()
+                    {
+                        Magic = HeaderMagic,
+                        Version = version,
+                        HeaderSize = size - 8
+                    };
 
                 byte[] data = new byte[size];
                 fixed (byte* pData = data)
@@ -281,7 +283,8 @@ namespace TrRebootTools.Shared.Cdc
                 writer.Write(FrameNumber);
                 if (parent.HasAnimation)
                 {
-                    writer.Write(ChannelValues);
+                    if (ChannelValues != null)
+                        writer.Write(ChannelValues);
                 }
                 else
                 {
@@ -361,11 +364,11 @@ namespace TrRebootTools.Shared.Cdc
             {
                 get;
                 set;
-            }
+            } = [];
 
             public override void Read(BinaryReader reader, MultiplexStream parent)
             {
-                ChannelData = new byte[parent.AudioChannels.Length][];
+                ChannelData = new byte[parent.AudioChannels?.Length ?? 0][];
 
                 for (int i = 0; i < ChannelData.Length; i++)
                 {

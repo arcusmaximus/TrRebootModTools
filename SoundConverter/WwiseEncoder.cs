@@ -11,9 +11,9 @@ namespace TrRebootTools.SoundConverter
         public override CdcGame Game => CdcGame.Shadow;
         public override string InputExtension => ".wav";
 
-        protected override async Task<string> ConvertInternalAsync(string wavFilePath)
+        protected override async Task<string?> ConvertInternalAsync(string wavFilePath)
         {
-            string sourcesFilePath = Path.Combine(ProjectFolderPath, "sources.wsources");
+            string sourcesFilePath = Path.Combine(ProjectFolderPath!, "sources.wsources");
             XElement sourcesXml =
                 new XElement(
                     "ExternalSourcesList",
@@ -29,7 +29,7 @@ namespace TrRebootTools.SoundConverter
             string wwiseLog = await RunConsoleToolAsync($"convert-external-source \"{ProjectFilePath}\" --source-file \"{sourcesFilePath}\"");
 
             string wemFilePath = Path.Combine(
-                ProjectFolderPath,
+                ProjectFolderPath!,
                 "GeneratedSoundBanks",
                 "Windows",
                 Path.ChangeExtension(Path.GetFileName(wavFilePath), ".wem")

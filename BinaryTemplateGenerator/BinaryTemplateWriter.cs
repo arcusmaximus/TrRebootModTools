@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text.RegularExpressions;
-using TrRebootTools.BinaryTemplateGenerator.Util;
+﻿using System.Text.RegularExpressions;
 
 namespace TrRebootTools.BinaryTemplateGenerator
 {
@@ -111,7 +106,7 @@ namespace TrRebootTools.BinaryTemplateGenerator
                     continue;
 
                 WriteField(field, ref byteOffset, ref bitOffset, !isArrayRelatedField[i]);
-                if (arrays.TryGetValue(i, out ArrayFieldPair array))
+                if (arrays.TryGetValue(i, out ArrayFieldPair? array))
                     WriteArray(array);
             }
 
@@ -214,7 +209,7 @@ namespace TrRebootTools.BinaryTemplateGenerator
 
             if (isRef && followRef)
             {
-                CType fieldType = _lib.Types.GetOrDefault(pointerlessTypeName);
+                CType? fieldType = _lib.Types.GetValueOrDefault(pointerlessTypeName);
                 if (fieldType == null || (fieldType is not CPrimitive && !_writtenTypes.Contains(fieldType)))
                     followRef = false;
             }
@@ -295,7 +290,7 @@ namespace TrRebootTools.BinaryTemplateGenerator
                 IEnumerable<CField> fields = compositeType.Fields.Where(f => f.Name != "__vftable");
                 foreach (CField field in fields)
                 {
-                    if (_lib.Types.TryGetValue(field.Type.TrimEnd('*').Trim(), out CType fieldType))
+                    if (_lib.Types.TryGetValue(field.Type.TrimEnd('*').Trim(), out CType? fieldType))
                         yield return fieldType;
                 }
             }

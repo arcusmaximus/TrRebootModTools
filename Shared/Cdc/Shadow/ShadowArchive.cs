@@ -6,7 +6,7 @@ namespace TrRebootTools.Shared.Cdc.Shadow
 {
     internal class ShadowArchive : Archive
     {
-        public ShadowArchive(string baseFilePath, ArchiveMetaData metaData)
+        public ShadowArchive(string baseFilePath, ArchiveMetaData? metaData)
             : base(baseFilePath, metaData)
         {
         }

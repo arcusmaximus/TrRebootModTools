@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
+using System.Collections.ObjectModel;
 using System.Linq;
 
 namespace TrRebootTools.Shared.Util
@@ -34,15 +34,9 @@ namespace TrRebootTools.Shared.Util
             return lastIndex;
         }
 
-        public static TValue GetOrDefault<TKey, TValue>(this IDictionary<TKey, TValue> dict, TKey key)
-        {
-            dict.TryGetValue(key, out TValue value);
-            return value;
-        }
-
         public static TValue GetOrAdd<TKey, TValue>(this IDictionary<TKey, TValue> dict, TKey key, Func<TValue> createValue)
         {
-            if (!dict.TryGetValue(key, out TValue value))
+            if (!dict.TryGetValue(key, out TValue? value))
             {
                 value = createValue();
                 dict.Add(key, value);
@@ -52,7 +46,7 @@ namespace TrRebootTools.Shared.Util
 
         public static TValue GetOrAdd<TKey, TValue>(this IDictionary<TKey, TValue> dict, TKey key, Func<TKey, TValue> createValue)
         {
-            if (!dict.TryGetValue(key, out TValue value))
+            if (!dict.TryGetValue(key, out TValue? value))
             {
                 value = createValue(key);
                 dict.Add(key, value);
@@ -72,17 +66,12 @@ namespace TrRebootTools.Shared.Util
             value = pair.Value;
         }
 
-        public static void AddRange<T>(this BindingList<T> list, IEnumerable<T> items)
+        public static void AddRange<T>(this ObservableCollection<T> list, IEnumerable<T> items)
         {
-            bool prevRaiseEvents = list.RaiseListChangedEvents;
-            list.RaiseListChangedEvents = false;
             foreach (T item in items)
             {
                 list.Add(item);
             }
-            list.RaiseListChangedEvents = prevRaiseEvents;
-            if (prevRaiseEvents)
-                list.ResetBindings();
         }
 
         public static void RemoveAll<TKey, TValue>(this IDictionary<TKey, TValue> dict, Func<KeyValuePair<TKey, TValue>, bool> predicate)

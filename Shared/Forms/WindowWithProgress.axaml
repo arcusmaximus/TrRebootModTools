@@ -1,0 +1,14 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="TrRebootTools.Shared.Forms.WindowWithProgress"
+        Title="WindowWithProgress" Padding="4">
+    <DockPanel Name="_pnlMain" LastChildFill="True" VerticalSpacing="2">
+		<Panel Height="25" DockPanel.Dock="Bottom">
+			<Label Name="_lblStatus" HorizontalAlignment="Left" />
+            <ProgressBar Name="_progressBar" Maximum="1" Width="200" HorizontalAlignment="Right" IsVisible="False" />
+        </Panel>
+    </DockPanel>
+</Window>

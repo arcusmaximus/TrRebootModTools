@@ -2,7 +2,6 @@
 using System.IO;
 using System.Linq;
 using TrRebootTools.Shared.Cdc;
-using TrRebootTools.Shared.Util;
 
 namespace TrRebootTools.ModManager.Mod
 {
@@ -19,14 +18,14 @@ namespace TrRebootTools.ModManager.Mod
 
         private static IEnumerable<Archive> LoadArchives(string nfoFilePath, IEnumerable<string> archiveFilePaths, CdcGame game)
         {
-            ArchiveMetaData metaData = nfoFilePath != null ? ArchiveMetaData.Load(nfoFilePath) : null;
+            ArchiveMetaData? metaData = nfoFilePath != null ? ArchiveMetaData.Load(nfoFilePath) : null;
             return archiveFilePaths.Select(p => Archive.Open(p, metaData, game));
         }
 
         public TigerModPackage(IEnumerable<Archive> archives, CdcGame game)
         {
             _archivesBySubId = archives.ToDictionary(a => a.SubId);
-            Name = _archivesBySubId.Values.First().ModName;
+            Name = _archivesBySubId.Values.First().ModName!;
 
             ulong localePlatformMask = CdcGameInfo.Get(game).LocalePlatformMask;
             foreach (Archive archive in _archivesBySubId.Values)
@@ -36,14 +35,14 @@ namespace TrRebootTools.ModManager.Mod
                     if (fileRef.ArchiveId != archive.Id)
                         continue;
 
-                    string filePath = CdcHash.Lookup(fileRef.NameHash, game);
+                    string? filePath = CdcHash.Lookup(fileRef.NameHash, game);
                     if (filePath == null || !filePath.EndsWith(".drm"))
                     {
                         _files[fileRef] = fileRef;
                         continue;
                     }
 
-                    ResourceCollection collection = archive.GetResourceCollection(fileRef);
+                    ResourceCollection? collection = archive.GetResourceCollection(fileRef);
                     if (collection == null)
                         continue;
 
@@ -63,17 +62,17 @@ namespace TrRebootTools.ModManager.Mod
 
         public override IEnumerable<ArchiveFileKey> Files => _files.Keys;
 
-        public override Stream OpenFile(ArchiveFileKey fileKey)
+        public override Stream? OpenFile(ArchiveFileKey fileKey)
         {
-            ArchiveFileReference fileRef = _files.GetOrDefault(fileKey);
+            ArchiveFileReference? fileRef = _files.GetValueOrDefault(fileKey);
             return fileRef != null ? _archivesBySubId[fileRef.ArchiveSubId].OpenFile(fileRef) : null;
         }
 
         public override IEnumerable<ResourceKey> Resources => _resources.Keys;
 
-        public override Stream OpenResource(ResourceKey resourceKey)
+        public override Stream? OpenResource(ResourceKey resourceKey)
         {
-            ResourceReference resourceRef = _resources.GetOrDefault(resourceKey);
+            ResourceReference? resourceRef = _resources.GetValueOrDefault(resourceKey);
             return resourceRef != null ? _archivesBySubId[resourceRef.ArchiveSubId].OpenResource(_resources[resourceKey]) : null;
         }
 

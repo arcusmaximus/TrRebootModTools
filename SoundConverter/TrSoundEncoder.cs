@@ -13,9 +13,9 @@ namespace TrRebootTools.SoundConverter
 
         public override string InputExtension => ".wav";
 
-        protected override async Task<string> ConvertInternalAsync(string wavFilePath)
+        protected override async Task<string?> ConvertInternalAsync(string wavFilePath)
         {
-            string fsbFilePath = await ConvertWavAsync(wavFilePath);
+            string? fsbFilePath = await ConvertWavAsync(wavFilePath);
             if (fsbFilePath == null || !File.Exists(fsbFilePath))
                 return null;
 

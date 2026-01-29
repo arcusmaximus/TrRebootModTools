@@ -15,7 +15,7 @@
 
         protected override string MakeLocaleSuffix(ulong locale)
         {
-            string language = CdcGameInfo.Get(Game).LocaleToLanguageName(locale);
+            string? language = CdcGameInfo.Get(Game).LocaleToLanguageName(locale);
             return language != null ? "_" + language : "";
         }
     }

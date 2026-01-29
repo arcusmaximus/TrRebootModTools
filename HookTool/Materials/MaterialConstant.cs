@@ -92,7 +92,7 @@ namespace TrRebootTools.HookTool.Materials
             _originalValue.Y = Y;
             _originalValue.Z = Z;
             _originalValue.W = W;
-            UpdateIsDirty();
+            Dirty = false;
         }
 
         public void Reset()
@@ -101,6 +101,7 @@ namespace TrRebootTools.HookTool.Materials
             Y = _originalValue.Y;
             Z = _originalValue.Z;
             W = _originalValue.W;
+            Dirty = false;
         }
 
         private void UpdateIsDirty()
@@ -111,9 +112,9 @@ namespace TrRebootTools.HookTool.Materials
                     _value.W != _originalValue.W;
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
 
-        private void RaisePropertyChanged([CallerMemberName] string propertyName = null)
+        private void RaisePropertyChanged([CallerMemberName] string? propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }

@@ -1,0 +1,45 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:shared="using:TrRebootTools.Shared.Controls"
+             xmlns:materials="using:TrRebootTools.HookTool.Materials"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="TrRebootTools.HookTool.Materials.MaterialControl">
+    <shared:SplitContainer PanelSizes="300,100,*" Orientation="Horizontal">
+		<shared:FsFileTreeView Name="_tvMaterials" SelectionChanged="OnMaterialSelected" />
+
+        <ListBox Name="_lstPasses" SelectionChanged="OnPassSelected" />
+
+        <Grid RowDefinitions="auto,auto,*,auto">
+            <Panel Background="{StaticResource ThemeControlHighlightMidColor}" Grid.Row="0">
+			    <Label Name="_lblMaterial" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" Padding="0 20" >
+				    (No material selected)
+                </Label>
+            </Panel>
+
+            <Grid Name="_grdShaderTypes" ColumnDefinitions="*,*" IsEnabled="False" Margin="0 10" Grid.Row="1">
+				<RadioButton Name="_radPixelShader" IsChecked="true" IsCheckedChanged="OnShaderTypeChanged" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="0">
+                    Pixel shader
+                </RadioButton>
+                <RadioButton Name="_radVertexShader" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="1">
+					Vertex shader
+                </RadioButton>
+            </Grid>
+
+            <ScrollViewer Grid.Row="2">
+			    <StackPanel Name="_pnlConstants" Orientation="Vertical" >
+                </StackPanel>
+            </ScrollViewer>
+
+            <StackPanel Name="_pnlActions" Orientation="Horizontal" HorizontalAlignment="Right" IsEnabled="False" Margin="10" Spacing="10" Grid.Row="3">
+				<Button Click="OnSaveClick" Padding="20 10">
+					Save
+                </Button>
+                <Button Click="OnRevertClick" Padding="20 10">
+					Revert changes
+                </Button>
+            </StackPanel>
+        </Grid>
+    </shared:SplitContainer>
+</UserControl>

@@ -2,7 +2,6 @@
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using TrRebootTools.Shared.Util;
 
 namespace TrRebootTools.Shared.Cdc.Tr2013
 {
@@ -40,18 +39,18 @@ namespace TrRebootTools.Shared.Cdc.Tr2013
             return FlattedModArchiveIdentities.Values;
         }
 
-        public override ArchiveIdentity GetActiveFlattenedModArchiveIdentity()
+        public override ArchiveIdentity? GetActiveFlattenedModArchiveIdentity()
         {
-            ArchiveIdentity langSpecificArchive = FlattedModArchiveIdentities.GetOrDefault(CultureInfo.InstalledUICulture);
+            ArchiveIdentity? langSpecificArchive = FlattedModArchiveIdentities.GetValueOrDefault(CultureInfo.InstalledUICulture);
             if (langSpecificArchive != null && File.Exists(Path.Combine(FolderPath, langSpecificArchive.FileName)))
                 return langSpecificArchive;
 
-            return FlattedModArchiveIdentities.GetOrDefault(CultureInfo.InvariantCulture);
+            return FlattedModArchiveIdentities.GetValueOrDefault(CultureInfo.InvariantCulture);
         }
 
         protected override string MakeLocaleSuffix(ulong locale)
         {
-            string language = CdcGameInfo.Get(Game).LocaleToLanguageName(locale);
+            string? language = CdcGameInfo.Get(Game).LocaleToLanguageName(locale);
             return language != null ? "_" + language : "";
         }
     }

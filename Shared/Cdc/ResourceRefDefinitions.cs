@@ -19,30 +19,31 @@ namespace TrRebootTools.Shared.Cdc
             return Create(null, stream, true, game).Size;
         }
 
-        protected readonly ResourceReference _resourceRef;
+        protected readonly ResourceReference? _resourceRef;
         protected readonly Stream _stream;
         protected readonly BinaryReader _reader;
-        protected readonly BinaryWriter _writer;
+        protected readonly BinaryWriter? _writer;
 
         protected readonly Dictionary<int, int> _internalRefDefinitionPosByRefPos = new();
         protected readonly Dictionary<int, int> _packedExternalRefDefinitionPosByRefPos = new();
 
-        public static ResourceRefDefinitions Create(ResourceReference resourceRef, Stream stream, CdcGame game)
+        public static ResourceRefDefinitions Create(ResourceReference? resourceRef, Stream stream, CdcGame game)
         {
             return Create(resourceRef, stream, false, game);
         }
 
-        private static ResourceRefDefinitions Create(ResourceReference resourceRef, Stream stream, bool readSizeOnly, CdcGame game)
+        private static ResourceRefDefinitions Create(ResourceReference? resourceRef, Stream stream, bool readSizeOnly, CdcGame game)
         {
             return game switch
             {
                 CdcGame.Tr2013 => new Tr2013ResourceRefDefinitions(resourceRef, stream, readSizeOnly),
                 CdcGame.Rise => new RiseResourceRefDefinitions(resourceRef, stream, readSizeOnly),
-                CdcGame.Shadow => new ShadowResourceRefDefinitions(resourceRef, stream, readSizeOnly)
+                CdcGame.Shadow => new ShadowResourceRefDefinitions(resourceRef, stream, readSizeOnly),
+                _ => throw new NotSupportedException()
             };
         }
 
-        protected ResourceRefDefinitions(ResourceReference resourceRef, Stream stream, bool readSizeOnly)
+        protected ResourceRefDefinitions(ResourceReference? resourceRef, Stream stream, bool readSizeOnly)
         {
             _stream = stream;
             _resourceRef = resourceRef;
@@ -102,8 +103,9 @@ namespace TrRebootTools.Shared.Cdc
             {
                 foreach (int refPos in _internalRefDefinitionPosByRefPos.Keys)
                 {
-                    int targetPos = GetInternalRefTarget(refPos).Value;
-                    yield return new InternalRef(refPos, targetPos);
+                    int? targetPos = GetInternalRefTarget(refPos);
+                    if (targetPos != null)
+                        yield return new InternalRef(refPos, targetPos.Value);
                 }
             }
         }
@@ -133,8 +135,9 @@ namespace TrRebootTools.Shared.Cdc
             {
                 foreach (int refPos in _packedExternalRefDefinitionPosByRefPos.Keys)
                 {
-                    ResourceKey resourceKey = GetExternalRefTarget(refPos).Value;
-                    yield return new ExternalRef(refPos, resourceKey);
+                    ResourceKey? resourceKey = GetExternalRefTarget(refPos);
+                    if (resourceKey != null)
+                        yield return new ExternalRef(refPos, resourceKey.Value);
                 }
             }
         }

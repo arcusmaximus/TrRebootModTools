@@ -31,7 +31,7 @@ namespace TrRebootTools.Shared.Cdc.Rise
 
         protected override Dictionary<(ResourceType, ResourceSubType), string[]> Mappings => _mappings;
 
-        protected override string ReadOriginalFilePathInstance(ArchiveSet archiveSet, ResourceReference resourceRef)
+        protected override string? ReadOriginalFilePathInstance(ArchiveSet archiveSet, ResourceReference resourceRef)
         {
             switch (resourceRef.Type)
             {
@@ -52,7 +52,7 @@ namespace TrRebootTools.Shared.Cdc.Rise
             }
         }
 
-        protected override string ReadOriginalFilePathInstance(Stream stream, ResourceType type)
+        protected override string? ReadOriginalFilePathInstance(Stream stream, ResourceType type)
         {
             return type switch
             {
@@ -64,7 +64,7 @@ namespace TrRebootTools.Shared.Cdc.Rise
             };
         }
 
-        private static string ReadMaterialOriginalFilePath(Stream stream)
+        private static string? ReadMaterialOriginalFilePath(Stream stream)
         {
             MemoryStream memStream = new();
             stream.CopyTo(memStream);
@@ -79,7 +79,7 @@ namespace TrRebootTools.Shared.Cdc.Rise
             return new BinaryReader(memStream).ReadZeroTerminatedString();
         }
 
-        private static string ReadModelOriginalFilePath(Stream stream)
+        private static string? ReadModelOriginalFilePath(Stream stream)
         {
             MemoryStream memStream = new();
             stream.CopyTo(memStream);
@@ -100,7 +100,7 @@ namespace TrRebootTools.Shared.Cdc.Rise
             return reader.ReadZeroTerminatedString();
         }
 
-        private static string ReadSoundOriginalFilePath(Stream stream)
+        private static string? ReadSoundOriginalFilePath(Stream stream)
         {
             BinaryReader reader = new BinaryReader(stream);
             reader.ReadBytes(0x14);
@@ -125,7 +125,7 @@ namespace TrRebootTools.Shared.Cdc.Rise
             return reader.ReadZeroTerminatedString();
         }
 
-        private static string ReadTextureOriginalFilePath(Stream stream)
+        private static string? ReadTextureOriginalFilePath(Stream stream)
         {
             using BinaryReader reader = new BinaryReader(stream, Encoding.UTF8, true);
             var header = reader.ReadStruct<CdcTexture.CdcTextureHeader>();

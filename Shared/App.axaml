@@ -1,0 +1,31 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="TrRebootTools.Shared.App"
+             xmlns:controls="using:TrRebootTools.Shared.Controls"
+             RequestedThemeVariant="Default">
+    <Application.Styles>
+        <SimpleTheme />
+        <Style Selector="TabControl[TabStripPlacement=Top]">
+            <Setter Property="Padding" Value="0"/>
+        </Style>
+        <Style Selector="TabControl > Border > DockPanel > ItemsPresenter > WrapPanel">
+            <Setter Property="ItemSpacing" Value="2"/>
+        </Style>
+        <Style Selector="TabControl > Border > DockPanel > ContentPresenter">
+			<Setter Property="BorderBrush" Value="{StaticResource ThemeBorderLowBrush}"/>
+            <Setter Property="BorderThickness" Value="0 1 0 0"/>
+            <Setter Property="Padding" Value="0 4 0 0"/>
+        </Style>
+        <Style Selector="TabItem">
+			<Setter Property="FontSize" Value="{StaticResource FontSizeNormal}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource ThemeBorderLowBrush}"/>
+            <Setter Property="BorderThickness" Value="1 1 1 0"/>
+            <Setter Property="CornerRadius" Value="5 5 0 0" />
+            <Setter Property="Margin" Value="0"/>
+        </Style>
+
+        <Style Selector="ListBox > Border > DockPanel > controls|ListViewRow">
+			<Setter Property="Background" Value="{StaticResource ThemeControlMidBrush}"/>
+        </Style>
+    </Application.Styles>
+</Application>

@@ -6,14 +6,13 @@ using System.Text.RegularExpressions;
 using TrRebootTools.Shared.Cdc.Rise;
 using TrRebootTools.Shared.Cdc.Shadow;
 using TrRebootTools.Shared.Cdc.Tr2013;
-using TrRebootTools.Shared.Util;
 
 namespace TrRebootTools.Shared.Cdc
 {
     public abstract class ResourceNaming
     {
         private static readonly Dictionary<CdcGame, ResourceNaming> Instances =
-            new Dictionary<CdcGame, ResourceNaming>
+            new()
             {
                 { CdcGame.Tr2013, new Tr2013ResourceNaming() },
                 { CdcGame.Rise, new RiseResourceNaming() },
@@ -55,10 +54,14 @@ namespace TrRebootTools.Shared.Cdc
 
         public static string GetFilePath(ArchiveSet archiveSet, ResourceReference resourceRef, bool useOriginalFilePath = true)
         {
-            return For(archiveSet.Game).GetFilePathInstance(archiveSet, resourceRef, useOriginalFilePath);
+            string filePath = For(archiveSet.Game).GetFilePathInstance(archiveSet, resourceRef, useOriginalFilePath);
+            if (OperatingSystem.IsLinux())
+                filePath = filePath.Replace("\\", "/");
+
+            return filePath;
         }
 
-        public static string ReadOriginalFilePath(ArchiveSet archiveSet, ResourceReference resourceRef)
+        public static string? ReadOriginalFilePath(ArchiveSet archiveSet, ResourceReference resourceRef)
         {
             try
             {
@@ -70,7 +73,7 @@ namespace TrRebootTools.Shared.Cdc
             }
         }
 
-        public static string ReadOriginalFilePath(Stream stream, ResourceType type, CdcGame game)
+        public static string? ReadOriginalFilePath(Stream stream, ResourceType type, CdcGame game)
         {
             try
             {
@@ -107,7 +110,7 @@ namespace TrRebootTools.Shared.Cdc
 
             ulong? locale = CdcGameInfo.Get(Game).LanguageCodeToLocale(Path.GetFileNameWithoutExtension(filePath));
             if (locale != null)
-                filePath = Path.GetDirectoryName(filePath);
+                filePath = Path.GetDirectoryName(filePath)!;
 
             Match idMatch = Regex.Match(filePath, @"(?:^|[\\/\.])(\d+)\.\w+$");
             if (!idMatch.Success)
@@ -120,14 +123,14 @@ namespace TrRebootTools.Shared.Cdc
 
         private string GetExtension(ResourceType type, ResourceSubType subType)
         {
-            return Mappings.GetOrDefault((type, subType))?.FirstOrDefault() ??
-                   Mappings.GetOrDefault((type, (ResourceSubType)0))?.FirstOrDefault() ??
+            return Mappings.GetValueOrDefault((type, subType))?.FirstOrDefault() ??
+                   Mappings.GetValueOrDefault((type, (ResourceSubType)0))?.FirstOrDefault() ??
                    ".type" + (int)type;
         }
 
         private string GetFileNameInstance(ArchiveSet archiveSet, ResourceReference resourceRef, bool useOriginalFilePath)
         {
-            string name = useOriginalFilePath ? Sanitize(ReadOriginalFilePath(archiveSet, resourceRef)) : null;
+            string? name = useOriginalFilePath ? Sanitize(ReadOriginalFilePath(archiveSet, resourceRef)) : null;
             name = name != null ? $"{name}.{resourceRef.Id}" : resourceRef.Id.ToString();
             string extension = GetExtension(resourceRef.Type, resourceRef.SubType);
             return name + extension;
@@ -143,17 +146,17 @@ namespace TrRebootTools.Shared.Cdc
             return filePath;
         }
 
-        protected virtual string ReadOriginalFilePathInstance(ArchiveSet archiveSet, ResourceReference resourceRef)
+        protected virtual string? ReadOriginalFilePathInstance(ArchiveSet archiveSet, ResourceReference resourceRef)
         {
             return null;
         }
 
-        protected virtual string ReadOriginalFilePathInstance(Stream stream, ResourceType type)
+        protected virtual string? ReadOriginalFilePathInstance(Stream stream, ResourceType type)
         {
             return null;
         }
 
-        private static string Sanitize(string name)
+        private static string? Sanitize(string? name)
         {
             if (name == null || name.StartsWith("Section "))
                 return null;

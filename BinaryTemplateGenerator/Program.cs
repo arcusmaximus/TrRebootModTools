@@ -1,6 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Reflection;
+﻿using System.Reflection;
 using System.Text.RegularExpressions;
 
 namespace TrRebootTools.BinaryTemplateGenerator
@@ -9,9 +7,6 @@ namespace TrRebootTools.BinaryTemplateGenerator
     {
         public static void Main(string[] args)
         {
-            //ExtractActionGraphNodeArgs();
-            //return;
-
             if (!TryParseArgs(args, out string structName, out int trVersion))
             {
                 string assemblyName = Assembly.GetEntryAssembly()!.GetName().Name!;
@@ -20,7 +15,7 @@ namespace TrRebootTools.BinaryTemplateGenerator
                 return;
             }
 
-            string headerFilePath = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), $"TR{trVersion}.h");
+            string headerFilePath = Path.Combine(AppContext.BaseDirectory, $"TR{trVersion}.h");
             if (!File.Exists(headerFilePath))
             {
                 Console.WriteLine($"Header file missing (expected at {headerFilePath}).");

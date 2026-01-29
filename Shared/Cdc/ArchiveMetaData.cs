@@ -70,7 +70,9 @@ namespace TrRebootTools.Shared.Cdc
             ArchiveMetaData metaData = new ArchiveMetaData(filePath);
 
             using StreamReader reader = new StreamReader(filePath);
-            string line = reader.ReadLine();
+            string? line = reader.ReadLine();
+            if (line == null)
+                throw new InvalidDataException($"Archive metadata file {filePath} is empty");
 
             string[] parts = line.Split(' ');
             metaData.Name = parts[0];
@@ -142,7 +144,7 @@ namespace TrRebootTools.Shared.Cdc
             }
         }
 
-        public string Name
+        public string? Name
         {
             get;
             private set;
@@ -205,17 +207,17 @@ namespace TrRebootTools.Shared.Cdc
         public List<string> Features
         {
             get;
-        } = new List<string>();
+        } = [];
 
         public List<string> Licenses
         {
             get;
-        } = new List<string>();
+        } = [];
 
         public List<string> CustomEntries
         {
             get;
-        } = new List<string>();
+        } = [];
 
         private IEnumerable<(string, int)> GetProperties()
         {
@@ -277,7 +279,7 @@ namespace TrRebootTools.Shared.Cdc
 
         public override string ToString()
         {
-            return Name;
+            return Name ?? FilePath;
         }
     }
 }

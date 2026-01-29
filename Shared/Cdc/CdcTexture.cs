@@ -128,13 +128,13 @@ namespace TrRebootTools.Shared.Cdc
         }
 
         public CdcTextureHeader Header;
-        public byte[] Data;
+        public byte[]? Data;
 
         public static CdcTexture Read(Stream stream)
         {
             using BinaryReader reader = new BinaryReader(stream);
 
-            CdcTexture texture = new CdcTexture();
+            CdcTexture texture = new();
             texture.Header = reader.ReadStruct<CdcTextureHeader>();
             if (texture.Header.Magic != CdcTextureMagic)
                 throw new InvalidDataException();
@@ -203,7 +203,7 @@ namespace TrRebootTools.Shared.Cdc
         {
             BinaryWriter writer = new BinaryWriter(stream);
             writer.WriteStruct(Header);
-            writer.Write(Data);
+            writer.Write(Data ?? []);
         }
 
         public void WriteAsDds(Stream stream)
@@ -243,7 +243,7 @@ namespace TrRebootTools.Shared.Cdc
                 writer.WriteStruct(dx10);
             }
 
-            writer.Write(Data);
+            writer.Write(Data ?? []);
         }
 
         private static uint GetDxgiFormat(DDS_PIXELFORMAT pixelFormat)

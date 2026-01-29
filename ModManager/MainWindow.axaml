@@ -1,0 +1,48 @@
+<forms:WindowWithProgress xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:manager="using:TrRebootTools.ModManager"
+        xmlns:mod="using:TrRebootTools.ModManager.Mod"
+        xmlns:forms="using:TrRebootTools.Shared.Forms"
+        Width="800" Height="450"
+        MinWidth="450" MinHeight="200"
+        x:Class="TrRebootTools.ModManager.MainWindow"
+        Icon="/icon.ico"
+        Title="ModManager">
+    <DockPanel LastChildFill="True" VerticalSpacing="2">
+        <Panel Height="80" DockPanel.Dock="Top">
+			<StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Spacing="2">
+				<Button Name="_btnAddFromZip" Click="OnAddFromZipClicked" ToolTip.Tip="Install mod from archive" Width="80">
+                    <Image Source="/Resources/AddZip.png" Stretch="None"></Image>
+                </Button>
+                <Button Name="_btnAddFromFolder" Click="OnAddFromFolderClicked" ToolTip.Tip="Install mod from folder" Width="80">
+                    <Image Source="/Resources/AddFolder.png" Stretch="None"></Image>
+                </Button>
+                <Button Name="_btnRemove" Click="OnRemoveClicked" ToolTip.Tip="Uninstall selected mods" Width="80">
+                    <Image Source="/Resources/Remove.png" Stretch="None"></Image>
+                </Button>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="2">
+				<Button Name="_btnReinstall" Click="OnReinstallClicked" ToolTip.Tip="Reinstall all mods" Width="80">
+                    <Image Source="/Resources/Reinstall.png" Stretch="None"></Image>
+                </Button>
+                <Button Name="_btnSelectGame" Click="OnSelectGameClicked" ToolTip.Tip="Switch to a different game" Width="80">
+                    <Image Name="_imgSelectGame" />
+                </Button>
+            </StackPanel>
+        </Panel>
+        <ListBox Name="_lbMods" SelectionMode="Multiple"
+                 KeyDown="OnModsListKeyDown" DragDrop.AllowDrop="True" DragDrop.DragOver="OnDragModOver" DragDrop.Drop="OnDropMod"
+                 Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <ListBox.ItemTemplate>
+				<DataTemplate DataType="mod:InstalledMod">
+                    <StackPanel Orientation="Horizontal">
+                        <CheckBox IsChecked="{Binding Enabled}" />
+					    <Label Content="{Binding Name}" Opacity="{Binding Enabled, Converter={x:Static manager:MainWindow.InstalledModOpacityConverter}}" />
+                    </StackPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </DockPanel>
+</forms:WindowWithProgress>

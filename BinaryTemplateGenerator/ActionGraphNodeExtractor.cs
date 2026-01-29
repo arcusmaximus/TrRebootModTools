@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text.RegularExpressions;
-using TrRebootTools.BinaryTemplateGenerator.Util;
+﻿using System.Text.RegularExpressions;
 
 namespace TrRebootTools.BinaryTemplateGenerator
 {
@@ -27,7 +22,7 @@ namespace TrRebootTools.BinaryTemplateGenerator
                     continue;
 
                 string normalizedName = NormalizeTypeName(argsType.Name);
-                if (argTypesByName.TryGetValue(normalizedName, out CType prevArgsType))
+                if (argTypesByName.TryGetValue(normalizedName, out CType? prevArgsType))
                 {
                     if (argsType.Name.EndsWith("Node"))
                         argTypesByName[normalizedName] = argsType;
@@ -42,10 +37,10 @@ namespace TrRebootTools.BinaryTemplateGenerator
                 if (!IsActionGraphNodeType(nodeType))
                     continue;
 
-                CType argsType = null;
-                string argsPointerTypeName = nodeType.Fields
-                                                     .Select(f => f.Type)
-                                                     .FirstOrDefault(t => t.StartsWith("dtp::") && t.EndsWith("*"));
+                CType? argsType = null;
+                string? argsPointerTypeName = nodeType.Fields
+                                                      .Select(f => f.Type)
+                                                      .FirstOrDefault(t => t.StartsWith("dtp::") && t.EndsWith("*"));
                 if (argsPointerTypeName != null)
                 {
                     argsType = _lib.Types[argsPointerTypeName.TrimEnd('*').Trim()];
@@ -69,7 +64,7 @@ namespace TrRebootTools.BinaryTemplateGenerator
                 if (baseTypeName == "ActionGraphNode")
                     return true;
 
-                CStructure baseType = _lib.Types.GetOrDefault(baseTypeName) as CStructure;
+                CStructure? baseType = _lib.Types.GetValueOrDefault(baseTypeName) as CStructure;
                 if (baseType != null && IsActionGraphNodeType(baseType))
                     return true;
             }
@@ -885,5 +880,5 @@ namespace TrRebootTools.BinaryTemplateGenerator
             NT_WidgetGroupHideShow = 0x2AE,
             NT_WidgetGroupIsVisible = 0x2AF
         }
-}
+    }
 }

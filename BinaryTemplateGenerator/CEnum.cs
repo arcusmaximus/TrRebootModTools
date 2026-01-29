@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace TrRebootTools.BinaryTemplateGenerator
+﻿namespace TrRebootTools.BinaryTemplateGenerator
 {
     internal class CEnum : CType
     {

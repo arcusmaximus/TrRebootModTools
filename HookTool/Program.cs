@@ -1,43 +1,52 @@
-﻿using System;
+﻿using Avalonia;
+using System;
 using System.IO;
-using System.Windows.Forms;
+using System.Threading.Tasks;
 using TrRebootTools.Shared;
 using TrRebootTools.Shared.Cdc;
 using TrRebootTools.Shared.Forms;
+using TrRebootTools.Shared.Util;
 
 namespace TrRebootTools.HookTool
 {
-    public static class Program
+    internal class Program
     {
-        [STAThread]
-        public static void Main()
+        public static AppBuilder BuildAvaloniaApp()
         {
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
+            return App.Build(() => new MainWindow());
+        }
 
+        [STAThread]
+        public static void Main(string[] args)
+        {
+            App.Run(() => MainInternalAsync(args));
+        }
+
+        private static async Task MainInternalAsync(string[] args)
+        {
             try
             {
-                CdcGame? game = GameSelectionForm.GetGame(true);
+                CdcGame? game = await GameSelectionWindow.GetGameAsync(true);
                 if (game == null)
                     return;
 
-                string gameFolderPath = GameFolderFinder.Find(game.Value);
+                string? gameFolderPath = await GameFolderFinder.FindAsync(game.Value);
                 if (gameFolderPath == null)
                     return;
 
-                string exePath = Path.Combine(gameFolderPath, CdcGameInfo.Get(game.Value).ExeName);
-                if (!GameProcess.SupportsHooking(exePath, game.Value, out string unsupportedReason))
+                string exePath = Path.Combine(gameFolderPath, CdcGameInfo.Get(game.Value).ExeNames[0]);
+                if (!GameProcess.SupportsHooking(exePath, game.Value, out string? unsupportedReason))
                 {
-                    MessageBox.Show(unsupportedReason, "Can't launch game", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                    await MessageBox.ShowAsync("Can't launch game", unsupportedReason, icon: MsBox.Avalonia.Enums.Icon.Error);
                     return;
                 }
 
-                using MainForm form = new MainForm(gameFolderPath, game.Value);
-                Application.Run(form);
+                MainWindow window = new(gameFolderPath, game.Value);
+                await App.ShowDialogAsync(window);
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.ToString(), "Error", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                await MessageBox.ShowErrorAsync(ex);
             }
         }
     }

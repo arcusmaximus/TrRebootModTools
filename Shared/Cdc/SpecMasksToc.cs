@@ -2,7 +2,6 @@
 using System.Globalization;
 using System.IO;
 using System.Text.RegularExpressions;
-using TrRebootTools.Shared.Util;
 
 namespace TrRebootTools.Shared.Cdc
 {
@@ -15,12 +14,14 @@ namespace TrRebootTools.Shared.Cdc
 
         public static SpecMasksToc Load(string filePath)
         {
-            using StreamReader reader = new StreamReader(filePath);
-            ulong unsupportedMask = ulong.Parse(reader.ReadLine(), NumberStyles.AllowHexSpecifier);
-            
-            SpecMasksToc toc = new(unsupportedMask);
+            using StreamReader reader = new(filePath);
+            string? line = reader.ReadLine();
+            if (line == null)
+                throw new InvalidDataException($"{filePath} is empty");
 
-            string line;
+            ulong unsupportedMask = ulong.Parse(line, NumberStyles.AllowHexSpecifier);
+            SpecMasksToc toc = new(unsupportedMask);
+            
             while ((line = reader.ReadLine()) != null)
             {
                 int spacePos = line.IndexOf(' ');
@@ -70,7 +71,7 @@ namespace TrRebootTools.Shared.Cdc
                 specMasksName = Regex.Replace(specMasksName, @"\.\d{3}\.\d{3}\.tiger$", "");
             }
 
-            return Path.Combine(Path.GetDirectoryName(baseArchiveFilePath), specMasksName + ".specmasks.toc");
+            return Path.Combine(Path.GetDirectoryName(baseArchiveFilePath)!, specMasksName + ".specmasks.toc");
         }
     }
 }

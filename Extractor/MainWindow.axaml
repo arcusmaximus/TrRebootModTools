@@ -1,0 +1,27 @@
+<shared-forms:WindowWithProgress xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:shared-forms="using:TrRebootTools.Shared.Forms"
+        xmlns:controls="using:TrRebootTools.Extractor.Controls"
+        Width="600" Height="700"
+        MinWidth="300" MinHeight="200"
+        x:Class="TrRebootTools.Extractor.MainWindow"
+        Icon="/icon.ico">
+    <DockPanel LastChildFill="True" VerticalSpacing="2">
+        <DockPanel DockPanel.Dock="Bottom" HorizontalSpacing="2" LastChildFill="True" Height="80">
+			<Button Name="_btnSelectGame" Click="OnSelectGameClicked" ToolTip.Tip="Switch to a different game" DockPanel.Dock="Right" Width="80">
+				<Image Name="_imgSelectGame" />
+            </Button>
+            <Button Name="_btnExtract" IsEnabled="False" Click="OnExtractClicked">
+                Extract
+            </Button>
+        </DockPanel>
+		<Panel>
+			<controls:ArchiveFileTreeView Name="_tvFiles" SelectionMode="Multiple" SelectionChanged="OnFileSelectionChanged" FileDoubleClicked="OnFileDoubleClicked" />
+            <Label Name="_lblLoading" HorizontalAlignment="Center" VerticalAlignment="Center">
+			    Loading file list...
+            </Label>
+        </Panel>
+    </DockPanel>
+</shared-forms:WindowWithProgress>

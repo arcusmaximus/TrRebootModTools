@@ -6,7 +6,7 @@ namespace TrRebootTools.Shared.Cdc.Rise
 {
     internal class RiseArchive : Archive
     {
-        public RiseArchive(string baseFilePath, ArchiveMetaData metaData)
+        public RiseArchive(string baseFilePath, ArchiveMetaData? metaData)
             : base(baseFilePath, metaData)
         {
         }
@@ -34,7 +34,7 @@ namespace TrRebootTools.Shared.Cdc.Rise
         protected override void WriteFileReference(BinaryWriter writer, ArchiveFileReference fileRef)
         {
             ArchiveFileEntry entry =
-                new ArchiveFileEntry
+                new()
                 {
                     NameHash = (uint)fileRef.NameHash,
                     Locale = (uint)fileRef.Locale,

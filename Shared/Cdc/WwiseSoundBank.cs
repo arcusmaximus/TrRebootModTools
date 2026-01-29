@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
-using TrRebootTools.Shared.Cdc;
 using TrRebootTools.Shared.Util;
 
 namespace TrRebootTools.Shared.Cdc
@@ -47,7 +46,7 @@ namespace TrRebootTools.Shared.Cdc
                 string sectionTag = Encoding.ASCII.GetString(reader.ReadBytes(4));
                 int sectionLength = reader.ReadInt32();
 
-                SectionFactory factory = SectionFactories.GetOrDefault(sectionTag) ?? DefaultSectionFactory;
+                SectionFactory factory = SectionFactories.GetValueOrDefault(sectionTag) ?? DefaultSectionFactory;
                 Section section = factory(this, sectionTag, reader, sectionLength);
                 _sections.Add(section);
 
@@ -71,9 +70,9 @@ namespace TrRebootTools.Shared.Cdc
         {
             get
             {
-                HircSection section = GetSection<HircSection>();
+                HircSection? section = GetSection<HircSection>();
                 if (section == null)
-                    return Enumerable.Empty<int>();
+                    return [];
 
                 return section.Entries.OfType<HircSoundEntry>().Select(e => e.SoundId);
             }
@@ -83,7 +82,7 @@ namespace TrRebootTools.Shared.Cdc
         {
             ApplyEmbeddedSoundsToSections();
 
-            BinaryWriter writer = new BinaryWriter(stream);
+            BinaryWriter writer = new(stream);
             writer.Write(Id);
             writer.Write(0);
             foreach (Section section in _sections)
@@ -107,8 +106,8 @@ namespace TrRebootTools.Shared.Cdc
 
         private void GetEmbeddedSoundsFromSections()
         {
-            DataIndexSection indexSection = GetSection<DataIndexSection>();
-            DataSection dataSection = GetSection<DataSection>();
+            DataIndexSection? indexSection = GetSection<DataIndexSection>();
+            DataSection? dataSection = GetSection<DataSection>();
             if (indexSection == null || dataSection == null)
                 return;
 
@@ -120,8 +119,8 @@ namespace TrRebootTools.Shared.Cdc
 
         private void ApplyEmbeddedSoundsToSections()
         {
-            DataIndexSection indexSection = GetSection<DataIndexSection>();
-            DataSection dataSection = GetSection<DataSection>();
+            DataIndexSection? indexSection = GetSection<DataIndexSection>();
+            DataSection? dataSection = GetSection<DataSection>();
             if (indexSection == null || dataSection == null)
                 return;
 
@@ -136,7 +135,7 @@ namespace TrRebootTools.Shared.Cdc
             }
         }
 
-        private T GetSection<T>()
+        private T? GetSection<T>()
             where T : Section
         {
             return _sections.OfType<T>().FirstOrDefault();
@@ -221,7 +220,7 @@ namespace TrRebootTools.Shared.Cdc
                 writer.Write(Int2);
                 writer.Write(Int3);
 
-                DataIndexSection indexSection = _bank.GetSection<DataIndexSection>();
+                DataIndexSection? indexSection = _bank.GetSection<DataIndexSection>();
                 if (indexSection == null)
                     return;
 
@@ -274,7 +273,10 @@ namespace TrRebootTools.Shared.Cdc
                 : base(tag)
             {
                 byte[] data = reader.ReadBytes(length);
-                DataIndexSection index = bank.GetSection<DataIndexSection>();
+                DataIndexSection? index = bank.GetSection<DataIndexSection>();
+                if (index == null)
+                    return;
+
                 foreach (DataIndexEntry entry in index.Entries)
                 {
                     SoundFiles.Add(new ArraySegment<byte>(data, entry.Offset, entry.Length));
@@ -284,13 +286,16 @@ namespace TrRebootTools.Shared.Cdc
             public List<ArraySegment<byte>> SoundFiles
             {
                 get;
-            } = new();
+            } = [];
 
             public override void Write(BinaryWriter writer)
             {
                 long startPos = writer.BaseStream.Position;
                 foreach (ArraySegment<byte> blob in SoundFiles)
                 {
+                    if (blob.Array == null)
+                        throw new ArgumentNullException();
+
                     writer.Write(blob.Array, blob.Offset, blob.Count);
                     while (((writer.BaseStream.Position - startPos) & 0xF) != 0)
                     {
@@ -311,7 +316,7 @@ namespace TrRebootTools.Shared.Cdc
                     byte entryType = reader.ReadByte();
                     int entryLength = reader.ReadInt32();
                     byte[] entryData = reader.ReadBytes(entryLength);
-                    HircEntryFactory factory = HircEntryFactories.GetOrDefault(entryType) ?? DefaultHircEntryFactory;
+                    HircEntryFactory factory = HircEntryFactories.GetValueOrDefault(entryType) ?? DefaultHircEntryFactory;
                     Entries.Add(factory(entryType, entryData));
                 }
             }

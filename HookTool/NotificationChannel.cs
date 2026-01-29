@@ -73,13 +73,13 @@ namespace TrRebootTools.HookTool
             PlayingAnimation?.Invoke(id, name);
         }
 
-        public event Action GameEntered;
+        public event Action? GameEntered;
 
         public delegate void OpeningFileHandler(ArchiveFileKey key, string path);
-        public event OpeningFileHandler OpeningFile;
+        public event OpeningFileHandler? OpeningFile;
 
         public delegate void PlayingAnimationHandler(int id, string name);
-        public event PlayingAnimationHandler PlayingAnimation;
+        public event PlayingAnimationHandler? PlayingAnimation;
 
         public void Dispose()
         {

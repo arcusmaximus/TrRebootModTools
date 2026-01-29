@@ -1,4 +1,5 @@
-﻿using System.Drawing;
+﻿using System;
+using System.IO;
 
 namespace TrRebootTools.Shared.Cdc.Shadow
 {
@@ -6,13 +7,18 @@ namespace TrRebootTools.Shared.Cdc.Shadow
     {
         public override CdcGame Game => CdcGame.Shadow;
 
-        public override string ExeName => "SOTTR.exe";
+        public override string[] ExeNames => ["SOTTR.exe", "gamelaunchhelper.exe"];
+
+        public override string LinuxSteamFolderPath => Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+            ".local/share/Steam/steamapps/common/Shadow of the Tomb Raider"
+        );
 
         public override int PointerSize => 8;
 
         public override string ShortName => "SOTTR";
 
-        public override Image Icon => Properties.Resources.Shadow;
+        protected override string IconResourcePath => "/Resources/Shadow.png";
 
         public override string RegistryDisplayName => "Shadow of the Tomb Raider";
 

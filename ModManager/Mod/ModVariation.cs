@@ -1,6 +1,6 @@
-﻿using System;
+﻿using Avalonia.Media.Imaging;
+using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
 using TrRebootTools.Shared.Cdc;
 
@@ -8,7 +8,7 @@ namespace TrRebootTools.ModManager.Mod
 {
     internal abstract class ModVariation : IDisposable
     {
-        public ModVariation(string name, string description, Image image)
+        public ModVariation(string name, string? description, Bitmap? image)
         {
             Name = name;
             Description = description;
@@ -20,12 +20,12 @@ namespace TrRebootTools.ModManager.Mod
             get;
         }
 
-        public string Description
+        public string? Description
         {
             get;
         }
 
-        public Image Image
+        public Bitmap? Image
         {
             get;
         }
@@ -35,14 +35,14 @@ namespace TrRebootTools.ModManager.Mod
             get;
         }
 
-        public abstract Stream OpenFile(ArchiveFileKey key);
+        public abstract Stream? OpenFile(ArchiveFileKey key);
 
         public abstract IEnumerable<ResourceKey> Resources
         {
             get;
         }
 
-        public abstract Stream OpenResource(ResourceKey resourceKey);
+        public abstract Stream? OpenResource(ResourceKey resourceKey);
 
         public override string ToString()
         {

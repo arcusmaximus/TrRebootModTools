@@ -21,26 +21,26 @@ namespace TrRebootTools.SoundConverter
 
         public override CdcGame Game { get; }
 
-        protected async Task<string> ConvertWavAsync(string wavFilePath)
+        protected async Task<string?> ConvertWavAsync(string wavFilePath)
         {
             if (!File.Exists(wavFilePath))
                 return null;
 
             XmlDocument doc = new();
-            doc.Load(ProjectFilePath);
-            foreach (XmlElement elem in doc.SelectNodes("//waveform/filename"))
+            doc.Load(ProjectFilePath!);
+            foreach (XmlElement elem in doc.SelectNodes("//waveform/filename")!)
             {
                 elem.InnerText = wavFilePath;
             }
-            doc.Save(ProjectFilePath);
+            doc.Save(ProjectFilePath!);
 
             string fmodLog = await RunConsoleToolAsync($"-pc \"{ProjectFilePath}\"");
 
-            string cacheFolderPath = Path.Combine(ProjectFolderPath, ".fsbcache");
+            string cacheFolderPath = Path.Combine(ProjectFolderPath!, ".fsbcache");
             if (Directory.Exists(cacheFolderPath))
                 Directory.Delete(cacheFolderPath, true);
 
-            string fromFsbPath = Path.Combine(ProjectFolderPath, "proj_bank00.fsb");
+            string fromFsbPath = Path.Combine(ProjectFolderPath!, "proj_bank00.fsb");
             if (!File.Exists(fromFsbPath))
                 throw new Exception("FMOD conversion failed.\r\n\r\n" + fmodLog);
 
@@ -54,12 +54,11 @@ namespace TrRebootTools.SoundConverter
 
         protected override async Task CreateProjectAsync(string projectFilePath)
         {
-            string projectFolderPath = Path.GetDirectoryName(projectFilePath);
+            string projectFolderPath = Path.GetDirectoryName(projectFilePath)!;
             if (!Directory.Exists(projectFolderPath))
                 Directory.CreateDirectory(projectFolderPath);
 
-            string assemblyFolder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            File.Copy(Path.Combine(assemblyFolder, "fmod-project.fdp"), projectFilePath);
+            File.Copy(Path.Combine(AppContext.BaseDirectory, "fmod-project.fdp"), projectFilePath);
         }
     }
 }

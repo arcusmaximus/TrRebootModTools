@@ -4,7 +4,7 @@ namespace TrRebootTools.Shared.Cdc.Tr2013
 {
     internal class Tr2013ResourceRefDefinitions : ResourceRefDefinitions
     {
-        public Tr2013ResourceRefDefinitions(ResourceReference resourceRef, Stream stream, bool readSizeOnly)
+        public Tr2013ResourceRefDefinitions(ResourceReference? resourceRef, Stream stream, bool readSizeOnly)
             : base(resourceRef, stream, readSizeOnly)
         {
         }

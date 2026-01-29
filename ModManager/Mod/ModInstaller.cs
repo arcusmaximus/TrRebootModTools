@@ -1,14 +1,16 @@
-﻿using System;
+﻿using Avalonia.Controls;
+using Avalonia.Threading;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
-using System.Windows.Forms;
+using System.Threading.Tasks;
+using TrRebootTools.ModManager.Util;
 using TrRebootTools.Shared;
 using TrRebootTools.Shared.Cdc;
 using TrRebootTools.Shared.Util;
-using TrRebootTools.ModManager.Util;
 
 namespace TrRebootTools.ModManager.Mod
 {
@@ -19,60 +21,59 @@ namespace TrRebootTools.ModManager.Mod
         private readonly ArchiveSet _archiveSet;
         private readonly ResourceUsageCache _gameResourceUsageCache;
 
-        public ModInstaller(ArchiveSet archiveSet, ResourceUsageCache gameResourceUsageCache)
+        public ModInstaller(ArchiveSet archiveSet, ResourceUsageCache gameResourceUsageCache, Window? mainWindow = null)
         {
             _archiveSet = archiveSet;
             _gameResourceUsageCache = gameResourceUsageCache;
         }
 
-        public InstalledMod InstallFromZip(string filePath, ITaskProgress progress, CancellationToken cancellationToken)
+        public async Task<InstalledMod?> InstallFromZipAsync(string filePath, ITaskProgress progress, CancellationToken cancellationToken)
         {
             string modName = Regex.Replace(Path.GetFileNameWithoutExtension(filePath), @"(-\d+)+$", "");
-            if (IsModAlreadyInstalled(modName))
+            if (await IsModAlreadyInstalledAsync(modName))
                 return null;
 
-            using ZipTempExtractor extractor = new ZipTempExtractor(filePath);
+            using ZipTempExtractor extractor = new(filePath);
             extractor.Extract(progress, cancellationToken);
 
             using ModPackage modPackage = new FolderModPackage(modName, extractor.FolderPath, false, _archiveSet, _gameResourceUsageCache);
-            return Install(modPackage, progress, cancellationToken);
+            return await InstallAsync(modPackage, progress, cancellationToken);
         }
 
-        public InstalledMod InstallFromFolder(string folderPath, ITaskProgress progress, CancellationToken cancellationToken)
+        public async Task<InstalledMod?> InstallFromFolderAsync(string folderPath, ITaskProgress progress, CancellationToken cancellationToken)
         {
             string modName = Path.GetFileName(folderPath);
-            return InstallFromFolder(modName, folderPath, progress, cancellationToken);
+            return await InstallFromFolderAsync(modName, folderPath, progress, cancellationToken);
         }
 
-        public InstalledMod InstallFromFolder(string modName, string folderPath, ITaskProgress progress, CancellationToken cancellationToken)
+        public async Task<InstalledMod?> InstallFromFolderAsync(string modName, string folderPath, ITaskProgress progress, CancellationToken cancellationToken)
         {
-            Archive existingArchive = _archiveSet.Archives.FirstOrDefault(a => a.ModName != null && Regex.Replace(a.ModName, @" \(.+\)$", "") == modName);
+            Archive? existingArchive = _archiveSet.Archives.FirstOrDefault(a => a.ModName != null && Regex.Replace(a.ModName, @" \(.+\)$", "") == modName);
             if (existingArchive != null)
                 _archiveSet.Delete(existingArchive.Id, _gameResourceUsageCache, progress, cancellationToken);
 
             using ModPackage modPackage = new FolderModPackage(modName, folderPath, true, _archiveSet, _gameResourceUsageCache);
-            return Install(modPackage, progress, cancellationToken);
+            return await InstallAsync(modPackage, progress, cancellationToken);
         }
 
         public void ReinstallAll(ITaskProgress progress, CancellationToken cancellationToken)
         {
-            List<OriginalModInfo> originalMods = new();
+            List<OriginalModInfo> originalMods = [];
             foreach (IGrouping<int, Archive> archivesOfId in _archiveSet.Archives
                                                                         .Concat(_archiveSet.DuplicateArchives)
                                                                         .Where(a => a.ModName != null)
                                                                         .GroupBy(a => a.Id)
-                                                                        .OrderByDescending(g => g.First().MetaData.Version))
+                                                                        .OrderByDescending(g => g.First().MetaData!.Version))
             {
                 _archiveSet.CloseStreams();
 
-                ArchiveMetaData metaData = archivesOfId.First().MetaData;
-                OriginalModInfo originalModInfo = new OriginalModInfo
-                {
-                    ModName = archivesOfId.First().ModName,
-                    Enabled = metaData.Enabled,
-                    NfoFilePath = metaData.FilePath + ".orig",
-                    ArchiveFilePaths = new List<string>()
-                };
+                ArchiveMetaData metaData = archivesOfId.First().MetaData!;
+                OriginalModInfo originalModInfo = new(
+                    ModName: archivesOfId.First().ModName!,
+                    Enabled: metaData.Enabled,
+                    NfoFilePath: metaData.FilePath + ".orig",
+                    ArchiveFilePaths: []
+                );
 
                 _archiveSet.Disable(archivesOfId.Key, _gameResourceUsageCache, progress, cancellationToken);
 
@@ -113,19 +114,22 @@ namespace TrRebootTools.ModManager.Mod
 
         public void UpdateFlatModArchive(ITaskProgress progress, CancellationToken cancellationToken)
         {
-            ArchiveIdentity flattenedArchiveIdent = _archiveSet.GetActiveFlattenedModArchiveIdentity();
+            ArchiveIdentity? flattenedArchiveIdent = _archiveSet.GetActiveFlattenedModArchiveIdentity();
             if (flattenedArchiveIdent == null)
                 return;
 
-            List<TigerModPackage> modPackages = new();
+            List<TigerModPackage> modPackages = [];
 
-            Archive origGameArchive = _archiveSet.GetArchive(flattenedArchiveIdent.Id, 0);
+            Archive? origGameArchive = _archiveSet.GetArchive(flattenedArchiveIdent.Id, 0);
+            if (origGameArchive == null)
+                throw new Exception($"Archive with ID {flattenedArchiveIdent.Id} not found");
+
             modPackages.Add(new TigerModPackage([origGameArchive], _archiveSet.Game));
 
             foreach (IGrouping<int, Archive> archivesOfId in _archiveSet.Archives
-                                                                        .Where(a => a.ModName != null && a.MetaData.Enabled)
+                                                                        .Where(a => a.ModName != null && a.MetaData!.Enabled)
                                                                         .GroupBy(a => a.Id)
-                                                                        .OrderBy(g => g.First().MetaData.Version))
+                                                                        .OrderBy(g => g.First().MetaData!.Version))
             {
                 modPackages.Add(new TigerModPackage(archivesOfId, _archiveSet.Game));
             }
@@ -134,49 +138,46 @@ namespace TrRebootTools.ModManager.Mod
             Install(modPackage, null, true, progress, cancellationToken);
         }
 
-        private class OriginalModInfo
-        {
-            public string ModName;
-            public bool Enabled;
-            public string NfoFilePath;
-            public List<string> ArchiveFilePaths;
-        }
+        private record OriginalModInfo(
+            string ModName,
+            bool Enabled,
+            string NfoFilePath,
+            List<string> ArchiveFilePaths
+        );
 
-        private bool IsModAlreadyInstalled(string modName)
+        private async Task<bool> IsModAlreadyInstalledAsync(string modName)
         {
             if (_archiveSet.Archives.Any(a => a.ModName == modName))
             {
-                MessageBox.Show($"The mod {modName} is already installed.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                await MessageBox.ShowAsync("", $"The mod {modName} is already installed.", icon: MsBox.Avalonia.Enums.Icon.Info);
                 return true;
             }
             return false;
         }
 
-        private InstalledMod Install(ModPackage modPackage, ITaskProgress progress, CancellationToken cancellationToken)
+        private async Task<InstalledMod?> InstallAsync(ModPackage modPackage, ITaskProgress progress, CancellationToken cancellationToken)
         {
-            ModVariation modVariation = null;
+            ModVariation? modVariation = null;
             if (modPackage.Variations != null && modPackage.Variations.Count > 0)
             {
-                using VariationSelectionForm form = new VariationSelectionForm(modPackage);
-                if (form.ShowDialog() != DialogResult.OK)
+                modVariation = await Dispatcher.UIThread.InvokeAsync(() => VariationSelectionWindow.ShowDialogAsync(modPackage));
+                if (modVariation == null)
                     return null;
-
-                modVariation = form.SelectedVariation;
             }
             return Install(modPackage, modVariation, false, progress, cancellationToken);
         }
 
-        private InstalledMod Install(ModPackage modPackage, ModVariation modVariation, bool flattened, ITaskProgress progress, CancellationToken cancellationToken)
+        private InstalledMod Install(ModPackage modPackage, ModVariation? modVariation, bool flattened, ITaskProgress? progress, CancellationToken cancellationToken)
         {
-            ArchiveSet archiveSet = null;
-            Dictionary<ulong, Archive> archives = null;
+            ArchiveSet? archiveSet = null;
+            Dictionary<ulong, Archive>? archives = null;
             string modName = modPackage.Name;
             if (modVariation != null)
                 modName += $" ({modVariation.Name})";
 
             try
             {
-                progress.Begin($"Installing mod {modName}...");
+                progress?.Begin($"Installing mod {modName}...");
 
                 _archiveSet.CloseStreams();
                 ResourceUsageCache resourceUsageCache = !flattened ? GetFullResourceUsageCache() : _gameResourceUsageCache;
@@ -199,7 +200,7 @@ namespace TrRebootTools.ModManager.Mod
                                                                                                          .SelectMany(c => c)
                                                                                                          .Select(c => c.CollectionReference)
                                                                                                          .Distinct()
-                                                                                                         .ToDictionary(r => (ArchiveFileKey)r, archiveSet.GetResourceCollection);
+                                                                                                         .ToDictionary(r => (ArchiveFileKey)r, r => archiveSet.GetResourceCollection(r)!);
 
                 Dictionary<ResourceKey, List<ResourceCollectionItem>> modResourceCollectionItems =
                     modResourceUsages.ToDictionary(
@@ -207,7 +208,7 @@ namespace TrRebootTools.ModManager.Mod
                         p => p.Value
                               .Select(r => new ResourceCollectionItem(modResourceCollections[r.CollectionReference], r.ResourceIndex))
                               .ToList()
-                );
+                    );
 
                 Dictionary<ArchiveFileKey, HashSet<ResourceKey>> resourceRefsToAdd = GetResourceRefsToAdd(modPackage, modVariation, modResourceKeys, resourceUsageCache);
                 AddResourceReferencesToCollections(modResourceCollections, modResourceCollectionItems, resourceRefsToAdd, resourceUsageCache);
@@ -248,7 +249,7 @@ namespace TrRebootTools.ModManager.Mod
             finally
             {
                 archiveSet?.CloseStreams();
-                progress.End();
+                progress?.End();
             }
         }
 
@@ -277,7 +278,7 @@ namespace TrRebootTools.ModManager.Mod
 
         private Dictionary<ArchiveFileKey, HashSet<ResourceKey>> GetResourceRefsToAdd(
             ModPackage modPackage,
-            ModVariation modVariation,
+            ModVariation? modVariation,
             ResourceKeyLookup modResourceKeys,
             ResourceUsageCache fullResourceUsageCache)
         {
@@ -299,7 +300,7 @@ namespace TrRebootTools.ModManager.Mod
 
         private void CollectExternalResourceKeys(
             ModPackage modPackage,
-            ModVariation modVariation,
+            ModVariation? modVariation,
             ResourceKeyLookup modResourceKeys,
             ResourceKey resourceKey,
             HashSet<ResourceKey> allExternalResourceKeys,
@@ -308,16 +309,16 @@ namespace TrRebootTools.ModManager.Mod
             if (!MightHaveRefDefinitions(resourceKey))
                 return;
 
-            ResourceReference resourceRef = fullResourceUsageCache.GetResourceReference(_archiveSet, resourceKey);
+            ResourceReference? resourceRef = fullResourceUsageCache.GetResourceReference(_archiveSet, resourceKey);
             if (resourceRef != null && resourceRef.RefDefinitionsSize == 0)
                 return;
 
             List<ResourceKey> externalResourceKeys;
-            Stream resourceStream = null;
+            Stream? resourceStream = null;
             try
             {
                 if (modResourceKeys.Contains(resourceKey))
-                    resourceStream = modVariation?.OpenResource(resourceKey) ?? modPackage.OpenResource(resourceKey);
+                    resourceStream = modVariation?.OpenResource(resourceKey) ?? modPackage.OpenResource(resourceKey)!;
                 else if (resourceRef != null)
                     resourceStream = _archiveSet.OpenResource(resourceRef);
                 else
@@ -402,7 +403,7 @@ namespace TrRebootTools.ModManager.Mod
         {
             foreach ((ArchiveFileKey collectionKey, ICollection<ResourceKey> resourcesForCollection) in resourceRefsToAdd)
             {
-                ResourceCollection modCollection = modResourceCollections.GetOrDefault(collectionKey);
+                ResourceCollection? modCollection = modResourceCollections.GetValueOrDefault(collectionKey);
                 if (modCollection == null)
                     continue;
 
@@ -412,10 +413,10 @@ namespace TrRebootTools.ModManager.Mod
                         continue;
 
                     int modCollectionResourceIdx = -1;
-                    ResourceCollectionItemReference existingUsage = resourceUsageCache.GetResourceUsages(_archiveSet, resourceKey).FirstOrDefault();
+                    ResourceCollectionItemReference? existingUsage = resourceUsageCache.GetResourceUsages(_archiveSet, resourceKey).FirstOrDefault();
                     if (existingUsage != null)
                     {
-                        ResourceCollection sourceCollection = _archiveSet.GetResourceCollection(existingUsage.CollectionReference);
+                        ResourceCollection? sourceCollection = _archiveSet.GetResourceCollection(existingUsage.CollectionReference);
                         if (sourceCollection != null)
                             modCollectionResourceIdx = modCollection.AddResourceReference(sourceCollection, existingUsage.ResourceIndex);
                     }
@@ -427,9 +428,9 @@ namespace TrRebootTools.ModManager.Mod
         private void AddResourcesToArchive(
             Archive archive,
             ModPackage modPackage,
-            ModVariation modVariation,
+            ModVariation? modVariation,
             Dictionary<ResourceKey, List<ResourceCollectionItem>> modResourceCollectionItems,
-            ITaskProgress progress,
+            ITaskProgress? progress,
             CancellationToken cancellationToken)
         {
             int resourceIdx = 0;
@@ -439,9 +440,9 @@ namespace TrRebootTools.ModManager.Mod
                 cancellationToken.ThrowIfCancellationRequested();
 
                 resourceIdx++;
-                progress.Report((float)resourceIdx / modResourceCollectionItems.Count);
+                progress?.Report((float)resourceIdx / modResourceCollectionItems.Count);
 
-                Stream modResourceStream = modVariation?.OpenResource(modResourceKey) ?? modPackage.OpenResource(modResourceKey);
+                Stream? modResourceStream = modVariation?.OpenResource(modResourceKey) ?? modPackage.OpenResource(modResourceKey);
                 if (modResourceStream == null)
                     continue;
 
@@ -450,7 +451,7 @@ namespace TrRebootTools.ModManager.Mod
                     int? refDefinitionsSize = null;
                     if (MightHaveRefDefinitions(modResourceKey))
                     {
-                        ResourceReference existingResourceRef = collectionItems[0].ResourceIndex >= 0 ? collectionItems[0].Collection.ResourceReferences[collectionItems[0].ResourceIndex] : null;
+                        ResourceReference? existingResourceRef = collectionItems[0].ResourceIndex >= 0 ? collectionItems[0].Collection.ResourceReferences[collectionItems[0].ResourceIndex] : null;
                         if (existingResourceRef == null || existingResourceRef.RefDefinitionsSize > 0)
                             refDefinitionsSize = GetResourceRefDefinitionsSize(modPackage, modVariation, modResourceKey);
                     }
@@ -489,13 +490,13 @@ namespace TrRebootTools.ModManager.Mod
             }
         }
         
-        private int GetResourceRefDefinitionsSize(ModPackage modPackage, ModVariation modVariation, ResourceKey resourceKey)
+        private int GetResourceRefDefinitionsSize(ModPackage modPackage, ModVariation? modVariation, ResourceKey resourceKey)
         {
-            using Stream stream = modVariation?.OpenResource(resourceKey) ?? modPackage.OpenResource(resourceKey);
+            using Stream stream = modVariation?.OpenResource(resourceKey) ?? modPackage.OpenResource(resourceKey)!;
             return ResourceRefDefinitions.ReadHeaderAndGetSize(stream, _archiveSet.Game);
         }
 
-        private static void AddFilesToArchives(Dictionary<ulong, Archive> archives, ModPackage modPackage, ModVariation modVariation, IEnumerable<ResourceCollection> resourceCollections)
+        private static void AddFilesToArchives(Dictionary<ulong, Archive> archives, ModPackage modPackage, ModVariation? modVariation, IEnumerable<ResourceCollection> resourceCollections)
         {
             SortedDictionary<ArchiveFileKey, object> files = new();
 
@@ -526,11 +527,11 @@ namespace TrRebootTools.ModManager.Mod
                         break;
 
                     case ModVariation _:
-                        AddFileToArchive(archives, fileKey, modVariation.OpenFile(fileKey));
+                        AddFileToArchive(archives, fileKey, modVariation!.OpenFile(fileKey));
                         break;
 
                     case ResourceCollection resourceCollection:
-                        MemoryStream collectionStream = new MemoryStream();
+                        MemoryStream collectionStream = new();
                         resourceCollection.Write(collectionStream);
                         collectionStream.TryGetBuffer(out ArraySegment<byte> collectionData);
                         archives[resourceCollection.Locale].AddFile(resourceCollection.NameHash, resourceCollection.Locale, collectionData);
@@ -539,7 +540,7 @@ namespace TrRebootTools.ModManager.Mod
             }
         }
 
-        private static void AddFileToArchive(Dictionary<ulong, Archive> archives, ArchiveFileKey fileKey, Stream stream)
+        private static void AddFileToArchive(Dictionary<ulong, Archive> archives, ArchiveFileKey fileKey, Stream? stream)
         {
             if (stream == null)
                 return;
@@ -548,7 +549,7 @@ namespace TrRebootTools.ModManager.Mod
             stream.Read(data, 0, data.Length);
             stream.Close();
 
-            (archives.GetOrDefault(fileKey.Locale) ?? archives[0xFFFFFFFFFFFFFFFF]).AddFile(fileKey, data);
+            (archives.GetValueOrDefault(fileKey.Locale) ?? archives[0xFFFFFFFFFFFFFFFF]).AddFile(fileKey, data);
         }
 
         private static bool MightHaveRefDefinitions(ResourceKey resourceKey)

@@ -1,15 +1,18 @@
-﻿using System.Configuration;
+﻿using Avalonia.Platform.Storage;
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
-using System.Windows.Forms;
+using TrRebootTools.Shared;
 using TrRebootTools.Shared.Cdc;
+using TrRebootTools.Shared.Util;
 
 namespace TrRebootTools.SoundConverter
 {
     internal abstract class SoundEncoder : ISoundConverter
     {
-        private string _consoleToolPath;
+        private string? _consoleToolPath;
 
         public abstract CdcGame Game { get; }
         public abstract string InputExtension { get; }
@@ -20,16 +23,16 @@ namespace TrRebootTools.SoundConverter
                 return false;
 
             string subFolderPath = "";
-            int gamePathIndex = inputFilePath.IndexOf("\\pc-w\\");
+            int gamePathIndex = inputFilePath.IndexOf(Path.DirectorySeparatorChar + "pc-w" + Path.DirectorySeparatorChar);
             if (gamePathIndex < 0)
-                gamePathIndex = inputFilePath.IndexOf("\\pcx64-w\\");
+                gamePathIndex = inputFilePath.IndexOf(Path.DirectorySeparatorChar + "pcx64-w" + Path.DirectorySeparatorChar);
 
             if (gamePathIndex >= 0)
-                subFolderPath = Path.GetDirectoryName(inputFilePath.Substring(gamePathIndex + 1));
+                subFolderPath = Path.GetDirectoryName(inputFilePath.Substring(gamePathIndex + 1))!;
             else if (CdcGameInfo.Get(Game).LanguageCodeToLocale(Path.GetFileNameWithoutExtension(inputFilePath)) != null)
-                subFolderPath = Path.GetFileName(Path.GetDirectoryName(inputFilePath));
+                subFolderPath = Path.GetFileName(Path.GetDirectoryName(inputFilePath))!;
 
-            string tempOutputFilePath = await ConvertInternalAsync(inputFilePath);
+            string? tempOutputFilePath = await ConvertInternalAsync(inputFilePath);
             if (tempOutputFilePath == null || !File.Exists(tempOutputFilePath))
                 return false;
 
@@ -41,24 +44,24 @@ namespace TrRebootTools.SoundConverter
                 if (File.Exists(outputFilePath))
                     File.Delete(outputFilePath);
 
-                Directory.CreateDirectory(Path.GetDirectoryName(outputFilePath));
+                Directory.CreateDirectory(Path.GetDirectoryName(outputFilePath)!);
                 File.Move(tempOutputFilePath, outputFilePath);
             }
             return true;
         }
 
-        protected abstract Task<string> ConvertInternalAsync(string inputFilePath);
+        protected abstract Task<string?> ConvertInternalAsync(string inputFilePath);
 
         protected async Task<bool> InitAsync()
         {
-            _consoleToolPath ??= GetConsoleToolPath();
+            _consoleToolPath ??= await GetConsoleToolPathAsync();
             if (_consoleToolPath == null)
                 return false;
 
             if (ProjectFilePath == null)
             {
                 string projectName = GetType().Name + "Project";
-                string projectFolderPath = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), projectName);
+                string projectFolderPath = Path.Combine(AppContext.BaseDirectory, projectName);
                 if (Directory.Exists(projectFolderPath))
                     Directory.Delete(projectFolderPath, true);
 
@@ -66,7 +69,7 @@ namespace TrRebootTools.SoundConverter
                 await CreateProjectAsync(projectFilePath);
                 if (!File.Exists(projectFilePath))
                 {
-                    MessageBox.Show("Failed to create project file.", "", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                    await MessageBox.ShowAsync("", "Failed to create project file.", icon: MsBox.Avalonia.Enums.Icon.Error);
                     return false;
                 }
 
@@ -82,35 +85,39 @@ namespace TrRebootTools.SoundConverter
         protected abstract string ConsoleToolMessage { get; }
         protected abstract string ProjectFileExtension { get; }
 
-        protected string ProjectFolderPath
+        protected string? ProjectFolderPath
         {
             get;
             private set;
         }
 
-        protected string ProjectFilePath
+        protected string? ProjectFilePath
         {
             get;
             private set;
         }
 
-        private string GetConsoleToolPath()
+        private async Task<string?> GetConsoleToolPathAsync()
         {
-            string consolePath = ConfigurationManager.AppSettings[ConsoleToolAppSettingsKey];
+            Configuration config = Configuration.Load();
+            string? consolePath = config.ExtraSettings.GetValueOrDefault(ConsoleToolAppSettingsKey);
             if (!string.IsNullOrEmpty(consolePath) && File.Exists(consolePath))
                 return consolePath;
 
-            MessageBox.Show(ConsoleToolMessage, "", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            await MessageBox.ShowAsync("", ConsoleToolMessage, icon: MsBox.Avalonia.Enums.Icon.Info);
 
-            using OpenFileDialog dialog = new();
-            dialog.Filter = $"{ConsoleToolExeName}|{ConsoleToolExeName}";
-            if (dialog.ShowDialog() != DialogResult.OK)
+            consolePath = await App.OpenFilePickerAsync(
+                "",
+                new()
+                {
+                    { ConsoleToolExeName, [ConsoleToolExeName] }
+                }
+            );
+            if (consolePath == null)
                 return null;
 
-            consolePath = dialog.FileName;
-            Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-            config.AppSettings.Settings[ConsoleToolAppSettingsKey].Value = consolePath;
-            config.Save(ConfigurationSaveMode.Modified);
+            config.ExtraSettings[ConsoleToolAppSettingsKey] = consolePath;
+            config.Save();
             return consolePath;
         }
 
@@ -118,6 +125,9 @@ namespace TrRebootTools.SoundConverter
 
         protected async Task<string> RunConsoleToolAsync(string arguments)
         {
+            if (_consoleToolPath == null)
+                throw new InvalidOperationException();
+
             return await ProcessHelper.RunAsync(_consoleToolPath, arguments);
         }
 

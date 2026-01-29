@@ -1,4 +1,5 @@
-﻿using System.Drawing;
+﻿using System;
+using System.IO;
 
 namespace TrRebootTools.Shared.Cdc.Rise
 {
@@ -6,13 +7,18 @@ namespace TrRebootTools.Shared.Cdc.Rise
     {
         public override CdcGame Game => CdcGame.Rise;
 
-        public override string ExeName => "ROTTR.exe";
+        public override string[] ExeNames => ["ROTTR.exe", "gamelaunchhelper.exe"];
+        
+        public override string LinuxSteamFolderPath => Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+            ".local/share/Steam/steamapps/common/Rise of the Tomb Raider"
+        );
 
         public override int PointerSize => 8;
 
         public override string ShortName => "ROTTR";
 
-        public override Image Icon => Properties.Resources.Rise;
+        protected override string IconResourcePath => "/Resources/Rise.png";
 
         public override string RegistryDisplayName => "Rise of the Tomb Raider";
 

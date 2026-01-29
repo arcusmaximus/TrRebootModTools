@@ -15,9 +15,9 @@ namespace TrRebootTools.Shared.Cdc
             return version switch
             {
                 CdcGame.Tr2013 => new Tr2013LocalsBin(stream),
-                CdcGame.Rise => new RiseLocalsBin(stream),
+                CdcGame.Rise   => new RiseLocalsBin(stream),
                 CdcGame.Shadow => new ShadowLocalsBin(stream),
-                _ => null
+                _ => throw new NotSupportedException()
             };
         }
 
@@ -29,7 +29,7 @@ namespace TrRebootTools.Shared.Cdc
             set;
         }
 
-        public string[] InputSpecificKeys
+        public string[]? InputSpecificKeys
         {
             get;
             set;

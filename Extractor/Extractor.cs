@@ -1,14 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Threading;
-using Newtonsoft.Json;
 using TrRebootTools.Shared.Cdc;
 using TrRebootTools.Shared;
-using TrRebootTools.Shared.Util;
+using System.Text.Json;
 
 namespace TrRebootTools.Extractor
 {
@@ -23,7 +20,8 @@ namespace TrRebootTools.Extractor
 
         public void Extract(string folderPath, ICollection<ArchiveFileReference> fileRefs, ITaskProgress progress, CancellationToken cancellationToken)
         {
-            folderPath = @"\\?\" + Path.GetFullPath(folderPath);
+            if (OperatingSystem.IsWindows())
+                folderPath = @"\\?\" + Path.GetFullPath(folderPath);
 
             progress = new MultiStepTaskProgress(progress, fileRefs.Count);
             foreach (var fileRefsOfName in fileRefs.GroupBy(f => f.NameHash))
@@ -31,7 +29,7 @@ namespace TrRebootTools.Extractor
                 foreach (ArchiveFileReference fileRef in fileRefsOfName)
                 {
                     string filePath = GetFilePath(folderPath, fileRef, fileRefsOfName.Count() > 1);
-                    ResourceCollection collection = Path.GetExtension(filePath) == ".drm" ? _archiveSet.GetResourceCollection(fileRef) : null;
+                    ResourceCollection? collection = Path.GetExtension(filePath) == ".drm" ? _archiveSet.GetResourceCollection(fileRef) : null;
                     if (collection != null)
                         ExtractResourceCollection(filePath, collection, progress, cancellationToken);
                     else
@@ -42,9 +40,9 @@ namespace TrRebootTools.Extractor
 
         private string GetFilePath(string baseFolderPath, ArchiveFileReference fileRef, bool forceLocaleFolder)
         {
-            string fileName = CdcHash.Lookup(fileRef.NameHash, _archiveSet.Game) ?? fileRef.NameHash.ToString("X016");
+            string fileName = CdcHash.Lookup(fileRef.NameHash, _archiveSet.Game, true) ?? fileRef.NameHash.ToString("X016");
             if (forceLocaleFolder || (fileRef.Locale & 0xFFFFFFF) != 0xFFFFFFF)
-                fileName += "\\" + CdcGameInfo.Get(_archiveSet.Game).LocaleToLanguageCode(fileRef.Locale) + Path.GetExtension(fileName);
+                fileName += Path.DirectorySeparatorChar + CdcGameInfo.Get(_archiveSet.Game).LocaleToLanguageCode(fileRef.Locale) + Path.GetExtension(fileName);
             
             return Path.Combine(baseFolderPath, fileName);
         }
@@ -75,7 +73,7 @@ namespace TrRebootTools.Extractor
                         continue;
 
                     string filePath = Path.Combine(folderPath, ResourceNaming.GetFilePath(_archiveSet, resourceRef));
-                    Directory.CreateDirectory(Path.GetDirectoryName(filePath));
+                    Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
                     ExtractResource(filePath, resourceRef, ref numExtractedResources, numTotalResources, progress, cancellationToken);
                 }
             }
@@ -128,14 +126,14 @@ namespace TrRebootTools.Extractor
             while (collections.Count > 0)
             {
                 collection = collections.Dequeue();
-                string collectionPath = CdcHash.Lookup(collection.NameHash, _archiveSet.Game);
+                string? collectionPath = CdcHash.Lookup(collection.NameHash, _archiveSet.Game, true);
                 if (collectionPath == null)
                     continue;
 
                 string collectionName = Path.GetFileNameWithoutExtension(collectionPath);
 
-                bool isStreamLayer = collectionPath.Contains("\\streamlayers\\");
-                ResourceReference mainResourceRef = collection.MainResourceReference;
+                bool isStreamLayer = collectionPath.Contains(Path.DirectorySeparatorChar + "streamlayers" + Path.DirectorySeparatorChar);
+                ResourceReference? mainResourceRef = collection.MainResourceReference;
                 foreach (ResourceReference resource in collection.ResourceReferences)
                 {
                     if (resource == mainResourceRef)
@@ -171,7 +169,7 @@ namespace TrRebootTools.Extractor
                             refResources[collectionName] = resource;
                         }
                     }
-                    else if (resource.Type == ResourceType.ObjectReference || resource.Type == ResourceType.GlobalContentReference)
+                    else if (resource.Type is ResourceType.ObjectReference or ResourceType.GlobalContentReference)
                     {
                         refResources[collectionName] = resource;
                     }
@@ -183,7 +181,7 @@ namespace TrRebootTools.Extractor
 
                 foreach (ResourceCollectionDependency dependency in collection.Dependencies)
                 {
-                    ResourceCollection dependencyCollection = _archiveSet.GetResourceCollection(dependency.FilePath, dependency.Locale);
+                    ResourceCollection? dependencyCollection = _archiveSet.GetResourceCollection(dependency.FilePath, dependency.Locale);
                     if (dependencyCollection != null)
                         collections.Enqueue(dependencyCollection);
                 }
@@ -198,7 +196,7 @@ namespace TrRebootTools.Extractor
 
                 using Stream archiveFileStream = _archiveSet.OpenFile(fileRef);
 
-                string folderPath = Path.GetDirectoryName(filePath);
+                string folderPath = Path.GetDirectoryName(filePath)!;
                 Directory.CreateDirectory(folderPath);
 
                 if (Path.GetFileName(folderPath) == "locals.bin")
@@ -235,16 +233,11 @@ namespace TrRebootTools.Extractor
         private void ExtractLocalsBin(Stream archiveFileStream, Stream extractedFileStream)
         {
             LocalsBin locals = LocalsBin.Open(archiveFileStream, _archiveSet.Game);
-            if (locals == null)
-                return;
-
-            using StreamWriter streamWriter = new StreamWriter(extractedFileStream);
-            using JsonWriter jsonWriter = new JsonTextWriter(streamWriter) { Formatting = Formatting.Indented };
+            using Utf8JsonWriter jsonWriter = new(extractedFileStream, new() { Indented = true });
             jsonWriter.WriteStartObject();
             foreach ((string key, string value) in locals.Strings.OrderBy(p => p.Key, Comparer<string>.Create(CompareLocalsBinKeys)))
             {
-                jsonWriter.WritePropertyName(key);
-                jsonWriter.WriteValue(value);
+                jsonWriter.WriteString(key, value);
             }
             jsonWriter.WriteEndObject();
         }
@@ -261,7 +254,7 @@ namespace TrRebootTools.Extractor
         {
             new MultiplexStreamSplitter(_archiveSet.Game).Split(mulFilePath);
             
-            string folderPath = Path.GetDirectoryName(mulFilePath);
+            string folderPath = Path.GetDirectoryName(mulFilePath)!;
             foreach (string fmodFilePath in Directory.GetFiles(folderPath, "*.fsb"))
             {
                 ConvertGameSound(fmodFilePath);
@@ -271,23 +264,7 @@ namespace TrRebootTools.Extractor
 
         private static void ConvertGameSound(string soundFilePath)
         {
-            string vgmstreamPath = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), @"vgmstream\vgmstream-cli.exe");
-            if (!File.Exists(vgmstreamPath))
-                return;
-
-            if (soundFilePath.StartsWith(@"\\?\"))
-                soundFilePath = soundFilePath.Substring(4);
-
-            using Process process = Process.Start(
-                new ProcessStartInfo
-                {
-                    FileName = vgmstreamPath,
-                    Arguments = $"-i -o \"{Path.ChangeExtension(soundFilePath, ".wav")}\" \"{soundFilePath}\"",
-                    CreateNoWindow = true,
-                    UseShellExecute = false
-                }
-            );
-            process.WaitForExit();
+            ProcessHelper.RunVgmStreamAsync(soundFilePath, Path.ChangeExtension(soundFilePath, ".wav"), false).Wait();
         }
     }
 }

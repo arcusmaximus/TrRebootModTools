@@ -1,13 +1,13 @@
-﻿using Newtonsoft.Json;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
+using System.Text.Json;
 using TrRebootTools.Shared.Cdc;
 
 namespace TrRebootTools.Shared
 {
     public class MultiplexStreamInfo
     {
-        public MultiplexStream.AudioChannel[] AudioChannels
+        public MultiplexStream.AudioChannel[]? AudioChannels
         {
             get;
             set;
@@ -19,7 +19,7 @@ namespace TrRebootTools.Shared
             set;
         }
 
-        public SubtitleFrame[] SubtitleFrames
+        public SubtitleFrame[]? SubtitleFrames
         {
             get;
             set;
@@ -37,22 +37,19 @@ namespace TrRebootTools.Shared
             {
                 get;
                 set;
-            }
+            } = [];
         }
 
         public static MultiplexStreamInfo Load(string filePath)
         {
-            using StreamReader streamReader = new(filePath);
-            JsonTextReader jsonReader = new(streamReader);
-            return new JsonSerializer().Deserialize<MultiplexStreamInfo>(jsonReader);
+            using Stream stream = File.OpenRead(filePath);
+            return JsonSerializer.Deserialize<MultiplexStreamInfo>(stream)!;
         }
 
         public void Save(string filePath)
         {
             using Stream stream = File.Create(filePath);
-            using StreamWriter streamWriter = new(stream);
-            using JsonTextWriter jsonWriter = new(streamWriter) { Formatting = Formatting.Indented };
-            new JsonSerializer().Serialize(jsonWriter, this);
+            JsonSerializer.Serialize(stream, this);
         }
     }
 }

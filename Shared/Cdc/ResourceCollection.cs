@@ -17,8 +17,9 @@ namespace TrRebootTools.Shared.Cdc
             return version switch
             {
                 CdcGame.Tr2013 => new Tr2013ResourceCollection(nameHash, locale, stream),
-                CdcGame.Rise => new RiseResourceCollection(nameHash, locale, stream),
-                CdcGame.Shadow => new ShadowResourceCollection(nameHash, locale, stream)
+                CdcGame.Rise   => new RiseResourceCollection(nameHash, locale, stream),
+                CdcGame.Shadow => new ShadowResourceCollection(nameHash, locale, stream),
+                _ => throw new NotSupportedException()
             };
         }
 
@@ -43,7 +44,7 @@ namespace TrRebootTools.Shared.Cdc
             get;
         }
 
-        public abstract ResourceReference MainResourceReference
+        public abstract ResourceReference? MainResourceReference
         {
             get;
         }
@@ -67,13 +68,13 @@ namespace TrRebootTools.Shared.Cdc
     {
         private ResourceCollectionHeader _header;
         private readonly ulong _headerLocale;
-        private readonly List<ResourceIdentification<TLocale>> _resourceIdentifications = new();
+        private readonly List<ResourceIdentification> _resourceIdentifications = [];
         private readonly List<ResourceCollectionDependency> _dependencies;
         private readonly List<ResourceCollectionDependency> _includes;
-        private readonly List<TResourceLocation> _resourceLocations = new();
+        private readonly List<TResourceLocation> _resourceLocations = [];
 
-        private List<ResourceReference> _resourceReferences;
-        private HashSet<ResourceKey> _resourceKeyLookup;
+        private List<ResourceReference>? _resourceReferences;
+        private HashSet<ResourceKey>? _resourceKeyLookup;
 
         protected ResourceCollection(ulong nameHash, ulong locale, Stream stream)
             : base(nameHash, locale)
@@ -87,7 +88,7 @@ namespace TrRebootTools.Shared.Cdc
 
             for (int i = 0; i < _header.NumResources; i++)
             {
-                _resourceIdentifications.Add(reader.ReadStruct<ResourceIdentification<TLocale>>());
+                _resourceIdentifications.Add(reader.ReadStruct<ResourceIdentification>());
             }
 
             _dependencies = ReadDependencies(reader, _header.DependenciesLength);
@@ -103,7 +104,7 @@ namespace TrRebootTools.Shared.Cdc
 
         protected abstract int HeaderLocaleSize { get; }
 
-        public override ResourceReference MainResourceReference
+        public override ResourceReference? MainResourceReference
         {
             get => _header.MainResourceIndex >= 0 ? ResourceReferences[_header.MainResourceIndex] : null;
         }
@@ -114,7 +115,7 @@ namespace TrRebootTools.Shared.Cdc
             {
                 if (_resourceReferences == null)
                 {
-                    _resourceReferences = new List<ResourceReference>();
+                    _resourceReferences = [];
                     for (int i = 0; i < _resourceIdentifications.Count; i++)
                     {
                         var identification = _resourceIdentifications[i];
@@ -161,7 +162,7 @@ namespace TrRebootTools.Shared.Cdc
 
         public override void UpdateResourceReference(int resourceIdx, ResourceReference resourceRef)
         {
-            ResourceIdentification<TLocale> identification = _resourceIdentifications[resourceIdx];
+            ResourceIdentification identification = _resourceIdentifications[resourceIdx];
             if (resourceRef.RefDefinitionsSize != null)
             {
                 identification.RefDefinitionsSize = resourceRef.RefDefinitionsSize.Value;
@@ -227,8 +228,8 @@ namespace TrRebootTools.Shared.Cdc
             }
         }
 
-        protected abstract ResourceReference MakeResourceReference(ResourceIdentification<TLocale> identification, TResourceLocation location);
-        protected abstract ResourceIdentification<TLocale> MakeResourceIdentification(ResourceReference resourceRef);
+        protected abstract ResourceReference MakeResourceReference(ResourceIdentification identification, TResourceLocation location);
+        protected abstract ResourceIdentification MakeResourceIdentification(ResourceReference resourceRef);
         protected abstract TResourceLocation MakeResourceLocation(ResourceReference resourceRef);
         protected abstract void UpdateResourceLocation(ref TResourceLocation location, ResourceReference resourceRef);
 
@@ -262,7 +263,8 @@ namespace TrRebootTools.Shared.Cdc
             {
                 0 => 0xFFFFFFFFFFFFFFFF,
                 4 => 0xFFFFFFFF00000000 | reader.ReadUInt32(),
-                8 => reader.ReadUInt64()
+                8 => reader.ReadUInt64(),
+                _ => throw new ArgumentException()
             };
         }
 
@@ -294,8 +296,7 @@ namespace TrRebootTools.Shared.Cdc
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        protected struct ResourceIdentification<TLocale>
-            where TLocale : unmanaged
+        protected struct ResourceIdentification
         {
             public int BodySize;
             public byte Type;
@@ -317,7 +318,7 @@ namespace TrRebootTools.Shared.Cdc
                 set { SubTypeAndRefDefinitionsSize = (SubTypeAndRefDefinitionsSize & 0xFF) | (value << 8); }
             }
 
-            public static implicit operator ResourceKey(ResourceIdentification<TLocale> identification)
+            public static implicit operator ResourceKey(ResourceIdentification identification)
             {
                 ulong locale;
                 if (identification.Locale is uint uintLocale)
