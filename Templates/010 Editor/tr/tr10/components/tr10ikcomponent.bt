@@ -1,0 +1,261 @@
+#define TR_VERSION 10
+#include "../../trcommon.bt"
+
+typedef struct
+{
+    Ref stringRef;
+    if (CanSeekTo(stringRef))
+    {
+        SeekToRef(stringRef);
+        string name;
+        ReturnFromRef();
+    }
+    unsigned int hash;
+} IKChainId <optimize=false>;
+
+typedef struct
+{
+    unsigned int boneIndex;
+    float boneWeight;
+    byte distSolve;
+    FSkip(3);
+    int padding;
+} IKJointTune <optimize=false>;
+
+typedef union
+{
+    short byUserDefinedIndex;
+    ushort byBoneIndex;
+    short byBoneID;
+    ushort byMarkerIndex;
+    ushort byMarkerID;
+} ModelBoneOrMarkerReference__ModelBoneOrMarkerRefData;
+
+typedef struct
+{
+    ubyte refType;
+    FSkip(1);
+    ModelBoneOrMarkerReference__ModelBoneOrMarkerRefData refData;
+} ModelBoneOrMarkerReference <optimize=false>;
+
+typedef struct
+{
+    byte orient;
+    FSkip(1);
+    short rampOnFrames;
+    short rampOffFrames;
+    ModelBoneOrMarkerReference target;
+} IKChainTarget <optimize=false>;
+
+typedef struct
+{
+    IKChainId id;
+    FSkip(4);
+    Ref jointListRef;
+    if (CanSeekTo(jointListRef))
+    {
+        SeekToRef(jointListRef);
+        IKJointTune jointList;
+        ReturnFromRef();
+    }
+    unsigned int chainLength;
+    int chainType;
+    int solveorder;
+    int solveType;
+    unsigned int limitGroup;
+    float oversolve;
+    float autoDetach;
+    float autoDetachRamp;
+    int earlyOutDelta;
+    byte autoDetachOff;
+    IKChainTarget defaultTarget;
+    FSkip(1);
+} IKChainTune <optimize=false>;
+
+typedef struct
+{
+    float axis[3];
+    float hingemin;
+    float hingemax;
+} IKBoneLimitTune__limit_hinge <optimize=false>;
+
+typedef struct
+{
+    float axis[3];
+    float hingemin;
+    float hingemax;
+    float twistmin;
+    float twistmax;
+} IKBoneLimitTune__limit_hingetwist <optimize=false>;
+
+typedef struct
+{
+} IKBoneLimitTune__limit_none <optimize=false>;
+
+typedef struct
+{
+    float axis[3];
+    float coneangle;
+} IKBoneLimitTune__limit_cone <optimize=false>;
+
+typedef struct
+{
+    float axis[3];
+    float coneangle;
+    float twistmin;
+    float twistmax;
+} IKBoneLimitTune__limit_conetwist <optimize=false>;
+
+typedef struct
+{
+    float axis[3];
+    float axis1min;
+    float axis1max;
+    float axis2min;
+    float axis2max;
+    float twistmin;
+    float twistmax;
+} IKBoneLimitTune__limit_3axis <optimize=false>;
+
+typedef union
+{
+    IKBoneLimitTune__limit_hinge iKHinge;
+    IKBoneLimitTune__limit_hingetwist iKHingeTwist;
+    IKBoneLimitTune__limit_none iKNoLimit;
+    IKBoneLimitTune__limit_cone iKCone;
+    IKBoneLimitTune__limit_conetwist iKConeTwist;
+    IKBoneLimitTune__limit_3axis iK3Axis;
+} IKBoneLimitTune__u_ikLimit;
+
+typedef struct
+{
+    unsigned int boneIndex;
+    int limitType;
+    IKBoneLimitTune__u_ikLimit ikLimit;
+    int padding;
+} IKBoneLimitTune <optimize=false>;
+
+typedef struct
+{
+    Ref iKBoneLimitListRef;
+    if (CanSeekTo(iKBoneLimitListRef))
+    {
+        SeekToRef(iKBoneLimitListRef);
+        IKBoneLimitTune iKBoneLimitList;
+        ReturnFromRef();
+    }
+    unsigned int numBoneLimits;
+    FSkip(4);
+} IKBoneLimitGroup <optimize=false>;
+
+typedef struct
+{
+    unsigned int chainIndex;
+    float jointWeight;
+} IKShareJoint <optimize=false>;
+
+typedef struct
+{
+    unsigned int boneIndex;
+    FSkip(4);
+    Ref chainListRef;
+    unsigned int numChains;
+    if (CanSeekTo(chainListRef))
+    {
+        SeekToRef(chainListRef);
+        IKShareJoint chainList[numChains];
+        ReturnFromRef();
+    }
+} IKSharedJoints <optimize=false>;
+
+typedef struct
+{
+    Ref chainListRef;
+    unsigned int numChains;
+    if (CanSeekTo(chainListRef))
+    {
+        SeekToRef(chainListRef);
+        unsigned int chainList[numChains];
+        ReturnFromRef();
+    }
+} IKExclusiveGroup <optimize=false>;
+
+typedef struct
+{
+    unsigned int boneIndex;
+    float maxspeed;
+} IKSpeedLimit <optimize=false>;
+
+typedef struct
+{
+    float globalSpeed;
+    FSkip(4);
+    Ref speedLimitsRef;
+    if (CanSeekTo(speedLimitsRef))
+    {
+        SeekToRef(speedLimitsRef);
+        IKSpeedLimit speedLimits;
+        ReturnFromRef();
+    }
+    unsigned int numBones;
+} IKSpeedLimitGroup <optimize=false>;
+
+typedef struct
+{
+    int maxIterations;
+    float tolerance;
+    unsigned int defaultSpeedLimit;
+    FSkip(4);
+    Ref iKChainListRef;
+    unsigned int numIKChains;
+    if (CanSeekTo(iKChainListRef))
+    {
+        SeekToRef(iKChainListRef);
+        IKChainTune iKChainList[numIKChains];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref iKLimitGroupsRef;
+    unsigned int numIKLimitGroups;
+    if (CanSeekTo(iKLimitGroupsRef))
+    {
+        SeekToRef(iKLimitGroupsRef);
+        IKBoneLimitGroup iKLimitGroups[numIKLimitGroups];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref iKSharedJointsRef;
+    if (CanSeekTo(iKSharedJointsRef))
+    {
+        SeekToRef(iKSharedJointsRef);
+        IKSharedJoints iKSharedJoints;
+        ReturnFromRef();
+    }
+    unsigned int numSharedJoints;
+    FSkip(4);
+    Ref iKExclusiveGroupsRef;
+    if (CanSeekTo(iKExclusiveGroupsRef))
+    {
+        SeekToRef(iKExclusiveGroupsRef);
+        IKExclusiveGroup iKExclusiveGroups;
+        ReturnFromRef();
+    }
+    unsigned int numExclusiveGroups;
+    FSkip(4);
+    Ref iKSpeedLimitsRef;
+    if (CanSeekTo(iKSpeedLimitsRef))
+    {
+        SeekToRef(iKSpeedLimitsRef);
+        IKSpeedLimitGroup iKSpeedLimits;
+        ReturnFromRef();
+    }
+    unsigned int numSpeedLimits;
+} IKSystemTune <optimize=false>;
+
+typedef struct
+{
+    IKSystemTune iKData;
+} IKComponent <optimize=false>;
+
+RefDefinitions refDefinitions;
+IKComponent root <open=true>;

@@ -1,0 +1,82 @@
+#define TR_VERSION 10
+#include "../../trcommon.bt"
+
+typedef struct
+{
+    uint bit00 : 1;
+    uint bit01 : 1;
+    uint bit02 : 1;
+    uint bit03 : 1;
+    uint bit04 : 1;
+    uint bit05 : 1;
+    uint bit06 : 1;
+    uint bit07 : 1;
+    uint bit08 : 1;
+    uint bit09 : 1;
+    uint bit10 : 1;
+    uint bit11 : 1;
+    uint bit12 : 1;
+    uint bit13 : 1;
+    uint bit14 : 1;
+    uint bit15 : 1;
+    uint bit16 : 1;
+    uint bit17 : 1;
+    uint bit18 : 1;
+    uint bit19 : 1;
+    uint bit20 : 1;
+    uint bit21 : 1;
+    uint bit22 : 1;
+    uint bit23 : 1;
+    uint bit24 : 1;
+    uint bit25 : 1;
+    uint bit26 : 1;
+    uint bit27 : 1;
+    uint bit28 : 1;
+    uint bit29 : 1;
+    uint bit30 : 1;
+    uint bit31 : 1;
+} TunableData__TuningBitfield <optimize=false>;
+
+typedef union
+{
+    int integer;
+    int integerDistanceCm;
+    float floata;
+    float floatDistanceCm;
+    byte boolean;
+    TunableData__TuningBitfield bitfield;
+} TunableData__TunableDataValue;
+
+typedef struct
+{
+    int miDataType;
+    TunableData__TunableDataValue miDataValue;
+} TunableData__TuningValue <optimize=false>;
+
+typedef struct
+{
+    unsigned int miNumTunables;
+    FSkip(4);
+    Ref mpTunableRefListRef;
+    if (CanSeekTo(mpTunableRefListRef))
+    {
+        SeekToRef(mpTunableRefListRef);
+        TunableData__TuningValue mpTunableRefList;
+        ReturnFromRef();
+    }
+    Ref mpTunableListRef;
+    if (CanSeekTo(mpTunableListRef))
+    {
+        SeekToRef(mpTunableListRef);
+        TunableData__TuningValue mpTunableList;
+        ReturnFromRef();
+    }
+} TunableData <optimize=false>;
+
+typedef struct
+{
+    TunableData tuningParameters;
+} DynamicTuningComponent <optimize=false>;
+
+RefDefinitions refDefinitions;
+DynamicTuningComponent root <open=true>;

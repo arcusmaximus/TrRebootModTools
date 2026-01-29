@@ -1,0 +1,6530 @@
+#define TR_VERSION 10
+#include "../../trcommon.bt"
+
+typedef struct
+{
+    ushort version;
+    ushort family;
+    ushort id;
+    ushort type;
+} PlayerProp__data <optimize=false>;
+
+typedef union
+{
+    short byUserDefinedIndex;
+    ushort byBoneIndex;
+    short byBoneID;
+    ushort byMarkerIndex;
+    ushort byMarkerID;
+} ModelBoneOrMarkerReference__ModelBoneOrMarkerRefData;
+
+typedef struct
+{
+    ubyte refType;
+    FSkip(1);
+    ModelBoneOrMarkerReference__ModelBoneOrMarkerRefData refData;
+} ModelBoneOrMarkerReference <optimize=false>;
+
+typedef union
+{
+    ushort fragment;
+} AnimReference__AnimReferenceUnion;
+
+typedef struct
+{
+    ushort referenceType;
+    AnimReference__AnimReferenceUnion index;
+} AnimReference <optimize=false>;
+
+typedef struct
+{
+    AnimReference animRef;
+    float minTime;
+    float maxTime;
+    float delay;
+    int chance;
+    float loopTime;
+    short numLoops;
+    short idleClass;
+    int context;
+    short framesout;
+    ushort pad_0 : 11;
+    ushort moodEndCombat : 1;
+    ushort moodCombat : 1;
+    ushort moodSpooky : 1;
+    ushort moodSuspicious : 1;
+    ushort moodSafe : 1;
+} PlayerProp__idleanim <optimize=false>;
+
+typedef struct
+{
+    float height;
+    float crouchHeight;
+    ModelBoneOrMarkerReference targetPositionStanding;
+    ModelBoneOrMarkerReference targetPositionAiming;
+    ModelBoneOrMarkerReference targetPositionCrouching;
+    ModelBoneOrMarkerReference targetPositionHanging;
+    ModelBoneOrMarkerReference targetPositionForMelee;
+    ModelBoneOrMarkerReference targetPositionTreadingWater;
+    float aimCamOffset[3];
+    float ankleUpperOffset;
+    float ankleLowerOffset;
+    float ankleLength;
+    float mass;
+    float analogWalkSpeed;
+    float runSpeed;
+    float slideLandDecel;
+    float heightTweak;
+    char gender;
+    FSkip(7);
+    Ref idleListRef;
+    unsigned int idleListCount;
+    if (CanSeekTo(idleListRef))
+    {
+        SeekToRef(idleListRef);
+        PlayerProp__idleanim idleList[idleListCount];
+        ReturnFromRef();
+    }
+} PlayerProp__general_attributes <optimize=false>;
+
+typedef struct
+{
+    Ref moveQuietEventConcealedRef;
+    if (CanSeekTo(moveQuietEventConcealedRef))
+    {
+        SeekToRef(moveQuietEventConcealedRef);
+        byte moveQuietEventConcealed;
+        ReturnFromRef();
+    }
+    Ref moveQuietEventRef;
+    if (CanSeekTo(moveQuietEventRef))
+    {
+        SeekToRef(moveQuietEventRef);
+        byte moveQuietEvent;
+        ReturnFromRef();
+    }
+    Ref moveMediumEventRef;
+    if (CanSeekTo(moveMediumEventRef))
+    {
+        SeekToRef(moveMediumEventRef);
+        byte moveMediumEvent;
+        ReturnFromRef();
+    }
+    Ref potatoEventRef;
+    if (CanSeekTo(potatoEventRef))
+    {
+        SeekToRef(potatoEventRef);
+        byte potatoEvent;
+        ReturnFromRef();
+    }
+    Ref moveLoudEventRef;
+    if (CanSeekTo(moveLoudEventRef))
+    {
+        SeekToRef(moveLoudEventRef);
+        byte moveLoudEvent;
+        ReturnFromRef();
+    }
+    Ref moveRunningEventRef;
+    if (CanSeekTo(moveRunningEventRef))
+    {
+        SeekToRef(moveRunningEventRef);
+        byte moveRunningEvent;
+        ReturnFromRef();
+    }
+    float fRunningEventMinVelocity;
+    FSkip(4);
+    Ref moveLandingEventRef;
+    if (CanSeekTo(moveLandingEventRef))
+    {
+        SeekToRef(moveLandingEventRef);
+        byte moveLandingEvent;
+        ReturnFromRef();
+    }
+    float fLandingEventMinVelocity;
+    float fLandingEventMinVelocityInConcealment;
+    float suppressLedgeDropSoundEventForTimeInSec;
+    ushort ignoreLandingEventTrait;
+} PlayerProp__event_broadcast_attributes <optimize=false>;
+
+typedef struct
+{
+    ushort extraHitPointsTrait;
+    FSkip(2);
+    int extraHitPoints;
+    float extraHitPointsEasyMult;
+    float extraHitPointsHardMult;
+    float extraHitPointsSurvivorMult;
+} HealthComponent__HealthUps <optimize=false>;
+
+typedef struct
+{
+    unsigned int hash;
+} EventEnum <optimize=false>;
+
+typedef struct
+{
+    ushort trait;
+    FSkip(2);
+    int not;
+} PlayerTraitListIndexComparison <optimize=false>;
+
+typedef struct
+{
+    int healthRestore;
+    float duration;
+    float delay;
+    int gracePeriod;
+    unsigned int healingRecipe;
+    ushort skipUseResourceTrait;
+    FSkip(2);
+    float skipUseResourceChance;
+    int healMode;
+    int regenTime;
+    int regenMode;
+    EventEnum onStartEvent;
+    EventEnum onAbortEvent;
+    EventEnum onSuccessEvent;
+    EventEnum postDelayEvent;
+    unsigned int numTraits;
+    FSkip(4);
+    Ref traitRequirementsRef;
+    if (CanSeekTo(traitRequirementsRef))
+    {
+        SeekToRef(traitRequirementsRef);
+        PlayerTraitListIndexComparison traitRequirements;
+        ReturnFromRef();
+    }
+} HealthComponent__ActiveHeal <optimize=false>;
+
+typedef struct
+{
+    ubyte weatherType;
+    FSkip(3);
+    float regenRateModifier;
+} HealthComponent__WeatherEffect <optimize=false>;
+
+typedef struct
+{
+    int damageType;
+    float damageModify;
+    PlayerTraitListIndexComparison requiredTrait;
+} HealthComponent__ArmorModifier <optimize=false>;
+
+typedef struct
+{
+    int angleOption;
+    float angleUpper;
+    float angleLower;
+    float damageMultiplier;
+} HealthComponent__ArmorModifierHitPosition <optimize=false>;
+
+typedef struct
+{
+    float rangeFrom;
+    float rangeTo;
+    float damageMultiplier;
+} HealthComponent__ArmorModifierDistance <optimize=false>;
+
+typedef union
+{
+    float absorbPercent;
+    float absorbPercentPassLeftover;
+} HealthComponent__ArmorDamageOptionUnion;
+
+typedef struct
+{
+    int damageType;
+    int armorDamageOption;
+    HealthComponent__ArmorDamageOptionUnion armorDamageOptionUnion;
+    PlayerTraitListIndexComparison requiredTrait;
+} HealthComponent__DamageTypeDistributionOVerride <optimize=false>;
+
+typedef struct
+{
+    byte hasMultiplier;
+    FSkip(3);
+    int multiplierPriority;
+    unsigned int numDamageTypes;
+    FSkip(4);
+    Ref damageTypesRef;
+    if (CanSeekTo(damageTypesRef))
+    {
+        SeekToRef(damageTypesRef);
+        HealthComponent__ArmorModifier damageTypes[numDamageTypes];
+        ReturnFromRef();
+    }
+    unsigned int hitPositionTypesCount;
+    FSkip(4);
+    Ref hitPositionTypesRef;
+    if (CanSeekTo(hitPositionTypesRef))
+    {
+        SeekToRef(hitPositionTypesRef);
+        HealthComponent__ArmorModifierHitPosition hitPositionTypes[hitPositionTypesCount];
+        ReturnFromRef();
+    }
+    unsigned int distanceTypesCount;
+    FSkip(4);
+    Ref distanceTypesRef;
+    if (CanSeekTo(distanceTypesRef))
+    {
+        SeekToRef(distanceTypesRef);
+        HealthComponent__ArmorModifierDistance distanceTypes[distanceTypesCount];
+        ReturnFromRef();
+    }
+    byte hasHealth;
+    FSkip(3);
+    int maxHealth;
+    int armorDamageOption;
+    HealthComponent__ArmorDamageOptionUnion armorDamageOptionUnion;
+    byte showHealthOnIndicator;
+    FSkip(3);
+    unsigned int damageTypeDistributionOVerrideListCount;
+    Ref damageTypeDistributionOVerrideListRef;
+    if (CanSeekTo(damageTypeDistributionOVerrideListRef))
+    {
+        SeekToRef(damageTypeDistributionOVerrideListRef);
+        HealthComponent__DamageTypeDistributionOVerride damageTypeDistributionOVerrideList[damageTypeDistributionOVerrideListCount];
+        ReturnFromRef();
+    }
+    byte ignoreHealthState;
+    FSkip(7);
+    Ref debugNameRef;
+    if (CanSeekTo(debugNameRef))
+    {
+        SeekToRef(debugNameRef);
+        string debugName;
+        ReturnFromRef();
+    }
+    byte debugArmorDraw;
+    byte bDamageCanNotKill;
+    FSkip(2);
+    float bDamageCanNotKillForTimeSec;
+} HealthComponent__ArmorDefinition <optimize=false>;
+
+typedef union
+{
+    unsigned int box;
+    unsigned int capsule;
+    unsigned int sphere;
+    unsigned int geom;
+} PrimRef;
+
+typedef struct
+{
+    int primType;
+    PrimRef primRef;
+    unsigned int zoneContext;
+} HealthComponent__OnPrimStruct <optimize=false>;
+
+typedef struct
+{
+    Ref primListRef;
+    unsigned int primListCount;
+    if (CanSeekTo(primListRef))
+    {
+        SeekToRef(primListRef);
+        HealthComponent__OnPrimStruct primList[primListCount];
+        ReturnFromRef();
+    }
+} HealthComponent__OnPrimList <optimize=false>;
+
+typedef struct
+{
+} EmptyStruct <optimize=false>;
+
+typedef union
+{
+    HealthComponent__OnPrimList onPrim;
+    int onHPrimNumber;
+    EmptyStruct onAll;
+} HealthComponent__ApplyArmorUnion;
+
+typedef struct
+{
+    int angleOption;
+    float angleUpper;
+    float angleLower;
+} HealthComponent__ArmorValidHitPosition <optimize=false>;
+
+typedef struct
+{
+    unsigned int armorIndex;
+    byte enabled;
+    FSkip(3);
+    Ref debugNameRef;
+    if (CanSeekTo(debugNameRef))
+    {
+        SeekToRef(debugNameRef);
+        string debugName;
+        ReturnFromRef();
+    }
+    Ref debugNameAssociatedHealthPrimRef;
+    if (CanSeekTo(debugNameAssociatedHealthPrimRef))
+    {
+        SeekToRef(debugNameAssociatedHealthPrimRef);
+        string debugNameAssociatedHealthPrim;
+        ReturnFromRef();
+    }
+    unsigned int drawgroupHideListCount;
+    FSkip(4);
+    Ref drawgroupHideListRef;
+    if (CanSeekTo(drawgroupHideListRef))
+    {
+        SeekToRef(drawgroupHideListRef);
+        int drawgroupHideList[drawgroupHideListCount];
+        ReturnFromRef();
+    }
+    unsigned int drawgroupUnhideListCount;
+    FSkip(4);
+    Ref drawgroupUnhideListRef;
+    if (CanSeekTo(drawgroupUnhideListRef))
+    {
+        SeekToRef(drawgroupUnhideListRef);
+        int drawgroupUnhideList[drawgroupUnhideListCount];
+        ReturnFromRef();
+    }
+    float enabledPercentage;
+    unsigned int hitMaterialOverride;
+    unsigned int validPositionTypesCount;
+    FSkip(4);
+    Ref validPositionTypesRef;
+    if (CanSeekTo(validPositionTypesRef))
+    {
+        SeekToRef(validPositionTypesRef);
+        HealthComponent__ArmorValidHitPosition validPositionTypes[validPositionTypesCount];
+        ReturnFromRef();
+    }
+    int ropeArrowAttachOverrideOption;
+    unsigned int excludeDamageTypesCount;
+    Ref excludeDamageTypesRef;
+    if (CanSeekTo(excludeDamageTypesRef))
+    {
+        SeekToRef(excludeDamageTypesRef);
+        int excludeDamageTypes[excludeDamageTypesCount];
+        ReturnFromRef();
+    }
+    byte excludeDamageTypesByArmorDefListInstead;
+} HealthComponent__ArmorReference <optimize=false>;
+
+typedef struct
+{
+    byte enableHealthPrim;
+    FSkip(3);
+    int applyType;
+    HealthComponent__ApplyArmorUnion applyData;
+    unsigned int armorListCount;
+    Ref armorListRef;
+    if (CanSeekTo(armorListRef))
+    {
+        SeekToRef(armorListRef);
+        HealthComponent__ArmorReference armorList[armorListCount];
+        ReturnFromRef();
+    }
+    Ref debugNameRef;
+    if (CanSeekTo(debugNameRef))
+    {
+        SeekToRef(debugNameRef);
+        string debugName;
+        ReturnFromRef();
+    }
+} HealthComponent__HealthPrim <optimize=false>;
+
+typedef struct
+{
+    unsigned int fxaReact;
+    int hitReactType;
+    int damageType;
+    float damageMin;
+    float damageMax;
+    float hitReactPercentChance;
+    float cooldown;
+    byte bPlayOncePerAttackerInstance;
+} HealthComponent__HitReactTranslationItem <optimize=false>;
+
+typedef struct
+{
+    byte clamp;
+    FSkip(3);
+    float coolDownTimeInSec;
+    EventEnum onEnterEvent;
+    EventEnum onExitEvent;
+} HealthComponent__HealthStateTransitionData <optimize=false>;
+
+typedef struct
+{
+    float percentHealthMin;
+    HealthComponent__HealthStateTransitionData transitionFromHealing;
+    HealthComponent__HealthStateTransitionData transitionFromDamage;
+    float regenDelayInSec;
+    float regenDelayInSecEasy;
+    float regenDelayInSecHard;
+    float regenDelayInSecSurvivor;
+    byte regenBlockedInCombat;
+    byte regenBlockedInCombatEasy;
+    byte regenBlockedInCombatHard;
+    byte regenBlockedInCombatSurvivor;
+    float regenTimeInSec;
+    float regenTimeInSecEasy;
+    float regenTimeInSecHard;
+    float regenTimeInSecSurvivor;
+    byte regenPastCurrentLevel;
+    byte regenPastCurrentLevelIgnoreLaterRegenDelay;
+    byte displayHealthIndicatorOnDuplicas;
+    FSkip(1);
+    float regenDelayInSecOverride;
+    float regenDelayInSecOverrideEasy;
+    float regenDelayInSecOverrideHard;
+    float regenDelayInSecOverrideSurvivor;
+    byte regenBlockedInCombatOverride;
+    byte regenBlockedInCombatOverrideEasy;
+    byte regenBlockedInCombatOverrideHard;
+    byte regenBlockedInCombatOverrideSurvivor;
+    float regenTimeInSecOverrideFactor;
+    byte regenDelayInSecOverrideEnabled;
+    FSkip(1);
+    ushort regenDelayInSecOverrideRequiredTrait;
+    Ref debugNameRef;
+    if (CanSeekTo(debugNameRef))
+    {
+        SeekToRef(debugNameRef);
+        string debugName;
+        ReturnFromRef();
+    }
+} HealthComponent__HealthState <optimize=false>;
+
+typedef struct
+{
+    int xp;
+    ushort trait;
+} ExperienceByTrait <optimize=false>;
+
+typedef struct
+{
+    int count;
+    int xp;
+    int health;
+    int adrenaline;
+    byte bGiveXPOnlyWhenEarningAchivement;
+    byte bGiveHealthOnlyWhenEarningAchivement;
+    byte bGiveAdrenalineOnlyWhenEarningAchivement;
+    byte retroSave;
+    byte bAlwaysSendPlatformEvent;
+    FSkip(3);
+    unsigned int achievementHash;
+    int modifierRequired;
+    Ref validTraitListRef;
+    unsigned int validTraitListCount;
+    if (CanSeekTo(validTraitListRef))
+    {
+        SeekToRef(validTraitListRef);
+        PlayerTraitListIndexComparison validTraitList[validTraitListCount];
+        ReturnFromRef();
+    }
+    short awardUIName;
+    FSkip(2);
+    Ref bonusXpListRef;
+    unsigned int bonusXpListCount;
+    if (CanSeekTo(bonusXpListRef))
+    {
+        SeekToRef(bonusXpListRef);
+        ExperienceByTrait bonusXpList[bonusXpListCount];
+        ReturnFromRef();
+    }
+} ExperienceAward <optimize=false>;
+
+typedef struct
+{
+    byte enabled;
+    FSkip(3);
+    float damageMultiplier;
+    EventEnum attackerEvent;
+    EventEnum victimEvent;
+    unsigned int excludeDamageTypesCount;
+    FSkip(4);
+    Ref excludeDamageTypesRef;
+    if (CanSeekTo(excludeDamageTypesRef))
+    {
+        SeekToRef(excludeDamageTypesRef);
+        int excludeDamageTypes[excludeDamageTypesCount];
+        ReturnFromRef();
+    }
+} FriendlyFire <optimize=false>;
+
+typedef struct
+{
+    int team;
+    float fScalar;
+} TeamBasedScalar <optimize=false>;
+
+typedef struct
+{
+    int intro;
+    int pad;
+} _B311916A66505ABF1E118F6A97EEB479 <optimize=false>;
+
+typedef union
+{
+    uquad id;
+    _B311916A66505ABF1E118F6A97EEB479 _S1;
+} PlacementPath___unnamed_type_m_id0_;
+
+typedef struct
+{
+    unsigned int listType;
+    unsigned int zoneID;
+    PlacementPath___unnamed_type_m_id0_ id0;
+    uquad id1;
+    FSkip(4);
+    Ref moreIDsRef;
+    if (CanSeekTo(moreIDsRef))
+    {
+        SeekToRef(moreIDsRef);
+        uquad moreIDs;
+        ReturnFromRef();
+    }
+} PlacementPath <optimize=false>;
+
+typedef struct
+{
+    ushort trait;
+    byte checkAttacker;
+    FSkip(1);
+    int damageType;
+    float damageMultiplier;
+} HealthComponent__SimpleTraitBasedDamageModifier <optimize=false>;
+
+typedef struct
+{
+    int pointsToAward;
+    byte bCanCountAsStealthKill;
+} HealthComponent__ScoreAttackRewardData <optimize=false>;
+
+typedef struct
+{
+    int damageClass;
+    float debugBarZOffset;
+    int initialHitPoints;
+    float initialHitPointsEasyMult;
+    float initialHitPointsHardMult;
+    float initialHitPointsSurvivorMult;
+    int maximumHitPoints;
+    float maximumHitPointsEasyMult;
+    float maximumHitPointsHardMult;
+    float maximumHitPointsSurvivorMult;
+    unsigned int numHealthUps;
+    FSkip(4);
+    Ref healthUpsRef;
+    if (CanSeekTo(healthUpsRef))
+    {
+        SeekToRef(healthUpsRef);
+        HealthComponent__HealthUps healthUps[numHealthUps];
+        ReturnFromRef();
+    }
+    unsigned int numActiveHeals;
+    FSkip(4);
+    Ref activeHealsRef;
+    if (CanSeekTo(activeHealsRef))
+    {
+        SeekToRef(activeHealsRef);
+        HealthComponent__ActiveHeal activeHeals[numActiveHeals];
+        ReturnFromRef();
+    }
+    unsigned int weatherEffectsListSize;
+    FSkip(4);
+    Ref weatherEffectsListRef;
+    if (CanSeekTo(weatherEffectsListRef))
+    {
+        SeekToRef(weatherEffectsListRef);
+        HealthComponent__WeatherEffect weatherEffectsList;
+        ReturnFromRef();
+    }
+    unsigned int numArmors;
+    FSkip(4);
+    Ref armorListRef;
+    if (CanSeekTo(armorListRef))
+    {
+        SeekToRef(armorListRef);
+        HealthComponent__ArmorDefinition armorList[numArmors];
+        ReturnFromRef();
+    }
+    unsigned int numPrims;
+    FSkip(4);
+    Ref primListRef;
+    if (CanSeekTo(primListRef))
+    {
+        SeekToRef(primListRef);
+        HealthComponent__HealthPrim primList[numPrims];
+        ReturnFromRef();
+    }
+    byte bDoHitReactTranslation;
+    FSkip(3);
+    unsigned int uHitReactTranslationListCount;
+    Ref hitReactTranslationListRef;
+    if (CanSeekTo(hitReactTranslationListRef))
+    {
+        SeekToRef(hitReactTranslationListRef);
+        HealthComponent__HitReactTranslationItem hitReactTranslationList;
+        ReturnFromRef();
+    }
+    int hitReactDefaultType;
+    byte bSetArmorHitReactType;
+    FSkip(3);
+    int armorHitReactType;
+    unsigned int numHealthStates;
+    Ref healthStatesListRef;
+    if (CanSeekTo(healthStatesListRef))
+    {
+        SeekToRef(healthStatesListRef);
+        HealthComponent__HealthState healthStatesList[numHealthStates];
+        ReturnFromRef();
+    }
+    byte bHasInjuredHealthStates;
+    FSkip(3);
+    unsigned int numInjuredHealthStates;
+    Ref injuredHealthStatesListRef;
+    if (CanSeekTo(injuredHealthStatesListRef))
+    {
+        SeekToRef(injuredHealthStatesListRef);
+        HealthComponent__HealthState injuredHealthStatesList[numInjuredHealthStates];
+        ReturnFromRef();
+    }
+    Ref experienceAwardListRef;
+    unsigned int experienceAwardCount;
+    if (CanSeekTo(experienceAwardListRef))
+    {
+        SeekToRef(experienceAwardListRef);
+        ExperienceAward experienceAwardList[experienceAwardCount];
+        ReturnFromRef();
+    }
+    FriendlyFire friendlyFire;
+    FSkip(4);
+    Ref teamBasedDamageModifiersRef;
+    unsigned int teamBasedDamageModifiersCount;
+    if (CanSeekTo(teamBasedDamageModifiersRef))
+    {
+        SeekToRef(teamBasedDamageModifiersRef);
+        TeamBasedScalar teamBasedDamageModifiers[teamBasedDamageModifiersCount];
+        ReturnFromRef();
+    }
+    unsigned int headPrim;
+    unsigned int helmetIndex;
+    byte fallingDamageArmorOverride;
+    byte useHeartProbe;
+    FSkip(2);
+    HealthComponent__OnPrimStruct heartPrim;
+    float heartProbeDistance;
+    PlacementPath heartObject;
+    Ref simpleDamageModifiersRef;
+    unsigned int simpleDamageModifiersCount;
+    if (CanSeekTo(simpleDamageModifiersRef))
+    {
+        SeekToRef(simpleDamageModifiersRef);
+        HealthComponent__SimpleTraitBasedDamageModifier simpleDamageModifiers[simpleDamageModifiersCount];
+        ReturnFromRef();
+    }
+    HealthComponent__ScoreAttackRewardData scoreAttackRewardData;
+} HealthComponent <optimize=false>;
+
+typedef struct
+{
+    unsigned int value;
+    unsigned int hash;
+} CharacterClassComponent__CharacterClass <optimize=false>;
+
+typedef struct
+{
+    CharacterClassComponent__CharacterClass class;
+} CharacterClassComponent <optimize=false>;
+
+typedef struct
+{
+    unsigned int hash;
+    FSkip(4);
+    Ref enumFileNameRef;
+    if (CanSeekTo(enumFileNameRef))
+    {
+        SeekToRef(enumFileNameRef);
+        string enumFileName;
+        ReturnFromRef();
+    }
+} MovesetProfile_MoveTypeEnum <optimize=false>;
+
+typedef struct
+{
+    float lightDamageDist;
+    float heavyDamageDist;
+    float deathDist;
+    float savingGrabDist;
+    float noMarkupConnectDist;
+    float reattachDistance;
+    float savingGrabTimeInAir;
+    float savingGrabFallSpeed;
+    float injuredLightDamageDist;
+    float injuredHeavyDamageDist;
+    float injuredDeathDist;
+    float injuredSavingGrabDist;
+    float injuredSavingGrabTimeInAir;
+    float injuredSavingGrabFallSpeed;
+    byte bUseOldAttachedMarkupOfffset;
+    FSkip(7);
+    Ref mpDebugNameRef;
+    if (CanSeekTo(mpDebugNameRef))
+    {
+        SeekToRef(mpDebugNameRef);
+        string mpDebugName;
+        ReturnFromRef();
+    }
+} FallHeightSetItem <optimize=false>;
+
+typedef struct
+{
+    Ref healthComponentEasyRef;
+    if (CanSeekTo(healthComponentEasyRef))
+    {
+        SeekToRef(healthComponentEasyRef);
+        HealthComponent healthComponentEasy;
+        ReturnFromRef();
+    }
+    Ref healthComponentNormalRef;
+    if (CanSeekTo(healthComponentNormalRef))
+    {
+        SeekToRef(healthComponentNormalRef);
+        HealthComponent healthComponentNormal;
+        ReturnFromRef();
+    }
+    Ref healthComponentHardRef;
+    if (CanSeekTo(healthComponentHardRef))
+    {
+        SeekToRef(healthComponentHardRef);
+        HealthComponent healthComponentHard;
+        ReturnFromRef();
+    }
+    char dbDebugDontDie;
+    FSkip(3);
+    float dFallDistLight;
+    float dFallDistHeavy;
+    float dDeathFallDist;
+    float dFallDamageLight;
+    float dFallDamageHeavy;
+    float dSaveFallDamageMult;
+    int dSaveFallButtonWindow;
+    MovesetProfile_MoveTypeEnum dHeavySnowModifier;
+    float dInjuredFallDistLight;
+    float dInjuredFallDistHeavy;
+    float dInjuredDeathFallDist;
+    float dInjuredFallDamageLight;
+    float dInjuredFallDamageHeavy;
+    int dInvincibilityGracePeriod;
+    short dDamageHeavyThreshold;
+    short dDamageMediumThreshold;
+    ushort dMinRespawnHealthpackCount;
+    FSkip(2);
+    float fHelplessTimePad;
+    float fMinHealthRestore;
+    float fMaxRegenHealthRatio;
+    float fMaxRegenFrames;
+    float fRegenDelayFrames;
+    float fRegenCurveBlend;
+    float fMaxExtraHealthRatio;
+    float fMaxExtraHealthDecayFrames;
+    float fMortalWoundMaxVeerAngle;
+    float fMortalWoundMaxStaggerAngle;
+    float fMortalWoundUnbalanceRate;
+    float fMortalWoundRecoverRate;
+    float fMortalWoundRandomFluctuation;
+    float fMortalWoundMomentum;
+    unsigned int listCountFallHeightList;
+    FSkip(4);
+    Ref fallHeightListRef;
+    if (CanSeekTo(fallHeightListRef))
+    {
+        SeekToRef(fallHeightListRef);
+        FallHeightSetItem fallHeightList;
+        ReturnFromRef();
+    }
+} health_tune_data <optimize=false>;
+
+typedef struct
+{
+    unsigned int uWaterSurfacingGaspSound;
+    unsigned int uWaterSurfacingOkSound;
+} PlayerProp__sound_tune_data <optimize=false>;
+
+typedef struct
+{
+    unsigned int vocals;
+    int barkID;
+    byte useObj;
+    FSkip(3);
+    unsigned int dATFile;
+} VocalRefWithDefault <optimize=false>;
+
+typedef struct
+{
+    VocalRefWithDefault helpVocalRef;
+} PlayerProp__multiplayer_sound <optimize=false>;
+
+typedef struct
+{
+    float min;
+    float max;
+} DefaultDATCurveWithLimits__YAxisValue <optimize=false>;
+
+typedef struct
+{
+    float min;
+    float max;
+} DefaultDATCurveWithLimits__XAxisValue <optimize=false>;
+
+typedef struct
+{
+    float x;
+    float y;
+} DATCurvePoint <optimize=false>;
+
+typedef struct
+{
+    DefaultDATCurveWithLimits__YAxisValue xAxis;
+    DefaultDATCurveWithLimits__XAxisValue yAxis;
+    unsigned int numPoints;
+    FSkip(4);
+    Ref pointsRef;
+    if (CanSeekTo(pointsRef))
+    {
+        SeekToRef(pointsRef);
+        DATCurvePoint points[numPoints];
+        ReturnFromRef();
+    }
+} DefaultDATCurveWithLimits <optimize=false>;
+
+typedef struct
+{
+    short dSwimTreadLevelOcean;
+    short dSwimTreadLevelNonOcean;
+    short dWadeDepth;
+    short dSwimDepth;
+    short dTreadDepth;
+    short dDiveDepth;
+    short dDeepDepth;
+    short dMaximumSwimUnderDepth;
+    float dSinkRate;
+    float dFloatRate;
+    byte dUseBobbing;
+    FSkip(3);
+    float dDrowningDamage;
+    float dBreathDuration;
+    float dBreathRefillTime;
+    float dDrowningInterval;
+    float dCurrentMultiplier;
+    ushort dExtraBreathTrait;
+    FSkip(2);
+    float dExtraBreathDuration;
+    ushort ceilingProbe;
+    ushort ceilingAheadProbe;
+    ushort forwardProbe;
+    FSkip(2);
+    Ref forwardDistanceToSpeedCurveRef;
+    if (CanSeekTo(forwardDistanceToSpeedCurveRef))
+    {
+        SeekToRef(forwardDistanceToSpeedCurveRef);
+        DefaultDATCurveWithLimits forwardDistanceToSpeedCurve;
+        ReturnFromRef();
+    }
+} PlayerProp__swim_tune_data <optimize=false>;
+
+typedef struct
+{
+    unsigned int transSegment;
+    unsigned int rootSegment;
+    unsigned int waistSegment;
+    unsigned int leftHipSegment;
+    unsigned int leftKneeSegment;
+    unsigned int leftAnkleSegment;
+    unsigned int leftBallSegment;
+    unsigned int leftToeSegment;
+    unsigned int rightHipSegment;
+    unsigned int rightKneeSegment;
+    unsigned int rightAnkleSegment;
+    unsigned int rightBallSegment;
+    unsigned int rightToeSegment;
+    unsigned int spine0Segment;
+    unsigned int spine1Segment;
+    unsigned int manuSegment;
+    unsigned int backAttachSegment;
+    unsigned int neck1Segment;
+    unsigned int neck2Segment;
+    unsigned int headSegment;
+    unsigned int leftClavicalJoint;
+    unsigned int leftShoulderHelperSegment;
+    unsigned int leftShoulderHelper1Segment;
+    unsigned int leftShoulderHelper2Segment;
+    unsigned int leftShoulderHelper3Segment;
+    unsigned int leftShoulderSegment;
+    unsigned int leftElbowSegment;
+    unsigned int leftWristSegment;
+    unsigned int leftIndexSegment;
+    unsigned int rightClavicalJoint;
+    unsigned int rightShoulderHelperSegment;
+    unsigned int rightShoulderHelper1Segment;
+    unsigned int rightShoulderHelper2Segment;
+    unsigned int rightShoulderHelper3Segment;
+    unsigned int rightShoulderSegment;
+    unsigned int rightElbowSegment;
+    unsigned int rightWristSegment;
+    unsigned int rightIndexSegment;
+    unsigned int rightGrabPivotSegment;
+    unsigned int rightGrabJointSegment;
+    unsigned int leftGrabPivotSegment;
+    unsigned int leftGrabJointSegment;
+    unsigned int leftForearm;
+    unsigned int rightForearm;
+    unsigned int markupBone;
+    unsigned int cameraJoint;
+    float dAnkleHeightAboveGround;
+    float dBallHeightAboveGround;
+    float dToeHeightAboveGround;
+} bone_tune_data <optimize=false>;
+
+typedef struct
+{
+    float dDefaultMarkupZBias;
+    float dStickVelocityLimit;
+    float dRunOffLedgeSafeGrabHeight;
+    short dMovingTurnRate;
+    FSkip(2);
+    float dPhysicsWaterFriction;
+    float dMaxXVel;
+    float dMaxYVel;
+    float dMaxZVel;
+    short dGrabYDistance;
+    short dGrabZDistance;
+    short dDropOffDefaultHeight;
+    short dFallDefaultZVelocity;
+    short dAnalogWalkTrigger;
+    short dBubbleSpread;
+    short dBubbleSlowMinZVelocity;
+    short dBubbleFastMinZVelocity;
+    short dBubbleFastAcclRange;
+    short dBubbleFastStartScale;
+    short dBubbleFastStartScaleRange;
+    short dBubbleSlowStartScale;
+    short dBubbleSlowStartScaleRange;
+    short dBubbleMaxSpeed;
+    short dBubbleMaxSpeedRange;
+    short dBubbleScaleRate;
+    short dBubbleScaleRateRange;
+    short dBubblesUniqueBubbles;
+    short dBubbleDisperseFrames;
+    short dBubbleKillScale;
+    short dBubbleMinSplashSize;
+} PlayerProp__tune_data <optimize=false>;
+
+typedef struct
+{
+    float stamina;
+    float staminaRecoveryRate;
+    float cooldownTemperatureChange;
+    float cooldownSurfaceChange;
+    float cooldownWoundRecover;
+    float cooldownFatigueRecover;
+} ConditionStatus <optimize=false>;
+
+typedef struct
+{
+    int gameTeam;
+    int combatStatus;
+} ForcedCombatStatus <optimize=false>;
+
+typedef struct
+{
+    float radius;
+    float closeRadius;
+    float cooldownNonViolentToThreatening;
+    float cooldownNonViolentToDeadly;
+    float cooldownThreateningToDeadly;
+    float cooldownThreateningToNonViolent;
+    float cooldownDeadlyToThreatening;
+    float cooldownDeadlyToNonViolent;
+    ForcedCombatStatus forcedCombatStatus;
+} CombatStatus <optimize=false>;
+
+typedef struct
+{
+    CombatStatus combatStatus;
+    ubyte uHolsterTime;
+    FSkip(1);
+    ushort uKillTime;
+    short iCombatTargetInvalidTimeout;
+    short hitDodgeSwitchStart;
+    short hitDodgeSwitchEnd;
+    ushort fSecondaryTargetChangeDelay;
+    float fMaxAimLeftAngle;
+    float fMaxAimRightAngle;
+    float fMaxAimVertAngle;
+    float fMinLookatDist;
+    float fMaxLookatAdjustmentAngleDegrees;
+    float fLookatDistWhenMin;
+    ubyte dCombatLockTime;
+    ubyte dMeleeLockTime;
+    ubyte dGrenadeLockTime;
+    FSkip(1);
+    float dCombatFlickAngleThreshold;
+    ushort uMeleeStickAngleRange;
+    ushort uMaxSimpleAttacks;
+    ushort uMaxStunAttacks;
+    FSkip(2);
+    float fStunAttackCooldown;
+    float fStealthKillMeleeAngle;
+    float fStealthKillMeleeAngleAiming;
+    float fStealthKillMeleeDistance;
+    float fLedgeKillMeleeAngle;
+    float fStealthKillMeleeForwardAngle;
+    float fChargeKillMeleeAngle;
+    float fChargeKillMeleeDistance;
+    float fMeleeExecutionHeight;
+    float fMaxLowMeleeHeight;
+    float fMaxMidMeleeHeight;
+    float fMaxHighMeleeHeight;
+    float fFrontMeleeAngle;
+    unsigned int fMaxPersistentProjectiles;
+    float fProjectileCelebrationCooldownSec;
+    byte bFadeReticle;
+    FSkip(3);
+    float fMinFadeDistance;
+    float fMaxFadeDistance;
+    float fMinAlphaValue;
+    float flickTargetInputThreshold;
+    float cancelSnapTargetInputThreshold;
+    float snapTargetLockTimeUnarmed;
+    float snapTargetArrivalDeg;
+    float snapTargetMaxDeg;
+    float snapTargetNearArrivalDeg;
+    float snapTargetCloseAttackerPriorityScalar;
+    float closeAttackerRange;
+    float closeAttackerDurationInSec;
+    float meleeActiveEnemyRange;
+    float meleeActiveTimeInSec;
+    float fSecondaryMaxAimLeftAngle;
+    float fSecondaryMaxAimRightAngle;
+    float fDualTargetingInterpTime;
+    float fArmChangeInterpTime;
+    float fTargetChangeInterpTime;
+    float fAimIKDelay;
+    float fDualTargetChangeInterpTime;
+    float fFlairMoveConeAngle;
+    float fCameraTargetingHandednessFudge;
+    float fConFireTimeDilation;
+    unsigned int uBulletMissSound;
+    unsigned int subTargetHigh;
+    unsigned int subTargetMiddle;
+    unsigned int subTargetLeft;
+    unsigned int subTargetRight;
+    unsigned int subTargetLow;
+    float npcRepulsionRadius;
+    float npcRepulsionOuterCushion;
+    float npcRepulsionInnerCushion;
+    float fAimProbeWallStopSmoothingTime;
+    float fAimProbeWallStopSmoothingDist;
+    unsigned int meleeEffect;
+} PlayerProp__combat_tune_data <optimize=false>;
+
+typedef struct
+{
+    byte dEnabled;
+    FSkip(3);
+    float dBestJitter;
+    float dJitterIncPerJump;
+    float dJitterIncPerRoll;
+    ubyte dFadeInTime;
+    ubyte dFadeOutTime;
+    ushort dFadeLockOffset;
+    float dFadeIndScale;
+    float dAPSCursorSpeed;
+    float dAPSCursorScreenPadX;
+    float dAPSCursorScreenPadY;
+    ushort ropeSwingProbe;
+} PlayerProp__reticle_tune_data <optimize=false>;
+
+typedef struct
+{
+    uint pad_0 : 22;
+    uint raycastFromCamera : 1;
+    uint raycastFromInstance : 1;
+    uint standingOnInvalid : 1;
+    uint trashInvalid : 1;
+    uint raycastAcquire : 1;
+    uint raycastKeep : 1;
+    uint raycastFromPlayer : 1;
+    uint useCameraReferenceFrame : 1;
+    uint requiresHealth : 1;
+    uint raycastMeleeCheck : 1;
+    uint sendMessages : 1;
+    int _Bitfieldpadding11 : 31;
+    EventEnum msgOnTargetAcquired;
+    EventEnum msgOnTargetLost;
+    EventEnum msgOnTargetChanged;
+    uint allowPrevTargetIfNoCurrentTarget : 1;
+    int _Bitfieldpadding15 : 31;
+    float allowPrevTargetIfNoCurrentTargetTime;
+    unsigned int uNumTiers;
+    Ref tierListRef;
+    if (CanSeekTo(tierListRef))
+    {
+        SeekToRef(tierListRef);
+        byte tierList;
+        ReturnFromRef();
+    }
+    Ref debugNameRef;
+    if (CanSeekTo(debugNameRef))
+    {
+        SeekToRef(debugNameRef);
+        string debugName;
+        ReturnFromRef();
+    }
+    unsigned int waitTime;
+} SenseUnit <optimize=false>;
+
+typedef struct
+{
+    Ref rangedCombatSenseDataRef;
+    if (CanSeekTo(rangedCombatSenseDataRef))
+    {
+        SeekToRef(rangedCombatSenseDataRef);
+        SenseUnit rangedCombatSenseData;
+        ReturnFromRef();
+    }
+    Ref manualLockAcquireRef;
+    if (CanSeekTo(manualLockAcquireRef))
+    {
+        SeekToRef(manualLockAcquireRef);
+        SenseUnit manualLockAcquire;
+        ReturnFromRef();
+    }
+    Ref meleeCombatSenseDataRef;
+    if (CanSeekTo(meleeCombatSenseDataRef))
+    {
+        SeekToRef(meleeCombatSenseDataRef);
+        SenseUnit meleeCombatSenseData;
+        ReturnFromRef();
+    }
+    Ref deathFromAboveSenseDataRef;
+    if (CanSeekTo(deathFromAboveSenseDataRef))
+    {
+        SeekToRef(deathFromAboveSenseDataRef);
+        SenseUnit deathFromAboveSenseData;
+        ReturnFromRef();
+    }
+    Ref manualLockAutoaimPlayerRef;
+    if (CanSeekTo(manualLockAutoaimPlayerRef))
+    {
+        SeekToRef(manualLockAutoaimPlayerRef);
+        SenseUnit manualLockAutoaimPlayer;
+        ReturnFromRef();
+    }
+    Ref adrenalineSenseDataRef;
+    if (CanSeekTo(adrenalineSenseDataRef))
+    {
+        SeekToRef(adrenalineSenseDataRef);
+        SenseUnit adrenalineSenseData;
+        ReturnFromRef();
+    }
+    Ref headLookAtSenseDataRef;
+    if (CanSeekTo(headLookAtSenseDataRef))
+    {
+        SeekToRef(headLookAtSenseDataRef);
+        SenseUnit headLookAtSenseData;
+        ReturnFromRef();
+    }
+    Ref grappleSenseDataRef;
+    if (CanSeekTo(grappleSenseDataRef))
+    {
+        SeekToRef(grappleSenseDataRef);
+        SenseUnit grappleSenseData;
+        ReturnFromRef();
+    }
+    float fSenseOffset;
+    float fLedgeSenseOffset;
+    float fSeizeClearanceProbeOffset;
+    float fBalanceBeamSeizeClearanceProbeOffset;
+    float fSeizeUnreachablePlatformHeightDiff;
+    unsigned int stealthFinisherMeleeMove;
+} PlayerProp__sense_system <optimize=false>;
+
+typedef struct
+{
+    byte smoothRideAffectsCameraBone;
+    FSkip(3);
+    float smoothRideDampingRatio;
+    float smoothRideHertz;
+    float smoothRideNonLinearSpringMult;
+    float smoothRideVelFactor;
+    float smoothRideDeltaZFactor;
+    float smoothLimitUp;
+    float smoothLimitDown;
+} SmoothRideTune <optimize=false>;
+
+typedef struct
+{
+    float clearanceHeight;
+    float clearanceDist;
+} HurdleClearanceCheckData <optimize=false>;
+
+typedef struct
+{
+    int vPlatformOffsetDist[3];
+    int ledgeOffsetDist[3];
+    int sideClearance[3];
+    HurdleClearanceCheckData clearanceCheckStanding;
+    HurdleClearanceCheckData clearanceCheckCrouch;
+    HurdleClearanceCheckData clearanceCheckFloor;
+    float fLineProbePadding;
+    float fAttachOffsetDist;
+    ushort forwardProbe;
+} HurdleTuneData <optimize=false>;
+
+typedef struct
+{
+    unsigned int material;
+    float multiplier;
+} MaterialGroundSpeed <optimize=false>;
+
+typedef struct
+{
+    float walkMag;
+    float trotMag;
+    float runMag;
+    float idleWalkHistGapSize;
+    float walkTrotHistGapSize;
+    float trotRunHistGapSize;
+    float minWalkSpeedAdj;
+    float maxWalkSpeedAdj;
+    float minTrotSpeedAdj;
+    float maxTrotSpeedAdj;
+    float minRunSpeedAdj;
+    float maxRunSpeedAdj;
+    float minSprintSpeedAdj;
+    float maxSprintSpeedAdj;
+    float groundChangeZoneDelay;
+    float interpoBlendTurnAngleHist;
+    float interpoBlendLeanAdjustRate;
+    float interpoBlendUpDownAdjustRate;
+    float interpoBlendTorsoAdjustRate;
+    float slewAdjustRate;
+    float slewRadius;
+    float slewExaggeration;
+    float slewMaxSpeed;
+    SmoothRideTune smoothRide;
+    float footPlantDampingRatio;
+    float footPlantHertz;
+    float fSprintMaxTime;
+    float fSprintMinTime;
+    float fSprintRechargeDelayTime;
+    float fSprintRechargeTime;
+    HurdleTuneData hurdleData;
+    FSkip(2);
+    float fTorsoTwistSpineFrac;
+    float fTorsoTwistNeck1Frac;
+    float fTorsoTwistNeck2Frac;
+    Ref materialGroundSpeedMapRef;
+    if (CanSeekTo(materialGroundSpeedMapRef))
+    {
+        SeekToRef(materialGroundSpeedMapRef);
+        MaterialGroundSpeed materialGroundSpeedMap;
+        ReturnFromRef();
+    }
+    unsigned int iMaterialGroundSpeedMapCount;
+    ushort groundProbe;
+    ushort groundAheadProbe;
+    ushort snowProbe;
+    ushort ceilingProbe;
+    ushort ceilingProbeAhead;
+    ushort wallTouchLeftProbe;
+    ushort wallTouchRightProbe;
+    FSkip(2);
+    float groundStickyDistanceDown;
+    float groundStickyDistanceUp;
+    float wallTouchForce;
+    int wallTouchContactRank;
+    float groundSteeringWiggleThreshold;
+    float groundSteeringWiggleTolerance;
+    float groundSteeringWiggleSmoothing;
+    int groundSteeringWiggleAllowance;
+    float groundStepHeight;
+    float groundStepDistance;
+    float groundStepIdleSpeed;
+    float groundSteeringWallDeflectNoContactTime;
+    float groundSteeringWallDeflectRampStartTimeNoStick;
+    float groundSteeringWallDeflectRampStartTimeFullStick;
+    float groundSteeringWallDeflectTurnRate;
+    float groundSteeringWallDeflectParallelFudgeFactor;
+    float groundSteeringWallDeflectMaxGroundSpeed;
+    float rollCooldownTimer;
+} ground_move_tune_data <optimize=false>;
+
+typedef struct
+{
+    ushort animAlarmEvent;
+    FSkip(2);
+    int lockMode;
+    int ikMode;
+    float probeOffsetStart;
+    float probeOffsetEnd;
+    int frames2Ramp;
+    unsigned int endBoneIndex;
+    float endOffsetOverride[3];
+    byte bIKChainOn : 1;
+    byte bLeaveFootprint : 1;
+    byte bOrientToNormal : 1;
+    byte bCheckFootPlant : 1;
+    byte _Bitfieldpadding8 : 4;
+    FSkip(7);
+    Ref mpDebugNameRef;
+    if (CanSeekTo(mpDebugNameRef))
+    {
+        SeekToRef(mpDebugNameRef);
+        string mpDebugName;
+        ReturnFromRef();
+    }
+} LimbLockProc <optimize=false>;
+
+typedef struct
+{
+    unsigned int ikChain;
+    int defaultLockMode;
+    int ikMode;
+    ushort animAlarmActivate;
+    ushort animAlarmDeactivate;
+    float minimumSlopeNormalZ;
+    float probeOffsetStart;
+    float probeOffsetEnd;
+    float endOffset[3];
+    int frames2RampOn;
+    int frames2RampOff;
+    Ref ikChainCancelListRef;
+    if (CanSeekTo(ikChainCancelListRef))
+    {
+        SeekToRef(ikChainCancelListRef);
+        unsigned int ikChainCancelList;
+        ReturnFromRef();
+    }
+    unsigned int footprintBoneIndex;
+    unsigned int endBoneIndex;
+    unsigned int animIKBoneIndex;
+    FSkip(4);
+    Ref limbLockProcListRef;
+    if (CanSeekTo(limbLockProcListRef))
+    {
+        SeekToRef(limbLockProcListRef);
+        LimbLockProc limbLockProcList;
+        ReturnFromRef();
+    }
+    ushort miNumCancelIKChains;
+    ushort miNumLimbLockProcs;
+    byte bGUIEnabled : 1;
+    byte bEnableByDefault : 1;
+    byte bCheckFootPlant : 1;
+    byte bLeaveFootprint : 1;
+    byte bOrientToNormal : 1;
+    byte bLeaveFootprintsButDontIK : 1;
+    byte _Bitfieldpadding18 : 2;
+    FSkip(3);
+    float orientMaxAngleDiff;
+    FSkip(4);
+    Ref mpDebugNameRef;
+    if (CanSeekTo(mpDebugNameRef))
+    {
+        SeekToRef(mpDebugNameRef);
+        string mpDebugName;
+        ReturnFromRef();
+    }
+} GenericLimbLockParams <optimize=false>;
+
+typedef struct
+{
+    ushort miNumLimbLocks;
+    FSkip(6);
+    Ref msLimbLocksRef;
+    if (CanSeekTo(msLimbLocksRef))
+    {
+        SeekToRef(msLimbLocksRef);
+        GenericLimbLockParams msLimbLocks;
+        ReturnFromRef();
+    }
+} LimbLockSet <optimize=false>;
+
+typedef struct
+{
+    ushort miNumLimbLocks;
+    FSkip(6);
+    Ref msLimbLocksRef;
+    if (CanSeekTo(msLimbLocksRef))
+    {
+        SeekToRef(msLimbLocksRef);
+        unsigned int msLimbLocks;
+        ReturnFromRef();
+    }
+} LimbLockGroup <optimize=false>;
+
+typedef struct
+{
+    ushort edgeProbeUp;
+    ushort edgeProbeDown;
+    float edgeRejectDist;
+    float edgeIdealDist;
+    float edgeParallelAngle;
+    float edgePerpendicularAngle;
+} EdgeDeflectionData <optimize=false>;
+
+typedef struct
+{
+    float up[3];
+    float pad_0;
+    float right[3];
+    float pad_1;
+    float upWorldOffset[3];
+    float pad_2;
+    float rightWorldOffset[3];
+    float pad_3;
+    ubyte modeType;
+    ubyte isUpCharacterBased;
+    ubyte isRightCharacterBased;
+    FSkip(1);
+    float thresholdAngle;
+    float upThreshold[3];
+    float pad_0Threshold;
+    float rightThreshold[3];
+    float pad_1Threshold;
+    float idleThreshold;
+    byte preventHorizonFlip;
+} ControlMode <optimize=false>;
+
+typedef struct
+{
+    Ref controlModeListRef;
+    if (CanSeekTo(controlModeListRef))
+    {
+        SeekToRef(controlModeListRef);
+        ControlMode controlModeList;
+        ReturnFromRef();
+    }
+    ubyte ground;
+    ubyte horizontalPole;
+    ubyte ladder;
+    ubyte ledge;
+    ubyte rope;
+    ubyte swimming;
+    ubyte verticalPole;
+    ubyte inAir;
+    float axisVelocity;
+    float relockStickMag;
+} PlayerProp__controls_data <optimize=false>;
+
+typedef struct
+{
+    char dRopePumpBehavior;
+    char dRopeHangBehavior;
+    char dRopePumpControls;
+    ubyte dRopeReverseRotationDirection;
+    float dRopeClimberLengthScale;
+    float dRopeClimberRadius;
+    float dRopeClimbSpeed;
+    float dRopeDescendSpeed;
+    float dRopeRotateSpeed;
+    float dRopePumpLiftSpeed;
+    float dRopePumpLiftAcc;
+    float dRopePumpDropSpeed;
+    float dRopePumpDropAcc;
+    float dRopeAttachmentVelScale;
+    float dRopeAttachmentVelScale2;
+    float dRopeAttachmentVelScaleChangeOver;
+    float dRopeJumpPeturbationAmount;
+    float dRopeAttachControlsTimer;
+    float dRopeMinMarkUpLength;
+    int dRopeDragDetachTime;
+    float dRopeSwingDeadZone;
+    short dRopeSwingBackwardAngle;
+    short dRopeSwingForwardAngle;
+    float dRopeSwingTurnAngleScale;
+    short dRopeSwingTurnAngleMin;
+    short dRopeTNodeToMarkupY;
+    short dRopeTNodeToMarkupZ;
+    short dRopeTNodeToHandY;
+    short dRopeTNodeToHandZ;
+    ushort useNewJumpDetachTuning;
+    float designerVelOut;
+    float designerVelUp;
+    float designerVelOutCoeff;
+    float designerVelUpCoeff;
+    float physicsVelOutCoeff;
+    float physicsVelUpCoeff;
+    float firstSwingGravityCoeff;
+} PlayerProp__rope_tune_data <optimize=false>;
+
+typedef struct
+{
+    short ledgeMinDistFromEnd;
+    short ledgeMinDistFromCornerBraced;
+    short ledgeMinDistFromCornerUnbraced;
+    short ledgeFlairMoveHoldTime;
+    short nonBracedLedgeZOffset;
+    short nonBracedLedgeForwardClearance;
+    short bracedClearanceHysteresis;
+    short surfaceStandableStartProbeBackFromWallDist;
+    short surfaceStandableRequiredForwardClearance;
+    short surfaceStandableRequiredForwardClearanceAngle;
+    short surfaceEdgeRequiredForwardClearance;
+    short surfaceNarrowRequiredForwardClearance;
+    short surfaceProbeAboveLedgeOffset;
+    short ledgeLookaheadDistBraced;
+    short ledgeLookaheadDistUnbraced;
+    short ledgeBlockageProbeExtraDist;
+    short ledgeBlockageProbeZOffset;
+    short ledgeBlockageProbeYOffset;
+    short convexTurnStartDistFromCornerBraced;
+    short convexTurnStartDistFromCornerUnbraced;
+    short concaveTurnStartDistFromCornerBraced;
+    short concaveTurnStartDistFromCornerUnbraced;
+    short bracedUnbracedTraverseProbeDist;
+    short cornerTurnStartDistHustleScalar;
+    short ledgeTurnAngularLimit;
+    short verticalBlockageProbeDist;
+    ushort savingGrabPromptObjectID;
+    FSkip(2);
+    float bracedLedgeAngleLimit;
+    float ledgeBlendAngleLimit;
+    float hangClearanceDown;
+    float hurdleClearanceDown;
+    ushort hangProbe;
+    ushort climbUpProbe;
+    ushort standAtopProbe;
+    ushort hurdleOverProbe;
+    ushort bracedProbe;
+} ledge_tune_data <optimize=false>;
+
+typedef struct
+{
+    float laraOffsetX;
+    float laraOffsetY;
+    float laraOffsetZ;
+    float minLedgeSpace;
+    float lookaheadDist;
+    float minDistFromEnd;
+    float jumpAttachToWallHugTolerance;
+    float startAboveLedge;
+    float startInFrontOfLedge;
+    float probeLength;
+} wall_hug_tune_data <optimize=false>;
+
+typedef struct
+{
+    float hPoleZDistance;
+    float hPoleMaxSwingingAttachAngle;
+    float hPoleLimitedDistToEnd;
+    float hPoleDeadSpotMag;
+    float hPoleLockAngle;
+    short hPoleBadAttachRecoverInterpFrames;
+    FSkip(2);
+    float sideWallHPoleProbeDownFromHPole;
+    float sideWallHPoleProbeBackFromHPole;
+    float sideWallHPoleProbeSideFromHPole;
+    float sideWallHPoleProbeLen;
+    float ceilingHPoleProbeDownFromHPole;
+    float ceilingHPoleProbeLen;
+} hpole_tune_data <optimize=false>;
+
+typedef struct
+{
+    float distanceToFirstRung;
+    float distanceBetweenRungs;
+    ubyte lowestAllowedRung;
+    ubyte attachMaxAngle;
+    FSkip(2);
+    float tNodeToMarkupY;
+    float tNodeToMarkupZ;
+    float tNodeToHandY;
+    float tNodeToHandZ;
+    short offTopProbeLength;
+    short upProbeLength;
+    short upProbeYOffset;
+    short upProbeZOffset;
+    short downProbeLength;
+    short downProbeYOffset;
+    short downProbeZOffset;
+    FSkip(2);
+    float handYOffset;
+    float handZOffset;
+    float footZOffset;
+    short debugXOffset;
+    short debugYOffset;
+    ubyte debugColorR;
+    ubyte debugColorG;
+    ubyte debugColorB;
+    ubyte debugColorA;
+} ladder_tune_data <optimize=false>;
+
+typedef struct
+{
+    short tNodeToMarkupY;
+    short tNodeToMarkupZ;
+    short tNodeToHandY;
+    short tNodeToHandZ;
+    short offTopProbeLength;
+    short offBottomProbeLength;
+    short outwardFromWall;
+    short offTopDistance;
+    short offBottomDistance;
+} wallvertpole_tune_data <optimize=false>;
+
+typedef struct
+{
+    float fastTraversalDistance;
+    short tNodeToMarkupY;
+    short tNodeToMarkupZ;
+    short tNodeToHandY;
+    short tNodeToHandZ;
+    short offTopProbeLength;
+    short offBottomProbeLength;
+    short offBottomProbeOffset;
+    short aboveMarkupTNodeZBoost;
+} vertpole_tune_data <optimize=false>;
+
+typedef struct
+{
+    short radius;
+    short jumpTargetYOffset;
+    short jumpTargetZOffset;
+    short tNodeAttachYOffset;
+    short tNodeAttachZOffset;
+    short handAttachYOffset;
+    short handAttachZOffset;
+    short attachGroundZOffset;
+    short detachGroundYOffset;
+    short upProbeLength;
+    short upProbeYOffset;
+    short upProbeZOffset;
+    short downProbeLength;
+    short downProbeYOffset;
+    short downProbeZOffset;
+} pillar_tune_data <optimize=false>;
+
+typedef struct
+{
+    float pipeHorizontalZDistance;
+    float pipeHorizontalMaxSwingingAttachAngle;
+    float pipeHorizontalLimitedDistToEnd;
+    float pipeHorizontalDeadSpotMag;
+    float pipeHorizontalLockAngle;
+    short pipeHorizontalBadAttachRecoverInterpFrames;
+    FSkip(2);
+    float sideWallPipeHorizontalProbeDownFromPipeHorizontal;
+    float sideWallPipeHorizontalProbeBackFromPipeHorizontal;
+    float sideWallPipeHorizontalProbeSideFromPipeHorizontal;
+    float sideWallPipeHorizontalProbeLen;
+    float ceilingPipeHorizontalProbeDownFromPipeHorizontal;
+    float ceilingPipeHorizontalProbeLen;
+} pipehorizontal_tune_data <optimize=false>;
+
+typedef struct
+{
+    float distanceToFirstRung;
+    float distanceBetweenRungs;
+    ubyte lowestAllowedRung;
+    ubyte attachMaxAngle;
+    FSkip(2);
+    float tNodeToMarkupY;
+    float tNodeToMarkupZ;
+    float tNodeToHandY;
+    float tNodeToHandZ;
+    short offTopProbeLength;
+    short upProbeLength;
+    short upProbeYOffset;
+    short upProbeZOffset;
+    short downProbeLength;
+    short downProbeYOffset;
+    short downProbeZOffset;
+    FSkip(2);
+    float handYOffset;
+    float handZOffset;
+    float footZOffset;
+    short debugXOffset;
+    short debugYOffset;
+    ubyte debugColorR;
+    ubyte debugColorG;
+    ubyte debugColorB;
+    ubyte debugColorA;
+} pipevertical_tune_data <optimize=false>;
+
+typedef struct
+{
+    float minRadius;
+    float maxRadius;
+    float jumpTargetYOffset;
+    float jumpTargetZOffset;
+    float tNodeAttachYOffset;
+    float tNodeAttachZOffset;
+    float downProbeLength;
+    float downProbeZOffset;
+} perch_tune_data <optimize=false>;
+
+typedef struct
+{
+    ushort wallJumpProbeHandsLeft;
+    ushort wallJumpProbeHandsRight;
+    ushort wallJumpProbeFeetLeft;
+    ushort wallJumpProbeFeetRight;
+    ushort wallJumpProbeLeft;
+    ushort wallJumpProbeRight;
+    ushort wallJumpProbeHeight;
+    ushort wallJumpProbeMarkupArrow;
+    int detectionHandZOffset;
+    int detectionFootZOffset;
+    ubyte anticipationFrames;
+    ubyte detectionFrames;
+    ubyte collideFrames;
+    ubyte maxCollideAngle;
+    ubyte maxWallAngle;
+    ubyte maxFacingAngle;
+    ubyte maxVelocityAngle;
+    ubyte preApexFrames;
+    ubyte postApexFrames;
+    FSkip(3);
+    int minHeight;
+    float maxHorizDist;
+    int attachDist;
+    int yOffset;
+    ushort zRotSpeed;
+    FSkip(2);
+    float maxAdjustment;
+    float smoothing;
+    ubyte numMaxWallJumps;
+    ubyte numWallJumps1;
+    ubyte numWallJumps2;
+} wall_jump_tune_data <optimize=false>;
+
+typedef struct
+{
+} IHighlightableResource <optimize=false>;
+
+typedef struct
+{
+    IHighlightableResource _Parent;
+} IMaterial <optimize=false>;
+
+typedef struct
+{
+    float renderRadius;
+    int texture;
+    Ref ropeMaterialRef;
+    if (CanSeekTo(ropeMaterialRef))
+    {
+        SeekToRef(ropeMaterialRef);
+        IMaterial ropeMaterial;
+        ReturnFromRef();
+    }
+    unsigned int renderRopeColor;
+    float vLength;
+    float uWidth;
+    byte bSmoothRope;
+    byte bRenderHighlight;
+} RopeRenderData <optimize=false>;
+
+typedef struct
+{
+    float bendingStiffness;
+    float beta;
+    float damping;
+    float gravity;
+    int iterations;
+    float linearDensity;
+    float minSegmentLength;
+    float mu;
+    int sleepTime;
+    float sleepVelocity;
+    float softness;
+    float taper;
+    float massTaper;
+} ParticleTuneData <optimize=false>;
+
+typedef struct
+{
+    float grappleAxeAttachedThrowSpeed;
+    float grappleAxeRecoverSpeed;
+    float grappleAxeThrowSpeed;
+    float grappleAxeThrowAngle;
+    float grappleAxeVerticalThrowAngle;
+    float grappleAxeGravityMult;
+    float grappleAxeThrowMaxLength;
+    float grappleAxeThrowInputThreshold;
+    float grappleAxeThrowMaxDeviation;
+    float grappleAxeThrowExtraProbeForward;
+    float grappleAxeClimbWobbleMinLength;
+    float grappleAxeClimbWobbleMaxLength;
+    byte grappleAxePreCheck;
+    FSkip(3);
+    float grappleAxePreCheckOffsetY;
+    float grappleAxePreCheckOffsetZ;
+    float grappleAxePreCheckExtraZVel;
+    float grappleAxePreCheckMaxTime;
+    ushort grappleAxeObjectID;
+    ModelBoneOrMarkerReference grappleAxeHandleMarkerReference;
+    ModelBoneOrMarkerReference grappleAxePivotMarkerReference;
+    ModelBoneOrMarkerReference grappleAxeGrabMarkerReference;
+    ushort wallDetect;
+    ushort wallCrawlDetectFromAxe;
+    ushort grappleAxeBracedProbeFoot;
+    ushort grappleAxeBracedProbeKnee;
+    FSkip(2);
+    float grappleSwingTargetLineLength;
+    float grappleSwingExitAngle;
+    float grappleSwingLineLengthInterpEndAngle;
+    float grappleSwingDeviationInterpEndAngle;
+    float grappleSwingAngularAcceleration;
+    float grappleSwingMaxAngularSpeed;
+    float grappleSwingDetachSpeed;
+    float grappleSwingZRotSpeed;
+    float grappleSwingWallStopDistance;
+    float grappleArrowSwingTargetLineLength;
+    float grappleArrowSwingExitAngle;
+    float grappleArrowSwingMaxAngularSpeed;
+    float grappleArrowSwingDetachSpeed;
+    float grappleClimbMinLineLength;
+    float grappleClimbMaxLineLength;
+    float grappleClimbLineLengthCorrectionSpeed;
+    float grappleClimbAngularAcceleration;
+    float grappleClimbAngularDampen;
+    float grappleClimbDeviationCorrectionSpeed;
+    float grappleClimbZRotSpeed;
+    float grappleAxeBracedClimbCollisionDeactAngle;
+    float grappleAxeUnbracedClimbCollisionDeactAngle;
+    float grappleAxeBracedClimbUpSpeed;
+    float grappleAxeBracedClimbDownSpeed;
+    float grappleAxeBracedClimbYOffset;
+    float grappleAxeUnbracedClimbYOffset;
+    float grappleAxeUnbracedClimbUpSpeed;
+    float grappleAxeUnbracedClimbDownSpeed;
+    float grappleClimbUndetectedWallCrawlExtraLength;
+    RopeRenderData grappleSwingRopeData;
+    byte grappleSwingUseParticleString;
+    FSkip(1);
+    ParticleTuneData grappleSwingParticleStringData;
+    float zipLineFrontDist;
+    float zipLineBackDist;
+    float zipLineOffset[3];
+    float maxFallDistance;
+    float animBlendDeltaMax;
+    AnimReference fireRecoilAnimRef;
+    float pullDistanceMin;
+    float pullForceInitial;
+    float pullForceStandard;
+    float pullSpeedMin;
+    int pullFailureTicksAllowed;
+    int pad2;
+    AnimReference pullFailureAnimRef;
+    float pullAnimBlendDeltaMax;
+    float pullAnimSpeedMultMin;
+    float pullAnimSpeedMultMax;
+    float pullAnimSpeedVelCap;
+    float rappelGroundDetectionDistance;
+    float rappelLateralWallDetectionDistance;
+    float rappelGravity;
+    float rappelMass;
+    float rappelLinearDamping;
+    float rappelAngularDamping;
+    float rappelRopeLengthShort;
+    float rappelRopeLengthMedium;
+    float rappelVelocityAngleUp;
+    float rappelVelocityAngleDown;
+    float rappelWallLedgeVerticalDetectionMinOffset;
+    float rappelWallLedgeVerticalDetectionMaxOffset;
+    float rappelAnimBlendDeltaMax;
+    float rappelWalkAnimSpeedMultMin;
+    float rappelWalkAnimSpeedMultMax;
+    float rappelRunAnimSpeedMultMin;
+    float rappelRunAnimSpeedMultMax;
+    float rappelAscendAnimSpeedMultMin;
+    float rappelAscendAnimSpeedMultMax;
+    float rappelDescendAnimSpeedMultMin;
+    float rappelDescendAnimSpeedMultMax;
+    float rappelClimbAnimSpeedMultMin;
+    float rappelClimbAnimSpeedMultMax;
+    float rappelStickMagnitudeMin;
+    float rappelAscendDescendStickAngle;
+    float rappelAscendSpeed;
+    float rappelDescendSpeed;
+    float rappelIdleDampening;
+    int rappelIdleDampeningTicks;
+    float rappelWallRunSpeedSlow;
+    float rappelWallRunSpeedMedium;
+    float rappelWallRunSpeedFast;
+    float rappelWallRunMaxSpeed;
+    float rappelWallRunMaxAngle;
+    float rappelWallRunMaxAngleDampening;
+    float rappelWallRunStumbleAngle;
+    float rappelWallRunRecoverAngle;
+    int rappelWallRunStumbleFrames;
+    float rappelWallRunStopDamping;
+    float rappelWallRunForceShortMin;
+    float rappelWallRunForceShortMax;
+    float rappelWallRunForceMediumMin;
+    float rappelWallRunForceMediumMax;
+    float rappelWallRunForceLongMin;
+    float rappelWallRunForceLongMax;
+    float rappelBarrierDetectionProbeLength;
+    float rappelFlailDetectionOffset;
+    float rappelFlailDetectionProbeLength;
+    float rappelOverhangDetectionZOffset;
+    float rappelOverhangDetectionLength;
+    float rappelOverhangPushForce;
+    float rappelOverhangDescendSpeed;
+    int rappelOverhangDescendFrames;
+    float rappelJumpoffLateralMinVelOut;
+    float rappelJumpoffLateralMinVelUp;
+    float rappelJumpoffLateralMaxVelOut;
+    float rappelJumpoffLateralMaxVelUp;
+    float rappelJumpoffLateralMultOut;
+    float rappelJumpoffLateralMultUp;
+    float rappelJumpoffBackMinVelOut;
+    float rappelJumpoffBackMinVelUp;
+    float rappelJumpoffBackMaxVelOut;
+    float rappelJumpoffBackMaxVelUp;
+    float rappelJumpoffBackMultOut;
+    float rappelJumpoffBackMultUp;
+    float rappelJumpoffDynamicMinVelOut;
+    float rappelJumpoffDynamicMinVelUp;
+    float rappelJumpoffDynamicMaxVelOut;
+    float rappelJumpoffDynamicMaxVelUp;
+    float rappelJumpoffDynamicMultOut;
+    float rappelJumpoffDynamicMultUp;
+    float rappelFreeWallLandAnimSpeedVelCap;
+    float rappelFreeStickMagnitudeMin;
+    float rappelFreeSwingStickAngle;
+    float rappelFreeAscendDescendStickAngle;
+    float rappelFreeRotationStickAngle;
+    int rappelFreeForwardToBackSwingIdleBufferTime;
+    int rappelFreeHeldBackToIdleTime;
+    float rappelFreeSwingIdleDamping;
+    float rappelFreeAscendSpeed;
+    float rappelFreeDescendSpeed;
+    float rappelFreeAutoAdjustSpeed;
+    float rappelFreeMaxRopeAngleClimb;
+    float rappelFreeRopeAngleClimbDelay;
+    float rappelFreeRotateSpeed;
+    byte bRappelFreeReverseRotDir;
+    FSkip(3);
+    int rappelFreeRotationFrames;
+    float rappelFreeSwingMaxSpeed;
+    float rappelFreeSwingMaxAngle;
+    float rappelFreeMaxAngleDampening;
+    float rappelFreeSwingLateralDamping;
+    float rappelFreeSwingForwardForceShortMin;
+    float rappelFreeSwingForwardForceShortMax;
+    float rappelFreeSwingBackwardForceShortMin;
+    float rappelFreeSwingBackwardForceShortMax;
+    float rappelFreeSwingForwardForceMediumMin;
+    float rappelFreeSwingForwardForceMediumMax;
+    float rappelFreeSwingBackwardForceMediumMin;
+    float rappelFreeSwingBackwardForceMediumMax;
+    float rappelFreeSwingForwardForceLongMin;
+    float rappelFreeSwingForwardForceLongMax;
+    float rappelFreeSwingBackwardForceLongMin;
+    float rappelFreeSwingBackwardForceLongMax;
+    float rappelFreeOverhangDetectionZOffset;
+    float rappelFreeOverhangDetectionLength;
+    float rappelFreeJumpoffMinVelOut;
+    float rappelFreeJumpoffMinVelUp;
+    float rappelFreeJumpoffMaxVelOut;
+    float rappelFreeJumpoffMaxVelUp;
+    float rappelFreeJumpoffMultOut;
+    float rappelFreeJumpoffMultUp;
+    float minStumbleVel;
+    float minHardLandVel;
+    float minDamageVel;
+    float minHalfDamageVel;
+    float minDeathVel;
+    float rappelGroundStepOnHorizDist;
+    float rappelGroundStepOnForwardDist;
+    float rappelGroundStepOnAngle;
+} grapple_tune_data <optimize=false>;
+
+typedef struct
+{
+    ushort wallCrawlProbeCenter;
+    ushort wallCrawlProbeLeftHand;
+    ushort wallCrawlProbeRightHand;
+    ushort wallCrawlProbeLeftFoot;
+    ushort wallCrawlProbeRightFoot;
+    ushort wallCrawlProbeUp;
+    ushort wallCrawlProbeDown;
+    ushort wallCrawlProbeLeft;
+    ushort wallCrawlProbeRight;
+    ushort wallCrawlProbeLeftHandOrientation;
+    ushort wallCrawlProbeRightHandOrientation;
+    ushort wallCrawlProbeLeftFootOrientation;
+    ushort wallCrawlProbeRightFootOrientation;
+    ushort wallCrawlDetectProbeFeetLeft;
+    ushort wallCrawlDetectProbeFeetRight;
+    ushort wallCrawlDetectProbeHandLeft;
+    ushort wallCrawlDetectProbeHandRight;
+    ushort wallCrawlDetectProbeLeft;
+    ushort wallCrawlDetectProbeRight;
+    ushort wallCrawlProbeAxe;
+    ushort wallCrawlProbeMarkupArrow;
+    FSkip(2);
+    float wallCrawlOmniJumpVel[3];
+    float wallCrawlSavingGrabPromptZOffset;
+    float wallCrawlJumpUpHelperAngle;
+    float wallCrawlEdgeDetectDist;
+    ushort wallCrawlDetectFromRope;
+    FSkip(2);
+    float wallCrawlFromRopeZOffset;
+    short wallBlockageProbeLength;
+    short wallBlockageProbeZOffset;
+    short wallBlockageProbeYOffset;
+    FSkip(2);
+    float wallCrawlBlockageStickAngle;
+    float wallCrawlBlockageStickPersistAngle;
+    float wallCrawlBlockageSpeed;
+    float wallCrawlBlockagePersistSpeed;
+    short wallCrawlOldBlockagePersistTime;
+    FSkip(2);
+    float wallCrawlOldBlockagePersistDist;
+    float wallCrawlMaintainDeflectedSpeed;
+} WallCrawlTuneData <optimize=false>;
+
+typedef struct
+{
+    float innerRadius;
+    float outerRadius;
+    float minAngleDeg;
+    float maxAngleDeg;
+} PlayerProp__TR9Proto_AnalogStickZoneData <optimize=false>;
+
+typedef struct
+{
+    float maxDuration;
+    float maxFwdDuration;
+    float maxBackDuration;
+    float maxLeftDuration;
+    float maxRightDuration;
+} PlayerProp__TR9Proto_RadialFlickData <optimize=false>;
+
+typedef struct
+{
+    float maxDuration;
+    float maxFwdDuration;
+    float maxBackDuration;
+    float maxLeftDuration;
+    float maxRightDuration;
+} PlayerProp__TR9Proto_ChordFlickData <optimize=false>;
+
+typedef struct
+{
+    float maxDuration;
+    float maxFwdDuration;
+    float maxBackDuration;
+    float maxLeftDuration;
+    float maxRightDuration;
+    float angleDeg;
+    float fwdAngleDeg;
+    float backAngleDeg;
+    float leftAngleDeg;
+    float rightAngleDeg;
+} PlayerProp__TR9Proto_CircleFlickData <optimize=false>;
+
+typedef struct
+{
+    PlayerProp__TR9Proto_AnalogStickZoneData standardPainZone;
+    PlayerProp__TR9Proto_AnalogStickZoneData fwdPainZone;
+    PlayerProp__TR9Proto_AnalogStickZoneData backPainZone;
+    PlayerProp__TR9Proto_AnalogStickZoneData leftPainZone;
+    PlayerProp__TR9Proto_AnalogStickZoneData rightPainZone;
+} PlayerProp__TR9Proto_StuckPainData <optimize=false>;
+
+typedef struct
+{
+    PlayerProp__TR9Proto_AnalogStickZoneData innerZone;
+    PlayerProp__TR9Proto_AnalogStickZoneData outerZone;
+    PlayerProp__TR9Proto_RadialFlickData radialFlick;
+    PlayerProp__TR9Proto_ChordFlickData chordFlick;
+    PlayerProp__TR9Proto_CircleFlickData circleFlick;
+    PlayerProp__TR9Proto_StuckPainData stuckPain;
+} PlayerProp__TR9Proto_StickFlickAttackData <optimize=false>;
+
+typedef struct
+{
+    PlayerProp__TR9Proto_StickFlickAttackData stickFlickAttack;
+} PlayerProp__tr9_prototype_melee_tune_data <optimize=false>;
+
+typedef struct
+{
+    float xFreq;
+    float yFreq;
+    float xMag;
+    float yMag;
+    float phase;
+} PlayerProp__Prototype_AccurateAim_HarmonicJitterData <optimize=false>;
+
+typedef struct
+{
+    char type;
+    FSkip(3);
+    PlayerProp__Prototype_AccurateAim_HarmonicJitterData harmonic;
+} PlayerProp__Prototype_AccurateAim_JitterData <optimize=false>;
+
+typedef struct
+{
+    PlayerProp__Prototype_AccurateAim_JitterData jitter;
+} PlayerProp__Prototype_AccurateAimData <optimize=false>;
+
+typedef struct
+{
+    PlayerProp__Prototype_AccurateAimData accurateAim;
+    float fEoNTargetRadius;
+    float fHuntedTimeoutSeconds;
+    float fHuntedRangeBehind;
+    float fHuntedAngleBehind;
+    float dARCombatCursorSpeed;
+    float fARCombatTargetRadius;
+    float dARCombatUntargetedCursorSpeed;
+    float dCameraLagShpereRadius;
+    float dCameraLagboxHalfWidth;
+    float dCameraLagboxHalfHeight;
+    float fCameraLagboxMoveSpeed;
+    float fARCombatReticuleMovementRadius;
+    ubyte fCameraLagStrength[64];
+} PlayerProp__prototypeTuneData <optimize=false>;
+
+typedef struct
+{
+    float min;
+    float max;
+} InputTracker__StickMagnitudeZone <optimize=false>;
+
+typedef struct
+{
+    ushort source;
+    FSkip(2);
+    float angle;
+    unsigned int magnitude;
+    FSkip(4);
+    Ref debugNameRef;
+    if (CanSeekTo(debugNameRef))
+    {
+        SeekToRef(debugNameRef);
+        string debugName;
+        ReturnFromRef();
+    }
+} InputTracker__StickTrackingPin <optimize=false>;
+
+typedef struct
+{
+    unsigned int nextMove;
+    int inventoryAnim;
+    short minTime;
+    short maxTime;
+    short resetTime;
+    short staleResetTime;
+    short minRange;
+    short maxRange;
+    short priority;
+    ushort enabled : 1;
+    ushort strictMove : 1;
+    ushort upperBodyCombo : 1;
+    ushort debugPad : 13;
+    unsigned int numPriorMoves;
+    FSkip(4);
+    Ref priorMoveListRef;
+    if (CanSeekTo(priorMoveListRef))
+    {
+        SeekToRef(priorMoveListRef);
+        unsigned int priorMoveList[numPriorMoves];
+        ReturnFromRef();
+    }
+    unsigned int numNextMoves;
+    FSkip(4);
+    Ref nextMoveListRef;
+    if (CanSeekTo(nextMoveListRef))
+    {
+        SeekToRef(nextMoveListRef);
+        unsigned int nextMoveList[numNextMoves];
+        ReturnFromRef();
+    }
+    Ref debugNameRef;
+    if (CanSeekTo(debugNameRef))
+    {
+        SeekToRef(debugNameRef);
+        string debugName;
+        ReturnFromRef();
+    }
+} InputTracker__StickComboMove <optimize=false>;
+
+typedef struct
+{
+    Ref mpStickMagnitudesRef;
+    if (CanSeekTo(mpStickMagnitudesRef))
+    {
+        SeekToRef(mpStickMagnitudesRef);
+        InputTracker__StickMagnitudeZone mpStickMagnitudes;
+        ReturnFromRef();
+    }
+    Ref mpStickTrackingPinsRef;
+    if (CanSeekTo(mpStickTrackingPinsRef))
+    {
+        SeekToRef(mpStickTrackingPinsRef);
+        InputTracker__StickTrackingPin mpStickTrackingPins;
+        ReturnFromRef();
+    }
+    Ref mpStickComboMovesRef;
+    if (CanSeekTo(mpStickComboMovesRef))
+    {
+        SeekToRef(mpStickComboMovesRef);
+        InputTracker__StickComboMove mpStickComboMoves;
+        ReturnFromRef();
+    }
+    short miComboResetTime;
+    short miComboStaleResetTime;
+    ushort miNumMags;
+    ushort miNumPins;
+    ushort miNumCombos;
+} InputTracker <optimize=false>;
+
+typedef struct
+{
+    float aPThreshold;
+    float aPDecaySec;
+    float aPDecaySecWhileAdrenaline;
+    float aPUpperCap;
+    float cooldownWindowSec;
+    EventEnum eventAdrenalineStart;
+    EventEnum eventAdrenalineEnd;
+} PlayerProp__adrenaline_tune_data <optimize=false>;
+
+typedef struct
+{
+    ubyte curve[16];
+} SteeringCurveType <optimize=false>;
+
+typedef struct
+{
+    float frames;
+    float degrees;
+    float velocityFraction;
+} SteeringCurveNode <optimize=false>;
+
+typedef struct
+{
+    unsigned int listCountCurveList;
+    FSkip(4);
+    Ref curveListRef;
+    if (CanSeekTo(curveListRef))
+    {
+        SeekToRef(curveListRef);
+        SteeringCurveNode curveList;
+        ReturnFromRef();
+    }
+} SteeringCurveChain <optimize=false>;
+
+typedef union
+{
+    SteeringCurveType interpolated;
+    SteeringCurveChain procedural;
+} SteeringCurveTypeUnion;
+
+typedef struct
+{
+    int curveType;
+    SteeringCurveTypeUnion curveEntry;
+    FSkip(4);
+    Ref debugNameRef;
+    if (CanSeekTo(debugNameRef))
+    {
+        SeekToRef(debugNameRef);
+        string debugName;
+        ReturnFromRef();
+    }
+} SteeringCurveOption <optimize=false>;
+
+typedef struct
+{
+    unsigned int listCountCurvesList;
+    FSkip(4);
+    Ref curvesListRef;
+    if (CanSeekTo(curvesListRef))
+    {
+        SeekToRef(curvesListRef);
+        SteeringCurveOption curvesList;
+        ReturnFromRef();
+    }
+} SteeringTuneData <optimize=false>;
+
+typedef union
+{
+    unsigned int byType;
+    unsigned int byIndex;
+} HostedModelRefUnion;
+
+typedef struct
+{
+    unsigned int objectID;
+    ushort objectLoadDep;
+    FSkip(2);
+    int refType;
+    HostedModelRefUnion refData;
+    byte useAltMaterialSet;
+    FSkip(3);
+    unsigned int altMaterialSetType;
+} HostedModelRef <optimize=false>;
+
+typedef struct
+{
+    ushort objectLoadDep;
+    FSkip(2);
+    unsigned int modelSlotIndex;
+} ModelSlotRefByIndex <optimize=false>;
+
+typedef union
+{
+    unsigned int byType;
+    ModelSlotRefByIndex byIndex;
+} ModelSlotRefUnion;
+
+typedef struct
+{
+    int refType;
+    ModelSlotRefUnion refData;
+} ModelSlotRef <optimize=false>;
+
+typedef struct
+{
+    float dAimAnchorOffset;
+    float dAimBoom[3];
+    float dAimPanHRate;
+    float dAimPanVRate;
+    float dAimMinPitch;
+    float dAimMaxPitch;
+    float dAimFov;
+    float dAimFovSpeed;
+    float dAimCursorXOff;
+    float dAimCursorYOff;
+    float dAimInterpIn;
+    float dAimInterpCtrl1;
+    float dAimInterpCtrl2;
+    float dAimProjDistFactor;
+    float dAimMinRange;
+    float dAimMaxRange;
+    float dAimSwingDelay;
+    char dAimStick;
+    ubyte dAimProjInterpIn;
+    char aimPad_1;
+    char aimPad_2;
+    float dAimAssistInnerRadius;
+    float dAimAssistOuterWidth;
+    float dAimAssistOuterHeight;
+    float dAimAssistTimeSlowH;
+    float dAimAssistTimeSlowV;
+    ubyte dHorizontalAxis[32];
+    ubyte dVerticalAxis[32];
+    float dAimAssistUpOffset;
+    float dAimAssistDownOffset;
+    float dAimAssistHorizontalOffset;
+    float dAimAssistHorizontalWeight;
+    float dAimAssistVerticalWeight;
+    float dAimAssist3DDistanceWeight;
+    float dAimAssistAutofaceRotSpeed;
+    Ref dAimCameraSensitivityRef;
+    if (CanSeekTo(dAimCameraSensitivityRef))
+    {
+        SeekToRef(dAimCameraSensitivityRef);
+        float dAimCameraSensitivity;
+        ReturnFromRef();
+    }
+    unsigned int dAimSensitivityCount;
+} PlayerProp__aim_tune_data <optimize=false>;
+
+typedef struct
+{
+    ushort aimProbeGun;
+    ushort aimProbeCamera;
+    ushort aimFlammableProbeCamera;
+    ushort aimProbeCameraOverride1;
+    ushort aimProbeCameraOverride2;
+    ushort aimProbeCameraOverride3;
+    ushort aimProbeCameraOverride4;
+    ModelBoneOrMarkerReference fireFromMarkerRef;
+    FSkip(2);
+    float defaultSnapTime;
+} AimDataUser <optimize=false>;
+
+typedef struct
+{
+    ushort forwardProbe;
+    ushort sideProbe;
+    int startOffset[3];
+    int startOffsetCover[3];
+    float distPerProbe;
+    int numProbes;
+    float lrSlop;
+    float probeLen;
+    float minContact;
+    int narrowTestHits;
+    float extraCamDist;
+} PlayerProp__CameraSwitchTuneData <optimize=false>;
+
+typedef struct
+{
+    unsigned int weaponProbe;
+    int wpnStartOffset[3];
+    unsigned int clearanceProbe;
+    int clrStartOffset[3];
+    float probeSlack;
+    float probeSlackHysteresis;
+    float probeAvoidClippingMaxMove;
+    byte mirror;
+    FSkip(3);
+    float extraEdgeDistance;
+    float attackerDistThreshold;
+    float distanceCheckHysteresis;
+    float distFromLeftForSwitch;
+    float minLenForSwitch;
+    float cornerAngle;
+    unsigned int leftShoulder;
+    unsigned int rightShoulder;
+    float distBehindLShoulder;
+    float distBehindRShoulder;
+    int handOffset[3];
+    float distPastCornerToStepBackCrouch;
+    float distPastCornerToStepBackFromAimCrouch;
+    float distBeforeCornerToStepBackCrouch;
+    float distBeforeCornerToStepBackFromAimCrouch;
+    float distFromCoverForStepBackCrouch;
+    float distFromCoverForStepBackFromAimCrouch;
+    float distPastCornerToStepBackStand;
+    float distPastCornerToStepBackFromAimStand;
+    float distBeforeCornerToStepBackStand;
+    float distBeforeCornerToStepBackFromAimStand;
+    float distFromCoverForStepBackStand;
+    float distFromCoverForStepBackFromAimStand;
+    float backFacingAngleToStepBack;
+    float backFacingAngleToStepBackFromAim;
+    float frontFacingAngleToStepBack;
+    float frontFacingAngleToStepBackFromAim;
+    float backCameraFacingAngleToStepBack;
+    float frontCameraFacingAngleToStepBack;
+    int offsetFromLCCorner[3];
+    int offsetFromRCCorner[3];
+    int offsetFromLSCorner[3];
+    int offsetFromRSCorner[3];
+    float wallLeanFacingAngle;
+    int offsetFromCornerForLean[3];
+    float cameraFacingThresholdForStepIntoLean;
+    float cameraFacingThresholdForStepIntoLeanFacingCorner;
+    float minSegLenToStepBack;
+} PlayerProp__CoverTuneData <optimize=false>;
+
+typedef struct
+{
+    unsigned int probe;
+    ushort reqTrait;
+    ushort advTrait;
+    unsigned int reqMeleeMove;
+} PlayerProp__DeathFromAboveTuneData <optimize=false>;
+
+typedef struct
+{
+    float maxTurnAngle;
+    float velocity;
+    float delaySteeringFrames;
+} PlayerProp__JumpEscapeTuneData <optimize=false>;
+
+typedef struct
+{
+    unsigned int bone;
+} OrientControllerJoint <optimize=false>;
+
+typedef struct
+{
+    Ref orientControllerRef;
+    if (CanSeekTo(orientControllerRef))
+    {
+        SeekToRef(orientControllerRef);
+        OrientControllerJoint orientController;
+        ReturnFromRef();
+    }
+    float offset[3];
+    float horizWeight;
+    float vertWeight;
+    uint useOffsetFromMaya : 1;
+    int _Bitfieldpadding4 : 31;
+} OrientControllerWeight <optimize=false>;
+
+typedef struct
+{
+    float facingAngle;
+    float blendValue1;
+    float blendValue2;
+    FSkip(4);
+    Ref orientControllerWeightListRef;
+    unsigned int numOrientControllerWeights;
+    if (CanSeekTo(orientControllerWeightListRef))
+    {
+        SeekToRef(orientControllerWeightListRef);
+        OrientControllerWeight orientControllerWeightList[numOrientControllerWeights];
+        ReturnFromRef();
+    }
+} OrientControllerWeightSet <optimize=false>;
+
+typedef struct
+{
+    float rampOnControllerTime;
+    float rampOffControllerTime;
+    float rampOnChainTime;
+    float rampOffChainTime;
+    unsigned int leftHandTargetMarkerIndex;
+    int leftArmIKChainIndex;
+    float oneHandTransitionAngle;
+    uint useProceduralAim : 1;
+    uint useLeftHandIK : 1;
+    int _Bitfieldpadding8 : 30;
+    Ref orientControllerListRef;
+    unsigned int numOrientControllers;
+    if (CanSeekTo(orientControllerListRef))
+    {
+        SeekToRef(orientControllerListRef);
+        OrientControllerJoint orientControllerList[numOrientControllers];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref weightSetListRef;
+    unsigned int numWeightSets;
+    if (CanSeekTo(weightSetListRef))
+    {
+        SeekToRef(weightSetListRef);
+        OrientControllerWeightSet weightSetList[numWeightSets];
+        ReturnFromRef();
+    }
+} ProceduralAnimParams <optimize=false>;
+
+typedef struct
+{
+    float dOEMaxWet;
+    float dOEMaxDirty;
+    float dOEDryOffSpeed;
+    float dOECleanOffSpeed;
+    float dOEWashOffSpeed;
+    float dOEWetSpeed;
+    float dOEDirtySpeed;
+    float dOESweatSpeed;
+} PlayerProp__overlay_effects <optimize=false>;
+
+typedef struct
+{
+    uint unused00 : 1;
+    uint unused01 : 1;
+    uint unused02 : 1;
+    uint unused03 : 1;
+    uint unused04 : 1;
+    uint unused05 : 1;
+    uint unused06 : 1;
+    uint unused07 : 1;
+    uint unused08 : 1;
+    uint unused09 : 1;
+    uint unused10 : 1;
+    uint unused11 : 1;
+    uint unused12 : 1;
+    uint dDisableMarkupAimIk : 1;
+    uint dDebugLedgePlayerRelativeControls : 1;
+    uint dDebugPatternFlag9 : 1;
+    uint dDebugPatternFlag8 : 1;
+    uint dDebugPatternFlag7 : 1;
+    uint dDebugPatternFlag6 : 1;
+    uint dDebugPatternFlag5 : 1;
+    uint dDebugPatternFlag4 : 1;
+    uint dDebugPatternFlag3 : 1;
+    uint dDebugPatternFlag2 : 1;
+    uint dDebugPatternFlag1 : 1;
+    uint dDebugPatternFlag0 : 1;
+    uint dDebugLedgeNonBraced : 1;
+    uint dDebugAllowCrawl : 1;
+    uint dDebugAllowIdle180 : 1;
+    uint dDebugAllowRunLeaning : 1;
+    uint dDebugAllowRun180 : 1;
+    uint dDebugAllowRun90 : 1;
+    int _Bitfieldpadding0 : 1;
+    char dDebugPullupSurfaceType;
+} PlayerProp__debug_mechanic_tune_data <optimize=false>;
+
+typedef struct
+{
+    float electrifiedThrowAngle;
+    float electrifiedThrowEnergy;
+    AnimReference electrifiedAnimRef;
+    AnimReference hitLightAnimRef;
+    AnimReference hitMediumAnimRef;
+    AnimReference hitLightSwimAnimRef;
+    AnimReference hitSwimChokeAnimRef;
+    AnimReference hitFireAnimRef;
+    AnimReference hitPoisonAnimRef;
+    AnimReference unbalanceAnimRef;
+} PlayerProp__hit_reaction_tune_data <optimize=false>;
+
+typedef struct
+{
+    float maxVel;
+    float defaultSavingGrabDist;
+    float defaultSavingGrabHorizDist;
+    float defaultSavingGrabTimeInAir;
+    float defaultSavingGrabFallSpeed;
+    unsigned int defaultSavingGrabRandom;
+    unsigned int defaultJumpDetectionTime;
+    MovesetProfile_MoveTypeEnum savingGrabChanceModifier;
+    float defaultReattachDist;
+    short inairNumPosIterations;
+    short initialNumPosInterations;
+    short noPosUpdateFrameBeforeConnect;
+    FSkip(2);
+    float maxUpVel;
+    float upDownChangeOverVel;
+    float maxDownVel;
+    float maxForwardVel;
+    float worldGravity;
+    float airFriction;
+    float airFrictionSprint;
+    float maxLocalVelocityForward;
+    float maxLocalVelocityBackwards;
+    float maxLocalVelocityLeftRight;
+    float gutAttachHeight;
+    float shinAttachHeight;
+    float gutAttachHeightRising;
+    float shinAttachHeightRising;
+    float attachHysteresis;
+    byte timeDilatedHysteresis;
+    FSkip(3);
+    float highHurdleClearance;
+    float markupMagnetismMaxDist;
+    float swanDiveRadius;
+    ushort traitRequirementSavingGrab;
+    ushort savingGrabExtraTime;
+} in_air_tune_data <optimize=false>;
+
+typedef struct
+{
+    int key;
+    unsigned int value;
+} TargetingType <optimize=false>;
+
+typedef struct
+{
+    unsigned int listCountMarkupDetection;
+    FSkip(4);
+    Ref markupDetectionMapListRef;
+    if (CanSeekTo(markupDetectionMapListRef))
+    {
+        SeekToRef(markupDetectionMapListRef);
+        TargetingType markupDetectionMapList;
+        ReturnFromRef();
+    }
+} MarkupDetectionTable <optimize=false>;
+
+typedef struct
+{
+    short dMarkUpMovementDetectXYDist;
+    short dMarkUpMovementDetectZDist;
+    short dMarkUpMovementDetectZOffset;
+    short dMarkUpWaterDetectXYDist;
+    short dMarkUpWaterDetectZDist;
+    short dMarkUpWaterDetectZOffset;
+    short dLedgeSafeGrabCatchMinZDist;
+    short dLedgeSafeGrabCatchZDist;
+    short dLedgeSafeGrabCatchXYDist;
+    short dMinDistToOtherPlayers;
+} PlayerProp__markup_detection_tune_data <optimize=false>;
+
+typedef struct
+{
+    char impulsePositionType;
+    char impulseDirectionType;
+    char impulseMagnitudeType;
+    FSkip(1);
+    float horizontalImpulseMed;
+    float horizontalImpulseLow;
+    float verticalImpulseMed;
+    float verticalImpulseLow;
+    float maxFollowThroughVel;
+    ubyte kickFrameMed;
+    ubyte kickFrameLow;
+    FSkip(2);
+    float medLowKickThreshold;
+} PlayerProp__physics_kick_tune_data <optimize=false>;
+
+typedef struct
+{
+    float animationSpeedCap;
+    float animationMultiplierMin;
+    float animationMultiplierMax;
+    float pushSpeed;
+    float pushMomentum;
+    float pushMaxForcePerKilogram;
+    float pushMaxForce;
+    float forwardWedgeAngle;
+    float backwardWedgeAngle;
+    float proxyRadius;
+    float proxyMassPercentage;
+    int weldJointStepIterations;
+    float maxXYSpeed;
+    float maxZSpeed;
+    float maxForwardTiltAngle;
+    float maxBackwardTiltAngle;
+    float maxSidewaysTiltAngle;
+    float maxAngularSpeed;
+    float pullForceMagnitude;
+    unsigned int pushProbe;
+} PlayerProp__push_pull_tune_data <optimize=false>;
+
+typedef struct
+{
+    float maxSenseDistance;
+    float maxEngageVelocity;
+    float senseAngleMult;
+    float senseDistMult;
+    float lookAtOverrideProbeTolerance;
+    float lookAtOverrideYCone;
+    float lookAtOverrideZCone;
+    float lookAtMaxHeadHorizontal;
+    float lookAtMaxHeadVertical;
+    float lookAtReferencePointZOffset;
+    ModelBoneOrMarkerReference lookAtReferencePoint;
+    ModelBoneOrMarkerReference lookAtTestPoint;
+} PlayerProp__physics_sense_tune_data <optimize=false>;
+
+typedef struct
+{
+    ushort eTrait;
+    FSkip(2);
+    float fScale;
+} PlayerProp__InstinctScale <optimize=false>;
+
+typedef struct
+{
+    byte pulseEnabled;
+    FSkip(3);
+    float pulseOuterRadius;
+    short pulseOuterTimer;
+    short pulseOuterValue;
+    float pulseInnerRadius;
+    short pulseInnerTimer;
+    short pulseInnerValue;
+    float timeForAutoDisable;
+    ubyte bDebugDraw : 1;
+    byte _Bitfieldpadding8 : 7;
+    FSkip(1);
+    ushort nRequired;
+    FSkip(4);
+    Ref aRequiredRef;
+    if (CanSeekTo(aRequiredRef))
+    {
+        SeekToRef(aRequiredRef);
+        PlayerProp__InstinctScale aRequired;
+        ReturnFromRef();
+    }
+} PlayerProp__instinct_mode <optimize=false>;
+
+typedef struct
+{
+    float physicsJumpingWeight;
+    float physicsJumpingFrames;
+    float physicsLandingWeight;
+    float physicsLandingFrames;
+} PlayerProp__physics_jumping_landing_tune_data <optimize=false>;
+
+typedef struct
+{
+    ModelBoneOrMarkerReference attachPoint;
+    float attachDistThreshold;
+    Ref debugNameRef;
+    if (CanSeekTo(debugNameRef))
+    {
+        SeekToRef(debugNameRef);
+        string debugName;
+        ReturnFromRef();
+    }
+} PlayerProp__zipline_tune_data__attachmentPointData <optimize=false>;
+
+typedef struct
+{
+    float deflectionDelay;
+    float deflectionRate;
+    float maxDeflection;
+    float ropeShimmyOffsetCurve[45];
+    float distFromEnd;
+    float attachDistFromEnd;
+    Ref attachmentPointsRef;
+    if (CanSeekTo(attachmentPointsRef))
+    {
+        SeekToRef(attachmentPointsRef);
+        PlayerProp__zipline_tune_data__attachmentPointData attachmentPoints;
+        ReturnFromRef();
+    }
+    unsigned int numAttachPoints;
+    float ropePointMaxVel;
+    float ropeInterpSnapDistance;
+    float fBlockageProbeZOffset;
+    float minDistanceFromPost;
+    float speedToCorrectFromPost;
+} PlayerProp__zipline_tune_data <optimize=false>;
+
+typedef struct
+{
+    Ref defaultIdleRef;
+    if (CanSeekTo(defaultIdleRef))
+    {
+        SeekToRef(defaultIdleRef);
+        PlayerProp__idleanim defaultIdle;
+        ReturnFromRef();
+    }
+    float minCameraDistance;
+} PlayerProp__idle_tune_data <optimize=false>;
+
+typedef struct
+{
+    float lagMeterDecayTimeSeconds;
+    float lagMeterMaxDist;
+    float lagMeterMaxSpeed;
+    float lagForHPoleAttach;
+    float lagForZipLineAttach;
+    float lagForZipLineDetach;
+    float lagForSlopeSlideStart;
+    float lagForRopeSwing;
+    float lagForRunStart;
+    float runLagStartTimeSeconds;
+    float lagForCombatRunStart;
+    float combatRunLagStartTimeSeconds;
+    float lagForEnterLOS;
+    float lagMeterDecayTimeForLOSSeconds;
+    float lagMeterDecayTimeForFlairChainFactorSeconds;
+    unsigned int numFlairChainFactors;
+    float flairChainLagFactor[8];
+} PlayerProp__position_lag_tune_data <optimize=false>;
+
+typedef struct
+{
+    float animationTranslation[3];
+    float lowProbeLength;
+    float lowProbeHeight;
+    float highProbeHeight;
+    float flatSurfaceTolerance;
+    ushort mantleOnTerrain : 1;
+    ushort mantleOnAllGeoms : 1;
+    ushort enableSteering : 1;
+    short _Bitfieldpadding5 : 13;
+} PlayerProp__MantleStateTuneData <optimize=false>;
+
+typedef struct
+{
+    float fMaxWanderRange;
+    float fMinDegPerFrame;
+    float fMaxDegPerFrame;
+    short iMinDirChangeFrames;
+    short iMaxDirChangeFrames;
+    short iMinSpeedChangeFrames;
+    short iMaxSpeedChangeFrames;
+    float fStableAngle;
+    float fOverbalanceAngle;
+    float fFiddleSensitivity;
+    float fFiddleThreshold;
+    float fFiddleFactor;
+    float fWobbleBlendRateNearStable;
+    float fWobbleBlendRateNearLimit;
+    short iSafetyFrames;
+    short iReactionFrames;
+    short iMaxUnbalancedFrames;
+    short iMinRecoveryFrames;
+    short iMinAboutToFallFrames;
+    ubyte bRecenterOnceRebalanced : 1;
+    ubyte bAsymmetricalSafeZone : 1;
+    byte _Bitfieldpadding19 : 6;
+} BalanceBeamParams <optimize=false>;
+
+typedef struct
+{
+    float fUnbalanceFromStick;
+    float fUnbalanceFromTime;
+    float fWobbleBlendAccel;
+    float fWobbleBlendMaxRate;
+    float fJumpOffUnbalancedAngleMin;
+    float fJumpOffUnbalancedAngleMax;
+    float fBlockageProbeZOffset;
+    float fBlockageProbeDistance;
+    ubyte bLandingUsesBalance : 1;
+    ubyte bBalanceUsesXAxis : 1;
+    ubyte bJumpOffWhileUnbalanced : 1;
+    ubyte bUnbalanceFromVisual : 1;
+    ubyte bIdleFacingPrefersBeamDir : 1;
+    byte _Bitfieldpadding8 : 3;
+    FSkip(3);
+    BalanceBeamParams hpoleData;
+    FSkip(3);
+    BalanceBeamParams bendyHpoleData;
+    FSkip(3);
+    BalanceBeamParams sprintData;
+    FSkip(3);
+    BalanceBeamParams idleRecoveryData;
+    FSkip(1);
+    ushort groundAheadProbe;
+} BalanceBeamTuneData <optimize=false>;
+
+typedef struct
+{
+    float fFacingMomentum;
+    float fSidewaysMomentum;
+    float fJumpDirMomentum;
+    float fJumpPerpMomentum;
+    float fVerticalMomentum;
+    short iTargetingTrailFrames;
+    short iTargetingLeadFrames;
+} PlayerProp__MovingPlatformTuneData <optimize=false>;
+
+typedef struct
+{
+    int miMoveType;
+    int miDestMove;
+    unsigned int miListCountActionList;
+    FSkip(4);
+    Ref mpActionListRef;
+    if (CanSeekTo(mpActionListRef))
+    {
+        SeekToRef(mpActionListRef);
+        unsigned int mpActionList;
+        ReturnFromRef();
+    }
+    float mfTransFrameStart;
+    float mfTransFrameEnd;
+    int meMoveDir;
+} GymnasticsChainMove <optimize=false>;
+
+typedef struct
+{
+    float maxHealthPercent;
+    byte bEnabled;
+    FSkip(3);
+    unsigned int listCountMoveList;
+    FSkip(4);
+    Ref moveListRef;
+    if (CanSeekTo(moveListRef))
+    {
+        SeekToRef(moveListRef);
+        GymnasticsChainMove moveList;
+        ReturnFromRef();
+    }
+    Ref mpDebugNameRef;
+    if (CanSeekTo(mpDebugNameRef))
+    {
+        SeekToRef(mpDebugNameRef);
+        string mpDebugName;
+        ReturnFromRef();
+    }
+} GymnasticsChain <optimize=false>;
+
+typedef struct
+{
+    unsigned int listCountChainList;
+    FSkip(4);
+    Ref chainListRef;
+    if (CanSeekTo(chainListRef))
+    {
+        SeekToRef(chainListRef);
+        GymnasticsChain chainList;
+        ReturnFromRef();
+    }
+} GymnasticsTuneData <optimize=false>;
+
+typedef struct
+{
+    ushort traitToEnableInjury;
+    ushort traitForInjury;
+} PlayerProp__InjuryTuneData <optimize=false>;
+
+typedef struct
+{
+    float pingDuration;
+    float cooldownDuration;
+    float range;
+} vision_mode_tune_data <optimize=false>;
+
+typedef struct
+{
+    float dolly;
+    float truck[3];
+    float pitch;
+    float pitchOffset;
+    float yaw;
+    float yawOffset;
+    float roll;
+    float zoom;
+} SimpleCamController__InitialValues <optimize=false>;
+
+typedef struct
+{
+    float dollyCoeff;
+    float dollyMax;
+    float dollyMin;
+    float truckHorizCoeff;
+    float truckHorizMax;
+    float truckHorizMin;
+    float truckVertCoeff;
+    float truckVertMax;
+    float truckVertMin;
+    float pitchCoeff;
+    float pitchMax;
+    float pitchMin;
+    float yawCoeff;
+    float zoomCoeff;
+    float zoomMax;
+    float zoomMin;
+} SimpleCamController__InputAdjustmentValues <optimize=false>;
+
+typedef struct
+{
+    byte enableDolly;
+    byte enableHorizTruck;
+    byte enableVertTruck;
+    byte enablePitch;
+    byte enableYaw;
+    byte enableZoom;
+} SimpleCamController__InputEnableValues <optimize=false>;
+
+typedef struct
+{
+    byte enable;
+    FSkip(3);
+    float radius;
+    float probeOffset;
+    int lowSegment;
+    int medSegment;
+    int highSegment;
+} SimpleCamController__CameraCollision <optimize=false>;
+
+typedef struct
+{
+    byte invertYaw;
+    byte invertPitch;
+} SimpleCamController__InvertInputValues <optimize=false>;
+
+typedef struct
+{
+    byte enable;
+    FSkip(3);
+    float maxDist;
+    float maxSpeed;
+} SimpleCamController__CombatLockOn <optimize=false>;
+
+typedef struct
+{
+    int segment;
+    SimpleCamController__InitialValues initializers;
+    SimpleCamController__InputAdjustmentValues inputCoefficients;
+    SimpleCamController__InputEnableValues enableInputs;
+    SimpleCamController__CameraCollision collision;
+    SimpleCamController__InvertInputValues invertControls;
+    SimpleCamController__CombatLockOn combatLockOn;
+} SimpleCamController <optimize=false>;
+
+typedef struct
+{
+    float truck[3];
+    float dolly;
+    float dollyYaw;
+    float dollyPitch;
+    float yaw;
+    float pitch;
+    float minFOV;
+    float maxFOV;
+    float horizontalFOVInterpStart;
+    float horizontalFOVInterpEnd;
+    float verticalFOVInterpStart;
+    float verticalFOVInterpEnd;
+    float maxHorizontalPlayerSeparation;
+    float maxVerticalPlayerSeparation;
+    float focusDampeningControl;
+    float attractionWeight;
+    float attractionMaxLength;
+    float offsetDampeningControl;
+} IsoCamController__InitialValues <optimize=false>;
+
+typedef struct
+{
+    int segment;
+    float fOVLimit;
+    IsoCamController__InitialValues initializers;
+} IsoCamController <optimize=false>;
+
+typedef struct
+{
+    float focusPos[3];
+    float truck[3];
+    float dolly;
+    float dollyYaw;
+    float dollyPitch;
+    float yaw;
+    float pitch;
+    float fov;
+    float horizontalFOVInterpStart;
+    float horizontalFOVInterpEnd;
+    float verticalFOVInterpStart;
+    float verticalFOVInterpEnd;
+    float maxHorizontalPlayerSeparation;
+    float maxVerticalPlayerSeparation;
+    float focusDampeningControl;
+} MapViewCamController__MapViewValues <optimize=false>;
+
+typedef struct
+{
+    MapViewCamController__MapViewValues mapViewValues;
+} MapViewCamController <optimize=false>;
+
+typedef struct
+{
+} FreeCamController <optimize=false>;
+
+typedef struct
+{
+    float dolly;
+    float truck[3];
+    float pitch;
+    float yaw;
+    float roll;
+    float zoom;
+} ModelviewCamController__InitialValues <optimize=false>;
+
+typedef struct
+{
+    float dollyCoeff;
+    float truckHorizCoeff;
+    float truckVertCoeff;
+    float pitchCoeff;
+    float yawCoeff;
+    float zoomCoeff;
+} ModelviewCamController__InputAdjustmentValues <optimize=false>;
+
+typedef struct
+{
+    byte invertYaw;
+    byte invertPitch;
+} ModelviewCamController__InvertInputValues <optimize=false>;
+
+typedef struct
+{
+    int segment;
+    ModelviewCamController__InitialValues initializers;
+    ModelviewCamController__InputAdjustmentValues inputCoefficients;
+    ModelviewCamController__InvertInputValues invertControls;
+} ModelviewCamController <optimize=false>;
+
+typedef struct
+{
+    float dolly;
+    float truck[2];
+    float pitch;
+    float yaw;
+    float roll;
+    float zoom;
+    float focalLength;
+    float targetPosDampFreq;
+    float targetPosDampRatio;
+    byte useInitialPos;
+    byte useInitialRot;
+    byte useWorldRelative;
+    byte trackSelf;
+    byte useInitialCamPos;
+    byte useCumulativeRot;
+} AnchoredCamController__InitialValues <optimize=false>;
+
+typedef struct
+{
+    float dollyCoeff;
+    float dollyMax;
+    float dollyMin;
+    float truckHorizCoeff;
+    float truckHorizMax;
+    float truckHorizMin;
+    float truckVertCoeff;
+    float truckVertMax;
+    float truckVertMin;
+    float pitchCoeff;
+    float pitchMax;
+    float pitchMin;
+    float yawCoeff;
+    byte limitYaw;
+    byte limitTilt;
+    FSkip(2);
+    float yawMin;
+    float yawMax;
+    float zoomCoeff;
+    float zoomMax;
+    float zoomMin;
+} AnchoredCamController__InputAdjustmentValues <optimize=false>;
+
+typedef struct
+{
+    byte enableDolly;
+    byte enableHorizTruck;
+    byte enableVertTruck;
+    byte enablePitch;
+    byte enableYaw;
+    byte enableZoom;
+} AnchoredCamController__InputEnableValues <optimize=false>;
+
+typedef struct
+{
+    byte invertYaw;
+    byte invertPitch;
+} AnchoredCamController__InvertInputValues <optimize=false>;
+
+typedef struct
+{
+    byte enabled;
+    byte useSpring;
+    FSkip(2);
+    float delay;
+    float time;
+    int easeType;
+    float maxVel;
+    float damp;
+    float freq;
+    float mass;
+} AnchoredCamController__ReturnToCenter <optimize=false>;
+
+typedef struct
+{
+    int settingType;
+    float filmApertureX;
+    float filmApertureY;
+} CameraViewAngleSetting <optimize=false>;
+
+typedef struct
+{
+    int segment;
+    AnchoredCamController__InitialValues initializers;
+    FSkip(2);
+    AnchoredCamController__InputAdjustmentValues inputCoefficients;
+    AnchoredCamController__InputEnableValues enableInputs;
+    AnchoredCamController__InvertInputValues invertControls;
+    AnchoredCamController__ReturnToCenter returnToCenter;
+    CameraViewAngleSetting viewAngleSetting;
+} AnchoredCamController <optimize=false>;
+
+typedef struct
+{
+    float max;
+    float min;
+    float inputCoeff;
+    float restitution;
+    byte enableInput;
+    byte invertInput;
+    byte useRelLimits;
+} SplineCamController__InputConfig <optimize=false>;
+
+typedef struct
+{
+    float leftLimit;
+    float rightLimit;
+    float ratio;
+} SplineCamController__LateralOffset <optimize=false>;
+
+typedef struct
+{
+    byte enabled;
+    byte useSpring;
+    FSkip(2);
+    float delay;
+    float time;
+    int easeType;
+    float maxVel;
+    float damp;
+    float freq;
+    float mass;
+} SplineCamController__ReturnToCenter <optimize=false>;
+
+typedef struct
+{
+    SplineCamController__InputConfig panConfig;
+    FSkip(1);
+    SplineCamController__InputConfig tiltConfig;
+    FSkip(1);
+    CameraViewAngleSetting viewAngleSetting;
+    float focusOffset[3];
+    float dolly;
+    float pan;
+    float tilt;
+    float roll;
+    float zoom;
+    float focalLength;
+    float orientationInterpRate;
+    int segmentID;
+    float rodDist;
+    float dampening;
+    float frequency;
+    float mass;
+    byte enableFollowPosdampening;
+    FSkip(3);
+    float collisionRadius;
+    byte lookAtPlayer;
+    byte useLateralDistance;
+    FSkip(2);
+    SplineCamController__LateralOffset lateralOffset;
+    byte useScootBack;
+    FSkip(3);
+    float scootBackDist;
+    float scootBackTime;
+    float scootBackWaitTime;
+    SplineCamController__ReturnToCenter returnToCenter;
+} SplineCamController <optimize=false>;
+
+typedef struct
+{
+    float dolly;
+    float truck[3];
+    float pitch;
+    float pitchOffset;
+    float yaw;
+    float yawOffset;
+    float roll;
+    float zoom;
+} HmdCamController__InitialValues <optimize=false>;
+
+typedef struct
+{
+    float dollyCoeff;
+    float dollyMax;
+    float dollyMin;
+    float truckHorizCoeff;
+    float truckHorizMax;
+    float truckHorizMin;
+    float truckVertCoeff;
+    float truckVertMax;
+    float truckVertMin;
+    float pitchCoeff;
+    float pitchMax;
+    float pitchMin;
+    float yawCoeff;
+    float zoomCoeff;
+    float zoomMax;
+    float zoomMin;
+} HmdCamController__InputAdjustmentValues <optimize=false>;
+
+typedef struct
+{
+    byte enableDolly;
+    byte enableHorizTruck;
+    byte enableVertTruck;
+    byte enablePitch;
+    byte enableYaw;
+    byte enableZoom;
+} HmdCamController__InputEnableValues <optimize=false>;
+
+typedef struct
+{
+    byte enable;
+    FSkip(3);
+    float radius;
+    float probeOffset;
+    int lowSegment;
+    int medSegment;
+    int highSegment;
+} HmdCamController__CameraCollision <optimize=false>;
+
+typedef struct
+{
+    byte invertYaw;
+    byte invertPitch;
+} HmdCamController__InvertInputValues <optimize=false>;
+
+typedef struct
+{
+    byte enable;
+    FSkip(3);
+    float maxDist;
+    float maxSpeed;
+} HmdCamController__CombatLockOn <optimize=false>;
+
+typedef struct
+{
+    int segment;
+    HmdCamController__InitialValues initializers;
+    HmdCamController__InputAdjustmentValues inputCoefficients;
+    HmdCamController__InputEnableValues enableInputs;
+    HmdCamController__CameraCollision collision;
+    HmdCamController__InvertInputValues invertControls;
+    HmdCamController__CombatLockOn combatLockOn;
+} HmdCamController <optimize=false>;
+
+typedef struct
+{
+} ForceCamController <optimize=false>;
+
+typedef struct
+{
+    ModelBoneOrMarkerReference segment;
+    float zoom;
+    byte useZoomFromCameraJointScale;
+    FSkip(3);
+    float axis[3];
+    float angle;
+    byte doCutDetection;
+    FSkip(3);
+    float cutAngleThreshold;
+    float cutDistThreshold;
+} CameraBoneCamController <optimize=false>;
+
+typedef struct
+{
+    float pitch;
+    float dolly;
+    float truck[3];
+    float tilt;
+    float pan;
+    float roll;
+    float zoom;
+    float focalLength;
+} ExplorationCamController__ValueSet <optimize=false>;
+
+typedef struct
+{
+    float dolly;
+    float truck[3];
+    float zoom;
+    float focalLength;
+} ExplorationCamController__ModifiedCrouchValueSet <optimize=false>;
+
+typedef struct
+{
+    float truck[3];
+} ExplorationCamController__ModifiedTreePitonValueSet <optimize=false>;
+
+typedef struct
+{
+    float defaultPitch;
+    float defaultYaw;
+    byte defaultToBestCoverTarget;
+    FSkip(3);
+    ExplorationCamController__ValueSet high;
+    ExplorationCamController__ValueSet mid;
+    ExplorationCamController__ValueSet low;
+    byte useCrouch3ptModifiers;
+    FSkip(3);
+    float crouch3ptModifierInterpTimeIn;
+    float crouch3ptModifierInterpTimeOut;
+    ExplorationCamController__ModifiedCrouchValueSet crouchHigh;
+    ExplorationCamController__ModifiedCrouchValueSet crouchMid;
+    ExplorationCamController__ModifiedCrouchValueSet crouchLow;
+    ExplorationCamController__ModifiedCrouchValueSet concealedCrouchHigh;
+    ExplorationCamController__ModifiedCrouchValueSet concealedCrouchMid;
+    ExplorationCamController__ModifiedCrouchValueSet concealedCrouchLow;
+    byte useTreePiton3ptModifiers;
+    FSkip(3);
+    ExplorationCamController__ModifiedTreePitonValueSet treePitonHigh;
+    ExplorationCamController__ModifiedTreePitonValueSet treePitonMid;
+    ExplorationCamController__ModifiedTreePitonValueSet treePitonLow;
+    ubyte treePiton3PtModWeightCurve[16];
+    float standCovTruckOffset;
+    float standCovYawToBeginOffset;
+    float standCovYawToMaxOffset;
+    float standCovTruckOffsetDampFreq;
+    float standCovTruckOffsetDampRatio;
+    ubyte blendCurve_3ptInterpHighToMid[8];
+    ubyte blendCurve_3ptInterpMidToLow[8];
+} ExplorationCamController__InitialValues <optimize=false>;
+
+typedef struct
+{
+    byte enable;
+    byte enableAvoidance;
+    FSkip(2);
+    float minSpeed;
+    float minDistance;
+    float forTolerance;
+    float bakTolerance;
+    float maxVelocity;
+    float velocityScalar;
+    float sideVelocityScalar;
+    float delayBeforeFollow;
+    float inMaxVelocity;
+    float inDampening;
+    float outMaxVelocity;
+    float outDampening;
+    float maxVelAngle;
+    byte pitchEnable;
+    byte dontPitchUpInAir;
+    byte followAvoidRisingWater;
+    FSkip(1);
+    float pitchMaxVelocity;
+    float pitchVelScalar;
+    byte usePitchSpecificMinSpeed;
+    FSkip(3);
+    float pitchSpecificMinSpeed;
+    byte useYawSpecificMinSpeed;
+    FSkip(3);
+    float yawSpecificMinSpeed;
+} ExplorationCamController__FollowCamValues <optimize=false>;
+
+typedef struct
+{
+    float pitch;
+    float yaw;
+    float dolly;
+    float dollyStick;
+    float truck[2];
+    float tilt;
+    float pan;
+    float roll;
+    float zoom;
+    float focalLength;
+} ExplorationCamController__InputMultipliers <optimize=false>;
+
+typedef struct
+{
+    float pitch;
+    float yaw;
+    float dolly;
+    float truck[3];
+    float tilt;
+    float pan;
+    float roll;
+    float zoom;
+    float focalLength;
+} ExplorationCamController__MinimumValues <optimize=false>;
+
+typedef struct
+{
+    float pitch;
+    float yaw;
+    float dolly;
+    float truck[3];
+    float tilt;
+    float pan;
+    float roll;
+    float zoom;
+    float focalLength;
+} ExplorationCamController__MaximumValues <optimize=false>;
+
+typedef struct
+{
+    byte doAltMaxPitchInLowCeiling;
+    FSkip(3);
+    float maxPitchInLowCeiling;
+    float lowCeilingPitchDampInFreq;
+    float lowCeilingPitchDampInRatio;
+    float lowCeilingPitchDampOutFreq;
+    float lowCeilingPitchDampOutRatio;
+    int lowCeilingProbeInstanceSegment;
+    float lowCeilingProbeVector[3];
+    byte lowCeilingProbeDebugDraw;
+} ExplorationCamController__AltMaxPitchInLowCeilingParams <optimize=false>;
+
+typedef struct
+{
+    byte doCameraSwitchAtLimits;
+    FSkip(3);
+    float triggerTime;
+    float triggerMinInputStick;
+    float triggerRangePitchMin;
+    float triggerRangePitchMax;
+    float transitionAngVelMin;
+    float transitionAngVelMax;
+    float transitionVelMin;
+    float transitionVelMax;
+    unsigned int cameraComponentID;
+} ExplorationCamController__CameraSwitchAtLimitsParams <optimize=false>;
+
+typedef struct
+{
+    ExplorationCamController__InputMultipliers modifiers;
+    ExplorationCamController__MinimumValues minValues;
+    ExplorationCamController__MaximumValues maxValues;
+    ubyte blendWeightDampening[16];
+    ubyte nearYawLimitDampening[16];
+    unsigned int pitchStickResponseIndex;
+    float pitchDampening;
+    float pitchStickDiagScale;
+    unsigned int yawStickResponseIndex;
+    float yawDampening;
+    float yawStickDiagScale;
+    byte yawLimitsDisable;
+    byte yawRelativeToFacing;
+    byte yawLimitOnlyOnSync;
+    ExplorationCamController__AltMaxPitchInLowCeilingParams lowCeilingParams;
+    ExplorationCamController__CameraSwitchAtLimitsParams cameraSwitchAtLimitsParams;
+} ExplorationCamController__InputAdjustmentValues <optimize=false>;
+
+typedef struct
+{
+    byte enableDolly : 1;
+    byte enableHorizTruck : 1;
+    byte enableVertTruck : 1;
+    byte enablePitch : 1;
+    byte enableYaw : 1;
+    byte enableZoom : 1;
+    byte _Bitfieldpadding0 : 2;
+    FSkip(3);
+    unsigned int actionDollyForward;
+    unsigned int actionDollyBack;
+    unsigned int actionDollyStick;
+    unsigned int actionHorizTruck;
+    unsigned int actionVertTruck;
+    unsigned int actionPitch;
+    unsigned int actionYaw;
+    unsigned int actionZoomIn;
+    unsigned int actionZoomOut;
+} ExplorationCamController__InputEnableValues <optimize=false>;
+
+typedef struct
+{
+    byte enable;
+    byte disableFocusCollision;
+    FSkip(2);
+    float radius;
+    float probeOffset;
+    float probeOffsetFromCamPos;
+    short lowSegment;
+    short medSegment;
+    short highSegment;
+    short aboveHeadSeg;
+    short aboveHeadSegmentOffset;
+    short aboveHeadCloseCollideStart;
+    short aboveHeadCloseCollideMax;
+    byte doHandHearHeadCheck;
+    FSkip(1);
+    short handNearHeadSeg;
+    short handNearHeadSegmentOffset;
+    short handNearHeadCloseCollideStart;
+    short handNearHeadCloseCollideMax;
+    byte doBowNearHeadCheck;
+    FSkip(1);
+    short bowNearHeadSeg;
+    short bowNearHeadSegmentOffset;
+    short bowNearHeadCloseCollideStart;
+    short bowNearHeadCloseCollideMax;
+    FSkip(2);
+    float orbitMaxVelocity;
+    float orbitDampeningControlOut;
+    float orbitDampeningControlIn;
+    float orbitDampeningControlInFast;
+} ExplorationCamController__CameraCollision <optimize=false>;
+
+typedef struct
+{
+    byte invertYaw;
+    byte invertPitch;
+} ExplorationCamController__InvertInputValues <optimize=false>;
+
+typedef struct
+{
+    byte enable;
+    FSkip(3);
+    float tolerance;
+    float time;
+} ExplorationCamController__TankCamValues <optimize=false>;
+
+typedef struct
+{
+    float minSpeed;
+    float minDistance;
+    float maxVelocity;
+    float inMaxVelocity;
+    float inDampening;
+    float outMaxVelocity;
+    float outDampening;
+} ExplorationCamController__ClimbFollowCamParameters <optimize=false>;
+
+typedef struct
+{
+    byte enable;
+    FSkip(3);
+    float moveUpTargetPitch;
+    ExplorationCamController__ClimbFollowCamParameters moveUpParams;
+    float moveDownTargetPitch;
+    ExplorationCamController__ClimbFollowCamParameters moveDownParams;
+    float moveLRTargetYaw;
+    ExplorationCamController__ClimbFollowCamParameters moveLRParams;
+} ExplorationCamController__ClimbFollowCamValues <optimize=false>;
+
+typedef struct
+{
+    int segment;
+    ExplorationCamController__InitialValues initVals;
+    ExplorationCamController__FollowCamValues followCam;
+    ExplorationCamController__InputAdjustmentValues limits;
+    ExplorationCamController__InputEnableValues enableInputs;
+    ExplorationCamController__CameraCollision collision;
+    ExplorationCamController__InvertInputValues invertControls;
+    FSkip(2);
+    CameraViewAngleSetting viewAngleSetting;
+    ExplorationCamController__TankCamValues tankCam;
+    ExplorationCamController__ClimbFollowCamValues climbFollowCam;
+    byte doFocusDampening;
+    FSkip(3);
+    float xYDampFreq;
+    float xYDampRatio;
+    float zDampFreq;
+    float zDampRatio;
+    int zLowPassDelay;
+    int zLowPassCycle;
+} ExplorationCamController <optimize=false>;
+
+typedef struct
+{
+    float pitchDefault;
+    float yawDefault;
+    float pitchMid;
+    float dollyMid;
+    float truckMid[3];
+    float tiltMid;
+    float panMid;
+    float rollMid;
+    float zoomMid;
+    float focalLengthMid;
+    float pitchLow;
+    float dollyLow;
+    float truckLow[3];
+    float tiltLow;
+    float panLow;
+    float rollLow;
+    float zoomLow;
+    float focalLengthLow;
+    float pitchHigh;
+    float dollyHigh;
+    float truckHigh[3];
+    float tiltHigh;
+    float panHigh;
+    float rollHigh;
+    float zoomHigh;
+    float focalLengthHigh;
+    ubyte blendCurve_3ptInterpHighToMid[8];
+    ubyte blendCurve_3ptInterpMidToLow[8];
+} AimCamController__InitialValues <optimize=false>;
+
+typedef struct
+{
+    float dollyCoeff;
+    float dollyMax;
+    float dollyMin;
+    float truckHorizCoeff;
+    float truckHorizMax;
+    float truckHorizMin;
+    float truckVertCoeff;
+    float truckVertMax;
+    float truckVertMin;
+    float pitchBaseSpeed;
+    float pitchMaxSpeed;
+    float pitchTimeToMaxSpeed;
+    float pitchInputCircleToSquareScale;
+    float pitchMax;
+    float pitchMin;
+    float yawBaseSpeed;
+    float yawMaxSpeed;
+    float yawTimeToMaxSpeed;
+    float yawInputCircleToSquareScale;
+    byte limitYaw;
+    FSkip(3);
+    float yawMax;
+    float yawMin;
+    byte yawRelativeToFacing;
+    FSkip(3);
+    float zoomCoeff;
+    float zoomMax;
+    float zoomMin;
+    ubyte yawInputCurve[32];
+    ubyte yawAccCurve[32];
+    ubyte yawMaxAccCurve[32];
+    ubyte pitchInputCurve[32];
+    ubyte pitchAccCurve[32];
+    ubyte pitchMaxAccCurve[32];
+    ubyte pitchNearLimitInputDampening[16];
+    ubyte yawNearLimitInputDampening[16];
+    float stickOffYawDampeningFreq;
+    float stickOffYawDampeningRatio;
+    float stickOffPitchDampeningFreq;
+    float stickOffPitchDampeningRatio;
+    int inputDataType;
+} AimCamController__InputAdjustmentValues <optimize=false>;
+
+typedef struct
+{
+    float minRange;
+    float maxRange;
+    float lateralMovementModifier;
+    float inputMovementModifier;
+    ubyte centerednessAccelerationCurve[32];
+    float timer;
+} AimCamController__AimAssistValues <optimize=false>;
+
+typedef struct
+{
+    byte enableDolly;
+    byte enableHorizTruck;
+    byte enableVertTruck;
+    byte enablePitch;
+    byte enableYaw;
+    byte enableZoom;
+} AimCamController__InputEnableValues <optimize=false>;
+
+typedef struct
+{
+    byte enable;
+    FSkip(3);
+    float radius;
+    float probeOffset;
+    int lowSegment;
+    int medSegment;
+    int highSegment;
+    float collideDollyInMaxSpeed;
+    float collideDollyInDampening;
+    float collideDollyOutMaxSpeed;
+    float collideDollyOutDampening;
+    byte bUseTruckCollideScales;
+    FSkip(3);
+    float truckCollideScales[3];
+} AimCamController__CameraCollision <optimize=false>;
+
+typedef struct
+{
+    byte invertYaw;
+    byte invertPitch;
+} AimCamController__InvertInputValues <optimize=false>;
+
+typedef struct
+{
+    byte enable;
+    FSkip(3);
+    float maxDist;
+    float maxSpeed;
+} AimCamController__CombatLockOn <optimize=false>;
+
+typedef struct
+{
+    byte useBaseRotations;
+    FSkip(3);
+    float baseYaw;
+    float basePitch;
+    float baseRoll;
+} AimCamController__BaseRotation <optimize=false>;
+
+typedef struct
+{
+    unsigned int defaultModeInputAdjustIndex;
+    unsigned int frictionModeInputAdjustIndex;
+    unsigned int highGearModeInputAdjustIndex;
+    ubyte blendCurveInputAdjust[16];
+} AimCamController__InputAdjustmentBlending <optimize=false>;
+
+typedef struct
+{
+    int segment;
+    AimCamController__InitialValues initializers;
+    AimCamController__InputAdjustmentValues inputCoefficients;
+    AimCamController__AimAssistValues assistModifiers;
+    AimCamController__InputEnableValues enableInputs;
+    AimCamController__CameraCollision collision;
+    AimCamController__InvertInputValues invertControls;
+    AimCamController__CombatLockOn combatLockOn;
+    CameraViewAngleSetting viewAngleSetting;
+    AimCamController__BaseRotation baseRotations;
+    AimCamController__InputAdjustmentBlending inputAdjustBlending;
+    unsigned int inputAdjustMemberListCount;
+    FSkip(4);
+    Ref inputAdjustMemberListRef;
+    if (CanSeekTo(inputAdjustMemberListRef))
+    {
+        SeekToRef(inputAdjustMemberListRef);
+        AimCamController__InputAdjustmentValues inputAdjustMemberList[inputAdjustMemberListCount];
+        ReturnFromRef();
+    }
+} AimCamController <optimize=false>;
+
+typedef struct
+{
+    float pitch;
+    float dolly;
+    float truck[3];
+    float tilt;
+    float pan;
+    float roll;
+    float zoom;
+} StealthCamController__ValueSet <optimize=false>;
+
+typedef struct
+{
+    float defaultPitch;
+    float defaultYaw;
+    float keepAimThreshold;
+    StealthCamController__ValueSet high;
+    StealthCamController__ValueSet mid;
+    StealthCamController__ValueSet low;
+    ubyte blendCurve_3ptInterpHighToMid[8];
+    ubyte blendCurve_3ptInterpMidToLow[8];
+} StealthCamController__InitialValues <optimize=false>;
+
+typedef struct
+{
+    byte enable;
+    byte enableAvoidance;
+    FSkip(2);
+    float minSpeed;
+    float minDistance;
+    float forTolerance;
+    float bakTolerance;
+    float maxVelocity;
+    float velocityScalar;
+    float delayBeforeFollow;
+    float inMaxVelocity;
+    float inDampening;
+    float outMaxVelocity;
+    float outDampening;
+    float maxVelAngle;
+    byte pitchEnable;
+    byte dontPitchUpInAir;
+    FSkip(2);
+    float pitchMaxVelocity;
+    float pitchVelScalar;
+    byte usePitchSpecificMinSpeed;
+    FSkip(3);
+    float pitchSpecificMinSpeed;
+    byte useYawSpecificMinSpeed;
+    FSkip(3);
+    float yawSpecificMinSpeed;
+} StealthCamController__FollowCamValues <optimize=false>;
+
+typedef struct
+{
+    float pitch;
+    float yaw;
+    float dolly;
+    float truck[2];
+    float tilt;
+    float pan;
+    float roll;
+    float zoom;
+} StealthCamController__InputMultipliers <optimize=false>;
+
+typedef struct
+{
+    float pitch;
+    float yaw;
+    float dolly;
+    float truck[3];
+    float tilt;
+    float pan;
+    float roll;
+    float zoom;
+} StealthCamController__MinimumValues <optimize=false>;
+
+typedef struct
+{
+    float pitch;
+    float yaw;
+    float dolly;
+    float truck[3];
+    float tilt;
+    float pan;
+    float roll;
+    float zoom;
+} StealthCamController__MaximumValues <optimize=false>;
+
+typedef struct
+{
+    StealthCamController__InputMultipliers modifiers;
+    StealthCamController__MinimumValues minValues;
+    StealthCamController__MaximumValues maxValues;
+    ubyte blendWeightDampening[16];
+    ubyte nearYawLimitDampening[16];
+    byte yawLimitsDisable;
+    byte yawRelativeToFacing;
+    byte yawLimitOnlyOnSync;
+} StealthCamController__InputAdjustmentValues <optimize=false>;
+
+typedef struct
+{
+    float minRange;
+    float maxRange;
+    float lateralMovementModifier;
+    float inputMovementModifier;
+    ubyte centerednessAccelerationCurve[32];
+    float timer;
+} StealthCamController__AimAssistValues <optimize=false>;
+
+typedef struct
+{
+    byte enableDolly : 1;
+    byte enableHorizTruck : 1;
+    byte enableVertTruck : 1;
+    byte enablePitch : 1;
+    byte enableYaw : 1;
+    byte enableZoom : 1;
+    byte pcUiMouseLook : 1;
+    byte _Bitfieldpadding0 : 1;
+    FSkip(3);
+    unsigned int actionDollyForward;
+    unsigned int actionDollyBack;
+    unsigned int actionHorizTruck;
+    unsigned int actionVertTruck;
+    unsigned int actionPitch;
+    unsigned int actionYaw;
+    unsigned int actionZoomIn;
+    unsigned int actionZoomOut;
+} StealthCamController__InputEnableValues <optimize=false>;
+
+typedef struct
+{
+    byte enable;
+    byte disableFocusCollision;
+    FSkip(2);
+    float radius;
+    float probeOffset;
+    int lowSegment;
+    int medSegment;
+    int highSegment;
+    int aboveHeadSeg;
+    int aboveHeadSegmentOffset;
+    int closeCollisionStart;
+    int closeCollisionMax;
+} StealthCamController__CameraCollision <optimize=false>;
+
+typedef struct
+{
+    byte invertYaw;
+    byte invertPitch;
+} StealthCamController__InvertInputValues <optimize=false>;
+
+typedef struct
+{
+    byte enable;
+    FSkip(3);
+    float maxDist;
+    float maxSpeed;
+} StealthCamController__CombatLockOn <optimize=false>;
+
+typedef struct
+{
+    byte enable;
+    FSkip(3);
+    float tolerance;
+    float idealYawOffset;
+    float idealTruckOffset;
+    float time;
+    byte allowPlayerControl;
+} StealthCamController__MeleeCamValues <optimize=false>;
+
+typedef struct
+{
+    byte enable;
+    FSkip(3);
+    float tolerance;
+    float time;
+} StealthCamController__TankCamValues <optimize=false>;
+
+typedef struct
+{
+    float minSpeed;
+    float minDistance;
+    float maxVelocity;
+    float inMaxVelocity;
+    float inDampening;
+    float outMaxVelocity;
+    float outDampening;
+} StealthCamController__ClimbFollowCamParameters <optimize=false>;
+
+typedef struct
+{
+    byte enable;
+    FSkip(3);
+    float moveUpTargetPitch;
+    StealthCamController__ClimbFollowCamParameters moveUpParams;
+    float moveDownTargetPitch;
+    StealthCamController__ClimbFollowCamParameters moveDownParams;
+    float moveLRTargetYaw;
+    StealthCamController__ClimbFollowCamParameters moveLRParams;
+} StealthCamController__ClimbFollowCamValues <optimize=false>;
+
+typedef struct
+{
+    float yawBaseSpeed;
+    float yawMaxSpeed;
+    float yawTimeToMaxSpeed;
+    ubyte yawInputCurve[32];
+    ubyte yawAccCurve[32];
+    float yawInputCircleToSquareScale;
+    float pitchBaseSpeed;
+    float pitchMaxSpeed;
+    float pitchTimeToMaxSpeed;
+    ubyte pitchInputCurve[32];
+    ubyte pitchAccCurve[32];
+    float pitchInputCircleToSquareScale;
+    float stickOffYawDampeningFreq;
+    float stickOffYawDampeningRatio;
+    float stickOffPitchDampeningFreq;
+    float stickOffPitchDampeningRatio;
+} StealthCamController__AccelerationAdjustmentValues <optimize=false>;
+
+typedef struct
+{
+    ushort segmentObjectID;
+    FSkip(2);
+    unsigned int segment;
+    float segmentOffset[3];
+    StealthCamController__InitialValues initializers;
+    StealthCamController__FollowCamValues followCam;
+    StealthCamController__InputAdjustmentValues limits;
+    FSkip(1);
+    StealthCamController__AimAssistValues assistModifiers;
+    StealthCamController__InputEnableValues enableInputs;
+    StealthCamController__CameraCollision collision;
+    StealthCamController__InvertInputValues invertControls;
+    StealthCamController__CombatLockOn combatLockOn;
+    StealthCamController__MeleeCamValues meleeCam;
+    StealthCamController__TankCamValues tankCam;
+    StealthCamController__ClimbFollowCamValues climbFollowCam;
+    byte enableFocusSmoothing : 1;
+    byte _Bitfieldpadding15 : 7;
+    float xYDampFreq;
+    float xYDampRatio;
+    float zDampFreq;
+    float zDampRatio;
+    int zLowPassDelay;
+    int zLowPassCycle;
+    StealthCamController__AccelerationAdjustmentValues inputAccelerationMods;
+} StealthCamController <optimize=false>;
+
+typedef union
+{
+    SimpleCamController simpleCamController;
+    IsoCamController isoCamController;
+    MapViewCamController mapViewCamController;
+    FreeCamController freeCamController;
+    ModelviewCamController modelviewCamController;
+    AnchoredCamController anchoredCamController;
+    SplineCamController splineCamController;
+    HmdCamController hmdCamController;
+    ForceCamController forceCamController;
+    CameraBoneCamController cameraBoneCamController;
+    ExplorationCamController explorationCamController;
+    AimCamController aimCamController;
+    StealthCamController stealthCamController;
+} CameraControllerData;
+
+typedef struct
+{
+    byte bStartActive;
+    byte bIgnorePlayerOverrides;
+    byte bDelayCreateTilActivated;
+    FSkip(1);
+    float dilationPercent;
+    int screenID;
+    int inputControllerID;
+    int inputControllerSource;
+    byte bInputStartsEnabled;
+    FSkip(3);
+    int cameraType;
+    unsigned int categoryHash;
+    CameraControllerData cameraData;
+} Camera <optimize=false>;
+
+typedef struct
+{
+    Camera cameraController;
+} CameraComponent <optimize=false>;
+
+typedef struct
+{
+    unsigned int camType;
+    byte enabled;
+    FSkip(3);
+    unsigned int cameraID;
+    float timeInFromNonAim;
+    float timeInFromNormalAim;
+    float timeInFromZoomedAim;
+    float timeInFromSwitchedAim;
+    float timeInFromZoomedSwitchedAim;
+    float timeInFromOtherCam;
+    byte forceReset;
+    byte pauseOtherCamsWhenActivating;
+    byte pauseSelfWhenDeactivating;
+    FSkip(1);
+    float movespeedMult;
+    float aimReticleOffset[2];
+} WeaponCameraProperties <optimize=false>;
+
+typedef struct
+{
+    Ref weaponCameraPropertyListRef;
+    unsigned int weaponCameraPropertyListCount;
+    if (CanSeekTo(weaponCameraPropertyListRef))
+    {
+        SeekToRef(weaponCameraPropertyListRef);
+        WeaponCameraProperties weaponCameraPropertyList[weaponCameraPropertyListCount];
+        ReturnFromRef();
+    }
+    byte allowZoom;
+    byte allowShoulderSwitch;
+    byte requirePlayerTraitToZoom;
+    FSkip(1);
+    ushort playerTraitRequiredForZoom;
+    byte canUpgradeCameraProps;
+    FSkip(1);
+    ushort traitForUpdradedProperties;
+    FSkip(2);
+    Ref upgradedWeaponCameraPropertyListRef;
+    unsigned int upgradedWeaponCameraPropertyListCount;
+    if (CanSeekTo(upgradedWeaponCameraPropertyListRef))
+    {
+        SeekToRef(upgradedWeaponCameraPropertyListRef);
+        WeaponCameraProperties upgradedWeaponCameraPropertyList[upgradedWeaponCameraPropertyListCount];
+        ReturnFromRef();
+    }
+} WeaponCameraListItem <optimize=false>;
+
+typedef struct
+{
+    short dSlopeSlideAngleShallow;
+    short dSlopeSlideAngleSteep;
+    float dSlowSlopeSlideSpeedMult;
+    float dSlowSlopeSlideAccelMult;
+    float dSlopeSlideExitMomentumlMult;
+} slope_slide_tune_data <optimize=false>;
+
+typedef struct
+{
+    float probability;
+    AnimReference anim;
+} PlayerFaceOverlayAnimEntry <optimize=false>;
+
+typedef struct
+{
+    int moveSet;
+    int moveSetEnemyAwareOverride;
+    Ref animEntryListRef;
+    unsigned int animEntryListCount;
+    if (CanSeekTo(animEntryListRef))
+    {
+        SeekToRef(animEntryListRef);
+        PlayerFaceOverlayAnimEntry animEntryList[animEntryListCount];
+        ReturnFromRef();
+    }
+} PlayerFaceOverlayEntry <optimize=false>;
+
+typedef struct
+{
+    Ref entryListRef;
+    unsigned int entryListCount;
+    if (CanSeekTo(entryListRef))
+    {
+        SeekToRef(entryListRef);
+        PlayerFaceOverlayEntry entryList[entryListCount];
+        ReturnFromRef();
+    }
+} PlayerFaceOverlayData <optimize=false>;
+
+typedef union
+{
+    ubyte linear[20];
+    ubyte ease1[20];
+    ubyte ease2[20];
+} AnimTransitionDataBase__InterpCurveBase;
+
+typedef struct
+{
+    float interp;
+    AnimTransitionDataBase__InterpCurveBase curve;
+    float startTime;
+    byte snapshotFrom;
+    byte snapshotTo;
+    char rootMotionMode;
+} AnimTransitionDataBase <optimize=false>;
+
+typedef struct
+{
+    unsigned int cineFXintroID;
+    AnimTransitionDataBase cinePlayerOverrideinterpOut;
+} PlayerProp__CinematicData <optimize=false>;
+
+typedef struct
+{
+    unsigned int action;
+    byte bUseAnalog : 1;
+    byte bUseDirection : 1;
+    byte bReset : 1;
+    byte _Bitfieldpadding1 : 5;
+} NetworkInputActionList__NetworkInputActionItem <optimize=false>;
+
+typedef struct
+{
+    unsigned int actionListCount;
+    NetworkInputActionList__NetworkInputActionItem networkInputActionList[1];
+} NetworkInputActionList <optimize=false>;
+
+typedef struct
+{
+    Ref impliedNetworkInputActionsRef;
+    if (CanSeekTo(impliedNetworkInputActionsRef))
+    {
+        SeekToRef(impliedNetworkInputActionsRef);
+        NetworkInputActionList impliedNetworkInputActions;
+        ReturnFromRef();
+    }
+    Ref transmittedNetworkInputActionsRef;
+    if (CanSeekTo(transmittedNetworkInputActionsRef))
+    {
+        SeekToRef(transmittedNetworkInputActionsRef);
+        NetworkInputActionList transmittedNetworkInputActions;
+        ReturnFromRef();
+    }
+} NetworkCharacterData <optimize=false>;
+
+typedef struct
+{
+    unsigned int toneID;
+    int barkID;
+    byte enabled;
+    byte doRMScalcForAnim;
+    FSkip(6);
+    Ref msgRef;
+    if (CanSeekTo(msgRef))
+    {
+        SeekToRef(msgRef);
+        string msg;
+        ReturnFromRef();
+    }
+    int priority;
+    float timeOutIndividual;
+    float timeOutGlobal;
+} Bark <optimize=false>;
+
+typedef struct
+{
+    byte registerWithDialogueSystem;
+    FSkip(3);
+    unsigned int dialogueActorID;
+    unsigned int vocalsForStateControl;
+    unsigned int segmentMouth;
+    byte animMouthFlapEnabled;
+    FSkip(3);
+    float animMouthFlapDisabledTimeDelay;
+    float animMouthFlapRmsScale;
+    ushort animMouthFlapNamedvalueEnabledFlag;
+    ushort animMouthFlapNamedvalueFlappingMagnitude;
+    EventEnum animMouthFlapEnableEvent;
+    EventEnum animMouthFlapDisableEvent;
+    unsigned int numBarks;
+    FSkip(4);
+    Ref barksRef;
+    if (CanSeekTo(barksRef))
+    {
+        SeekToRef(barksRef);
+        Bark barks[numBarks];
+        ReturnFromRef();
+    }
+} BarkComponent <optimize=false>;
+
+typedef struct
+{
+    ushort objectID;
+    byte allowChildren;
+} ObjectComparison <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestUnrestricted <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestNumeric <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    ushort miComparison;
+    short pad;
+    byte miNot : 1;
+    byte _Bitfieldpadding3 : 7;
+} SCConditionTestNumericHosted <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestPhysics <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestPushPull <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestPortable <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestPortableAnimType <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestPortableUsageType <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestJumpMode <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestInternal <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestEngagement <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestEngagementStatus <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestEngagementObject <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestInteract <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestInteractRequestRequirement <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestInteractEndsInstantly <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestInteractMode <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestInteractedType <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestInvestigateTargetType <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    unsigned int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestAction <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestAnimation <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestAnimationFrames <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestMovement <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestGymnasticsMove <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestEdgeDropType <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestEdgeDropRule <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestEdgeStepRule <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestEdgeDeflection <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestEdgeDeflectionNumeric <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestFooting <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestStatus <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestMarkup <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestMarkupType <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestMarkupMod <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestMarkupAngle <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestMarkupDistance <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestMarkupLookahead <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestMarkupClearance <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestMarkupAttach <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestMarkupMultiOut <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestMarkupHpoleRot <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestMarkupMovement <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestHurdleOutcome <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestMarkupTargetingTag <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestGrapple <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestWater <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestNpc <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestNpcProcess <optimize=false>;
+
+typedef struct
+{
+    unsigned int hash;
+} EnumThreatMood <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    EnumThreatMood miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestNpcThreatMood <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    unsigned int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestSpatialProbe <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestSpatialProbeHitType <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    unsigned int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestTunedata <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestCombat <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestCombatNumeric <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestCover <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestCombatStatus <optimize=false>;
+
+typedef struct
+{
+    unsigned int hash;
+} EnumAmmoType <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    EnumAmmoType miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestAmmo <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestInventory <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestInventoryRequirement <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestWeaponLoadoutType <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    unsigned int category;
+    unsigned int categoryHash;
+    byte miNot : 1;
+    byte _Bitfieldpadding3 : 7;
+} SCConditionTestCameraCategoryEnabled <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestVehicle <optimize=false>;
+
+typedef struct
+{
+    unsigned int hash;
+} EnumPlayNotification <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    EnumPlayNotification miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestPlayNotificationType <optimize=false>;
+
+typedef struct
+{
+    unsigned int hash;
+} EnumCharacterStance <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    EnumCharacterStance miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestStance <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestDamageType <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestHitReactType <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestHitShapeType <optimize=false>;
+
+typedef struct
+{
+    ushort mSymbolID;
+    FSkip(2);
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding3 : 7;
+} SCConditionTestNamedValueBool <optimize=false>;
+
+typedef struct
+{
+    ushort mSymbolID;
+    FSkip(2);
+    float miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding3 : 7;
+} SCConditionTestNamedValueScalar <optimize=false>;
+
+typedef struct
+{
+    ushort mSymbolID;
+    ushort mSymbolID2;
+    byte miNot : 1;
+    byte _Bitfieldpadding4 : 7;
+} SCConditionTestNamedVlaueSymbolComp <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    unsigned int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestObject <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestDetection <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestMultiplayer <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestGameMode <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestProcess <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestProcessNumeric <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    EventEnum miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestProcessAnimGraphTrigger <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestProcessInventory <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestPrototype <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    unsigned int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestPlayerTrait <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    unsigned int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestSeizeAttack <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    unsigned int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestMeleeMove <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    unsigned int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestWeather <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    MovesetProfile_MoveTypeEnum miMoveEnum;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestMovesetProfile <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestStateTag <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    unsigned int hash;
+    byte miNot : 1;
+    byte _Bitfieldpadding3 : 7;
+} SCConditionTestAnimCompleteID <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    unsigned int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestCraftingRecipe <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    int miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestSCPropertyBool <optimize=false>;
+
+typedef struct
+{
+    int miProperty;
+    float miComparison;
+    byte miNot : 1;
+    byte _Bitfieldpadding2 : 7;
+} SCConditionTestSCPropertyNumeric <optimize=false>;
+
+typedef struct
+{
+    int miPlatform;
+    byte miNot : 1;
+    byte _Bitfieldpadding1 : 7;
+} SCConditionTestPlatform <optimize=false>;
+
+typedef struct
+{
+    int miVrMode;
+    byte miNot : 1;
+    byte _Bitfieldpadding1 : 7;
+} SCConditionTestVrMode <optimize=false>;
+
+typedef union
+{
+    SCConditionTestUnrestricted unknown;
+    SCConditionTestNumeric numeric;
+    SCConditionTestNumericHosted numericHosted;
+    SCConditionTestPhysics physics;
+    SCConditionTestPushPull pushPull;
+    SCConditionTestPortable portable;
+    SCConditionTestPortableAnimType portableAnimType;
+    SCConditionTestPortableUsageType portableUsageType;
+    SCConditionTestJumpMode jumpMode;
+    SCConditionTestInternal internal;
+    SCConditionTestEngagement engagement;
+    SCConditionTestEngagementStatus engagementStatus;
+    SCConditionTestEngagementObject engagementObject;
+    SCConditionTestInteract interact;
+    SCConditionTestInteractRequestRequirement interactSkipsRequest;
+    SCConditionTestInteractEndsInstantly interactEndsInstantly;
+    SCConditionTestInteractMode interactMode;
+    SCConditionTestInteractedType interactedType;
+    SCConditionTestInvestigateTargetType investigateTargetType;
+    SCConditionTestAction action;
+    SCConditionTestAnimation animation;
+    SCConditionTestAnimationFrames animationFrames;
+    SCConditionTestMovement movement;
+    SCConditionTestGymnasticsMove gymnasticsMoves;
+    SCConditionTestEdgeDropType edgeDetDropType;
+    SCConditionTestEdgeDropRule edgeDetDropRule;
+    SCConditionTestEdgeStepRule edgeDetStepRule;
+    SCConditionTestEdgeDeflection edgeDeflection;
+    SCConditionTestEdgeDeflectionNumeric edgeDeflectionNumeric;
+    SCConditionTestFooting footing;
+    SCConditionTestStatus status;
+    SCConditionTestMarkup markup;
+    SCConditionTestMarkupType markupType;
+    SCConditionTestMarkupMod markupMod;
+    SCConditionTestMarkupAngle markupAngle;
+    SCConditionTestMarkupDistance markupDistance;
+    SCConditionTestMarkupLookahead markupLookahead;
+    SCConditionTestMarkupClearance markupClearance;
+    SCConditionTestMarkupAttach markupAttach;
+    SCConditionTestMarkupMultiOut markupMultiOut;
+    SCConditionTestMarkupHpoleRot markupAngleRange;
+    SCConditionTestMarkupMovement markupMovement;
+    SCConditionTestHurdleOutcome hurdleOutcome;
+    SCConditionTestMarkupTargetingTag markupTag;
+    SCConditionTestGrapple grapple;
+    SCConditionTestWater water;
+    SCConditionTestNpc npc;
+    SCConditionTestNpcProcess npcProcess;
+    SCConditionTestNpcThreatMood npcThreatMood;
+    SCConditionTestSpatialProbe spatialProbe;
+    SCConditionTestSpatialProbeHitType spatialProbeHitType;
+    SCConditionTestTunedata tunedata;
+    SCConditionTestCombat combat;
+    SCConditionTestCombatNumeric combatNumeric;
+    SCConditionTestCover cover;
+    SCConditionTestCombatStatus combatStatus;
+    SCConditionTestAmmo ammo;
+    SCConditionTestInventory inventory;
+    SCConditionTestInventoryRequirement inventoryRequirement;
+    SCConditionTestWeaponLoadoutType weapon;
+    SCConditionTestCameraCategoryEnabled cameraCategory;
+    SCConditionTestVehicle vehicle;
+    SCConditionTestPlayNotificationType playNotification;
+    SCConditionTestStance stance;
+    SCConditionTestDamageType damageType;
+    SCConditionTestHitReactType hitReactType;
+    SCConditionTestHitShapeType hitShapeType;
+    SCConditionTestNamedValueBool namedValueBoolean;
+    SCConditionTestNamedValueScalar namedValueScalarEQ;
+    SCConditionTestNamedValueScalar namedValueScalarGT;
+    SCConditionTestNamedValueScalar namedValueScalarGTE;
+    SCConditionTestNamedVlaueSymbolComp namedValueSymbolComp;
+    SCConditionTestObject object;
+    SCConditionTestDetection detection;
+    SCConditionTestMultiplayer multiplayer;
+    SCConditionTestGameMode gameMode;
+    SCConditionTestProcess process;
+    SCConditionTestProcessNumeric processNumeric;
+    SCConditionTestProcessAnimGraphTrigger processAnimGraphTrigger;
+    SCConditionTestProcessInventory processInventory;
+    SCConditionTestPrototype prototype;
+    SCConditionTestPlayerTrait experience;
+    SCConditionTestSeizeAttack seizeAttack;
+    SCConditionTestMeleeMove meleeMove;
+    SCConditionTestWeather weather;
+    SCConditionTestMovesetProfile movesetProfile;
+    SCConditionTestStateTag stateTag;
+    SCConditionTestAnimCompleteID animCompleteID;
+    SCConditionTestCraftingRecipe craftingRecipe;
+    SCConditionTestSCPropertyBool sCPropertyBool;
+    SCConditionTestSCPropertyNumeric sCPropertyNumeric;
+    SCConditionTestPlatform platform;
+    SCConditionTestVrMode vrMode;
+} SCCondTest;
+
+typedef struct
+{
+    int miContext;
+    SCCondTest msTest;
+} SCConditionData <optimize=false>;
+
+typedef struct
+{
+    int miContext;
+    SCCondTest msTest;
+} SCConditionData_NamedValueOnly <optimize=false>;
+
+typedef struct
+{
+    Ref validDefenderListRef;
+    unsigned int validDefenderListCount;
+    if (CanSeekTo(validDefenderListRef))
+    {
+        SeekToRef(validDefenderListRef);
+        ObjectComparison validDefenderList[validDefenderListCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref stateControlConditionRequirementsListRef;
+    if (CanSeekTo(stateControlConditionRequirementsListRef))
+    {
+        SeekToRef(stateControlConditionRequirementsListRef);
+        SCConditionData stateControlConditionRequirementsList;
+        ReturnFromRef();
+    }
+    unsigned int stateControlConditionRequirementsListCount;
+    FSkip(4);
+    Ref validCurrentWeaponListRef;
+    unsigned int validCurrentWeaponListCount;
+    if (CanSeekTo(validCurrentWeaponListRef))
+    {
+        SeekToRef(validCurrentWeaponListRef);
+        ObjectComparison validCurrentWeaponList[validCurrentWeaponListCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref validTraitListRef;
+    unsigned int validTraitListCount;
+    if (CanSeekTo(validTraitListRef))
+    {
+        SeekToRef(validTraitListRef);
+        PlayerTraitListIndexComparison validTraitList[validTraitListCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref validDefenderTraitListRef;
+    unsigned int validDefenderTraitListCount;
+    if (CanSeekTo(validDefenderTraitListRef))
+    {
+        SeekToRef(validDefenderTraitListRef);
+        PlayerTraitListIndexComparison validDefenderTraitList[validDefenderTraitListCount];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref validNamedValueListRef;
+    unsigned int validNamedValueListCount;
+    if (CanSeekTo(validNamedValueListRef))
+    {
+        SeekToRef(validNamedValueListRef);
+        SCConditionData_NamedValueOnly validNamedValueList[validNamedValueListCount];
+        ReturnFromRef();
+    }
+    byte checkEnemyHealth;
+    byte damageWillKillTarget;
+    byte bCheckDefenderOrientation;
+    byte bUseAbsoluteValueOrientationAngles;
+    float fOrientationRelativeToAttacker;
+    float fOrientationRelativeToAttackerRange;
+} MeleeMoveRequirementsStruct <optimize=false>;
+
+typedef struct
+{
+    ushort timerType;
+    FSkip(2);
+    int frames;
+} HostedSCTimer <optimize=false>;
+
+typedef struct
+{
+    float fForce;
+    float fForcePitch;
+    float fForceHeadingOffset;
+} BallisticEffectData <optimize=false>;
+
+typedef union
+{
+    BallisticEffectData ballisticData;
+    int hitReactSelect;
+} DamageEffectUnion;
+
+typedef struct
+{
+    byte damageOnStartIgnoreHealthStates;
+    byte damageOnFailureIgnoreHealthStates;
+    FSkip(2);
+    int damageOnStart;
+    byte bDamageCanNotKillOnStart;
+    FSkip(3);
+    int damageAmountPerSecond;
+    int damageAmount;
+    int damagePrimIndex;
+    int damageType;
+    int damageEffect;
+    DamageEffectUnion damageEffectUnion;
+    int damageArmorOverride;
+    EventEnum eventSuccess;
+    EventEnum eventFail;
+    Ref experienceAwardListRef;
+    unsigned int experienceAwardCount;
+    if (CanSeekTo(experienceAwardListRef))
+    {
+        SeekToRef(experienceAwardListRef);
+        ExperienceAward experienceAwardList[experienceAwardCount];
+        ReturnFromRef();
+    }
+} seize_damage_data <optimize=false>;
+
+enum <int> INPUTACTION
+{
+    INPUTACTION_NONE = 0,
+    INPUTACTION_UP = 1,
+    INPUTACTION_DOWN = 2,
+    INPUTACTION_LEFT = 3,
+    INPUTACTION_RIGHT = 4,
+    INPUTACTION_DPAD_UP = 5,
+    INPUTACTION_DPAD_DOWN = 6,
+    INPUTACTION_DPAD_LEFT = 7,
+    INPUTACTION_DPAD_RIGHT = 8,
+    INPUTACTION_START = 9,
+    INPUTACTION_SELECT = 10,
+    INPUTACTION_TRIANGLE = 11,
+    INPUTACTION_SQUARE = 12,
+    INPUTACTION_CIRCLE = 13,
+    INPUTACTION_CROSS = 14,
+    INPUTACTION_L1 = 15,
+    INPUTACTION_R1 = 16,
+    INPUTACTION_L2 = 17,
+    INPUTACTION_R2 = 18,
+    INPUTACTION_LT = 19,
+    INPUTACTION_RT = 20,
+    INPUTACTION_LB = 21,
+    INPUTACTION_RB = 22,
+    INPUTACTION_ANALOGUEL = 23,
+    INPUTACTION_ANALOGUER = 24,
+    INPUTACTION_RSTICK_UP = 25,
+    INPUTACTION_RSTICK_DOWN = 26,
+    INPUTACTION_RSTICK_LEFT = 27,
+    INPUTACTION_RSTICK_RIGHT = 28,
+    INPUTACTION_Assert_Break = 29,
+    INPUTACTION_Assert_Ignore = 30,
+    INPUTACTION_Assert_IgnoreAll = 31,
+    INPUTACTION_Assert_Dump = 32,
+    INPUTACTION_CameraUpDown = 33,
+    INPUTACTION_CameraLeftRight = 34,
+    INPUTACTION_CameraForward = 35,
+    INPUTACTION_CameraBack = 36,
+    INPUTACTION_CameraZoomIn = 37,
+    INPUTACTION_CameraZoomOut = 38,
+    INPUTACTION_CameraTruckLeftRight = 39,
+    INPUTACTION_CameraTruckUpDown = 40,
+    INPUTACTION_ModelView_NextAnim = 41,
+    INPUTACTION_ModelView_PrevAnim = 42,
+    INPUTACTION_ModelView_PlayAnim = 43,
+    INPUTACTION_ModelView_StepForwardAnim = 44,
+    INPUTACTION_ModelView_StepBackAnim = 45,
+    INPUTACTION_ModelView_NextObject = 46,
+    INPUTACTION_ModelView_PrevObject = 47,
+    INPUTACTION_ModelView_ResetRotation = 48,
+    INPUTACTION_ModelView_ControlObject = 49,
+    INPUTACTION_ModelView_ZoomToObject = 50,
+    INPUTACTION_ModelView_ResetCamera = 51,
+    INPUTACTION_ModelView_ChangeAnimMode = 52,
+    INPUTACTION_ModelView_SwitchSection = 53,
+    INPUTACTION_ModelView_CameraDollyIn = 54,
+    INPUTACTION_ModelView_CameraDollyOut = 55,
+    INPUTACTION_ModelView_CameraLeftRight = 56,
+    INPUTACTION_ModelView_CameraUpDown = 57,
+    INPUTACTION_ModelView_CameraTruckLeftRight = 58,
+    INPUTACTION_ModelView_CameraTruckUpDown = 59,
+    INPUTACTION_ModelView_CameraZoomIn = 60,
+    INPUTACTION_ModelView_CameraZoomOut = 61,
+    INPUTACTION_SceneDebugTool_DpadUp = 62,
+    INPUTACTION_SceneDebugTool_DpadDown = 63,
+    INPUTACTION_SceneDebugTool_DpadLeft = 64,
+    INPUTACTION_SceneDebugTool_DpadRight = 65,
+    INPUTACTION_SceneDebugTool_ButtonA = 66,
+    INPUTACTION_SceneDebugTool_ButtonB = 67,
+    INPUTACTION_SceneDebugTool_ButtonX = 68,
+    INPUTACTION_SceneDebugTool_ButtonY = 69,
+    INPUTACTION_SceneDebugTool_ButtonLB = 70,
+    INPUTACTION_SceneDebugTool_ButtonRB = 71,
+    INPUTACTION_MenuUp = 72,
+    INPUTACTION_MenuDown = 73,
+    INPUTACTION_MenuLeft = 74,
+    INPUTACTION_MenuRight = 75,
+    INPUTACTION_MenuTens = 76,
+    INPUTACTION_MenuHundreds = 77,
+    INPUTACTION_MenuThousands = 78,
+    INPUTACTION_MenuEngage = 79,
+    INPUTACTION_MenuAltEngage = 80,
+    INPUTACTION_MenuSelect = 81,
+    INPUTACTION_MenuClick = 82,
+    INPUTACTION_MenuCancel = 83,
+    INPUTACTION_MenuStart = 84,
+    INPUTACTION_MenuStep = 85,
+    INPUTACTION_MenuEndStep = 86,
+    INPUTACTION_MenuCheatButton = 87,
+    INPUTACTION_MenuClear = 88,
+    INPUTACTION_MenuDelete = 89,
+    INPUTACTION_MenuFavorite = 90,
+    INPUTACTION_KeyboardMenuUp = 91,
+    INPUTACTION_KeyboardMenuDown = 92,
+    INPUTACTION_KeyboardMenuLeft = 93,
+    INPUTACTION_KeyboardMenuRight = 94,
+    INPUTACTION_ProgrammerDebugCircle = 95,
+    INPUTACTION_ProgrammerDebugCross = 96,
+    INPUTACTION_ProgrammerDebugTriangle = 97,
+    INPUTACTION_ProgrammerDebugSquare = 98,
+    INPUTACTION_ProgrammerDebugLStickLeft = 99,
+    INPUTACTION_ProgrammerDebugLStickRight = 100,
+    INPUTACTION_ProgrammerDebugLStickForward = 101,
+    INPUTACTION_ProgrammerDebugLStickBack = 102,
+    INPUTACTION_ProgrammerDebugDPadUp = 103,
+    INPUTACTION_ProgrammerDebugDPadDown = 104,
+    INPUTACTION_ProgrammerDebugDPadLeft = 105,
+    INPUTACTION_ProgrammerDebugDPadRight = 106,
+    INPUTACTION_ProgrammerDebugLT = 107,
+    INPUTACTION_ProgrammerDebugLB = 108,
+    INPUTACTION_ProgrammerDebugRT = 109,
+    INPUTACTION_ProgrammerDebugRB = 110,
+    INPUTACTION_Action_ClimbOver = 111,
+    INPUTACTION_Action_Crouch = 112,
+    INPUTACTION_Action_Crouch_MP = 113,
+    INPUTACTION_Action_Crouch_Out_MP = 114,
+    INPUTACTION_Action_DropOff = 115,
+    INPUTACTION_Action_FastTraversal = 116,
+    INPUTACTION_Action_Jump = 117,
+    INPUTACTION_Action_Push = 118,
+    INPUTACTION_Action_Roll = 119,
+    INPUTACTION_Action_Roll_Held = 120,
+    INPUTACTION_Action_Sprint = 121,
+    INPUTACTION_Action_IntendToJump = 122,
+    INPUTACTION_Action_ActiveAttach = 123,
+    INPUTACTION_Action_Interact = 124,
+    INPUTACTION_Action_Interact_MP = 125,
+    INPUTACTION_Action_Interact_MP_Trap = 126,
+    INPUTACTION_Action_SavingGrab = 127,
+    INPUTACTION_Action_RescueMe = 128,
+    INPUTACTION_Action_Revive = 129,
+    INPUTACTION_Action_Revive_Enemies = 130,
+    INPUTACTION_Action_Suicide = 131,
+    INPUTACTION_Action_Suicide_Release = 132,
+    INPUTACTION_Action_Multiplayer_Execute = 133,
+    INPUTACTION_Action_Multiplayer_Stun = 134,
+    INPUTACTION_Action_Multiplayer_Charge = 135,
+    INPUTACTION_Action_LC2_Bomb = 136,
+    INPUTACTION_Action_LC2_Duat = 137,
+    INPUTACTION_Action_LC2_MagicBall = 138,
+    INPUTACTION_Action_Craft = 139,
+    INPUTACTION_Action_Craft_Release = 140,
+    INPUTACTION_Action_CraftRT = 141,
+    INPUTACTION_Action_CraftRT_Release = 142,
+    INPUTACTION_Action_Crafting_Mode = 143,
+    INPUTACTION_Action_AxeCling = 144,
+    INPUTACTION_Action_AddMarkupArrow = 145,
+    INPUTACTION_Action_SnowAngel = 146,
+    INPUTACTION_Disruption_EnterVisionMode = 147,
+    INPUTACTION_Disruption_ExitVisionMode = 148,
+    INPUTACTION_MC_PowerWheel_LeftRight = 149,
+    INPUTACTION_MC_PowerWheel_UpDown = 150,
+    INPUTACTION_MC_Power_Charge = 151,
+    INPUTACTION_MC_Power_Release = 152,
+    INPUTACTION_MC_Mindwipe = 153,
+    INPUTACTION_MC_AltPower_Charge = 154,
+    INPUTACTION_MC_AltPower_Release = 155,
+    INPUTACTION_MC_OpenPowerWheel = 156,
+    INPUTACTION_MC_ClosePowerWheel = 157,
+    INPUTACTION_Camera_Lookat = 158,
+    INPUTACTION_Camera_LookatHeld = 159,
+    INPUTACTION_Camera_Reset = 160,
+    INPUTACTION_Camera_SnapTargeting = 161,
+    INPUTACTION_Camera_SnapTargetingHeld = 162,
+    INPUTACTION_Camera_SnapTargetingFlickToNextTarget = 163,
+    INPUTACTION_Camera_Aim_LeftRight = 164,
+    INPUTACTION_Camera_Aim_UpDown = 165,
+    INPUTACTION_Camera_Aim_Rate = 166,
+    INPUTACTION_Camera_Aim_Dir = 167,
+    INPUTACTION_Camera_ShoulderSwitch = 168,
+    INPUTACTION_Camera_ShoulderSwitch_MP = 169,
+    INPUTACTION_Camera_GalleryCam_Forward = 170,
+    INPUTACTION_Camera_GalleryCam_Back = 171,
+    INPUTACTION_Camera_GalleryCam_TruckUpDown = 172,
+    INPUTACTION_Camera_GalleryCam_Yaw = 173,
+    INPUTACTION_Camera_Rotate_Left = 174,
+    INPUTACTION_Camera_Rotate_Right = 175,
+    INPUTACTION_Combat_Melee_Equip = 176,
+    INPUTACTION_Combat_Melee_Swing = 177,
+    INPUTACTION_Combat_Melee_Parry = 178,
+    INPUTACTION_Combat_Melee_Finisher = 179,
+    INPUTACTION_Combat_Melee_Finisher_Secondary = 180,
+    INPUTACTION_Combat_Melee_Riposte = 181,
+    INPUTACTION_Combat_Melee_SeizeAttack = 182,
+    INPUTACTION_Combat_Melee_Push = 183,
+    INPUTACTION_Combat_MeleeAnalogDir = 184,
+    INPUTACTION_Combat_MeleeAnalogMag = 185,
+    INPUTACTION_Combat_Melee_ButtonlessSeize = 186,
+    INPUTACTION_Combat_Seize_A = 187,
+    INPUTACTION_Combat_Seize_B = 188,
+    INPUTACTION_Combat_Seize_X = 189,
+    INPUTACTION_Combat_Seize_Y = 190,
+    INPUTACTION_Combat_Seize_Y_Timed = 191,
+    INPUTACTION_Combat_WeaponDraw = 192,
+    INPUTACTION_Combat_WeaponHolster = 193,
+    INPUTACTION_Combat_WeaponHotSwap = 194,
+    INPUTACTION_Combat_BowCharge = 195,
+    INPUTACTION_Combat_BowPull = 196,
+    INPUTACTION_Combat_BowRelax = 197,
+    INPUTACTION_Combat_BowRelease = 198,
+    INPUTACTION_Combat_BowModeToggle = 199,
+    INPUTACTION_Combat_GunFire = 200,
+    INPUTACTION_Combat_GunFirePull = 201,
+    INPUTACTION_Combat_GunFire_ReloadInterrupt = 202,
+    INPUTACTION_Combat_AltGunFire_ReloadInterrupt = 203,
+    INPUTACTION_Combat_Reload = 204,
+    INPUTACTION_Combat_Reload_Old = 205,
+    INPUTACTION_Combat_RangedAimDir = 206,
+    INPUTACTION_Combat_RangedAimSpeed = 207,
+    INPUTACTION_Combat_ToggleRangedWeapon = 208,
+    INPUTACTION_Combat_Evade = 209,
+    INPUTACTION_Combat_Evade_Old = 210,
+    INPUTACTION_Combat_TargetLock = 211,
+    INPUTACTION_Combat_Quick_180 = 212,
+    INPUTACTION_Combat_AltFire = 213,
+    INPUTACTION_Combat_AltFirePressed = 214,
+    INPUTACTION_Combat_AltFirePull = 215,
+    INPUTACTION_Combat_AltFireRelease = 216,
+    INPUTACTION_Combat_CycleLoadout = 217,
+    INPUTACTION_Combat_Escape_Offense = 218,
+    INPUTACTION_Combat_Escape_Defense = 219,
+    INPUTACTION_Combat_JumpEscape_Stun = 220,
+    INPUTACTION_Combat_JumpEscape_Kill = 221,
+    INPUTACTION_Grapple_Throw = 222,
+    INPUTACTION_Grapple_Detach = 223,
+    INPUTACTION_Grapple_Pull = 224,
+    INPUTACTION_Grapple_Throw_Held = 225,
+    INPUTACTION_GrappleAxe_Prepare = 226,
+    INPUTACTION_GrappleAxe_Prepare_Held = 227,
+    INPUTACTION_GrappleAxe_Detach = 228,
+    INPUTACTION_GrappleAxe_Throw = 229,
+    INPUTACTION_Mode_Inventory = 230,
+    INPUTACTION_Mode_Map = 231,
+    INPUTACTION_Mode_Play = 232,
+    INPUTACTION_Mode_Pause = 233,
+    INPUTACTION_Mode_RadialSelect = 234,
+    INPUTACTION_Mode_Status = 235,
+    INPUTACTION_Mode_FreeCrafting = 236,
+    INPUTACTION_Move_Rate = 237,
+    INPUTACTION_Move_Rate_InAir = 238,
+    INPUTACTION_Move_Rate_Delta = 239,
+    INPUTACTION_Move_Rate_Orientation = 240,
+    INPUTACTION_Move_Dir_Ground = 241,
+    INPUTACTION_Move_Dir_Ground_Locked = 242,
+    INPUTACTION_Move_Dir_Wall = 243,
+    INPUTACTION_Move_Dir_Markup = 244,
+    INPUTACTION_Move_Dir_Markup_Locked = 245,
+    INPUTACTION_Move_Dir_Relative = 246,
+    INPUTACTION_Move_Dir_3D = 247,
+    INPUTACTION_Move_Dir_InAir = 248,
+    INPUTACTION_Move_Dir_Grapple_Climb = 249,
+    INPUTACTION_Move_Dir_Orientation = 250,
+    INPUTACTION_Rope_Climb = 251,
+    INPUTACTION_Rope_Swing = 252,
+    INPUTACTION_Swim_Dive = 253,
+    INPUTACTION_Swim_SwanDive = 254,
+    INPUTACTION_Swim_Forward = 255,
+    INPUTACTION_Swim_PitchRate = 256,
+    INPUTACTION_Swim_Resurface = 257,
+    INPUTACTION_Use_Adrenaline = 258,
+    INPUTACTION_Use_Attack = 259,
+    INPUTACTION_Use_Disengage = 260,
+    INPUTACTION_Use_Drop = 261,
+    INPUTACTION_Use_Engage = 262,
+    INPUTACTION_Use_ClimbUp = 263,
+    INPUTACTION_Select_Bow = 264,
+    INPUTACTION_Select_Gun = 265,
+    INPUTACTION_Select_Melee = 266,
+    INPUTACTION_Select_Ammo = 267,
+    INPUTACTION_Select_ArrowNormal = 268,
+    INPUTACTION_Select_ArrowExplosive = 269,
+    INPUTACTION_Select_ArrowFlaming = 270,
+    INPUTACTION_Select_ArrowRope = 271,
+    INPUTACTION_Select_Weapon_Up = 272,
+    INPUTACTION_Select_Weapon_Up_Held = 273,
+    INPUTACTION_Select_Weapon_Down = 274,
+    INPUTACTION_Select_Weapon_Down_Held = 275,
+    INPUTACTION_Select_Weapon_Left = 276,
+    INPUTACTION_Select_Weapon_Left_Held = 277,
+    INPUTACTION_Select_Weapon_Right = 278,
+    INPUTACTION_Select_Weapon_Right_Held = 279,
+    INPUTACTION_Enable_BowCharge = 280,
+    INPUTACTION_Use_EquipQuickMenu = 281,
+    INPUTACTION_Use_Health = 282,
+    INPUTACTION_Use_LookAt = 283,
+    INPUTACTION_Use_Pickup = 284,
+    INPUTACTION_Use_Pull = 285,
+    INPUTACTION_Use_Push = 286,
+    INPUTACTION_Use_Throw = 287,
+    INPUTACTION_Use_ThrowableCancel = 288,
+    INPUTACTION_Use_ThrowableAim = 289,
+    INPUTACTION_Use_CombatThrow = 290,
+    INPUTACTION_Use_Cancel = 291,
+    INPUTACTION_Use_Engage_Mash = 292,
+    INPUTACTION_Use_Engage_Cancel = 293,
+    INPUTACTION_Use_Craft_1 = 294,
+    INPUTACTION_Use_Craft_2 = 295,
+    INPUTACTION_Use_Craft_3 = 296,
+    INPUTACTION_Use_Craft_4 = 297,
+    INPUTACTION_Use_RopeArrow = 298,
+    INPUTACTION_Use_RopeArrow_Buttonless = 299,
+    INPUTACTION_Use_Ascender = 300,
+    INPUTACTION_Use_Pry = 301,
+    INPUTACTION_Torch_Equip = 302,
+    INPUTACTION_Torch_Use_Begin = 303,
+    INPUTACTION_Torch_Use_Hold = 304,
+    INPUTACTION_Torch_Use_Release = 305,
+    INPUTACTION_Torch_Unequip = 306,
+    INPUTACTION_Tutorial_Test_Jump_Left = 307,
+    INPUTACTION_Tutorial_Test_Jump_Right = 308,
+    INPUTACTION_Tutorial_Menu_Close = 309,
+    INPUTACTION_Tutorial_Menu_Continue = 310,
+    INPUTACTION_LeftStickX = 311,
+    INPUTACTION_LeftStickY = 312,
+    INPUTACTION_RightStickX = 313,
+    INPUTACTION_RightStickY = 314,
+    INPUTACTION_UI_Up = 315,
+    INPUTACTION_UI_Up_Held = 316,
+    INPUTACTION_UI_Up_RS = 317,
+    INPUTACTION_UI_Up_RS_Held = 318,
+    INPUTACTION_UI_Up_DPad = 319,
+    INPUTACTION_UI_Up_DPad_Held = 320,
+    INPUTACTION_UI_Down = 321,
+    INPUTACTION_UI_Down_Held = 322,
+    INPUTACTION_UI_Down_RS = 323,
+    INPUTACTION_UI_Down_RS_Held = 324,
+    INPUTACTION_UI_Down_DPad = 325,
+    INPUTACTION_UI_Down_DPad_Held = 326,
+    INPUTACTION_UI_Left = 327,
+    INPUTACTION_UI_Left_Held = 328,
+    INPUTACTION_UI_Left_RS = 329,
+    INPUTACTION_UI_Left_RS_Held = 330,
+    INPUTACTION_UI_Left_DPad = 331,
+    INPUTACTION_UI_Left_DPad_Held = 332,
+    INPUTACTION_UI_Right = 333,
+    INPUTACTION_UI_Right_Held = 334,
+    INPUTACTION_UI_Right_RS = 335,
+    INPUTACTION_UI_Right_RS_Held = 336,
+    INPUTACTION_UI_Right_DPad = 337,
+    INPUTACTION_UI_Right_DPad_Held = 338,
+    INPUTACTION_UI_Select = 339,
+    INPUTACTION_UI_Menu_Close = 340,
+    INPUTACTION_UI_Menu_Continue = 341,
+    INPUTACTION_UI_Play_AudioClip = 342,
+    INPUTACTION_UI_ToggleFullscreen = 343,
+    INPUTACTION_UI_CharacterProfile = 344,
+    INPUTACTION_UI_ToggleTeam = 345,
+    INPUTACTION_UI_LB = 346,
+    INPUTACTION_UI_RB = 347,
+    INPUTACTION_UI_LT_RT = 348,
+    INPUTACTION_UI_LT_RT_Held = 349,
+    INPUTACTION_UI_LT = 350,
+    INPUTACTION_UI_LT_Held = 351,
+    INPUTACTION_UI_LS = 352,
+    INPUTACTION_UI_RT = 353,
+    INPUTACTION_UI_RT_Held = 354,
+    INPUTACTION_UI_RS = 355,
+    INPUTACTION_UI_X = 356,
+    INPUTACTION_UI_X_Release = 357,
+    INPUTACTION_UI_Y = 358,
+    INPUTACTION_UI_Loadout_Next = 359,
+    INPUTACTION_UI_Loadout_Prev = 360,
+    INPUTACTION_UI_LStickChanged = 361,
+    INPUTACTION_UI_RStickChanged = 362,
+    INPUTACTION_UI_Lobby_Activate = 363,
+    INPUTACTION_UI_RightStickMagnitude = 364,
+    INPUTACTION_Cine_Skip = 365,
+    INPUTACTION_Respawn = 366,
+    INPUTACTION_Debug_ScreenShot = 367,
+    INPUTACTION_Debug_FastForward = 368,
+    INPUTACTION_Debug_ToggleMenu = 369,
+    INPUTACTION_Debug_ToggleSkew = 370,
+    INPUTACTION_Debug_CancelISS = 371,
+    INPUTACTION_Debug_CheatActivate = 372,
+    INPUTACTION_Test_A = 373,
+    INPUTACTION_Test_B = 374,
+    INPUTACTION_Test_C = 375,
+    INPUTACTION_Test_D = 376,
+    INPUTACTION_Prototype_AccurateAimAlt = 377,
+    INPUTACTION_Dead_Button = 378,
+    INPUTACTION_Npc_Alert = 379,
+    INPUTACTION_Npc_Beckon = 380,
+    INPUTACTION_Npc_Idle = 381,
+    INPUTACTION_Npc_Idle_Sync = 382,
+    INPUTACTION_Npc_CombatIdle = 383,
+    INPUTACTION_Npc_Melee = 384,
+    INPUTACTION_Npc_Melee_PreMove = 385,
+    INPUTACTION_Npc_PreferredAttack = 386,
+    INPUTACTION_Npc_PreferredAttack_Recovery = 387,
+    INPUTACTION_Npc_PreferredAttack_part2 = 388,
+    INPUTACTION_Npc_PreferredAttack_part2_FollowUp = 389,
+    INPUTACTION_Npc_PreferredAttack_Recovery_part2 = 390,
+    INPUTACTION_Npc_PreferredAttack_part3 = 391,
+    INPUTACTION_Npc_PreferredAttack_Recovery_part3 = 392,
+    INPUTACTION_Npc_ReactiveAttack = 393,
+    INPUTACTION_Npc_AlternateAttack = 394,
+    INPUTACTION_Npc_AlternateAttack_part2 = 395,
+    INPUTACTION_Npc_AlternateAttack_part3 = 396,
+    INPUTACTION_Npc_OffscreenAttack = 397,
+    INPUTACTION_Npc_ReachDownAttack = 398,
+    INPUTACTION_Npc_SeizeAttack = 399,
+    INPUTACTION_Npc_DeathSeizeAttack = 400,
+    INPUTACTION_Npc_ChargeAttack = 401,
+    INPUTACTION_Npc_FlyByAttack = 402,
+    INPUTACTION_Npc_FlyByAttackLeft = 403,
+    INPUTACTION_Npc_ThrownAttack_Start = 404,
+    INPUTACTION_Npc_ThrownAttack_Aim = 405,
+    INPUTACTION_Npc_ThrownAttack = 406,
+    INPUTACTION_Npc_ThrownAttack_LongRange = 407,
+    INPUTACTION_Npc_ThrownAttack_Rare = 408,
+    INPUTACTION_Npc_ThrownReload = 409,
+    INPUTACTION_Npc_ThrownAttack_Start_AnimMove = 410,
+    INPUTACTION_Npc_ThrownAttack_Aim_AnimMove = 411,
+    INPUTACTION_Npc_ThrownAttack_Finish_AnimMove = 412,
+    INPUTACTION_Npc_ThrownReload_AnimMove = 413,
+    INPUTACTION_Npc_ThrownAttack_Alternate = 414,
+    INPUTACTION_Npc_HeroicAttack = 415,
+    INPUTACTION_Npc_HeroicAttackPreMove = 416,
+    INPUTACTION_Npc_MeleeSeize = 417,
+    INPUTACTION_Npc_Parry = 418,
+    INPUTACTION_Npc_Block = 419,
+    INPUTACTION_Npc_Guard = 420,
+    INPUTACTION_Npc_Riposte = 421,
+    INPUTACTION_Npc_Stun = 422,
+    INPUTACTION_Npc_StunRecover = 423,
+    INPUTACTION_Npc_Celebrate = 424,
+    INPUTACTION_Npc_Taunt = 425,
+    INPUTACTION_Npc_Jump = 426,
+    INPUTACTION_Npc_JumpToLedge = 427,
+    INPUTACTION_Npc_JumpFromLedge = 428,
+    INPUTACTION_Npc_Land = 429,
+    INPUTACTION_Npc_MantleUp = 430,
+    INPUTACTION_Npc_MantleDown = 431,
+    INPUTACTION_Npc_Move = 432,
+    INPUTACTION_Npc_Move_Fly = 433,
+    INPUTACTION_Npc_Perch = 434,
+    INPUTACTION_Npc_Turn = 435,
+    INPUTACTION_Npc_Turn_Fly = 436,
+    INPUTACTION_Npc_IdleTurn = 437,
+    INPUTACTION_Npc_NavHelper = 438,
+    INPUTACTION_Npc_Toss_PickupObject = 439,
+    INPUTACTION_Npc_Toss_PickupNPC = 440,
+    INPUTACTION_Npc_Toss_Throw = 441,
+    INPUTACTION_Npc_Toss_PickedUp = 442,
+    INPUTACTION_Npc_Spawn_UsingNamedValue = 443,
+    INPUTACTION_Npc_Despawn_UsingNamedValue = 444,
+    INPUTACTION_Npc_Ground_Search = 445,
+    INPUTACTION_Npc_Object_Search = 446,
+    INPUTACTION_Npc_Whistle = 447,
+    INPUTACTION_Npc_Hub_Box_Search = 448,
+    INPUTACTION_Npc_Spawn_JumpDown = 449,
+    INPUTACTION_Npc_ThrowableObject_Pickup = 450,
+    INPUTACTION_Npc_ThrowableObject_Throw = 451,
+    INPUTACTION_Npc_UsableObject_Push_Stationary = 452,
+    INPUTACTION_Npc_UsableObject_Push_Moving = 453,
+    INPUTACTION_Npc_UsableObject_ChopDown = 454,
+    INPUTACTION_Npc_UsableObject_BreakThrough = 455,
+    INPUTACTION_Npc_UsableObject_JumpToDeath = 456,
+    INPUTACTION_Npc_UsableObject_KnockOver = 457,
+    INPUTACTION_Npc_UsableObject_HostedAnimGraph = 458,
+    INPUTACTION_Npc_UsableObject_HostedAnimGraph_IgnoreEvents = 459,
+    INPUTACTION_Npc_UsableObject_HostedAnimGraph_NoInterrupts = 460,
+    INPUTACTION_Npc_UsableObject_HostedAnimGraph_NoInterruptsNoDeath = 461,
+    INPUTACTION_Npc_UsableObject_HostedAnimGraph_NoGoalComplete = 462,
+    INPUTACTION_Npc_WayPoint_HostedAnimGraph = 463,
+    INPUTACTION_Npc_WolfHowl = 464,
+    INPUTACTION_Npc_JumpAttack = 465,
+    INPUTACTION_Npc_ReactToEnemy_Generic = 466,
+    INPUTACTION_Npc_RangedAttackFromCover_Left = 467,
+    INPUTACTION_Npc_RangedAttackFromCover_Right = 468,
+    INPUTACTION_Npc_RangedAttackFromCover_Idle = 469,
+    INPUTACTION_Npc_RangedAttackFromCover_PeekLeft = 470,
+    INPUTACTION_Npc_RangedAttackFromCover_PeekRight = 471,
+    INPUTACTION_Npc_PreCombat_2GuardChat_A = 472,
+    INPUTACTION_Npc_PreCombat_2GuardChat_B = 473,
+    INPUTACTION_Npc_PreCombat_2GuardTraining_A = 474,
+    INPUTACTION_Npc_PreCombat_2GuardTraining_B = 475,
+    INPUTACTION_Npc_PreCombat_EatCorpse = 476,
+    INPUTACTION_Npc_PreCombat_Guard = 477,
+    INPUTACTION_Npc_PreCombat_PrepWeapon = 478,
+    INPUTACTION_Npc_PreCombat_PolishShield = 479,
+    INPUTACTION_Npc_PreCombat_Scavenge_Ground = 480,
+    INPUTACTION_Npc_PreCombat_Scavenge_Tower = 481,
+    INPUTACTION_Npc_PreCombat_Scavenge_Wall = 482,
+    INPUTACTION_Npc_PreCombat_SharpenBlade = 483,
+    INPUTACTION_Npc_CoverPoint_Enter = 484,
+    INPUTACTION_Npc_CoverPoint_Exit = 485,
+    INPUTACTION_Npc_Investigate = 486,
+    INPUTACTION_Npc_Investigate_NonCasual = 487,
+    INPUTACTION_Npc_Investigate_Reaction = 488,
+    INPUTACTION_Npc_Investigate_Reaction_NonCasual = 489,
+    INPUTACTION_Npc_Investigate_Body_Casual = 490,
+    INPUTACTION_Npc_Investigate_Body_NonCasual = 491,
+    INPUTACTION_Npc_Investigate_Body_Reaction = 492,
+    INPUTACTION_Npc_Investigate_Body_Reaction_NonCasual = 493,
+    INPUTACTION_Npc_Investigate_CallForHelp = 494,
+    INPUTACTION_Npc_Investigate_Diversion = 495,
+    INPUTACTION_Npc_Investigate_Diversion_Reaction = 496,
+    INPUTACTION_Npc_Investigate_Glimpse = 497,
+    INPUTACTION_Npc_Investigate_Glimpse_Reaction = 498,
+    INPUTACTION_Npc_Investigate_Gunshot_Casual = 499,
+    INPUTACTION_Npc_Investigate_Gunshot_NonCasual = 500,
+    INPUTACTION_Npc_Investigate_Gunshot_Reaction = 501,
+    INPUTACTION_Npc_Investigate_LookAround = 502,
+    INPUTACTION_Npc_Investigate_Movement_Reaction = 503,
+    INPUTACTION_Npc_Search = 504,
+    INPUTACTION_Npc_Search_End = 505,
+    INPUTACTION_Npc_Search_Start = 506,
+    INPUTACTION_Npc_CallForHelp = 507,
+    INPUTACTION_Npc_CallForHelp_notarget = 508,
+    INPUTACTION_Npc_PuppetMode = 509,
+    INPUTACTION_Npc_Shield_Discard = 510,
+    INPUTACTION_Npc_Shield_Discard_Flaming = 511,
+    INPUTACTION_Npc_Shield_Pickup = 512,
+    INPUTACTION_Npc_DefensiveStance = 513,
+    INPUTACTION_Npc_MoveToMover = 514,
+    INPUTACTION_Npc_Converse_Acknowledge = 515,
+    INPUTACTION_Npc_Converse_Wait = 516,
+    INPUTACTION_Npc_Converse_Talk = 517,
+    INPUTACTION_Npc_Converse_Finish = 518,
+    INPUTACTION_Npc_SideStep = 519,
+    INPUTACTION_Npc_StopMoving = 520,
+    INPUTACTION_Npc_Spawn = 521,
+    INPUTACTION_Npc_Spawn_Alternate = 522,
+    INPUTACTION_Npc_Spawn_Wall = 523,
+    INPUTACTION_Npc_Spawn_Ledge = 524,
+    INPUTACTION_Npc_Spawn_Drop = 525,
+    INPUTACTION_Npc_Spawn_Window = 526,
+    INPUTACTION_NPC_Spawn_FromCover = 527,
+    INPUTACTION_Npc_Spawn_AroundCorner_Left = 528,
+    INPUTACTION_Npc_Spawn_AroundCorner_Right = 529,
+    INPUTACTION_Npc_Spawn_Chasm_Zipline1 = 530,
+    INPUTACTION_Npc_Spawn_Chasm_Zipline2 = 531,
+    INPUTACTION_Npc_Spawn_Chasm_Zipline3 = 532,
+    INPUTACTION_Npc_Spawn_Chasm_Zipline4 = 533,
+    INPUTACTION_Npc_Spawn_Chasm_Zipline5 = 534,
+    INPUTACTION_Npc_Spawn_Doorway_Barn_Left = 535,
+    INPUTACTION_Npc_Spawn_Doorway_Barn_Left2 = 536,
+    INPUTACTION_Npc_Spawn_Doorway_Barn_Left3 = 537,
+    INPUTACTION_Npc_Spawn_Doorway_Barn_Center1 = 538,
+    INPUTACTION_Npc_Spawn_Doorway_Barn_Center2 = 539,
+    INPUTACTION_Npc_Spawn_Doorway_Barn_Center3 = 540,
+    INPUTACTION_Npc_Spawn_Doorway_Barn_Right = 541,
+    INPUTACTION_Npc_Spawn_Doorway_Barn_Right2 = 542,
+    INPUTACTION_Npc_Spawn_Doorway_Barn_Right3 = 543,
+    INPUTACTION_Npc_Spawn_Onslaught01 = 544,
+    INPUTACTION_Npc_Spawn_Onslaught02 = 545,
+    INPUTACTION_Npc_Spawn_Onslaught03 = 546,
+    INPUTACTION_Npc_Spawn_chBridge_LeftBuilding = 547,
+    INPUTACTION_Npc_Spawn_chBridge_Rock01 = 548,
+    INPUTACTION_Npc_Spawn_chBridge_Rock02 = 549,
+    INPUTACTION_Npc_Despawn_Ledge = 550,
+    INPUTACTION_Turret_Enter = 551,
+    INPUTACTION_Turret_Reload = 552,
+    INPUTACTION_Turret_Aim = 553,
+    INPUTACTION_Turret_WaitToFire = 554,
+    INPUTACTION_Turret_FirePrimary = 555,
+    INPUTACTION_Turret_FireSecondary = 556,
+    INPUTACTION_Turret_Exit = 557,
+    INPUTACTION_ObjectInteract_DestroyDoor = 558,
+    INPUTACTION_ObjectInteract_DestroyPillar = 559,
+    INPUTACTION_ActionGraph_CirclePressed = 560,
+    INPUTACTION_ActionGraph_CrossPressed = 561,
+    INPUTACTION_ActionGraph_SquarePressed = 562,
+    INPUTACTION_ActionGraph_TrianglePressed = 563,
+    INPUTACTION_ActionGraph_EscapePressed = 564,
+    INPUTACTION_ActionGraph_CircleReleased = 565,
+    INPUTACTION_ActionGraph_CrossReleased = 566,
+    INPUTACTION_ActionGraph_SquareReleased = 567,
+    INPUTACTION_ActionGraph_TriangleReleased = 568,
+    INPUTACTION_ActionGraph_LT_Held = 569,
+    INPUTACTION_ActionGraph_RT_Held = 570,
+    INPUTACTION_GPS_Activate = 571,
+    INPUTACTION_GPS_Deactivate = 572,
+    INPUTACTION_GPS_SelectHighlightedObject = 573,
+    INPUTACTION_GPS_Capture_Begin = 574,
+    INPUTACTION_GPS_Capture_Hold = 575,
+    INPUTACTION_GPS_Capture_Release = 576,
+    INPUTACTION_SI_Activate = 577,
+    INPUTACTION_SI_Deactivate = 578,
+    INPUTACTION_Multiplayer_TeammateArrows = 579,
+    INPUTACTION_Multiplayer_RequestHelp = 580,
+    INPUTACTION_Multiplayer_SpectatorMode_Previous = 581,
+    INPUTACTION_Multiplayer_SpectatorMode_Next = 582,
+    INPUTACTION_Multiplayer_SpectatorMode_ChooseFriendSpawn = 583,
+    INPUTACTION_Multiplayer_SpectatorMode_ChooseDefaultSpawn = 584,
+    INPUTACTION_Multiplayer_PickupFlag = 585,
+    INPUTACTION_Multiplayer_ConsumeFlag = 586,
+    INPUTACTION_Multiplayer_Priestess_Empowerment = 587,
+    INPUTACTION_Multiplayer_TextChat = 588,
+    INPUTACTION_Multiplayer_TextTeamChat = 589,
+    INPUTACTION_Multiplayer_VoiceChatSpeak = 590,
+    INPUTACTION_Multiplayer_Ping = 591,
+    INPUTACTION_Select_Bow_Normal = 592,
+    INPUTACTION_Select_Bow_Fire = 593,
+    INPUTACTION_Select_Bow_Rope = 594,
+    INPUTACTION_Select_Machinegun_Normal = 595,
+    INPUTACTION_Select_Machinegun_Nade = 596,
+    INPUTACTION_Select_NextWeapon = 597,
+    INPUTACTION_Select_PreviousWeapon = 598,
+    INPUTACTION_Pc_Move_Left = 599,
+    INPUTACTION_Pc_Move_Right = 600,
+    INPUTACTION_Pc_Moving_Left = 601,
+    INPUTACTION_Pc_Moving_Right = 602,
+    INPUTACTION_Pc_Move_Forward = 603,
+    INPUTACTION_Pc_Move_Back = 604,
+    INPUTACTION_Pc_Moving_Forward = 605,
+    INPUTACTION_Mouse_Left = 606,
+    INPUTACTION_Mouse_Right = 607,
+    INPUTACTION_Mouse_Right_Down = 608,
+    INPUTACTION_Mouse_Middle = 609,
+    INPUTACTION_PC_Mouse_X = 610,
+    INPUTACTION_PC_Mouse_X_Right_Down = 611,
+    INPUTACTION_PC_Mouse_Y = 612,
+    INPUTACTION_PC_MouseWheel_Up = 613,
+    INPUTACTION_PC_MouseWheel_Down = 614,
+    INPUTACTION_PC_Mouse_Y_Right_Down = 615,
+    INPUTACTION_Select_Weapon_1 = 616,
+    INPUTACTION_Select_Weapon_2 = 617,
+    INPUTACTION_Select_Weapon_3 = 618,
+    INPUTACTION_Select_Weapon_4 = 619,
+    INPUTACTION_Multiplayer_SpectatorMode_SelectLoadout = 620,
+    INPUTACTION_Pc_Crank_Left = 621,
+    INPUTACTION_Pc_Crank_Right = 622,
+    INPUTACTION_NPC_Spawn_CD_Crawl_Low = 623,
+    INPUTACTION_NPC_Spawn_CD_Crawl_Med = 624,
+    INPUTACTION_NPC_Spawn_CD_Crawl_High = 625,
+    INPUTACTION_NPC_Spawn_CD_SitUp_Init = 626,
+    INPUTACTION_NPC_Spawn_CD_SitUp = 627,
+    INPUTACTION_Mode_Pause_VR = 628,
+    INPUTACTION_Mode_Status_VR = 629,
+    INPUTACTION_TeleportStart_VR = 630,
+    INPUTACTION_TeleportConfirm_VR = 631,
+    INPUTACTION_SnapRotateLeft_VR = 632,
+    INPUTACTION_SnapRotateRight_VR = 633,
+    INPUTACTION_ToggleControllerDisplay_VR = 634,
+    INPUTACTION_ShowPlayArea_VR = 635,
+    INPUTACTION_PushHack_VR = 636,
+    INPUTACTION_UI_Select_Release = 637,
+    INPUTACTION_MAX = 638
+};
+
+typedef struct
+{
+    Ref nameRef;
+    if (CanSeekTo(nameRef))
+    {
+        SeekToRef(nameRef);
+        string name;
+        ReturnFromRef();
+    }
+    float speedmult;
+    float volume;
+} PadshockPhiatInfo <optimize=false>;
+
+typedef struct
+{
+    float meterValidInputAddition;
+    float meterValidInputAdditionEasyMod;
+    float meterValidInputAdditionHardMod;
+    float meterValidInputAdditionSurvivorMod;
+    float validInputDelay;
+    byte bDelaySyncWithAnimationTime;
+    byte bAllowStickAsValidInput;
+    FSkip(2);
+    float stickRegistrationSetValue;
+    FSkip(4);
+    Ref validDefendInputRef;
+    unsigned int numValidDefendInputs;
+    if (CanSeekTo(validDefendInputRef))
+    {
+        SeekToRef(validDefendInputRef);
+        INPUTACTION validDefendInput[numValidDefendInputs];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref validDefendStickRef;
+    unsigned int numValidDefendSticks;
+    if (CanSeekTo(validDefendStickRef))
+    {
+        SeekToRef(validDefendStickRef);
+        INPUTACTION validDefendStick[numValidDefendSticks];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    PadshockPhiatInfo padshockFile;
+} seize_input_data <optimize=false>;
+
+typedef struct
+{
+    float regenerationPerSecond;
+    float regenerationDelay;
+} seize_time_data <optimize=false>;
+
+typedef struct
+{
+    ubyte bIsRegeneration;
+    FSkip(3);
+    float regenerationTimeSeconds;
+    float regenerationDelay;
+} seize_timeex_data <optimize=false>;
+
+typedef union
+{
+    seize_input_data input;
+    seize_time_data time;
+    seize_timeex_data timeExplicit;
+} SeizeMechanismUnion;
+
+typedef struct
+{
+    MeleeMoveRequirementsStruct meleeMoveRequirements;
+    Ref nameRef;
+    if (CanSeekTo(nameRef))
+    {
+        SeekToRef(nameRef);
+        string name;
+        ReturnFromRef();
+    }
+    int userAssignedID;
+    FSkip(4);
+    Ref hostedSCTimerListRef;
+    if (CanSeekTo(hostedSCTimerListRef))
+    {
+        SeekToRef(hostedSCTimerListRef);
+        HostedSCTimer hostedSCTimerList;
+        ReturnFromRef();
+    }
+    unsigned int iHostedSCTimerListCount;
+    byte bUseTime;
+    byte bUseTimeAllowFullTime;
+    FSkip(2);
+    float timeMax;
+    int seizeTimeResultOption;
+    unsigned int animTarget;
+    float fOffsetZ;
+    float fInterpTime;
+    byte bShowTeammateSeizeIndicator;
+    FSkip(3);
+    float meterStartingValue;
+    float meterMax;
+    float initialIgnoreInputWindowMs;
+    float initialIgnoreMeterWindowMs;
+    byte bIgnoreMeterEnds;
+    seize_damage_data defenderSeizeDamage;
+    FSkip(3);
+    int defenderSeizeMechanismType;
+    SeizeMechanismUnion defenderSeizeMechanism;
+    FSkip(4);
+    Ref defenderFollowupSeizeRef;
+    unsigned int defenderFollowupSeizeCount;
+    if (CanSeekTo(defenderFollowupSeizeRef))
+    {
+        SeekToRef(defenderFollowupSeizeRef);
+        seize_timeex_data defenderFollowupSeize[defenderFollowupSeizeCount];
+        ReturnFromRef();
+    }
+    seize_damage_data attackerSeizeDamage;
+    int attackerSeizeMechanismType;
+    SeizeMechanismUnion attackerSeizeMechanism;
+    FSkip(4);
+    Ref attackerFollowupSeizeRef;
+    unsigned int attackerFollowupSeizeCount;
+    if (CanSeekTo(attackerFollowupSeizeRef))
+    {
+        SeekToRef(attackerFollowupSeizeRef);
+        seize_timeex_data attackerFollowupSeize[attackerFollowupSeizeCount];
+        ReturnFromRef();
+    }
+    byte bIsSeizeGroup;
+    byte bIsSequentialCheck;
+    FSkip(2);
+    Ref seizeGroupListRef;
+    unsigned int seizeGroupListcount;
+    if (CanSeekTo(seizeGroupListRef))
+    {
+        SeekToRef(seizeGroupListRef);
+        byte seizeGroupList[seizeGroupListcount];
+        ReturnFromRef();
+    }
+} seize_tune_data <optimize=false>;
+
+typedef struct
+{
+    ushort trait;
+    FSkip(2);
+    float multiplier;
+} PlayerProp__CraftingTimeReductionTraits <optimize=false>;
+
+typedef struct
+{
+    ushort reqTrait;
+    FSkip(2);
+    int uIChosenWeapon;
+} PlayerProp__WeaponFinisherRequirementsData <optimize=false>;
+
+typedef struct
+{
+    unsigned int numInventoryRequirements;
+    FSkip(4);
+    Ref inventoryRequirementsRef;
+    if (CanSeekTo(inventoryRequirementsRef))
+    {
+        SeekToRef(inventoryRequirementsRef);
+        int inventoryRequirements[numInventoryRequirements];
+        ReturnFromRef();
+    }
+} InvRequirementsSet <optimize=false>;
+
+typedef union
+{
+    short byUserDefinedIndex;
+    ushort byBoneIndex;
+    short byBoneID;
+    ushort byMarkerIndex;
+    ushort byMarkerID;
+} ModelBoneOrMarkerReferenceWithContext__ModelBoneOrMarkerRefData;
+
+typedef struct
+{
+    ubyte refType;
+    FSkip(1);
+    ModelBoneOrMarkerReferenceWithContext__ModelBoneOrMarkerRefData refData;
+} ModelBoneOrMarkerReferenceWithContext <optimize=false>;
+
+typedef struct
+{
+    ModelBoneOrMarkerReferenceWithContext marker;
+    float offset[3];
+    byte shouldApplyPairCalculations : 1;
+    byte shouldApplyFootDepthZOffset : 1;
+    byte useExactSnowHeight : 1;
+    byte _Bitfieldpadding2 : 5;
+} SnowDeformComponent__SnowDeformPositionData <optimize=false>;
+
+typedef struct
+{
+    Ref deformMarkersListRef;
+    if (CanSeekTo(deformMarkersListRef))
+    {
+        SeekToRef(deformMarkersListRef);
+        SnowDeformComponent__SnowDeformPositionData deformMarkersList;
+        ReturnFromRef();
+    }
+    unsigned int deformMarkersListCount;
+    float minFootDepth;
+    float maxFootDepth;
+    float footDepthScale;
+    float footClosenessScale;
+    float maxDepth;
+} SnowDeformComponent <optimize=false>;
+
+typedef struct
+{
+    ushort tiltMatchSlopeSelfProbeA;
+    ushort tiltMatchSlopeSelfProbeB;
+} DoubleJointProbe__ActorData <optimize=false>;
+
+typedef struct
+{
+    DoubleJointProbe__ActorData initiaterInstance;
+} DoubleJointProbe <optimize=false>;
+
+typedef struct
+{
+    ushort objectID;
+} PlayerProp__ChessPieceData <optimize=false>;
+
+typedef struct
+{
+    int velType;
+    float initialVel[3];
+    int direction;
+    float gravity;
+    Ref fallHeightPtrRef;
+    if (CanSeekTo(fallHeightPtrRef))
+    {
+        SeekToRef(fallHeightPtrRef);
+        FallHeightSetItem fallHeightPtr;
+        ReturnFromRef();
+    }
+    Ref mpDebugNameRef;
+    if (CanSeekTo(mpDebugNameRef))
+    {
+        SeekToRef(mpDebugNameRef);
+        string mpDebugName;
+        ReturnFromRef();
+    }
+} JumpVelocity <optimize=false>;
+
+typedef struct
+{
+    float maxLocalSpeedForward;
+    float maxLocalSpeedBackward;
+    float maxLocalSpeedLeftRight;
+    float fAirSteeringForwardAcceleration;
+    float fAirSteeringBackwardAcceleration;
+    float fAirSteeringLateralAcceleration;
+    float fAirSteeringForwardDeceleration;
+    float fAirSteeringBackwardDeceleration;
+    float fAirSteeringLateralDeceleration;
+    float maxTargetSpeedForward;
+    float maxTargetSpeedBackward;
+    float maxTargetSpeedLeftRight;
+    float idleStickSpeedForwardBackward;
+    float idleStickSpeedLeftRight;
+    byte bDelayAirSteerToFirstStickPress;
+    FSkip(7);
+    Ref mpDebugNameRef;
+    if (CanSeekTo(mpDebugNameRef))
+    {
+        SeekToRef(mpDebugNameRef);
+        string mpDebugName;
+        ReturnFromRef();
+    }
+} JumpAirSteerTuneData <optimize=false>;
+
+typedef struct
+{
+    PlayerProp__data dataItem;
+    int playerVersion;
+    PlayerProp__general_attributes general;
+    PlayerProp__event_broadcast_attributes eventBroadcastAttributes;
+    FSkip(2);
+    Ref healthComponentListRef;
+    if (CanSeekTo(healthComponentListRef))
+    {
+        SeekToRef(healthComponentListRef);
+        HealthComponent healthComponentList;
+        ReturnFromRef();
+    }
+    CharacterClassComponent characterClassTuneData;
+    health_tune_data healthTuneData;
+    PlayerProp__sound_tune_data soundTuneData;
+    PlayerProp__multiplayer_sound multiplayerSoundData;
+    PlayerProp__swim_tune_data swimTuneData;
+    FSkip(4);
+    bone_tune_data boneTuneData;
+    PlayerProp__tune_data tuneData;
+    FSkip(2);
+    ConditionStatus mConditionStatus;
+    PlayerProp__combat_tune_data combatTuneData;
+    PlayerProp__reticle_tune_data combatReticle;
+    FSkip(6);
+    PlayerProp__sense_system senseSystemTuneData;
+    ground_move_tune_data groundMoveTuneData;
+    LimbLockSet mLimbLockSet;
+    FSkip(4);
+    Ref mLimbLockSetsListRef;
+    if (CanSeekTo(mLimbLockSetsListRef))
+    {
+        SeekToRef(mLimbLockSetsListRef);
+        LimbLockGroup mLimbLockSetsList[mLimbLockSet];
+        ReturnFromRef();
+    }
+    unsigned int miNumLimbLockSets;
+    EdgeDeflectionData edgeDeflection;
+    PlayerProp__controls_data controlsDataItem;
+    PlayerProp__rope_tune_data rope;
+    ledge_tune_data ledge;
+    FSkip(2);
+    wall_hug_tune_data wallHug;
+    hpole_tune_data hPole;
+    ladder_tune_data ladder;
+    wallvertpole_tune_data wallVPole;
+    FSkip(2);
+    vertpole_tune_data vPole;
+    pillar_tune_data pillar;
+    FSkip(2);
+    pipehorizontal_tune_data pipeHorizontal;
+    pipevertical_tune_data pipeVertical;
+    perch_tune_data perch;
+    wall_jump_tune_data wallJump;
+    FSkip(1);
+    grapple_tune_data grappleTuneData;
+    WallCrawlTuneData wallCrawl;
+    PlayerProp__tr9_prototype_melee_tune_data tR9ProtoMeleeTuneData;
+    PlayerProp__prototypeTuneData prototype;
+    FSkip(4);
+    InputTracker inputTrackerData;
+    FSkip(2);
+    PlayerProp__adrenaline_tune_data adrenalineData;
+    SteeringTuneData steeringData;
+    byte useDefaultCostume;
+    FSkip(3);
+    HostedModelRef defaultHostedModelRef;
+    ModelSlotRef defaultModelSlotRef;
+    PlayerProp__aim_tune_data aimTuneData;
+    AimDataUser aimData;
+    PlayerProp__CameraSwitchTuneData cameraSwitchTuneData;
+    PlayerProp__CoverTuneData coverTuneData;
+    PlayerProp__DeathFromAboveTuneData deathFromAboveTuneData;
+    PlayerProp__JumpEscapeTuneData jumpEscapeTuneData;
+    ProceduralAnimParams accAimProcAnimParams;
+    PlayerProp__overlay_effects overlayEffects;
+    PlayerProp__debug_mechanic_tune_data debugData;
+    FSkip(3);
+    PlayerProp__hit_reaction_tune_data hitReactionTuneData;
+    in_air_tune_data inAirTuneData;
+    MarkupDetectionTable markupDetectionMap;
+    PlayerProp__markup_detection_tune_data markupDetectionTuneData;
+    PlayerProp__physics_kick_tune_data physicsKickTuneData;
+    PlayerProp__push_pull_tune_data pushPullTuneData;
+    PlayerProp__physics_sense_tune_data physicsSenseTuneData;
+    PlayerProp__instinct_mode instinctMode;
+    PlayerProp__physics_jumping_landing_tune_data physicsJumpingLandingTuneData;
+    PlayerProp__zipline_tune_data zipLineTuneData;
+    PlayerProp__zipline_tune_data bendyHpoleTuneData;
+    PlayerProp__idle_tune_data idleTuneData;
+    PlayerProp__position_lag_tune_data positionLagTuneData;
+    PlayerProp__MantleStateTuneData mantleStateTuneData;
+    BalanceBeamTuneData balanceBeamTuneDataItem;
+    PlayerProp__MovingPlatformTuneData movingPlatformTuneData;
+    GymnasticsTuneData gymnasticsTuneDataItem;
+    PlayerProp__InjuryTuneData injuryTuneDataItem;
+    vision_mode_tune_data visionMode;
+    CameraComponent cameraTuneData;
+    WeaponCameraListItem fallbackWeaponCameraListItem;
+    MovesetProfile_MoveTypeEnum modifiableMoveTypeCameraControl;
+    MovesetProfile_MoveTypeEnum modifiableMoveTypeSpeedLimit;
+    MovesetProfile_MoveTypeEnum modifiableMoveTypeSpeedScale;
+    MovesetProfile_MoveTypeEnum modifiableMoveTypeTurnrateScale;
+    MovesetProfile_MoveTypeEnum modifiableMoveTypeWeaponSelect;
+    slope_slide_tune_data slopeSlideTuneData;
+    FSkip(4);
+    PlayerFaceOverlayData faceOverlayData;
+    PlayerProp__CinematicData cinematics;
+    FSkip(1);
+    NetworkCharacterData network;
+    BarkComponent barkComponent;
+    Ref seizeAttackListRef;
+    if (CanSeekTo(seizeAttackListRef))
+    {
+        SeekToRef(seizeAttackListRef);
+        seize_tune_data seizeAttackList;
+        ReturnFromRef();
+    }
+    ushort traitForFireArrow;
+    ushort traitForExplosiveArrow;
+    ushort traitForFinisher;
+    ushort traitForVulnerabilityFeedback;
+    ushort traitForVisibleHearts;
+    ushort traitForActiveAttach;
+    ushort traitForActiveAttachWallCrawl;
+    FSkip(2);
+    Ref craftingTimeMultipliersRef;
+    unsigned int numCraftingTimeMultipliers;
+    if (CanSeekTo(craftingTimeMultipliersRef))
+    {
+        SeekToRef(craftingTimeMultipliersRef);
+        PlayerProp__CraftingTimeReductionTraits craftingTimeMultipliers[numCraftingTimeMultipliers];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    Ref weaponFinisherRequirementsListRef;
+    if (CanSeekTo(weaponFinisherRequirementsListRef))
+    {
+        SeekToRef(weaponFinisherRequirementsListRef);
+        PlayerProp__WeaponFinisherRequirementsData weaponFinisherRequirementsList;
+        ReturnFromRef();
+    }
+    unsigned int weaponFinisherRequirementsListCount;
+    unsigned int seizeAttackListCount;
+    Ref inventoryResourceSetsRef;
+    unsigned int numInventoryResourceSets;
+    if (CanSeekTo(inventoryResourceSetsRef))
+    {
+        SeekToRef(inventoryResourceSetsRef);
+        InvRequirementsSet inventoryResourceSets[numInventoryResourceSets];
+        ReturnFromRef();
+    }
+    FSkip(4);
+    SnowDeformComponent snowDeformComponent;
+    Ref controlModesRef;
+    if (CanSeekTo(controlModesRef))
+    {
+        SeekToRef(controlModesRef);
+        ControlMode controlModes;
+        ReturnFromRef();
+    }
+    Ref senseUnitsRef;
+    if (CanSeekTo(senseUnitsRef))
+    {
+        SeekToRef(senseUnitsRef);
+        SenseUnit senseUnits;
+        ReturnFromRef();
+    }
+    Ref doubleJointProbeListRef;
+    unsigned int doubleJointProbeListCount;
+    if (CanSeekTo(doubleJointProbeListRef))
+    {
+        SeekToRef(doubleJointProbeListRef);
+        DoubleJointProbe doubleJointProbeList[doubleJointProbeListCount];
+        ReturnFromRef();
+    }
+    PlayerProp__ChessPieceData chessPieceData;
+    FSkip(2);
+    Ref jumpVelocityListRef;
+    if (CanSeekTo(jumpVelocityListRef))
+    {
+        SeekToRef(jumpVelocityListRef);
+        JumpVelocity jumpVelocityList;
+        ReturnFromRef();
+    }
+    Ref jumpAirSteerTuneDataListRef;
+    if (CanSeekTo(jumpAirSteerTuneDataListRef))
+    {
+        SeekToRef(jumpAirSteerTuneDataListRef);
+        JumpAirSteerTuneData jumpAirSteerTuneDataList;
+        ReturnFromRef();
+    }
+    Ref deathFromAboveJumpVelocityRef;
+    if (CanSeekTo(deathFromAboveJumpVelocityRef))
+    {
+        SeekToRef(deathFromAboveJumpVelocityRef);
+        JumpVelocity deathFromAboveJumpVelocity;
+        ReturnFromRef();
+    }
+    unsigned int mpReviveInteractProfile;
+    PlayerProp__idleanim idleanimList[1];
+} PlayerProp <optimize=false>;
+
+typedef struct
+{
+    PlayerProp prop;
+} PlayerComponent <optimize=false>;
+
+RefDefinitions refDefinitions;
+PlayerComponent root <open=true>;

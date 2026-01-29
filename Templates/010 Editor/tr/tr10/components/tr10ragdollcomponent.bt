@@ -1,0 +1,187 @@
+#define TR_VERSION 10
+#include "../../trcommon.bt"
+
+typedef struct
+{
+    float time;
+} SoundPlex__Silence <optimize=false>;
+
+typedef struct
+{
+    ushort type;
+    byte clickPlay;
+    FSkip(5);
+    Ref dataRef;
+    if (CanSeekTo(dataRef))
+    {
+        SeekToRef(dataRef);
+        SoundPlex__Silence data;
+        ReturnFromRef();
+    }
+    unsigned int ownerID;
+} SoundPlex <optimize=false>;
+
+typedef struct
+{
+    float linearSoftness;
+    float angularSoftness;
+} SimpleSoftness <optimize=false>;
+
+typedef struct
+{
+    float linearSoftness[3];
+    float angularSoftness[3];
+} AdvancedSoftness <optimize=false>;
+
+typedef struct
+{
+    float linearDamping;
+    float linearFrequency;
+    float angularDamping;
+    float angularFrequency;
+} SimpleSpringSoftness <optimize=false>;
+
+typedef struct
+{
+    float linearDamping[3];
+    float linearFrequency[3];
+    float angularDamping[3];
+    float angularFrequency[3];
+} AdvancedSpringSoftness <optimize=false>;
+
+typedef union
+{
+    SimpleSoftness simple;
+    AdvancedSoftness advanced;
+    SimpleSpringSoftness simpleSpring;
+    AdvancedSpringSoftness advancedSpring;
+} SoftnessUnion;
+
+typedef struct
+{
+    Ref soundRef;
+    if (CanSeekTo(soundRef))
+    {
+        SeekToRef(soundRef);
+        SoundPlex sound;
+        ReturnFromRef();
+    }
+    int softnessType;
+    SoftnessUnion softness;
+    float relaxation;
+    char numIterations;
+    FSkip(3);
+    int soundSource;
+    byte collideConnectedBodies : 1;
+    byte smoothLimits : 1;
+    byte globalRelocate : 1;
+    byte _Bitfieldpadding6 : 5;
+    byte baumgarteOverride;
+    FSkip(2);
+    float baumgarte;
+} CommonJointProp <optimize=false>;
+
+typedef struct
+{
+    Ref debugNameRef;
+    if (CanSeekTo(debugNameRef))
+    {
+        SeekToRef(debugNameRef);
+        string debugName;
+        ReturnFromRef();
+    }
+    unsigned int modelBoneIndex;
+    unsigned int startBoneIdx;
+    float startOffset[3];
+    unsigned int endBoneIdx;
+    float endOffset[3];
+    float radius;
+    unsigned int parentRDBoneIdx;
+    float mass;
+    float buoyancy;
+    float mu;
+    int jointType;
+    float jointOffset[3];
+    float axis1[3];
+    float axis2[3];
+    float axis1LimitMin;
+    float axis1LimitMax;
+    float axis2LimitMin;
+    float axis2LimitMax;
+    float coneAngle;
+    float jointFriction;
+    float animMotorMaxForceScale;
+    float animMotorVelScale;
+    byte followAnim;
+    FSkip(7);
+    Ref soundRef;
+    if (CanSeekTo(soundRef))
+    {
+        SeekToRef(soundRef);
+        SoundPlex sound;
+        ReturnFromRef();
+    }
+    unsigned int surfaceMaterialOverrideID;
+    byte overrideSoftness;
+    FSkip(3);
+    CommonJointProp commonJointProp;
+} RagdollBoneTune <optimize=false>;
+
+typedef struct
+{
+    Ref nameRef;
+    if (CanSeekTo(nameRef))
+    {
+        SeekToRef(nameRef);
+        string name;
+        ReturnFromRef();
+    }
+    float totalMass;
+    float gravityScale;
+    int contactRank;
+    float radiusScale;
+    byte autoSleep;
+    FSkip(3);
+    float angularThreshold;
+    float linearThreshold;
+    float restitution;
+    float angularDamping;
+    float linearDamping;
+    float linearSoftness;
+    float angularSoftness;
+    float relaxation;
+    float globalJointFrictionMultiplier;
+    float globalMuMutiplier;
+    int iterations;
+    float inertiaScale;
+    float windScale;
+    float explosionFactor;
+    unsigned int surfaceMaterialID;
+    byte useBonePositions;
+    byte resetPhysicalComponent;
+    FSkip(6);
+    Ref ragdollBonesRef;
+    unsigned int numRagdollBones;
+    if (CanSeekTo(ragdollBonesRef))
+    {
+        SeekToRef(ragdollBonesRef);
+        RagdollBoneTune ragdollBones[numRagdollBones];
+        ReturnFromRef();
+    }
+} RagdollTune <optimize=false>;
+
+typedef struct
+{
+    unsigned int numRagdolls;
+    FSkip(4);
+    Ref ragdollListRef;
+    if (CanSeekTo(ragdollListRef))
+    {
+        SeekToRef(ragdollListRef);
+        RagdollTune ragdollList[numRagdolls];
+        ReturnFromRef();
+    }
+} RagdollComponent <optimize=false>;
+
+RefDefinitions refDefinitions;
+RagdollComponent root <open=true>;
