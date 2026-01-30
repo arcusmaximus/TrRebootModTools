@@ -1,4 +1,7 @@
 ﻿using System.Collections.Generic;
+using System.IO;
+using System.Text;
+using TrRebootTools.Shared.Util;
 
 namespace TrRebootTools.Shared.Cdc.Tr2013
 {
@@ -24,5 +27,45 @@ namespace TrRebootTools.Shared.Cdc.Tr2013
             };
 
         protected override Dictionary<(ResourceType, ResourceSubType), string[]> Mappings => _mappings;
+
+        protected override string? ReadOriginalFilePathInstance(ArchiveSet archiveSet, ResourceReference resourceRef)
+        {
+            switch (resourceRef.Type)
+            {
+                case ResourceType.SoundBank:
+                {
+                    if (archiveSet.GetArchive(resourceRef.ArchiveId, resourceRef.ArchiveSubId) == null)
+                        return null;
+
+                    using Stream stream = archiveSet.OpenResource(resourceRef);
+                    return ReadOriginalFilePathInstance(stream, resourceRef.Type);
+                }
+
+                default:
+                    return null;
+            }
+        }
+
+        protected override string? ReadOriginalFilePathInstance(Stream stream, ResourceType type)
+        {
+            return type switch
+            {
+                ResourceType.SoundBank => ReadSoundOriginalFilePath(stream),
+                _ => null,
+            };
+        }
+
+        private static string? ReadSoundOriginalFilePath(Stream stream)
+        {
+            BinaryReader reader = new(stream);
+            reader.ReadBytes(0x10);
+
+            string magic = Encoding.ASCII.GetString(reader.ReadBytes(4));
+            if (magic != "FSB4")
+                return null;
+
+            reader.ReadBytes(0x2E);
+            return reader.ReadZeroTerminatedString();
+        }
     }
 }

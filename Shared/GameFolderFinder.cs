@@ -71,19 +71,27 @@ namespace TrRebootTools.Shared
 
         private static async Task<string?> GetGameFolderFromFileBrowserAsync(CdcGameInfo gameInfo)
         {
+            string message = $"Could not automatically determine the {gameInfo.ShortName} installation folder. Please select the game .exe manually.";
+            if (OperatingSystem.IsLinux())
+            {
+                message += "\n\n(Even though you're on Linux, please ensure you're using the Windows version of the game. " +
+                           "In Steam, this can be done by opening Properties -> Compatibility and selecting Proton.)";
+            }
+                
             await MessageBox.ShowAsync(
                 $"{gameInfo.ShortName} Modding Tools",
-                $"Could not automatically determine the {gameInfo.ShortName} installation folder. Please select it manually.",
+                message,
                 icon: MsBox.Avalonia.Enums.Icon.Info
             );
 
             while (true)
             {
+                string[] fileFilter = OperatingSystem.IsLinux() ? ["*.exe"] : gameInfo.ExeNames;
                 string? filePath = await App.OpenFilePickerAsync(
                     $"Select {gameInfo.ShortName} game binary",
                     new()
                     {
-                        { gameInfo.ShortName, gameInfo.ExeNames }
+                        { gameInfo.ExeNames[0], fileFilter }
                     }
                 );
                 if (filePath == null)

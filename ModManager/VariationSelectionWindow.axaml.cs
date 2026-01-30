@@ -25,7 +25,7 @@ namespace TrRebootTools.ModManager
         private VariationSelectionWindow(ModPackage package)
             : this()
         {
-            _lblIntro.Content = string.Format((string)_lblIntro.Content!, package.Name);
+            _lblIntro.Text = string.Format(_lblIntro.Text!, package.Name);
             _lstVariations.ItemsSource = package.Variations;
         }
 

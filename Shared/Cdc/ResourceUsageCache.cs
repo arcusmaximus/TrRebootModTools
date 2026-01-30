@@ -236,8 +236,8 @@ namespace TrRebootTools.Shared.Cdc
             if (!File.Exists(filePath))
                 return false;
 
-            using Stream stream = File.OpenRead(filePath);
-            BinaryReader reader = new BinaryReader(stream);
+            Stream stream = new MemoryStream(File.ReadAllBytes(filePath));
+            BinaryReader reader = new(stream);
             int version = reader.ReadInt32();
             if (version != Version)
                 return false;

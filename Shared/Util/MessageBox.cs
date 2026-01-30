@@ -33,7 +33,8 @@ namespace TrRebootTools.Shared.Util
                     Icon.Error      => Win32.MB_ICONEXCLAMATION,
                     _ => throw new NotSupportedException()
                 };
-                int result = Win32.MessageBoxW(0, message, title, type);
+                nint ownerHandle = App.WindowStack.Peek().TryGetPlatformHandle()?.Handle ?? 0;
+                int result = Win32.MessageBoxW(ownerHandle, message, title, type);
                 return result switch
                 {
                     Win32.IDOK      => ButtonResult.Ok,
@@ -56,7 +57,7 @@ namespace TrRebootTools.Shared.Util
 
         public static async Task ShowErrorAsync(Exception exception)
         {
-            await ShowErrorAsync(exception.ToString());
+            await ShowErrorAsync(exception.Message);
         }
 
         public static async Task ShowErrorAsync(string message)

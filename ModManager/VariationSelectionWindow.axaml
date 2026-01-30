@@ -7,9 +7,9 @@
 		x:Class="TrRebootTools.ModManager.VariationSelectionWindow"
 		Title="Select the variation to install">
 	<Grid RowDefinitions="50, *, 60">
-		<Label Name="_lblIntro" VerticalAlignment="Center" Grid.Row="0">
+		<TextBlock Name="_lblIntro" VerticalAlignment="Center" Grid.Row="0">
 			The mod "{0}" contains multiple variations. Please select the one you'd like to install.
-		</Label>
+		</TextBlock>
 
 		<shared:SplitContainer Orientation="Horizontal" Grid.Row="1" PanelSizes="200, *">
 			<ListBox Name="_lstVariations" SelectionChanged="OnVariationSelected" DoubleTapped="OnVariationDoubleClicked" Grid.Column="0">

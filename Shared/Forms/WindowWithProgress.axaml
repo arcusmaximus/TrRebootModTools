@@ -7,7 +7,7 @@
         Title="WindowWithProgress" Padding="4">
     <DockPanel Name="_pnlMain" LastChildFill="True" VerticalSpacing="2">
 		<Panel Height="25" DockPanel.Dock="Bottom">
-			<Label Name="_lblStatus" HorizontalAlignment="Left" />
+			<TextBlock Name="_lblStatus" HorizontalAlignment="Left" VerticalAlignment="Center" />
             <ProgressBar Name="_progressBar" Maximum="1" Width="200" HorizontalAlignment="Right" IsVisible="False" />
         </Panel>
     </DockPanel>

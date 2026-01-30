@@ -7,11 +7,11 @@
              x:Class="TrRebootTools.HookTool.Materials.MaterialConstantControl"
              x:DataType="materials:MaterialConstant">
     <Panel>
-        <Panel Background="{StaticResource NotificationCardWarningBackgroundBrush}" Opacity="0.4" IsVisible="{Binding Dirty}" />
+        <Panel Background="{DynamicResource NotificationCardWarningBackgroundBrush}" Opacity="0.4" IsVisible="{Binding Dirty}" />
         <Grid ColumnDefinitions="50,*,*,*,*" Margin="4" ColumnSpacing="4">
-            <Label Name="_lblIndex" FontWeight="DemiBold" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="0">
+            <TextBlock Name="_lblIndex" FontWeight="DemiBold" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="0">
                 0
-            </Label>
+            </TextBlock>
 		    <materials:DraggableNumberControl Grid.Column="1" Value="{Binding X, Mode=TwoWay}" />
             <materials:DraggableNumberControl Grid.Column="2" Value="{Binding Y, Mode=TwoWay}" />
             <materials:DraggableNumberControl Grid.Column="3" Value="{Binding Z, Mode=TwoWay}" />

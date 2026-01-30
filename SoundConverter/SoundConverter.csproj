@@ -12,7 +12,7 @@
     <FileVersion>1.9.0</FileVersion>
     <BaseOutputPath>..\Build\</BaseOutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <PublishAot>true</PublishAot>
+    <PublishAot Condition="'$(Configuration)' == 'Release'">true</PublishAot>
     <BuiltInComInteropSupport>false</BuiltInComInteropSupport>
     <AssemblyOriginatorKeyFile>..\dummykey.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>

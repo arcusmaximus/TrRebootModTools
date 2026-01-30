@@ -17,7 +17,7 @@ namespace TrRebootTools.HookTool.Materials
             set
             {
                 _index = value;
-                _lblIndex.Content = value.ToString();
+                _lblIndex.Text = value.ToString();
             }
         }
     }

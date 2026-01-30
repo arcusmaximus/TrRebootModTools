@@ -19,9 +19,9 @@
         </DockPanel>
 		<Panel>
 			<controls:ArchiveFileTreeView Name="_tvFiles" SelectionMode="Multiple" SelectionChanged="OnFileSelectionChanged" FileDoubleClicked="OnFileDoubleClicked" />
-            <Label Name="_lblLoading" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <TextBlock Name="_lblLoading" HorizontalAlignment="Center" VerticalAlignment="Center">
 			    Loading file list...
-            </Label>
+            </TextBlock>
         </Panel>
     </DockPanel>
 </shared-forms:WindowWithProgress>

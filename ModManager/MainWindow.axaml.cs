@@ -10,6 +10,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using TrRebootTools.ModManager.Mod;
 using TrRebootTools.Shared;
@@ -64,6 +65,8 @@ namespace TrRebootTools.ModManager
 
             RefreshModList();
             _installedMods.ItemChanged += OnInstalledModChanged;
+
+            await Task.Delay(1);
 
             if (!_gameResourceUsages.Load(_archiveSet.FolderPath))
             {

@@ -102,7 +102,7 @@ namespace TrRebootTools.Shared.Cdc.Rise
 
         private static string? ReadSoundOriginalFilePath(Stream stream)
         {
-            BinaryReader reader = new BinaryReader(stream);
+            BinaryReader reader = new(stream);
             reader.ReadBytes(0x14);
 
             string magic = Encoding.ASCII.GetString(reader.ReadBytes(4));

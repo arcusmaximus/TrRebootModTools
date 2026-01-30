@@ -12,20 +12,20 @@
             <Setter Property="ItemSpacing" Value="2"/>
         </Style>
         <Style Selector="TabControl > Border > DockPanel > ContentPresenter">
-			<Setter Property="BorderBrush" Value="{StaticResource ThemeBorderLowBrush}"/>
+			<Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderLowBrush}"/>
             <Setter Property="BorderThickness" Value="0 1 0 0"/>
             <Setter Property="Padding" Value="0 4 0 0"/>
         </Style>
         <Style Selector="TabItem">
-			<Setter Property="FontSize" Value="{StaticResource FontSizeNormal}"/>
-            <Setter Property="BorderBrush" Value="{StaticResource ThemeBorderLowBrush}"/>
+			<Setter Property="FontSize" Value="{DynamicResource FontSizeNormal}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderLowBrush}"/>
             <Setter Property="BorderThickness" Value="1 1 1 0"/>
             <Setter Property="CornerRadius" Value="5 5 0 0" />
             <Setter Property="Margin" Value="0"/>
         </Style>
 
         <Style Selector="ListBox > Border > DockPanel > controls|ListViewRow">
-			<Setter Property="Background" Value="{StaticResource ThemeControlMidBrush}"/>
+			<Setter Property="Background" Value="{DynamicResource ThemeControlMidBrush}"/>
         </Style>
     </Application.Styles>
 </Application>

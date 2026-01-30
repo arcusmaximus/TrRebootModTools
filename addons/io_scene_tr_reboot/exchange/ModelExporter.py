@@ -155,8 +155,8 @@ class ModelExporter(SlotsBase):
                 bl_mesh.calc_tangents()
 
             bl_mesh_maps = _BlenderMeshMaps(
-                self.collect_bl_color_maps(bl_mesh),
-                self.collect_bl_uv_maps(bl_mesh),
+                self.collect_bl_color_maps(bl_obj, bl_mesh),
+                self.collect_bl_uv_maps(bl_obj, bl_mesh),
                 self.collect_bl_vertex_groups(bl_obj)
             )
 
@@ -172,27 +172,27 @@ class ModelExporter(SlotsBase):
 
             return tr_mesh
 
-    def collect_bl_color_maps(self, bl_mesh: bpy.types.Mesh) -> dict[int, bpy.types.ByteColorAttribute]:
+    def collect_bl_color_maps(self, bl_obj: bpy.types.Object, bl_mesh: bpy.types.Mesh) -> dict[int, bpy.types.ByteColorAttribute]:
         attr_name_hashes = [Hashes.color1, Hashes.color2]
         if len(bl_mesh.color_attributes) > len(attr_name_hashes):
-            raise Exception(f"Mesh {bl_mesh.name} has more than {len(attr_name_hashes)} color attributes, which is not supported.")
+            raise Exception(f"Mesh {bl_obj.name} has more than {len(attr_name_hashes)} color attributes, which is not supported.")
 
         bl_color_maps: dict[int, bpy.types.ByteColorAttribute] = {}
         for i, bl_color_map in enumerate(bl_mesh.color_attributes):
             if not isinstance(bl_color_map, bpy.types.ByteColorAttribute):
-                raise Exception(f"Color attribute {i} in mesh {bl_mesh.name} must use the Byte Color format. Please convert or delete it.")
+                raise Exception(f"Color attribute {i} in mesh {bl_obj.name} must use the Byte Color format. Please convert or delete it.")
 
             if bl_color_map.domain != "POINT":
-                raise Exception(f"Color attribute {bl_color_map.name} in mesh {bl_mesh.name} must use the Vertex domain. Please convert or delete it.")
+                raise Exception(f"Color attribute {bl_color_map.name} in mesh {bl_obj.name} must use the Vertex domain. Please convert or delete it.")
 
             bl_color_maps[attr_name_hashes[i]] = bl_color_map
 
         return bl_color_maps
 
-    def collect_bl_uv_maps(self, bl_mesh: bpy.types.Mesh) -> dict[int, bpy.types.MeshUVLoopLayer]:
+    def collect_bl_uv_maps(self, bl_obj: bpy.types.Object, bl_mesh: bpy.types.Mesh) -> dict[int, bpy.types.MeshUVLoopLayer]:
         attr_name_hashes = [Hashes.texcoord1, Hashes.texcoord2, Hashes.texcoord3, Hashes.texcoord4]
         if len(bl_mesh.uv_layers) > len(attr_name_hashes):
-            raise Exception(f"Mesh {bl_mesh.name} has more than {len(attr_name_hashes)} UV maps, which is not supported.")
+            raise Exception(f"Mesh {bl_obj.name} has more than {len(attr_name_hashes)} UV maps, which is not supported.")
 
         bl_uv_maps: dict[int, bpy.types.MeshUVLoopLayer] = {}
         for i, bl_uv_map in enumerate(bl_mesh.uv_layers):

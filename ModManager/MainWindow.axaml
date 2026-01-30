@@ -37,9 +37,9 @@
                  Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
             <ListBox.ItemTemplate>
 				<DataTemplate DataType="mod:InstalledMod">
-                    <StackPanel Orientation="Horizontal">
+                    <StackPanel Orientation="Horizontal" Spacing="4">
                         <CheckBox IsChecked="{Binding Enabled}" />
-					    <Label Content="{Binding Name}" Opacity="{Binding Enabled, Converter={x:Static manager:MainWindow.InstalledModOpacityConverter}}" />
+					    <TextBlock Text="{Binding Name}" Opacity="{Binding Enabled, Converter={x:Static manager:MainWindow.InstalledModOpacityConverter}}" />
                     </StackPanel>
                 </DataTemplate>
             </ListBox.ItemTemplate>

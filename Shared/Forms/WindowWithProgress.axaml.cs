@@ -37,7 +37,7 @@ namespace TrRebootTools.Shared.Forms
             if (!_progressBar.IsVisible)
                 return;
 
-            _lblStatus.Content = "Canceling...";
+            _lblStatus.Text = "Canceling...";
             _cancellationTokenSource.Cancel();
             _closeRequested = true;
             e.Cancel = true;
@@ -52,7 +52,7 @@ namespace TrRebootTools.Shared.Forms
             }
 
             EnableUi(false);
-            _lblStatus.Content = statusText;
+            _lblStatus.Text = statusText;
             _progressBar.Value = 0;
             _progressBar.IsVisible = true;
         }
@@ -77,7 +77,7 @@ namespace TrRebootTools.Shared.Forms
             }
 
             EnableUi(true);
-            _lblStatus.Content = string.Empty;
+            _lblStatus.Text = string.Empty;
             _progressBar.IsVisible = false;
             if (_closeRequested)
                 Close();

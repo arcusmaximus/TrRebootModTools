@@ -9,17 +9,17 @@ namespace TrRebootTools.Shared.Controls
         public const double MinRowWidth = 500;
 
         private readonly ListView _listView;
-        private readonly Label[] _cells;
+        private readonly TextBlock[] _cells;
 
         public ListViewRow(ListView listView, bool isHeader)
         {
             _listView = listView;
             IsHeader = isHeader;
 
-            _cells = new Label[listView.Columns.Count];
+            _cells = new TextBlock[listView.Columns.Count];
             for (int i = 0; i < _cells.Length; i++)
             {
-                _cells[i] = new Label();
+                _cells[i] = new TextBlock();
                 Children.Add(_cells[i]);
             }
         }
@@ -31,7 +31,7 @@ namespace TrRebootTools.Shared.Controls
 
         public void SetCellText(int index, string? text)
         {
-            _cells[index].Content = text;
+            _cells[index].Text = text;
         }
 
         protected override Size MeasureOverride(Size availableSize)

@@ -108,12 +108,12 @@ namespace TrRebootTools.HookTool.Materials
             Material? material = file != null ? _materials.GetValueOrDefault(file) : null;
             if (file == null || material == null)
             {
-                _lblMaterial.Content = "(No material selected)";
+                _lblMaterial.Text = "(No material selected)";
                 CurrentMaterial = null;
             }
             else
             {
-                _lblMaterial.Content = file.Name;
+                _lblMaterial.Text = file.Name;
                 CurrentMaterial = material;
             }
         }

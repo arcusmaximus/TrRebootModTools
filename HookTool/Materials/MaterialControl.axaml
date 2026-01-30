@@ -12,10 +12,10 @@
         <ListBox Name="_lstPasses" SelectionChanged="OnPassSelected" />
 
         <Grid RowDefinitions="auto,auto,*,auto">
-            <Panel Background="{StaticResource ThemeControlHighlightMidColor}" Grid.Row="0">
-			    <Label Name="_lblMaterial" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" Padding="0 20" >
+            <Panel Background="{DynamicResource ThemeControlMidBrush}" Grid.Row="0">
+			    <TextBlock Name="_lblMaterial" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" Padding="0 20" >
 				    (No material selected)
-                </Label>
+                </TextBlock>
             </Panel>
 
             <Grid Name="_grdShaderTypes" ColumnDefinitions="*,*" IsEnabled="False" Margin="0 10" Grid.Row="1">

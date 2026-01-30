@@ -32,7 +32,7 @@ namespace TrRebootTools.HookTool.Materials
                 float oldValue = _value;
                 _value = value;
                 _prgValue.Value = Math.Min(Math.Max(_value, 0), 1);
-                _lblValue.Content = _value.ToString("0.000");
+                _lblValue.Text = _value.ToString("0.000");
                 RaisePropertyChanged(ValueProperty, oldValue, value);
             }
         }
