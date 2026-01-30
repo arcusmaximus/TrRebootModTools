@@ -49,11 +49,12 @@ This list will get updated from time to time.
                 psConstants[12] = x.RedDetailRefrectanceColorR y.RedDetailRefrectanceColorG z.RedDetailRefrectanceColorB w.RedDetailRefrectance
                 psConstants[14] = x.? y.GlobalBloodMaskIntensity1 z.GlobalBloodMaskIntensity2 w.?
                 psConstants[15] = x.? y.? z.? w.GlobalDetailMapIntensity
-                psConstants[19] = x.? y.? z.DetailMaskX w.DetailMaskY
+                psConstants[19] = x.SnowMaskTilingX y.SnowMaskTilingY z.DetailMaskX w.DetailMaskY
                 psConstants[21] = x.RefrectanceRoughnessX y.RefrectanceRoughnessY z. w.
                 psConstants[22] = x.ColorX y.ColorY z. w.
                 psConstants[23] = x.? y.? z.TilingMapRedDiffuseX w.TilingMapRedDiffuseY (detail diffuse map, RED colored part of detail mask ID 10374, diffuse being ID 233)
                 psConstants[25] = x.DetailRedRefrectanceRoughnessX y.DetailRedRefrectanceRoughnessY z.? w.?
+                psConstants[27] = x.SnowMaskIntensity y.? z.? w.?
                 psConstants[31] = x.? y.RefrectanceIntensity z.? w.?
 
         passRefs[7]
