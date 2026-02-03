@@ -54,8 +54,8 @@ namespace TrRebootTools.Shared
             foreach (string appName in uninstallKey.GetSubKeyNames())
             {
                 using RegistryKey? appKey = uninstallKey.OpenSubKey(appName);
-                if (appKey?.GetValue("DisplayName") as string == gameInfo.RegistryDisplayName)
-                    return appKey.GetValue("InstallLocation") as string;
+                if ((appKey?.GetValue("DisplayName") as string)?.Contains(gameInfo.RegistryDisplayName) ?? false)
+                    return appKey!.GetValue("InstallLocation") as string;
             }
 
             return null;

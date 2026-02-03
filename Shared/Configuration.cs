@@ -9,8 +9,6 @@ namespace TrRebootTools.Shared
 {
     public class Configuration
     {
-        private const string FileName = "settings.json";
-
         public CdcGame? SelectedGame
         {
             get;
@@ -22,6 +20,12 @@ namespace TrRebootTools.Shared
             get;
             set;
         } = [];
+
+        public string? ExtractionOutputFolder
+        {
+            get;
+            set;
+        }
 
         public Dictionary<string, string> ExtraSettings
         {
@@ -47,7 +51,17 @@ namespace TrRebootTools.Shared
 
         private static string GetFilePath()
         {
-            return Path.Combine(AppContext.BaseDirectory, FileName);
+            if (OperatingSystem.IsLinux())
+            {
+                string folderPath = Environment.GetEnvironmentVariable("XDG_CONFIG_HOME") ??
+                                    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".config");
+                Directory.CreateDirectory(folderPath);
+                return Path.Combine(folderPath, "tr-reboot-tools.json");
+            }
+            else
+            {
+                return Path.Combine(AppContext.BaseDirectory, "settings.json");
+            }
         }
     }
 

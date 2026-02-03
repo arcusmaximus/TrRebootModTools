@@ -7,7 +7,7 @@
              x:Class="TrRebootTools.Shared.Controls.FileTreeViewBase">
 	<DockPanel LastChildFill="True">
 		<DockPanel LastChildFill="True" DockPanel.Dock="Top" HorizontalSpacing="2">
-			<Image Source="/Resources/Search.png" Stretch="None" DockPanel.Dock="Left" />
+			<Image Source="/Resources/Search.png" Stretch="None" DockPanel.Dock="Left" VerticalAlignment="Center" />
 			<Panel>
 				<TextBox Name="_txtSearch" Margin="0 2" />				
 				<Button Name="_btnClearSearch" Grid.Column="1" Width="22" HorizontalAlignment="Right" Margin="4" Padding="0" Background="Transparent">

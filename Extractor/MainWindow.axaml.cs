@@ -5,6 +5,7 @@ using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
 using TrRebootTools.Extractor.Controls;
+using TrRebootTools.Shared;
 using TrRebootTools.Shared.Cdc;
 using TrRebootTools.Shared.Forms;
 using TrRebootTools.Shared.Util;
@@ -31,6 +32,16 @@ namespace TrRebootTools.Extractor
 
             _archiveSet = ArchiveSet.Open(gameFolderPath, true, false, game);
             _resourceUsages = new ResourceUsageCache();
+
+            if (OperatingSystem.IsLinux())
+            {
+                Configuration config = Configuration.Load();
+                _txtOutputFolder.Text = config.ExtractionOutputFolder;
+            }
+            else
+            {
+                _pnlTargetFolder.IsVisible = false;
+            }
         }
 
         public bool GameSelectionRequested
@@ -46,6 +57,7 @@ namespace TrRebootTools.Extractor
                 return;
 
             await Task.Delay(100);
+
             _tvFiles.Populate(_archiveSet);
             _lblLoading.IsVisible = false;
 
@@ -67,6 +79,13 @@ namespace TrRebootTools.Extractor
                 await ExtractSelectedFilesAsync();
         }
 
+        private async void OnBrowseOutputFolderClicked(object? sender, RoutedEventArgs e)
+        {
+            string? folderPath = await App.OpenFolderPickerAsync("Select output folder");
+            if (folderPath != null)
+                _txtOutputFolder.Text = folderPath;
+        }
+
         private async void OnExtractClicked(object? sender, RoutedEventArgs e)
         {
             await ExtractSelectedFilesAsync();
@@ -76,10 +95,12 @@ namespace TrRebootTools.Extractor
         {
             try
             {
-                string folderPath = Path.Combine(
-                    AppContext.BaseDirectory,
-                    CdcGameInfo.Get(_archiveSet.Game).ShortName
-                );
+                string? folderPath = _txtOutputFolder.Text;
+                if (string.IsNullOrEmpty(folderPath))
+                    folderPath = AppContext.BaseDirectory;
+
+                folderPath = Path.Combine(folderPath, CdcGameInfo.Get(_archiveSet.Game).ShortName);
+
                 Extractor extractor = new(_archiveSet);
                 await Task.Run(() => extractor.Extract(folderPath, _tvFiles.SelectedFiles, this, CancellationToken));
             }
@@ -97,6 +118,14 @@ namespace TrRebootTools.Extractor
         {
             GameSelectionRequested = true;
             Close();
+        }
+
+        protected override void OnClosing(WindowClosingEventArgs e)
+        {
+            base.OnClosing(e);
+            Configuration config = Configuration.Load();
+            config.ExtractionOutputFolder = _txtOutputFolder.Text;
+            config.Save();
         }
 
         protected override void OnClosed(EventArgs e)
