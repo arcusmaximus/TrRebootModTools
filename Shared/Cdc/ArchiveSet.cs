@@ -251,7 +251,7 @@ namespace TrRebootTools.Shared.Cdc
         {
             lock (_lock)
             {
-                Disable(archiveIds, gameResourceUsageCache, progress, $"Disabling mod...", cancellationToken);
+                Disable(archiveIds, gameResourceUsageCache, progress, $"Disabling mods...", cancellationToken);
             }
         }
 
