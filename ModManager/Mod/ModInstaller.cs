@@ -34,7 +34,7 @@ namespace TrRebootTools.ModManager.Mod
                 return null;
 
             using ZipTempExtractor extractor = new(filePath);
-            extractor.Extract(progress, cancellationToken);
+            await extractor.ExtractAsync(progress, cancellationToken);
 
             using ModPackage modPackage = new FolderModPackage(modName, extractor.FolderPath, false, _archiveSet, _gameResourceUsageCache);
             return await InstallAsync(modPackage, progress, cancellationToken);
@@ -101,7 +101,7 @@ namespace TrRebootTools.ModManager.Mod
                         continue;
 
                     if (!originalMod.Enabled)
-                        _archiveSet.Disable(installedMod.ArchiveId, _gameResourceUsageCache, progress, cancellationToken);
+                        _archiveSet.Disable([installedMod.ArchiveId], _gameResourceUsageCache, progress, cancellationToken);
                 }
 
                 File.Delete(originalMod.NfoFilePath);
@@ -434,7 +434,7 @@ namespace TrRebootTools.ModManager.Mod
             CancellationToken cancellationToken)
         {
             int resourceIdx = 0;
-            int offsetInBatch = 0;
+            uint decompressionOffset = 0;
             foreach ((ResourceKey modResourceKey, List<ResourceCollectionItem> collectionItems) in modResourceCollectionItems)
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -448,12 +448,12 @@ namespace TrRebootTools.ModManager.Mod
 
                 try
                 {
-                    int? refDefinitionsSize = null;
+                    uint? refDefinitionsSize = null;
                     if (MightHaveRefDefinitions(modResourceKey))
                     {
                         ResourceReference? existingResourceRef = collectionItems[0].ResourceIndex >= 0 ? collectionItems[0].Collection.ResourceReferences[collectionItems[0].ResourceIndex] : null;
                         if (existingResourceRef == null || existingResourceRef.RefDefinitionsSize > 0)
-                            refDefinitionsSize = GetResourceRefDefinitionsSize(modPackage, modVariation, modResourceKey);
+                            refDefinitionsSize = (uint)GetResourceRefDefinitionsSize(modPackage, modVariation, modResourceKey);
                     }
 
                     ArchiveBlobReference newResource = archive.AddResource(modResourceStream);
@@ -468,9 +468,9 @@ namespace TrRebootTools.ModManager.Mod
                             newResource.ArchivePart,
                             newResource.Offset,
                             newResource.Length,
-                            offsetInBatch,
+                            decompressionOffset,
                             refDefinitionsSize,
-                            (int)modResourceStream.Length - (refDefinitionsSize ?? 0)
+                            (uint)modResourceStream.Length - (refDefinitionsSize ?? 0)
                         );
                     foreach (ResourceCollectionItem collectionItem in collectionItems)
                     {
@@ -480,8 +480,8 @@ namespace TrRebootTools.ModManager.Mod
                             collectionItem.Collection.UpdateResourceReference(collectionItem.ResourceIndex, newResourceRef);
                     }
 
-                    offsetInBatch += (int)modResourceStream.Length;
-                    offsetInBatch = (offsetInBatch + 0xF) & ~0xF;
+                    decompressionOffset += (uint)modResourceStream.Length;
+                    decompressionOffset = (decompressionOffset + 0xF) & ~0xFu;
                 }
                 finally
                 {

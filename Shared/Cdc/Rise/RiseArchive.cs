@@ -12,10 +12,9 @@ namespace TrRebootTools.Shared.Cdc.Rise
         }
 
         protected override CdcGame Game => CdcGame.Rise;
-
         protected override int HeaderVersion => 4;
-
         protected override bool SupportsSubId => false;
+        protected override bool SupportsLanguageList => false;
 
         protected override ArchiveFileReference ReadFileReference(BinaryReader reader)
         {
@@ -51,11 +50,11 @@ namespace TrRebootTools.Shared.Cdc.Rise
         {
             public uint NameHash;
             public uint Locale;
-            public int UncompressedSize;
-            public int CompressedSize;
+            public uint UncompressedSize;
+            public uint CompressedSize;
             public short ArchivePart;
             public short ArchiveId;
-            public int Offset;
+            public uint Offset;
         }
     }
 }

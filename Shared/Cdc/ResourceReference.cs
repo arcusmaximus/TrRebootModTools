@@ -10,11 +10,11 @@
             int archiveId,
             int archiveSubId,
             int archivePart,
-            int offsetInArchive,
-            int sizeInArchive,
-            int decompressionOffset,
-            int? refDefinitionsSize,
-            int bodySize)
+            uint offsetInArchive,
+            uint sizeInArchive,
+            uint decompressionOffset,
+            uint? refDefinitionsSize,
+            uint bodySize)
             : base(archiveId, archiveSubId, archivePart, offsetInArchive, sizeInArchive)
         {
             Type = type;
@@ -46,17 +46,17 @@
             get;
         }
 
-        public int DecompressionOffset
+        public uint DecompressionOffset
         {
             get;
         }
 
-        public int? RefDefinitionsSize
+        public uint? RefDefinitionsSize
         {
             get;
         }
 
-        public int BodySize
+        public uint BodySize
         {
             get;
         }

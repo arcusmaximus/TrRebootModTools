@@ -5,6 +5,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using TrRebootTools.Shared.Cdc.Avengers;
 using TrRebootTools.Shared.Cdc.Rise;
 using TrRebootTools.Shared.Cdc.Shadow;
 using TrRebootTools.Shared.Cdc.Tr2013;
@@ -32,6 +33,7 @@ namespace TrRebootTools.Shared.Cdc
         protected abstract CdcGame Game { get; }
         protected abstract int HeaderVersion { get; }
         protected abstract bool SupportsSubId { get; }
+        protected abstract bool SupportsLanguageList { get; }
         protected abstract ArchiveFileReference ReadFileReference(BinaryReader reader);
         protected abstract void WriteFileReference(BinaryWriter writer, ArchiveFileReference fileRef);
         protected virtual int ContentAlignment => 0x10;
@@ -43,12 +45,12 @@ namespace TrRebootTools.Shared.Cdc
             archive.SubId = subId;
             archive._maxFiles = maxFiles;
 
-            Stream stream = File.Open(baseFilePath, FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite);
+            Stream stream = archive.OpenPart(0, baseFilePath, FileMode.Create, FileAccess.ReadWrite);
             archive._partStreams = [stream];
 
             BinaryWriter writer = new(stream);
             ArchiveHeader header =
-                new ArchiveHeader
+                new()
                 {
                     Magic = 0x53464154,
                     Version = archive.HeaderVersion,
@@ -79,8 +81,8 @@ namespace TrRebootTools.Shared.Cdc
         {
             Archive archive = InstantiateArchive(baseFilePath, metaData, game);
 
-            using Stream stream = File.OpenRead(baseFilePath);
-            BinaryReader reader = new BinaryReader(stream);
+            using Stream stream = archive.OpenPart(0, baseFilePath, FileMode.Open, FileAccess.ReadWrite);
+            BinaryReader reader = new(stream);
             
             ArchiveHeader header = reader.ReadStruct<ArchiveHeader>();
             if (header.Magic != 0x53464154)
@@ -103,7 +105,15 @@ namespace TrRebootTools.Shared.Cdc
                 archive.SubId = CdcGameInfo.Get(game).Languages.IndexOf(l => archiveName.EndsWith(l.Name)) + 1;
             }
 
-            stream.Position += 0x20;
+            reader.Skip(0x20);
+
+            if (archive.SupportsLanguageList)
+            {
+                int languageBits = reader.ReadInt32();
+                int numLanguages = reader.ReadInt32();
+                reader.Skip(numLanguages * 0x18);
+            }
+
             for (int i = 0; i < header.NumFiles; i++)
             {
                 archive._fileRefs.Add(archive.ReadFileReference(reader));
@@ -112,13 +122,14 @@ namespace TrRebootTools.Shared.Cdc
             return archive;
         }
 
-        private static Archive InstantiateArchive(string baseFilePath, ArchiveMetaData? metaData, CdcGame game)
+        internal static Archive InstantiateArchive(string baseFilePath, ArchiveMetaData? metaData, CdcGame game)
         {
             return game switch
             {
-                CdcGame.Tr2013 => new Tr2013Archive(baseFilePath, metaData),
-                CdcGame.Rise => new RiseArchive(baseFilePath, metaData),
-                CdcGame.Shadow => new ShadowArchive(baseFilePath, metaData),
+                CdcGame.Tr2013      => new Tr2013Archive(baseFilePath, metaData),
+                CdcGame.Rise        => new RiseArchive(baseFilePath, metaData),
+                CdcGame.Shadow      => new ShadowArchive(baseFilePath, metaData),
+                CdcGame.Avengers    => new AvengersArchive(baseFilePath, metaData),
                 _ => throw new NotSupportedException()
             };
         }
@@ -137,13 +148,18 @@ namespace TrRebootTools.Shared.Cdc
                             for (int i = 0; i < _numParts; i++)
                             {
                                 string partFilePath = GetPartFilePath(i);
-                                _partStreams.Add(File.Open(partFilePath, FileMode.Open, ModName != null ? FileAccess.ReadWrite : FileAccess.Read, FileShare.ReadWrite));
+                                _partStreams.Add(OpenPart(i, partFilePath, FileMode.Open, ModName != null ? FileAccess.ReadWrite : FileAccess.Read));
                             }
                         }
                     }
                 }
                 return _partStreams;
             }
+        }
+
+        internal virtual Stream OpenPart(int partIdx, string filePath, FileMode mode, FileAccess access)
+        {
+            return File.Open(filePath, mode, access, FileShare.ReadWrite);
         }
 
         public string BaseFilePath
@@ -205,7 +221,11 @@ namespace TrRebootTools.Shared.Cdc
             if (fileRef.ArchiveId != Id || fileRef.ArchiveSubId != SubId)
                 throw new ArgumentException("File reference does not match archive", nameof(fileRef));
 
-            return new WindowedStream(PartStreams[fileRef.ArchivePart], fileRef.Offset, fileRef.Length);
+            Stream partStream = PartStreams[fileRef.ArchivePart];
+            if (ArchiveDecompressionStream.IsCompressed(partStream, fileRef))
+                return new ArchiveDecompressionStream(partStream, fileRef, true);
+            else
+                return new WindowedStream(partStream, fileRef.Offset, fileRef.Length);
         }
 
         public Stream OpenResource(ResourceReference resourceRef)
@@ -217,7 +237,7 @@ namespace TrRebootTools.Shared.Cdc
             if (resourceRef.RefDefinitionsSize + resourceRef.BodySize == resourceRef.Length)
                 return new WindowedStream(stream, resourceRef.Offset, resourceRef.Length);
 
-            return new ResourceReadStream(stream, resourceRef, true);
+            return new ArchiveDecompressionStream(stream, resourceRef, true);
         }
 
         public ArchiveFileReference AddFile(ArchiveFileKey identifier, byte[] data)
@@ -248,13 +268,13 @@ namespace TrRebootTools.Shared.Cdc
             contentStream.Position = contentStream.Length;
             contentWriter.Align(ContentAlignment);
 
-            int offset = (int)contentStream.Length;
+            uint offset = (uint)contentStream.Length;
             contentWriter.Write(data.Array, data.Offset, data.Count);
 
             Stream indexStream = PartStreams[0];
             BinaryWriter indexWriter = new BinaryWriter(indexStream);
 
-            ArchiveFileReference fileRef = new ArchiveFileReference(nameHash, locale, Id, SubId, 0, offset, data.Count);
+            ArchiveFileReference fileRef = new(nameHash, locale, Id, SubId, 0, offset, (uint)data.Count);
             indexStream.Position = _nextFileRefPos;
             WriteFileReference(indexWriter, fileRef);
             _nextFileRefPos = indexStream.Position;
@@ -274,19 +294,20 @@ namespace TrRebootTools.Shared.Cdc
 
             BinaryWriter writer = new BinaryWriter(partStream);
 
-            int resourceOffset = ((int)partStream.Position + ContentAlignment - 1) & ~(ContentAlignment - 1);
+            uint resourceOffset = ((uint)partStream.Position + (uint)ContentAlignment - 1) & ~((uint)ContentAlignment - 1);
 
             if (_hasWrittenResources)
             {
-                int nextMarkerOffset = (int)partStream.Position - 0x10;
+                uint nextMarkerOffset = (uint)partStream.Position - 0x10;
                 partStream.Position -= 0xC;
                 writer.Write(resourceOffset - nextMarkerOffset);
                 partStream.Position += 8;
             }
 
             writer.Align(ContentAlignment);
+
             WriteResource(contentStream, writer);
-            int resourceLength = (int)partStream.Position - resourceOffset;
+            uint resourceLength = (uint)partStream.Position - resourceOffset;
 
             writer.Align(0x10);
             writer.Write(0x5458454E);       // "NEXT" marker
@@ -299,10 +320,10 @@ namespace TrRebootTools.Shared.Cdc
 
         private void WriteResource(Stream contentStream, BinaryWriter writer)
         {
-            if (contentStream is ResourceReadStream resourceStream)
+            if (contentStream is ArchiveDecompressionStream resourceStream)
             {
                 Stream archivePartStream = resourceStream.ArchivePartStream;
-                ResourceReference resourceRef = resourceStream.ResourceReference;
+                ArchiveBlobReference resourceRef = resourceStream.BlobRef;
                 archivePartStream.CopySegmentTo(resourceRef.Offset, resourceRef.Length, writer.BaseStream);
                 return;
             }

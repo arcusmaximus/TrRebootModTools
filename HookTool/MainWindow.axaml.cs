@@ -133,7 +133,7 @@ namespace TrRebootTools.HookTool
         private async Task SetModFolderAsync(string folderPath)
         {
             _modFolder = folderPath;
-            _btnBrowseModFolder.Content = folderPath;
+            _btnBrowseModFolder.Content = new TextBlock { Text = folderPath };
             _materialControl.SetModFolder(folderPath);
 
             Configuration config = Configuration.Load();

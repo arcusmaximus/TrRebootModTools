@@ -298,21 +298,21 @@ namespace TrRebootTools.Shared.Cdc
         [StructLayout(LayoutKind.Sequential)]
         protected struct ResourceIdentification
         {
-            public int BodySize;
+            public uint BodySize;
             public byte Type;
             public byte Flags;
             public short Padding;
-            public int SubTypeAndRefDefinitionsSize;
+            public uint SubTypeAndRefDefinitionsSize;
             public int Id;
             public TLocale Locale;
 
             public int SubType
             {
-                get { return (SubTypeAndRefDefinitionsSize & 0xFF) >> 1; }
-                set { SubTypeAndRefDefinitionsSize = (SubTypeAndRefDefinitionsSize & 0x7FFFFF01) | (value << 1); }
+                get { return (int)((SubTypeAndRefDefinitionsSize & 0xFF) >> 1); }
+                set { SubTypeAndRefDefinitionsSize = (SubTypeAndRefDefinitionsSize & 0x7FFFFF01) | (uint)(value << 1); }
             }
 
-            public int RefDefinitionsSize
+            public uint RefDefinitionsSize
             {
                 get { return SubTypeAndRefDefinitionsSize >> 8; }
                 set { SubTypeAndRefDefinitionsSize = (SubTypeAndRefDefinitionsSize & 0xFF) | (value << 8); }

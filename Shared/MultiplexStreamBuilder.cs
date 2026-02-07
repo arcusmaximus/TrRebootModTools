@@ -36,7 +36,7 @@ namespace TrRebootTools.Shared
 
         private void AddPackets(MultiplexStream mul, string infoFilePath, MultiplexStreamInfo info)
         {
-            List<MultiplexStream.SoundPacket> soundPackets = MakeSoundPackets(infoFilePath, info);
+            List<(float Time, MultiplexStream.SoundPacket Packet)> soundPackets = MakeSoundPackets(infoFilePath, info);
 
             List<MultiplexStream.CinePacket> cinePackets;
             string animationFilePath = Path.ChangeExtension(infoFilePath, $".tr{(int)_game}cineanim");
@@ -55,64 +55,65 @@ namespace TrRebootTools.Shared
                 cinePackets = [];
             }
 
-            for (int i = 0; i < Math.Max(soundPackets.Count, cinePackets.Count); i++)
+            float time = 0;
+            int cinePacketIdx = 0;
+            int soundPacketIdx = 0;
+            while (cinePacketIdx < cinePackets.Count || soundPacketIdx < soundPackets.Count)
             {
-                if (i < soundPackets.Count)
-                    mul.Packets.Add(soundPackets[i]);
+                if (cinePacketIdx < cinePackets.Count)
+                    mul.Packets.Add(cinePackets[cinePacketIdx++]);
 
-                if (i < cinePackets.Count)
-                    mul.Packets.Add(cinePackets[i]);
+                if (soundPacketIdx < soundPackets.Count && soundPackets[soundPacketIdx].Time <= time)
+                    mul.Packets.Add(soundPackets[soundPacketIdx++].Packet);
+
+                time += AnimationFrameDuration;
             }
         }
 
-        private List<MultiplexStream.SoundPacket> MakeSoundPackets(string infoFilePath, MultiplexStreamInfo info)
+        private List<(float Time, MultiplexStream.SoundPacket Packet)> MakeSoundPackets(string infoFilePath, MultiplexStreamInfo info)
         {
             int numChannels = info.AudioChannels?.Length ?? 0;
             if (numChannels == 0)
-                return new();
+                return [];
 
             byte[][] fsbContents = ReadAudioChannelFiles(infoFilePath, info);
-            int[] fsbPositions = new int[numChannels];
+            int longestChannel = Enumerable.Range(0, fsbContents.Length).OrderByDescending(c => fsbContents[c].Length).First();
 
-            List<MultiplexStream.SoundPacket> packets = new();
-            float cineTime = 0;
-            float soundTime = 0;
-            while (true)
+            List<(float Time, MultiplexStream.SoundPacket Packet)> packets = [];
+            int chunkStart = 0;
+            int chunkEnd;
+            int framePos = 0x80;
+            float time = 0;
+            while (chunkStart < fsbContents[longestChannel].Length)
             {
-                int numMp3Frames = 0;
-                cineTime += AnimationFrameDuration;
-                while (soundTime < cineTime)
+                float startTime = time;
+                while (framePos < fsbContents[longestChannel].Length && framePos - chunkStart < 0x800)
                 {
-                    numMp3Frames++;
-                    soundTime += Mp3FrameDuration;
+                    framePos = FindNextMp3Frame(fsbContents[longestChannel], framePos);
+                    time += Mp3FrameDuration;
                 }
+                chunkEnd = Math.Max(framePos & ~0x7FF, chunkStart + 0x800);
 
                 var packet = new MultiplexStream.SoundPacket { ChannelData = new byte[numChannels][] };
-
-                bool packetHasData = false;
                 for (int channel = 0; channel < numChannels; channel++)
                 {
                     byte[] fsbContent = fsbContents[channel];
-                    int startPos = fsbPositions[channel];
-                    int endPos = startPos == 0 ? 0x80 : startPos;
-                    for (int i = 0; i < numMp3Frames; i++)
+                    int channelChunkStart = Math.Min(chunkStart, fsbContent.Length);
+                    int channelChunkEnd = Math.Min(chunkEnd, fsbContent.Length);
+                    if (channelChunkEnd > channelChunkStart)
                     {
-                        endPos = FindNextMp3Frame(fsbContent, endPos);
+                        byte[] chunk = new byte[channelChunkEnd - channelChunkStart];
+                        Array.Copy(fsbContent, channelChunkStart, chunk, 0, channelChunkEnd - channelChunkStart);
+                        packet.ChannelData[channel] = chunk;
                     }
-
-                    byte[] frame = new byte[endPos - startPos];
-                    Array.Copy(fsbContent, startPos, frame, 0, frame.Length);
-                    packet.ChannelData[channel] = frame;
-
-                    fsbPositions[channel] = endPos;
-                    if (frame.Length > 0)
-                        packetHasData = true;
+                    else
+                    {
+                        packet.ChannelData[channel] = [0xFF, 0xFB];
+                    }
                 }
+                packets.Add((startTime, packet));
 
-                if (packetHasData)
-                    packets.Add(packet);
-                else
-                    break;
+                chunkStart = chunkEnd;
             }
 
             return packets;

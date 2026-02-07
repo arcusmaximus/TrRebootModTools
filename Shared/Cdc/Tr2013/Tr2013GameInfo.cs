@@ -37,6 +37,7 @@ namespace TrRebootTools.Shared.Cdc.Tr2013
             new(0xFFFFFFFFFFFF1100 | 4,         "de", "GERMAN"),
             new(0xFFFFFFFFFFFF1100 | 8,         "it", "ITALIAN"),
             new(0xFFFFFFFFFFFF1100 | 0x10,      "es", "IBERSPANISH"),
+            new(0xFFFFFFFFFFFF1100 | 0x20,      "ja", "JAPANESE"),
             new(0xFFFFFFFFFFFF1100 | 0x40,      "pt", "PORTUGUESE"),
             new(0xFFFFFFFFFFFF1100 | 0x80,      "pl", "POLISH"),
             new(0xFFFFFFFFFFFF1100 | 0x200,     "ru", "RUSSIAN"),

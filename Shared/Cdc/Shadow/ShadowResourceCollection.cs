@@ -74,9 +74,9 @@ namespace TrRebootTools.Shared.Cdc.Shadow
             public short ArchivePart;
             public byte ArchiveId;
             public byte ArchiveSubId;
-            public int OffsetInArchive;
-            public int SizeInArchive;
-            public int DecompressionOffset;
+            public uint OffsetInArchive;
+            public uint SizeInArchive;
+            public uint DecompressionOffset;
 
             public int Type
             {

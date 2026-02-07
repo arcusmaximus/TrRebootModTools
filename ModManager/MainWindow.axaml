@@ -5,6 +5,7 @@
         xmlns:manager="using:TrRebootTools.ModManager"
         xmlns:mod="using:TrRebootTools.ModManager.Mod"
         xmlns:forms="using:TrRebootTools.Shared.Forms"
+        xmlns:controls="using:TrRebootTools.Shared.Controls"
         Width="800" Height="450"
         MinWidth="450" MinHeight="200"
         x:Class="TrRebootTools.ModManager.MainWindow"
@@ -32,17 +33,8 @@
                 </Button>
             </StackPanel>
         </Panel>
-        <ListBox Name="_lbMods" SelectionMode="Multiple"
-                 KeyDown="OnModsListKeyDown" DragDrop.AllowDrop="True" DragDrop.DragOver="OnDragModOver" DragDrop.Drop="OnDropMod"
-                 Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-            <ListBox.ItemTemplate>
-				<DataTemplate DataType="mod:InstalledMod">
-                    <StackPanel Orientation="Horizontal" Spacing="4">
-                        <CheckBox IsChecked="{Binding Enabled}" />
-					    <TextBlock Text="{Binding Name}" Opacity="{Binding Enabled, Converter={x:Static manager:MainWindow.InstalledModOpacityConverter}}" />
-                    </StackPanel>
-                </DataTemplate>
-            </ListBox.ItemTemplate>
-        </ListBox>
+        <controls:CheckListBox Name="_lbMods" SelectionMode="Multiple"
+                               ItemsCheckedChanged="OnModsEnabledChanged" KeyDown="OnModsListKeyDown"
+                               DragDrop.AllowDrop="True" DragDrop.DragOver="OnDragModOver" DragDrop.Drop="OnDropMod" />
     </DockPanel>
 </forms:WindowWithProgress>

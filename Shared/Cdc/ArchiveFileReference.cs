@@ -2,7 +2,7 @@
 {
     public class ArchiveFileReference : ArchiveBlobReference
     {
-        public ArchiveFileReference(ulong nameHash, ulong locale, int archiveId, int archiveSubId, int archivePart, int offset, int length)
+        public ArchiveFileReference(ulong nameHash, ulong locale, int archiveId, int archiveSubId, int archivePart, uint offset, uint length)
             : base(archiveId, archiveSubId, archivePart, offset, length)
         {
             NameHash = nameHash;

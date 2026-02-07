@@ -47,5 +47,11 @@ namespace TrRebootTools.Shared.Forms
             _selectedGame = CdcGame.Shadow;
             Close();
         }
+
+        private void OnAvengersSelected(object? sender, RoutedEventArgs e)
+        {
+            _selectedGame = CdcGame.Avengers;
+            Close();
+        }
     }
 }

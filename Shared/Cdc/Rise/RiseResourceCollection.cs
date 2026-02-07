@@ -72,9 +72,9 @@ namespace TrRebootTools.Shared.Cdc.Rise
             public int Padding;
             public short ArchivePart;
             public short ArchiveId;
-            public int OffsetInArchive;
-            public int SizeInArchive;
-            public int DecompressionOffset;
+            public uint OffsetInArchive;
+            public uint SizeInArchive;
+            public uint DecompressionOffset;
 
             public int Type
             {

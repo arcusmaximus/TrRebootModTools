@@ -1,20 +1,19 @@
 using Avalonia.Controls;
-using Avalonia.Data.Converters;
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using Avalonia.Platform.Storage;
 using MsBox.Avalonia.Enums;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Threading;
 using System.Threading.Tasks;
 using TrRebootTools.ModManager.Mod;
 using TrRebootTools.Shared;
 using TrRebootTools.Shared.Cdc;
+using TrRebootTools.Shared.Controls;
 using TrRebootTools.Shared.Forms;
 using TrRebootTools.Shared.Util;
 
@@ -22,12 +21,9 @@ namespace TrRebootTools.ModManager
 {
     internal partial class MainWindow : WindowWithProgress
     {
-        public static readonly IValueConverter InstalledModOpacityConverter =
-            new FuncValueConverter<bool, double>(enabled => enabled ? 1.0 : 0.5);
-
         private readonly ArchiveSet _archiveSet;
         private readonly ResourceUsageCache _gameResourceUsages;
-        private readonly TrulyObservableCollection<InstalledMod> _installedMods = [];
+        private readonly ObservableCollection<InstalledMod> _installedMods = [];
 
         public MainWindow()
         {
@@ -64,7 +60,6 @@ namespace TrRebootTools.ModManager
             }
 
             RefreshModList();
-            _installedMods.ItemChanged += OnInstalledModChanged;
 
             await Task.Delay(1);
 
@@ -143,27 +138,6 @@ namespace TrRebootTools.ModManager
             }
         }
 
-        private async void OnInstalledModChanged(InstalledMod mod, PropertyChangedEventArgs e)
-        {
-            try
-            {
-                if (mod.Enabled)
-                    await Task.Run(() => _archiveSet.Enable(mod.ArchiveId, _gameResourceUsages, this, CancellationToken));
-                else
-                    await Task.Run(() => _archiveSet.Disable(mod.ArchiveId, _gameResourceUsages, this, CancellationToken));
-
-                await UpdateFlatModArchiveAsync();
-            }
-            catch (Exception ex)
-            {
-                await MessageBox.ShowErrorAsync(ex);
-            }
-            finally
-            {
-                _archiveSet.CloseStreams();
-            }
-        }
-
         private async void OnRemoveClicked(object? sender, RoutedEventArgs e)
         {
             if (_lbMods.Selection.Count == 0)
@@ -183,10 +157,10 @@ namespace TrRebootTools.ModManager
 
             try
             {
+                List<int> archiveIds = _lbMods.Selection.SelectedItems.Cast<InstalledMod>().Select(m => m.ArchiveId).ToList();
+                await Task.Run(() => _archiveSet.Delete(archiveIds, _gameResourceUsages, this, CancellationToken));
                 foreach (int index in _lbMods.Selection.SelectedIndexes.OrderByDescending(i => i).ToList())
                 {
-                    InstalledMod mod = _installedMods[index];
-                    await Task.Run(() => _archiveSet.Delete(mod.ArchiveId, _gameResourceUsages, this, CancellationToken));
                     _installedMods.RemoveAt(index);
                 }
                 await UpdateFlatModArchiveAsync();
@@ -194,6 +168,7 @@ namespace TrRebootTools.ModManager
             catch (Exception ex)
             {
                 await MessageBox.ShowErrorAsync(ex);
+                RefreshModList();
             }
             finally
             {
@@ -284,10 +259,38 @@ namespace TrRebootTools.ModManager
             return paths.Count > 0 ? paths : null;
         }
 
+        private async void OnModsEnabledChanged(List<ICheckListBoxEntry> entries)
+        {
+            try
+            {
+                IEnumerable<InstalledMod> mods = entries.Cast<InstalledMod>();
+                List<int> enabledArchiveIds = mods.Where(m => m.Enabled).Select(m => m.ArchiveId).ToList();
+                List<int> disabledArchiveIds = mods.Where(m => !m.Enabled).Select(m => m.ArchiveId).ToList();
+
+                if (enabledArchiveIds.Count > 0)
+                    await Task.Run(() => _archiveSet.Enable(enabledArchiveIds, _gameResourceUsages, this, CancellationToken));
+
+                if (disabledArchiveIds.Count > 0)
+                    await Task.Run(() => _archiveSet.Disable(disabledArchiveIds, _gameResourceUsages, this, CancellationToken));
+
+                if (entries.Count > 0)
+                    await UpdateFlatModArchiveAsync();
+            }
+            catch (Exception ex)
+            {
+                await MessageBox.ShowErrorAsync(ex);
+                RefreshModList();
+            }
+        }
+
         private void OnModsListKeyDown(object? sender, KeyEventArgs e)
         {
-            if (e.Key == Key.Delete)
-                OnRemoveClicked(sender, new());
+            switch (e.Key)
+            {
+                case Key.Delete:
+                    OnRemoveClicked(sender, new());
+                    break;
+            }
         }
 
         private void RefreshModList()

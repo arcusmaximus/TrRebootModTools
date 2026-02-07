@@ -1,7 +1,7 @@
 ﻿using Avalonia.Media.Imaging;
-using System;
 using System.Globalization;
 using System.Linq;
+using TrRebootTools.Shared.Cdc.Avengers;
 using TrRebootTools.Shared.Cdc.Rise;
 using TrRebootTools.Shared.Cdc.Shadow;
 using TrRebootTools.Shared.Cdc.Tr2013;
@@ -15,7 +15,8 @@ namespace TrRebootTools.Shared.Cdc
             [
                 new Tr2013GameInfo(),
                 new RiseGameInfo(),
-                new ShadowGameInfo()
+                new ShadowGameInfo(),
+                new AvengersGameInfo()
             ];
 
         public static CdcGameInfo Get(CdcGame game)

@@ -8,8 +8,8 @@
     <AssemblyName>TrRebootTools.SoundConverter</AssemblyName>
     <RootNamespace>TrRebootTools.SoundConverter</RootNamespace>
     <ApplicationIcon>icon.ico</ApplicationIcon>
-    <AssemblyVersion>1.9.0</AssemblyVersion>
-    <FileVersion>1.9.0</FileVersion>
+    <AssemblyVersion>1.9.1</AssemblyVersion>
+    <FileVersion>1.9.1</FileVersion>
     <BaseOutputPath>..\Build\</BaseOutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <PublishAot Condition="'$(Configuration)' == 'Release'">true</PublishAot>

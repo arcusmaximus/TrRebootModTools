@@ -1,10 +1,12 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using System.Drawing;
 using System.Runtime.CompilerServices;
+using TrRebootTools.Shared.Controls;
 
 namespace TrRebootTools.ModManager.Mod
 {
-    public class InstalledMod : INotifyPropertyChanged
+    public class InstalledMod : ICheckListBoxEntry
     {
         private bool _enabled;
 
@@ -25,17 +27,6 @@ namespace TrRebootTools.ModManager.Mod
             get;
         }
 
-        public Color NameColor
-        {
-            get
-            {
-                if (!Enabled)
-                    return Color.Gray;
-
-                return Color.Empty;
-            }
-        }
-
         public bool Enabled
         {
             get { return _enabled; }
@@ -45,20 +36,21 @@ namespace TrRebootTools.ModManager.Mod
                     return;
 
                 _enabled = value;
-                OnPropertyChanged();
+                CheckedChanged?.Invoke(this, EventArgs.Empty);
             }
         }
+
+        bool ICheckListBoxEntry.Checked
+        {
+            get => Enabled;
+            set => Enabled = value;
+        }
+
+        public event EventHandler? CheckedChanged;
 
         public override string ToString()
         {
             return Name;
-        }
-
-        public event PropertyChangedEventHandler? PropertyChanged;
-
-        protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

@@ -11,12 +11,12 @@
         MinWidth="680" MinHeight="400"
         x:Class="TrRebootTools.HookTool.MainWindow"
         Icon="/icon.ico">
-    <Grid RowDefinitions="40,*" RowSpacing="4" DragDrop.DragEnter="OnDragEnter" DragDrop.Drop="OnDragDrop">
-		<Button Name="_btnBrowseModFolder" Click="OnBrowseModFolderClick" IsEnabled="False" Grid.Row="0">
-			Open mod folder...
+    <DockPanel VerticalSpacing="4" DragDrop.DragEnter="OnDragEnter" DragDrop.Drop="OnDragDrop">
+		<Button Name="_btnBrowseModFolder" Click="OnBrowseModFolderClick" IsEnabled="False" Padding="0 20" DockPanel.Dock="Top">
+            Open mod folder...
         </Button>
-    
-        <TabControl Grid.Row="1">
+
+        <TabControl>
 		    <TabItem Name="_tpFileLog" Header="File log">
 			    <logging:FileAccessLogControl Name="_fileLog" />
             </TabItem>
@@ -27,5 +27,5 @@
 			    <materials:MaterialControl Name="_materialControl" SavingMaterial="OnSavingMaterial" SavedMaterial="OnSavedMaterial" />
             </TabItem>
         </TabControl>
-    </Grid>
+    </DockPanel>
 </shared-forms:WindowWithProgress>

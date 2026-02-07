@@ -47,7 +47,7 @@ namespace TrRebootTools.Shared
                                          .Select(p => new MultiplexStreamInfo.SubtitleFrame
                                                       {
                                                           FrameNumber = p.FrameNumber,
-                                                          Subtitles = p.Subtitles
+                                                          Subtitles = p.Subtitles!
                                                       })
                                          .ToArray();
             }
@@ -67,12 +67,9 @@ namespace TrRebootTools.Shared
                 if (packet.Header != null)
                     writer.Write(packet.Header);
 
-                if ((packet.ChannelValues?.Length ?? 0) > 0)
-                {
-                    writer.Write(4 + packet.ChannelValues.Length);
-                    writer.Write(packet.FrameNumber);
-                    writer.Write(packet.ChannelValues);
-                }
+                writer.Write(4 + (packet.ChannelValues?.Length ?? 0));
+                writer.Write(packet.FrameNumber);
+                writer.Write(packet.ChannelValues ?? []);
             }
         }
 

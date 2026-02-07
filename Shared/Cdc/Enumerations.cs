@@ -4,7 +4,8 @@
     {
         Tr2013 = 9,
         Rise,
-        Shadow
+        Shadow,
+        Avengers
     }
 
     public enum ResourceType

@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
+using TrRebootTools.Shared.Cdc.Avengers;
 using TrRebootTools.Shared.Cdc.Rise;
 using TrRebootTools.Shared.Cdc.Shadow;
 using TrRebootTools.Shared.Cdc.Tr2013;
@@ -25,9 +26,10 @@ namespace TrRebootTools.Shared.Cdc
         {
             return game switch
             {
-                CdcGame.Tr2013 => new Tr2013ArchiveSet(folderPath, includeGame, includeMods),
-                CdcGame.Rise   => new RiseArchiveSet(folderPath, includeGame, includeMods),
-                CdcGame.Shadow => new ShadowArchiveSet(folderPath, includeGame, includeMods),
+                CdcGame.Tr2013   => new Tr2013ArchiveSet(folderPath, includeGame, includeMods),
+                CdcGame.Rise     => new RiseArchiveSet(folderPath, includeGame, includeMods),
+                CdcGame.Shadow   => new ShadowArchiveSet(folderPath, includeGame, includeMods),
+                CdcGame.Avengers => new AvengersArchiveSet(folderPath, includeGame, includeMods),
                 _ => throw new NotSupportedException()
             };
         }
@@ -53,7 +55,7 @@ namespace TrRebootTools.Shared.Cdc
                 if (!ShouldLoad(archiveFilePath, includeGame, includeMods))
                     continue;
 
-                using Stream stream = File.OpenRead(archiveFilePath);
+                using Stream stream = Archive.InstantiateArchive(archiveFilePath, null, Game).OpenPart(0, archiveFilePath, FileMode.Open, FileAccess.Read);
                 using BinaryReader reader = new BinaryReader(stream);
                 var header = reader.ReadStruct<Archive.ArchiveHeader>();
                 ArchiveMetaData? metaData = metaDatas?.GetValueOrDefault(header.Id);
@@ -211,17 +213,26 @@ namespace TrRebootTools.Shared.Cdc
 
         public void Enable(int archiveId, ResourceUsageCache gameResourceUsageCache, ITaskProgress? progress, CancellationToken cancellationToken)
         {
+            Enable([archiveId], gameResourceUsageCache, progress, cancellationToken);
+        }
+
+        public void Enable(IList<int> archiveIds, ResourceUsageCache gameResourceUsageCache, ITaskProgress? progress, CancellationToken cancellationToken)
+        {
             lock (_lock)
             {
-                Archive archive = _archives[(archiveId, 0)];
-                if (archive.MetaData == null || archive.MetaData.Enabled)
-                    return;
-
                 try
                 {
-                    progress?.Begin($"Enabling mod {archive.ModName}...");
+                    progress?.Begin($"Enabling mods...");
 
-                    archive.MetaData.Enabled = true;
+                    foreach (int archiveId in archiveIds)
+                    {
+                        Archive archive = _archives[(archiveId, 0)];
+                        if (archive.MetaData == null || archive.MetaData.Enabled)
+                            continue;
+
+                        archive.MetaData.Enabled = true;
+                    }
+
                     UpdateResourceReferences(gameResourceUsageCache, progress, cancellationToken);
                 }
                 finally
@@ -233,38 +244,55 @@ namespace TrRebootTools.Shared.Cdc
 
         public void Disable(int archiveId, ResourceUsageCache gameResourceUsageCache, ITaskProgress? progress, CancellationToken cancellationToken)
         {
+            Disable([archiveId], gameResourceUsageCache, progress, cancellationToken);
+        }
+
+        public void Disable(IList<int> archiveIds, ResourceUsageCache gameResourceUsageCache, ITaskProgress? progress, CancellationToken cancellationToken)
+        {
             lock (_lock)
             {
-                Archive archive = _archives[(archiveId, 0)];
-                Disable(archiveId, gameResourceUsageCache, progress, $"Disabling mod {archive.ModName}...", cancellationToken);
+                Disable(archiveIds, gameResourceUsageCache, progress, $"Disabling mod...", cancellationToken);
             }
         }
 
-        private void Disable(int archiveId, ResourceUsageCache gameResourceUsageCache, ITaskProgress? progress, string statusText, CancellationToken cancellationToken)
+        private void Disable(IList<int> archiveIds, ResourceUsageCache gameResourceUsageCache, ITaskProgress? progress, string statusText, CancellationToken cancellationToken)
         {
-            Archive archive = _archives[(archiveId, 0)];
-            if (archive.MetaData == null || !archive.MetaData.Enabled)
-                return;
+            lock (_lock)
+            {
+                try
+                {
+                    progress?.Begin(statusText);
 
-            try
-            {
-                progress?.Begin(statusText);
-                archive.MetaData.Enabled = false;
-                UpdateResourceReferences(gameResourceUsageCache, progress, cancellationToken);
-            }
-            finally
-            {
-                progress?.End();
+                    foreach (int archiveId in archiveIds)
+                    {
+                        Archive archive = _archives[(archiveId, 0)];
+                        if (archive.MetaData == null || !archive.MetaData.Enabled)
+                            continue;
+
+                        archive.MetaData.Enabled = false;
+                    }
+
+                    UpdateResourceReferences(gameResourceUsageCache, progress, cancellationToken);
+                }
+                finally
+                {
+                    progress?.End();
+                }
             }
         }
 
         public void Delete(int archiveId, ResourceUsageCache gameResourceUsageCache, ITaskProgress? progress, CancellationToken cancellationToken)
         {
+            Delete([archiveId], gameResourceUsageCache, progress, cancellationToken);
+        }
+
+        public void Delete(IList<int> archiveIds, ResourceUsageCache gameResourceUsageCache, ITaskProgress? progress, CancellationToken cancellationToken)
+        {
             lock (_lock)
             {
-                Disable(archiveId, gameResourceUsageCache, progress, $"Removing mod {_archives[(archiveId, 0)].ModName}...", cancellationToken);
+                Disable(archiveIds, gameResourceUsageCache, progress, $"Removing mods...", cancellationToken);
 
-                foreach (Archive archive in _archives.Values.Where(a => a.Id == archiveId).Concat(_duplicateArchives.Where(a => a.Id == archiveId)).ToList())
+                foreach (Archive archive in _archives.Values.Where(a => archiveIds.Contains(a.Id)).Concat(_duplicateArchives.Where(a => archiveIds.Contains(a.Id))).ToList())
                 {
                     archive.Delete();
                     archive.Dispose();

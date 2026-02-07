@@ -63,7 +63,7 @@ namespace TrRebootTools.Shared.Cdc.Tr2013
 
         protected override void UpdateResourceLocation(ref ResourceLocation location, ResourceReference resourceRef)
         {
-            location.PackedOffset = (resourceRef.Offset | (resourceRef.ArchiveId << 4) | resourceRef.ArchivePart);
+            location.PackedOffset = (resourceRef.Offset | ((uint)resourceRef.ArchiveId << 4) | (uint)resourceRef.ArchivePart);
             location.SizeInArchive = resourceRef.Length;
             location.DecompressionOffset = resourceRef.DecompressionOffset;
         }
@@ -104,38 +104,38 @@ namespace TrRebootTools.Shared.Cdc.Tr2013
         [StructLayout(LayoutKind.Sequential)]
         public struct ResourceLocation
         {
-            public int UniqueKey;
-            public int PackedOffset;
-            public int SizeInArchive;
-            public int DecompressionOffset;
+            public uint UniqueKey;
+            public uint PackedOffset;
+            public uint SizeInArchive;
+            public uint DecompressionOffset;
 
             public int Type
             {
-                get => UniqueKey >> 24;
-                set => UniqueKey = (value << 24) | (UniqueKey & 0x00FFFFFF);
+                get => (int)(UniqueKey >> 24);
+                set => UniqueKey = ((uint)value << 24) | (UniqueKey & 0x00FFFFFF);
             }
 
             public int Id
             {
-                get => UniqueKey & 0x00FFFFFF;
-                set => UniqueKey = (int)(UniqueKey & 0xFF000000) | value;
+                get => (int)(UniqueKey & 0x00FFFFFF);
+                set => UniqueKey = (UniqueKey & 0xFF000000) | (uint)value;
             }
 
             public int ArchiveId
             {
-                get => (PackedOffset >> 4) & 0x7F;
-                set => PackedOffset = (int)(PackedOffset & 0xFFFFF80F) | (value << 4);
+                get => (int)((PackedOffset >> 4) & 0x7F);
+                set => PackedOffset = (PackedOffset & 0xFFFFF80F) | ((uint)value << 4);
             }
 
             public int ArchivePart
             {
-                get => PackedOffset & 0xF;
-                set => PackedOffset = (int)(PackedOffset & 0xFFFFFFF0) | value;
+                get => (int)(PackedOffset & 0xF);
+                set => PackedOffset = (PackedOffset & 0xFFFFFFF0) | (uint)value;
             }
 
-            public int OffsetInArchive
+            public uint OffsetInArchive
             {
-                get => (int)(PackedOffset & 0xFFFFF800);
+                get => PackedOffset & 0xFFFFF800;
                 set => PackedOffset = (PackedOffset & 0x7FF) | value;
             }
         }

@@ -2,7 +2,7 @@
 {
     public class ArchiveBlobReference
     {
-        public ArchiveBlobReference(int archiveId, int archiveSubId, int archivePart, int offset, int length)
+        public ArchiveBlobReference(int archiveId, int archiveSubId, int archivePart, uint offset, uint length)
         {
             ArchiveId = archiveId;
             ArchiveSubId = archiveSubId;
@@ -26,12 +26,12 @@
             get;
         }
 
-        public int Offset
+        public uint Offset
         {
             get;
         }
 
-        public int Length
+        public uint Length
         {
             get;
         }
@@ -57,8 +57,8 @@
                 int hashCode = ArchiveId;
                 hashCode = hashCode * 397 ^ ArchiveSubId;
                 hashCode = hashCode * 397 ^ ArchivePart;
-                hashCode = hashCode * 397 ^ Offset;
-                hashCode = hashCode * 397 ^ Length;
+                hashCode = hashCode * 397 ^ (int)Offset;
+                hashCode = hashCode * 397 ^ (int)Length;
                 return hashCode;
             }
         }

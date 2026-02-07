@@ -54,7 +54,7 @@ namespace TrRebootTools.Shared.Controls
             Node = (IFastTreeNode?)DataContext;
             Margin = new((Node?.Depth ?? 0) * 16, 0, 0, 0);
 
-            if (Node != null && Node.Children.Any())
+            if (Node != null && Node.Children.Any(n => n.Visible))
             {
                 if (_expandButton == null)
                 {

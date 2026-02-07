@@ -14,6 +14,7 @@ namespace TrRebootTools.Shared.Cdc.Tr2013
         protected override CdcGame Game => CdcGame.Tr2013;
         protected override int HeaderVersion => 3;
         protected override bool SupportsSubId => false;
+        protected override bool SupportsLanguageList => false;
         protected override int ContentAlignment => 0x800;
 
         protected override ArchiveFileReference ReadFileReference(BinaryReader reader)
@@ -24,7 +25,7 @@ namespace TrRebootTools.Shared.Cdc.Tr2013
                 0xFFFFFFFF00000000 | entry.Locale,
                 entry.ArchiveId,
                 entry.ArchiveId == Id ? SubId : 0,
-                entry.ArchivPart,
+                entry.ArchivePart,
                 entry.Offset,
                 entry.Size
             );
@@ -38,7 +39,7 @@ namespace TrRebootTools.Shared.Cdc.Tr2013
                     NameHash = (uint)fileRef.NameHash,
                     Locale = (uint)fileRef.Locale,
                     Size = fileRef.Length,
-                    PackedOffset = fileRef.Offset | (fileRef.ArchiveId << 4) | fileRef.ArchivePart
+                    PackedOffset = fileRef.Offset | ((uint)fileRef.ArchiveId << 4) | (uint)fileRef.ArchivePart
                 };
             writer.WriteStruct(entry);
         }
@@ -48,12 +49,12 @@ namespace TrRebootTools.Shared.Cdc.Tr2013
         {
             public uint NameHash;
             public uint Locale;
-            public int Size;
-            public int PackedOffset;
+            public uint Size;
+            public uint PackedOffset;
 
-            public int ArchiveId => (PackedOffset >> 4) & 0x7F;
-            public int ArchivPart => PackedOffset & 0xF;
-            public int Offset => (int)(PackedOffset & 0xFFFFF800);
+            public int ArchiveId => (int)((PackedOffset >> 4) & 0x7F);
+            public int ArchivePart => (int)(PackedOffset & 0xF);
+            public uint Offset => PackedOffset & 0xFFFFF800;
         }
     }
 }

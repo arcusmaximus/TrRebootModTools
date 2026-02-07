@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using TrRebootTools.Shared.Cdc.Avengers;
 using TrRebootTools.Shared.Cdc.Rise;
 using TrRebootTools.Shared.Cdc.Shadow;
 using TrRebootTools.Shared.Cdc.Tr2013;
@@ -14,9 +15,10 @@ namespace TrRebootTools.Shared.Cdc
         private static readonly Dictionary<CdcGame, ResourceNaming> Instances =
             new()
             {
-                { CdcGame.Tr2013, new Tr2013ResourceNaming() },
-                { CdcGame.Rise, new RiseResourceNaming() },
-                { CdcGame.Shadow, new ShadowResourceNaming() }
+                { CdcGame.Tr2013,   new Tr2013ResourceNaming() },
+                { CdcGame.Rise,     new RiseResourceNaming() },
+                { CdcGame.Shadow,   new ShadowResourceNaming() },
+                { CdcGame.Avengers, new AvengersResourceNaming() }
             };
 
         static ResourceNaming()
@@ -140,7 +142,7 @@ namespace TrRebootTools.Shared.Cdc
         {
             string fileName = GetFileNameInstance(archiveSet, resourceRef, useOriginalFilePath);
             string filePath = $"{resourceRef.Type}\\{fileName}";
-            if (resourceRef.Locale != 0xFFFFFFFFFFFFFFFF)
+            if ((resourceRef.Locale & 0x0FFFFFFF) != 0x0FFFFFFF)
                 filePath += "\\" + CdcGameInfo.Get(Game).LocaleToLanguageCode(resourceRef.Locale) + GetExtension(resourceRef.Type, resourceRef.SubType);
 
             return filePath;

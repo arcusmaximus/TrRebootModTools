@@ -99,7 +99,13 @@ namespace TrRebootTools.Shared.Controls
             foreach (IFastTreeNode node in nodes)
             {
                 bool anyChildrenVisible = UpdateNodeVisibilitiesForSearchRecursive(node.Children);
-                node.Visible = anyChildrenVisible || string.IsNullOrWhiteSpace(_searchText) || node.Name.Contains(_searchText, StringComparison.InvariantCultureIgnoreCase);
+                if (anyChildrenVisible || string.IsNullOrWhiteSpace(_searchText))
+                    node.Visible = true;
+                else if (node.Name.Contains(_searchText, StringComparison.InvariantCultureIgnoreCase))
+                    ShowNodeRecursive(node);
+                else
+                    node.Visible = false;
+                
                 if (node.Visible)
                 {
                     firstVisibleNode ??= node;
@@ -112,6 +118,15 @@ namespace TrRebootTools.Shared.Controls
                 firstVisibleNode.Expanded = true;
 
             return numVisibleNodes > 0;
+        }
+
+        private static void ShowNodeRecursive(IFastTreeNode node)
+        {
+            node.Visible = true;
+            foreach (IFastTreeNode child in node.Children)
+            {
+                ShowNodeRecursive(child);
+            }
         }
 
         private void ApplyDefaultExpandedRootNodes()

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using TrRebootTools.Shared.Cdc.Avengers;
 using TrRebootTools.Shared.Cdc.Rise;
 using TrRebootTools.Shared.Cdc.Shadow;
 using TrRebootTools.Shared.Cdc.Tr2013;
@@ -18,9 +19,10 @@ namespace TrRebootTools.Shared.Cdc
                 game,
                 v => v switch
                 {
-                    CdcGame.Tr2013 => new Tr2013Hash(),
-                    CdcGame.Rise   => new RiseHash(),
-                    CdcGame.Shadow => new ShadowHash(),
+                    CdcGame.Tr2013   => new Tr2013Hash(),
+                    CdcGame.Rise     => new RiseHash(),
+                    CdcGame.Shadow   => new ShadowHash(),
+                    CdcGame.Avengers => new AvengersHash(),
                     _ => throw new NotSupportedException()
                 }
             );

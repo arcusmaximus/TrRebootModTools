@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using TrRebootTools.Shared.Cdc;
 
 namespace TrRebootTools.Shared
@@ -43,13 +44,17 @@ namespace TrRebootTools.Shared
         public static MultiplexStreamInfo Load(string filePath)
         {
             using Stream stream = File.OpenRead(filePath);
-            return JsonSerializer.Deserialize<MultiplexStreamInfo>(stream)!;
+            return JsonSerializer.Deserialize(stream, MultiplexStreamInfoSerializerContext.Default.MultiplexStreamInfo)!;
         }
 
         public void Save(string filePath)
         {
             using Stream stream = File.Create(filePath);
-            JsonSerializer.Serialize(stream, this);
+            JsonSerializer.Serialize(stream, this, MultiplexStreamInfoSerializerContext.Default.MultiplexStreamInfo);
         }
     }
+
+    [JsonSourceGenerationOptions(WriteIndented = true)]
+    [JsonSerializable(typeof(MultiplexStreamInfo))]
+    internal partial class MultiplexStreamInfoSerializerContext : JsonSerializerContext { }
 }

@@ -3,21 +3,25 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Width="450" Height="170"
         x:Class="TrRebootTools.Shared.Forms.GameSelectionWindow"
-        Title="Select game"
+        Title="Select game" Width="450" Height="170"
         CanResize="False"
         WindowStartupLocation="CenterScreen"
         RenderOptions.TextRenderingMode="SubpixelAntialias">
-  <Grid ColumnDefinitions="Auto,Auto,Auto" HorizontalAlignment="Center" VerticalAlignment="Center" ColumnSpacing="2">
-	  <Button Click="OnTr2013Selected" Grid.Column="0" ToolTip.Tip="Tomb Raider 2013">
+    <StackPanel Spacing="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+	  <Button Click="OnTr2013Selected" ToolTip.Tip="Tomb Raider 2013">
 		  <Image Source="/Resources/Tr2013.png" Stretch="None"/>
       </Button>
-      <Button Click="OnRiseSelected" Grid.Column="1" ToolTip.Tip="Rise of the Tomb Raider">
+      <Button Click="OnRiseSelected" ToolTip.Tip="Rise of the Tomb Raider">
 		  <Image Source="/Resources/Rise.png" Stretch="None"/>
       </Button>
-      <Button Click="OnShadowSelected" Grid.Column="2" ToolTip.Tip="Shadow of the Tomb Raider">
+      <Button Click="OnShadowSelected" ToolTip.Tip="Shadow of the Tomb Raider">
 		  <Image Source="/Resources/Shadow.png" Stretch="None"/>
       </Button>
-  </Grid>
+      <!--
+      <Button Click="OnAvengersSelected" Margin="50 0 0 0" ToolTip.Tip="Marvel's Avengers">
+		  <Image Source="/Resources/Avengers.png" Stretch="None"/>
+      </Button>
+      -->
+  </StackPanel>
 </Window>

@@ -12,10 +12,9 @@ namespace TrRebootTools.Shared.Cdc.Shadow
         }
 
         protected override CdcGame Game => CdcGame.Shadow;
-
         protected override int HeaderVersion => 5;
-
         protected override bool SupportsSubId => true;
+        protected override bool SupportsLanguageList => false;
 
         protected override ArchiveFileReference ReadFileReference(BinaryReader reader)
         {
@@ -34,7 +33,7 @@ namespace TrRebootTools.Shared.Cdc.Shadow
         protected override void WriteFileReference(BinaryWriter writer, ArchiveFileReference fileRef)
         {
             ArchiveFileEntry entry =
-                new ArchiveFileEntry
+                new()
                 {
                     NameHash = fileRef.NameHash,
                     Locale = fileRef.Locale,
@@ -52,12 +51,12 @@ namespace TrRebootTools.Shared.Cdc.Shadow
         {
             public ulong NameHash;
             public ulong Locale;
-            public int UncompressedSize;
-            public int CompressedSize;
+            public uint UncompressedSize;
+            public uint CompressedSize;
             public short ArchivePart;
             public byte ArchiveId;
             public byte ArchiveSubId;
-            public int Offset;
+            public uint Offset;
         }
     }
 }
