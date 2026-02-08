@@ -7,8 +7,8 @@
     <Nullable>enable</Nullable>
     <AssemblyName>TrRebootTools.BinaryTemplateGenerator</AssemblyName>
     <RootNamespace>TrRebootTools.BinaryTemplateGenerator</RootNamespace>
-    <AssemblyVersion>1.9.1</AssemblyVersion>
-    <FileVersion>1.9.1</FileVersion>
+    <AssemblyVersion>1.9.2</AssemblyVersion>
+    <FileVersion>1.9.2</FileVersion>
     <BaseOutputPath>..\Build\</BaseOutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>

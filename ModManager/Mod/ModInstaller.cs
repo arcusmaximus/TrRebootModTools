@@ -34,7 +34,7 @@ namespace TrRebootTools.ModManager.Mod
                 return null;
 
             using ZipTempExtractor extractor = new(filePath);
-            await extractor.ExtractAsync(progress, cancellationToken);
+            extractor.Extract(progress, cancellationToken);
 
             using ModPackage modPackage = new FolderModPackage(modName, extractor.FolderPath, false, _archiveSet, _gameResourceUsageCache);
             return await InstallAsync(modPackage, progress, cancellationToken);

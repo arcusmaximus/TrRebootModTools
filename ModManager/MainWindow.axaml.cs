@@ -106,6 +106,7 @@ namespace TrRebootTools.ModManager
             catch (Exception ex)
             {
                 await MessageBox.ShowErrorAsync(ex);
+                RefreshModList();
             }
         }
 
@@ -130,11 +131,12 @@ namespace TrRebootTools.ModManager
                     return;
 
                 await UpdateFlatModArchiveAsync();
-                RefreshModList();
+                _installedMods.Add(mod);
             }
             catch (Exception ex)
             {
                 await MessageBox.ShowErrorAsync(ex);
+                RefreshModList();
             }
         }
 

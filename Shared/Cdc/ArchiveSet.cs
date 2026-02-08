@@ -237,6 +237,7 @@ namespace TrRebootTools.Shared.Cdc
                 }
                 finally
                 {
+                    CloseStreams();
                     progress?.End();
                 }
             }
@@ -276,6 +277,7 @@ namespace TrRebootTools.Shared.Cdc
                 }
                 finally
                 {
+                    CloseStreams();
                     progress?.End();
                 }
             }
@@ -324,7 +326,7 @@ namespace TrRebootTools.Shared.Cdc
                 numTotalFiles += archive.Files.Count;
             }
 
-            ResourceUsageCache resourceUsageCache = new ResourceUsageCache(gameResourceUsageCache);
+            ResourceUsageCache resourceUsageCache = new(gameResourceUsageCache);
 
             int numUpdatedFiles = 0;
             HashSet<int> archiveIds = sortedArchives.Select(a => a.Id).ToHashSet();

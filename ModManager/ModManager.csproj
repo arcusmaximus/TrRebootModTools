@@ -8,8 +8,8 @@
     <RootNamespace>TrRebootTools.ModManager</RootNamespace>
     <AssemblyName>TrRebootTools.ModManager</AssemblyName>
     <ApplicationIcon>icon.ico</ApplicationIcon>
-    <AssemblyVersion>1.9.1</AssemblyVersion>
-    <FileVersion>1.9.1</FileVersion>
+    <AssemblyVersion>1.9.2</AssemblyVersion>
+    <FileVersion>1.9.2</FileVersion>
     <BaseOutputPath>..\Build\</BaseOutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <PublishAot Condition="'$(Configuration)' == 'Release'">true</PublishAot>
@@ -32,7 +32,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="SharpCompress" Version="0.44.0" />
+    <PackageReference Include="SharpCompress" Version="0.40.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Shared\Shared.csproj" />

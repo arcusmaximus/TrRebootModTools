@@ -1,9 +1,10 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using SharpCompress.Archives;
 using SharpCompress.Common;
+using SharpCompress.Readers;
 using TrRebootTools.Shared;
 
 namespace TrRebootTools.ModManager.Util
@@ -26,19 +27,29 @@ namespace TrRebootTools.ModManager.Util
             get;
         }
 
-        public async Task ExtractAsync(ITaskProgress progress, CancellationToken cancellationToken)
+        public void Extract(ITaskProgress progress, CancellationToken cancellationToken)
         {
             try
             {
                 progress.Begin("Extracting archive...");
 
                 using IArchive archive = ArchiveFactory.Open(_archiveFilePath);
-                await archive.WriteToDirectoryAsync(
-                    FolderPath,
-                    new() { ExtractFullPath = true },
-                    new Progress<ProgressReport>(p => progress.Report((float)(p.PercentComplete ?? 0))),
-                    cancellationToken
-                );
+                int numFiles = archive.Entries.Count(e => !e.IsDirectory);
+
+                using IReader reader = archive.ExtractAllEntries();
+                ExtractionOptions options = new ExtractionOptions { ExtractFullPath = true };
+                int i = 0;
+                while (reader.MoveToNextEntry())
+                {
+                    if (reader.Entry.IsDirectory)
+                        continue;
+
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    reader.WriteEntryToDirectory(FolderPath, options);
+                    i++;
+                    progress.Report((float)i / numFiles);
+                }
             }
             finally
             {
