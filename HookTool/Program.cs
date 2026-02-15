@@ -31,8 +31,14 @@ namespace TrRebootTools.HookTool
                     return;
 
                 string? gameFolderPath = await GameFolderFinder.FindAsync(game.Value);
-                if (gameFolderPath == null)
-                    return;
+                while (gameFolderPath == null)
+                {
+                    game = await GameSelectionWindow.GetGameAsync(true);
+                    if (game == null)
+                        return;
+
+                    gameFolderPath = await GameFolderFinder.FindAsync(game.Value);
+                }
 
                 string exePath = Path.Combine(gameFolderPath, CdcGameInfo.Get(game.Value).ExeNames[0]);
                 if (!GameProcess.SupportsHooking(exePath, game.Value, out string? unsupportedReason))

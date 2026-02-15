@@ -39,8 +39,14 @@ namespace TrRebootTools.ModManager
                         break;
 
                     string? gameFolderPath = await GameFolderFinder.FindAsync(game.Value);
-                    if (gameFolderPath == null)
-                        break;
+                    while (gameFolderPath == null)
+                    {
+                        game = await GameSelectionWindow.GetGameAsync(true);
+                        if (game == null)
+                            return 0;
+
+                        gameFolderPath = await GameFolderFinder.FindAsync(game.Value);
+                    }
 
                     if (args.Length > 0)
                     {
