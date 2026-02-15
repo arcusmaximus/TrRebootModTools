@@ -47,15 +47,26 @@ namespace TrRebootTools.Shared
             if (!OperatingSystem.IsWindows())
                 return null;
 
-            using RegistryKey? uninstallKey = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall");
-            if (uninstallKey == null)
-                return null;
-
-            foreach (string appName in uninstallKey.GetSubKeyNames())
+            const string uninstallPath = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall";
+            RegistryView[] views = { RegistryView.Registry64, RegistryView.Registry32 };
+            foreach (var view in views)
             {
-                using RegistryKey? appKey = uninstallKey.OpenSubKey(appName);
-                if ((appKey?.GetValue("DisplayName") as string)?.Contains(gameInfo.RegistryDisplayName) ?? false)
-                    return appKey!.GetValue("InstallLocation") as string;
+                using RegistryKey baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, view);
+                using RegistryKey? uninstallKey = baseKey.OpenSubKey(uninstallPath);
+
+                if (uninstallKey == null)
+                    continue;
+
+                foreach (string appName in uninstallKey.GetSubKeyNames())
+                {
+                    using RegistryKey? appKey = uninstallKey.OpenSubKey(appName);
+                    if (appKey == null)
+                        continue;
+
+                    string? displayName = appKey.GetValue("DisplayName") as string;
+                    if (displayName != null && displayName.Contains(gameInfo.RegistryDisplayName))
+                        return appKey.GetValue("InstallLocation") as string;
+                }
             }
 
             return null;
