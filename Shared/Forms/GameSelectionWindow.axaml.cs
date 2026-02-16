@@ -14,20 +14,33 @@ namespace TrRebootTools.Shared.Forms
             InitializeComponent();
         }
 
-        public static async Task<CdcGame?> GetGameAsync(bool forcePrompt)
+        public static async Task<(CdcGame? Game, string? FolderPath)> GetGameAsync(bool forcePrompt)
         {
             Configuration config = Configuration.Load();
-            if (forcePrompt || config.SelectedGame == null)
+            string? folderPath;
+            if (config.SelectedGame != null && !forcePrompt)
+            {
+                folderPath = await GameFolderFinder.FindAsync(config.SelectedGame.Value, false);
+                if (folderPath != null)
+                    return (config.SelectedGame, folderPath);
+            }
+
+            while (true)
             {
                 GameSelectionWindow window = new();
                 await App.ShowDialogAsync(window);
+                if (window._selectedGame == null)
+                    return (null, null);
+
+                folderPath = await GameFolderFinder.FindAsync(window._selectedGame.Value, true);
+                if (folderPath == null)
+                    continue;
+
+                config = Configuration.Load();
                 config.SelectedGame = window._selectedGame;
-            }
-
-            if (config.SelectedGame != null)
                 config.Save();
-
-            return config.SelectedGame;
+                return (config.SelectedGame, folderPath);
+            }
         }
 
         private void OnTr2013Selected(object? sender, RoutedEventArgs e)

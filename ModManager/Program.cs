@@ -1,6 +1,7 @@
 ﻿using Avalonia;
 using Avalonia.Interactivity;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.ExceptionServices;
@@ -24,25 +25,21 @@ namespace TrRebootTools.ModManager
         [STAThread]
         public static int Main(string[] args)
         {
-            return App.Run(() => MainInternalAsync(args));
+            return App.Run(() => MainInternalAsync(args.ToList()));
         }
 
-        private static async Task<int> MainInternalAsync(string[] args)
+        private static async Task<int> MainInternalAsync(List<string> args)
         {
             try
             {
                 bool forceGamePrompt = false;
                 while (true)
                 {
-                    CdcGame? game = ShiftGameFromCommandLine(ref args) ?? await GameSelectionWindow.GetGameAsync(forceGamePrompt);
-                    if (game == null)
+                    (CdcGame? game, string? gameFolderPath) = await ShiftGameFromCommandLine(args) ?? await GameSelectionWindow.GetGameAsync(forceGamePrompt);
+                    if (game == null || gameFolderPath == null)
                         break;
 
-                    string? gameFolderPath = await GameFolderFinder.FindAsync(game.Value);
-                    if (gameFolderPath == null)
-                        break;
-
-                    if (args.Length > 0)
+                    if (args.Count > 0)
                     {
                         bool success = await HandleCommandLineAsync(args, gameFolderPath, game.Value);
                         return success ? 0 : 1;
@@ -64,18 +61,18 @@ namespace TrRebootTools.ModManager
             }
         }
 
-        private static CdcGame? ShiftGameFromCommandLine(ref string[] args)
+        private static async Task<(CdcGame? Game, string? FolderPath)?> ShiftGameFromCommandLine(List<string> args)
         {
-            if (args.Length == 0 || !Enum.TryParse(args[0], out CdcGame game))
+            if (args.Count == 0 || !Enum.TryParse(args[0], out CdcGame game))
                 return null;
 
-            string[] newArgs = new string[args.Length - 1];
-            Array.Copy(args, 1, newArgs, 0, args.Length - 1);
-            args = newArgs;
-            return game;
+            args.RemoveAt(0);
+
+            string? folderPath = await GameFolderFinder.FindAsync(game, true);
+            return (game, folderPath);
         }
 
-        private static async Task<bool> HandleCommandLineAsync(string[] args, string gameFolderPath, CdcGame game)
+        private static async Task<bool> HandleCommandLineAsync(IList<string> args, string gameFolderPath, CdcGame game)
         {
             using ArchiveSet archiveSet = ArchiveSet.Open(gameFolderPath, true, true, game);
             ResourceUsageCache resourceUsageCache = new();
@@ -112,14 +109,14 @@ namespace TrRebootTools.ModManager
             }
         }
 
-        private static async Task HandleCommandLineAsync(string[] args, ArchiveSet archiveSet, ResourceUsageCache resourceUsageCache, CdcGame game)
+        private static async Task HandleCommandLineAsync(IList<string> args, ArchiveSet archiveSet, ResourceUsageCache resourceUsageCache, CdcGame game)
         {
-            if (args.Length == 1 && (File.Exists(args[0]) || Directory.Exists(args[0])))
+            if (args.Count == 1 && (File.Exists(args[0]) || Directory.Exists(args[0])))
             {
                 string modPath = args[0];
                 await InstallModAsync(archiveSet, resourceUsageCache, modPath);
             }
-            else if (args.Length == 2)
+            else if (args.Count == 2)
             {
                 string action = args[0];
                 string modName = args[1];

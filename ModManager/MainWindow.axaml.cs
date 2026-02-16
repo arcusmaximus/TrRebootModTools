@@ -131,11 +131,13 @@ namespace TrRebootTools.ModManager
                     return;
 
                 await UpdateFlatModArchiveAsync();
-                _installedMods.Add(mod);
             }
             catch (Exception ex)
             {
                 await MessageBox.ShowErrorAsync(ex);
+            }
+            finally
+            {
                 RefreshModList();
             }
         }
@@ -152,7 +154,8 @@ namespace TrRebootTools.ModManager
                     "Confirm",
                     "Are you sure you want to remove the selected mod(s)?",
                     ButtonEnum.YesNo,
-                    MsBox.Avalonia.Enums.Icon.Question) == ButtonResult.No)
+                    MsBox.Avalonia.Enums.Icon.Question
+                ) == ButtonResult.No)
             {
                 return;
             }

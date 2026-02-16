@@ -28,12 +28,8 @@ namespace TrRebootTools.Extractor
                 bool forceGamePrompt = false;
                 while (true)
                 {
-                    CdcGame? game = await GameSelectionWindow.GetGameAsync(forceGamePrompt);
-                    if (game == null)
-                        break;
-
-                    string? gameFolderPath = await GameFolderFinder.FindAsync(game.Value);
-                    if (gameFolderPath == null)
+                    (CdcGame? game, string? gameFolderPath) = await GameSelectionWindow.GetGameAsync(forceGamePrompt);
+                    if (game == null || gameFolderPath == null)
                         break;
 
                     MainWindow window = new(gameFolderPath, game.Value);

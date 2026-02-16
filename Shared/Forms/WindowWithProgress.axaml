@@ -5,10 +5,10 @@
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="TrRebootTools.Shared.Forms.WindowWithProgress"
         Title="WindowWithProgress" Padding="4">
-    <DockPanel Name="_pnlMain" LastChildFill="True" VerticalSpacing="2">
-		<Panel Height="25" DockPanel.Dock="Bottom">
-			<TextBlock Name="_lblStatus" HorizontalAlignment="Left" VerticalAlignment="Center" />
-            <ProgressBar Name="_progressBar" Maximum="1" Width="200" HorizontalAlignment="Right" IsVisible="False" />
-        </Panel>
+    <DockPanel Name="_pnlMain" VerticalSpacing="2">
+		<DockPanel DockPanel.Dock="Bottom">
+            <ProgressBar Name="_progressBar" Maximum="1" Width="200" DockPanel.Dock="Right" IsVisible="False" />
+            <TextBlock Name="_lblStatus" Padding="0 4" VerticalAlignment="Center" />
+        </DockPanel>
     </DockPanel>
 </Window>

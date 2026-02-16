@@ -12,16 +12,18 @@ namespace TrRebootTools.Shared
 {
     public static class GameFolderFinder
     {
-        public static async Task<string?> FindAsync(CdcGame game)
+        public static async Task<string?> FindAsync(CdcGame game, bool interactive)
         {
             CdcGameInfo gameInfo = CdcGameInfo.Get(game);
-            Func<CdcGameInfo, Task<string?>>[] getters =
+            List<Func<CdcGameInfo, Task<string?>>> getters =
             [
                 GetGameFolderFromConfigurationAsync,
                 GetGameFolderFromWindowsRegistryAsync,
-                GetGameFolderFromLinuxSteamAsync,
-                GetGameFolderFromFileBrowserAsync
+                GetGameFolderFromLinuxSteamAsync
             ];
+            if (interactive)
+                getters.Add(GetGameFolderFromFileBrowserAsync);
+
             foreach (Func<CdcGameInfo, Task<string?>> getter in getters)
             {
                 string? gameFolderPath = await getter(gameInfo);

@@ -24,11 +24,11 @@ namespace TrRebootTools.Shared.Forms
 
         private void HandleContentChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
-            if (Content.Count != 2)
-                return;
+            if (Content.Count >= 1)
+                base.Content = Content[0];
 
-            base.Content = Content[0];
-            _pnlMain.Children.Add(Content[1]);
+            if (Content.Count >= 2)
+                _pnlMain.Children.Add(Content[1]);
         }
 
         protected override void OnClosing(WindowClosingEventArgs e)
