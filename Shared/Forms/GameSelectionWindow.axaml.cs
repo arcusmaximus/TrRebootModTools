@@ -17,29 +17,31 @@ namespace TrRebootTools.Shared.Forms
         public static async Task<(CdcGame? Game, string? FolderPath)> GetGameAsync(bool forcePrompt)
         {
             Configuration config = Configuration.Load();
+            CdcGame? game = config.SelectedGame;
             string? folderPath;
-            if (config.SelectedGame != null && !forcePrompt)
+            if (game != null && !forcePrompt)
             {
-                folderPath = await GameFolderFinder.FindAsync(config.SelectedGame.Value, false);
+                folderPath = await GameFolderFinder.FindAsync(game.Value, false);
                 if (folderPath != null)
-                    return (config.SelectedGame, folderPath);
+                    return (game, folderPath);
             }
 
             while (true)
             {
                 GameSelectionWindow window = new();
                 await App.ShowDialogAsync(window);
-                if (window._selectedGame == null)
+                game = window._selectedGame;
+                if (game == null)
                     return (null, null);
 
-                folderPath = await GameFolderFinder.FindAsync(window._selectedGame.Value, true);
+                folderPath = await GameFolderFinder.FindAsync(game.Value, true);
                 if (folderPath == null)
                     continue;
 
                 config = Configuration.Load();
-                config.SelectedGame = window._selectedGame;
+                config.SelectedGame = game;
                 config.Save();
-                return (config.SelectedGame, folderPath);
+                return (game, folderPath);
             }
         }
 
