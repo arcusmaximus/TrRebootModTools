@@ -31,7 +31,7 @@ namespace TrRebootTools.Shared.Controls
 
         public void SetCellText(int index, string? text)
         {
-            _cells[index].Text = text;
+            TextBlockHelper.SetTextWithHighlights(_cells[index], text, _listView.HighlightText);
         }
 
         protected override Size MeasureOverride(Size availableSize)

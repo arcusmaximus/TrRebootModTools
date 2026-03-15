@@ -5,16 +5,8 @@ using namespace Tr;
 
 extern "C"
 {
-    void* TrAddr_GetAnimation;
-    void TrHook_GetAnimation();
-
     void* TrAddr_PlayingTimeline;
     void TrHook_PlayingTimeline();
-
-    void TrHandler_GetAnimation(AnimLibItem* pAnim)
-    {
-        NotificationChannel::Instance.NotifyPlayingAnimation(pAnim->id, pAnim->pszName);
-    }
 }
 
 void TrHook::InitAddresses()
@@ -22,16 +14,15 @@ void TrHook::InitAddresses()
     TrAddr_GameLoopStart            = Game::ImageBase + 0x4E3B70;
     TrAddr_IsGameWindowActive       = Game::ImageBase + 0x1003800;
     TrAddr_RequestFile              = Game::ImageBase + 0x1C8018;
+    TrAddr_GetAnimation             = Game::ImageBase + 0x12BCA2;
     TrAddr_ParseMaterial            = Game::ImageBase + 0x3B4BD7;
     TrAddr_MSFileSystemFile_dtor    = Game::ImageBase + 0x1CE940;
-
-    TrAddr_GetAnimation             = Game::ImageBase + 0x12BCA2;
+    
     TrAddr_PlayingTimeline          = Game::ImageBase + 0x416360;
 }
 
 void TrHook::InstallGameSpecificHooks()
 {
-    DetourAttach(&TrAddr_GetAnimation, TrHook_GetAnimation);
     DetourAttach(&TrAddr_PlayingTimeline, TrHook_PlayingTimeline);
 }
 

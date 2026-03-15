@@ -63,7 +63,7 @@ class HairWeightPaintingOperator(BlenderOperatorBase[HairWeightPaintingPropertie
 
                 BlenderHelper.select_object(bl_obj)
                 bpy.ops.grease_pencil.weightmode_toggle()
-            elif not self.properties.enable and isinstance(bl_obj.data, bpy.types.GreasePencilv3):
+            elif not self.properties.enable and isinstance(bl_obj.data, bpy.types.GreasePencil):
                 self.convert_grease_pencil_to_curves(bl_obj)
 
             return { "FINISHED" }
@@ -83,7 +83,7 @@ class HairWeightPaintingOperator(BlenderOperatorBase[HairWeightPaintingPropertie
             return
 
         bl_obj = bpy.context.active_object
-        bl_grease = cast(bpy.types.GreasePencilv3, bl_obj.data)
+        bl_grease = cast(bpy.types.GreasePencil, bl_obj.data)
 
         bl_grease.stroke_depth_order = "3D"
         self.set_grease_pencil_material_name(bl_obj, material_name)
@@ -107,7 +107,7 @@ class HairWeightPaintingOperator(BlenderOperatorBase[HairWeightPaintingPropertie
         self.set_curves_material_name(bl_obj, material_name)
 
     def convert_grease_pencil_attribute_to_vertex_group(self, bl_obj: bpy.types.Object, attr_name: str) -> None:
-        bl_grease = cast(bpy.types.GreasePencilv3, bl_obj.data)
+        bl_grease = cast(bpy.types.GreasePencil, bl_obj.data)
         if len(bl_grease.layers) == 0:
             return
 
@@ -197,7 +197,7 @@ class HairWeightPaintingOperator(BlenderOperatorBase[HairWeightPaintingPropertie
         bl_curves.materials[0] = bpy.data.materials.get(material_name)
 
     def get_grease_pencil_material_name(self, bl_obj: bpy.types.Object) -> str | None:
-        bl_grease = cast(bpy.types.GreasePencilv3, bl_obj.data)
+        bl_grease = cast(bpy.types.GreasePencil, bl_obj.data)
         if len(bl_grease.materials) == 0:
             return None
 
@@ -208,7 +208,7 @@ class HairWeightPaintingOperator(BlenderOperatorBase[HairWeightPaintingPropertie
         return BlenderNaming.try_parse_grease_pencil_material_name(bl_material.name)
 
     def set_grease_pencil_material_name(self, bl_obj: bpy.types.Object, material_name: str | None) -> None:
-        bl_grease = cast(bpy.types.GreasePencilv3, bl_obj.data)
+        bl_grease = cast(bpy.types.GreasePencil, bl_obj.data)
         if material_name is None:
             bl_grease.materials.clear()
             return

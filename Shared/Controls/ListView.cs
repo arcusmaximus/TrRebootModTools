@@ -8,9 +8,27 @@ namespace TrRebootTools.Shared.Controls
 {
     public class ListView : ListBox
     {
+        private string? _highlightText;
+
         public List<ListViewColumn> Columns { get; set; } = [];
 
         internal double[] ColumnWidths { get; private set; } = [];
+
+        public string? HighlightText
+        {
+            get => _highlightText;
+            set
+            {
+                if (value == _highlightText)
+                    return;
+
+                _highlightText = value;
+                foreach (ListViewItem item in Items!)
+                {
+                    item.UpdateCells();
+                }
+            }
+        }
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
@@ -36,7 +54,7 @@ namespace TrRebootTools.Shared.Controls
 
         protected override Size MeasureOverride(Size availableSize)
         {
-            double flexibleWidth = double.IsFinite(availableSize.Width) ? availableSize.Width : ListViewRow.MinRowWidth; ;
+            double flexibleWidth = double.IsFinite(availableSize.Width) ? availableSize.Width : ListViewRow.MinRowWidth;
             double starTotal = 0;
             foreach (ListViewColumn column in Columns)
             {

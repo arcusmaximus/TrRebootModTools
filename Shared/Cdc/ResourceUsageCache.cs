@@ -98,7 +98,7 @@ namespace TrRebootTools.Shared.Cdc
             ResourceReference resourceRef = collection.ResourceReferences[resourceIdx];
             if (!_resourceUsages.ContainsKey(resourceRef))
             {
-                string? originalFilePath = ResourceNaming.ReadOriginalFilePath(archiveSet, resourceRef);
+                string? originalFilePath = ResourceNaming.ReadOriginalFilePath(archiveSet, collection, resourceRef);
                 if (originalFilePath != null)
                     _resourceKeysByOriginalFilePath[originalFilePath] = resourceRef;
             }

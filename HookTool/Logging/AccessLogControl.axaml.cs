@@ -5,7 +5,6 @@ using Avalonia.Threading;
 using System;
 using System.Collections;
 using System.IO;
-using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -27,6 +26,7 @@ namespace TrRebootTools.HookTool
         public AccessLogControl()
         {
             InitializeComponent();
+            ClearFilterUi();
         }
 
         public void Init(ArchiveSet archiveSet, ResourceUsageCache resourceUsages, NotificationChannel events, ITaskProgress progress, CancellationToken cancellationToken)
@@ -41,10 +41,6 @@ namespace TrRebootTools.HookTool
         }
 
         protected virtual void SubscribeToEvents(NotificationChannel events)
-        {
-        }
-
-        protected virtual void UnsubscribeFromEvents(NotificationChannel events)
         {
         }
 
@@ -146,6 +142,7 @@ namespace TrRebootTools.HookTool
                 return;
 
             string? filter = _txtFilter.Text;
+            _btnClearFilter.IsVisible = !string.IsNullOrEmpty(filter);
             int version = ++_filterVersion;
             await Task.Delay(1000);
             if (version != _filterVersion)
@@ -157,10 +154,22 @@ namespace TrRebootTools.HookTool
         private void OnFilterLostFocus(object? sender, RoutedEventArgs e)
         {
             if (string.IsNullOrEmpty(_lstLog.Filter))
-            {
-                _txtFilter.Text = "Filter";
-                _txtFilter.Opacity = 0.5;
-            }
+                ClearFilterUi(false);
+        }
+
+        private void OnClearFilterClick(object? sender, RoutedEventArgs e)
+        {
+            _filterVersion++;
+            _lstLog.Filter = null;
+            ClearFilterUi();
+        }
+
+        private void ClearFilterUi(bool hideClearButton = true)
+        {
+            _txtFilter.Text = "Filter";
+            _txtFilter.Opacity = 0.5;
+            if (hideClearButton)
+                _btnClearFilter.IsVisible = false;
         }
 
         private void OnLogSelectionChanged(object? sender, SelectionChangedEventArgs e)
@@ -236,13 +245,6 @@ namespace TrRebootTools.HookTool
             _progress.End();
             _lstLog.IsEnabled = true;
             _btnExtract.IsEnabled = true;
-        }
-
-        protected override void OnUnloaded(RoutedEventArgs e)
-        {
-            base.OnUnloaded(e);
-            if (_events != null)
-                UnsubscribeFromEvents(_events);
         }
     }
 }

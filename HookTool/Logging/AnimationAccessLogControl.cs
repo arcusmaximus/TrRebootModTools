@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using TrRebootTools.Shared;
 using TrRebootTools.Shared.Cdc;
 using TrRebootTools.Shared.Controls;
+using TrRebootTools.Shared.Util;
 
 namespace TrRebootTools.HookTool.Logging
 {
@@ -16,16 +17,18 @@ namespace TrRebootTools.HookTool.Logging
     {
         private class AnimationLogEntry : IListViewEntry
         {
-            public AnimationLogEntry(DateTime timestamp, string? drm, int id, string name)
+            public AnimationLogEntry(DateTime timestamp, string? drm, ResourceCollectionItemReference resource, int id, string name)
             {
                 Timestamp = timestamp;
                 Drm = drm;
+                Resource = resource;
                 Id = id;
                 Name = name;
             }
 
             public DateTime Timestamp { get; }
             public string? Drm { get; }
+            public ResourceCollectionItemReference Resource { get; }
             public int Id { get; }
             public string Name { get; }
 
@@ -75,11 +78,6 @@ namespace TrRebootTools.HookTool.Logging
             events.PlayingAnimation += HandlePlayingAnimation;
         }
 
-        protected override void UnsubscribeFromEvents(NotificationChannel events)
-        {
-            events.PlayingAnimation -= HandlePlayingAnimation;
-        }
-
         private void HandlePlayingAnimation(int id, string name)
         {
             if (!EnableLogging)
@@ -91,51 +89,52 @@ namespace TrRebootTools.HookTool.Logging
                 return;
             }
 
+            ResourceCollectionItemReference? resource = ResourceUsages.GetResourceUsages(ArchiveSet, new ResourceKey(ResourceType.Animation, id)).FirstOrDefault();
+            if (resource == null)
+                return;
+
             string? drmName = null;
-            ResourceCollectionItemReference? usage = ResourceUsages.GetResourceUsages(ArchiveSet, new ResourceKey(ResourceType.Animation, id)).FirstOrDefault();
-            if (usage != null)
-            {
-                string? drmPath = CdcHash.Lookup(usage.CollectionReference.NameHash, ArchiveSet.Game, true);
-                if (drmPath != null)
-                    drmName = Path.GetFileName(drmPath);
-            }
-            _lstLog.AddEntry(new AnimationLogEntry(DateTime.Now, drmName, id, name));
+            string? drmPath = CdcHash.Lookup(resource.CollectionReference.NameHash, ArchiveSet.Game, true);
+            if (drmPath != null)
+                drmName = Path.GetFileName(drmPath);
+
+            _lstLog.AddEntry(new AnimationLogEntry(DateTime.Now, drmName, resource, id, name));
         }
 
         protected override async Task ExtractAsync(string folderPath, ITaskProgress progress, CancellationToken cancellationToken)
         {
-            Dictionary<string, ResourceReference> animRefs = new();
-            foreach (AnimationLogEntry entry in _lstLog.Selection.SelectedItems!)
-            {
-                ResourceReference? resourceRef = ResourceUsages.GetResourceReference(ArchiveSet, new ResourceKey(ResourceType.Animation, entry.Id));
-                if (resourceRef != null)
-                    animRefs[entry.Name] = resourceRef;
-            }
-
             folderPath = Path.Combine(folderPath, "Animations");
             Directory.CreateDirectory(folderPath);
-            await Task.Run(() => ExtractAnimations(folderPath, animRefs, progress, cancellationToken));
+            List<AnimationLogEntry> anims = _lstLog.Selection.SelectedItems!.Cast<AnimationLogEntry>().ToList();
+            await Task.Run(() => ExtractAnimations(folderPath, anims, progress, cancellationToken));
         }
 
-        private void ExtractAnimations(string baseFolderPath, Dictionary<string, ResourceReference> animRefs, ITaskProgress progress, CancellationToken cancellationToken)
+        private void ExtractAnimations(string baseFolderPath, List<AnimationLogEntry> anims, ITaskProgress progress, CancellationToken cancellationToken)
         {
             try
             {
                 progress.Begin("Extracting...");
 
+                Dictionary<ArchiveFileReference, ResourceCollection?> collections = new();
                 int numExtracted = 0;
-                foreach ((string name, ResourceReference resourceRef) in animRefs)
+                foreach (AnimationLogEntry anim in anims)
                 {
                     if (cancellationToken.IsCancellationRequested)
                         break;
 
-                    string filePath = Path.Combine(baseFolderPath, name + "." + ResourceNaming.GetFileName(ArchiveSet, resourceRef));
+                    ResourceCollection? collection = collections.GetOrAdd(anim.Resource.CollectionReference, ArchiveSet.GetResourceCollection);
+                    if (collection == null)
+                        continue;
+
+                    ResourceReference resourceRef = collection.ResourceReferences[anim.Resource.ResourceIndex];
+
+                    string filePath = Path.Combine(baseFolderPath, anim.Name + "." + ResourceNaming.GetFileName(ArchiveSet, collection, resourceRef, false));
                     using Stream resourceStream = ArchiveSet.OpenResource(resourceRef);
                     using Stream fileStream = File.Create(filePath);
                     resourceStream.CopyTo(fileStream);
 
                     numExtracted++;
-                    progress.Report((float)numExtracted / animRefs.Count);
+                    progress.Report((float)numExtracted / anims.Count);
                 }
             }
             finally

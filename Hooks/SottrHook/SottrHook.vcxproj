@@ -93,7 +93,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
-    <ClInclude Include="Tr\AnimLibItem.h" />
     <ClInclude Include="Tr\TigerArchiveFileEntry.h" />
   </ItemGroup>
   <ItemGroup>

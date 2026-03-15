@@ -154,7 +154,7 @@ class CollisionShapeImporter(CollisionImporter):
         bmesh.ops.remove_doubles(bm_mesh, dist = 0.0001, verts = list(cast(Iterable[bmesh.types.BMVert], bm_mesh.verts)))
 
         if tr_collision.transform is None:
-            bmesh.ops.translate(bm_mesh, vec = Vector((0, 0, length / 2)), verts = list(bm_mesh.verts))
+            bmesh.ops.translate(bm_mesh, vec = (0, 0, length / 2), verts = list(bm_mesh.verts))
 
         bl_mesh = bpy.data.meshes.new("_")
         bm_mesh.to_mesh(bl_mesh)

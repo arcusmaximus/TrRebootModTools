@@ -1,0 +1,371 @@
+//------------------------------------------------
+//--- 010 Editor v14.0 Binary Template
+//
+//      File: tr10anim.bt
+//   Authors: arc_
+//   Purpose: Parse ROTTR animations
+//  Category: ROTTR
+// File Mask: *.tr10anim
+//------------------------------------------------
+
+#define TR_VERSION 10
+#include "../trcommon.bt"
+
+enum <short> ChannelType
+{
+    CHANNEL_TYPE_BAKED,
+    CHANNEL_TYPE_FLOAT_CONSTANT,
+    CHANNEL_TYPE_LINEAR,
+    CHANNEL_TYPE_EMBEDDED_CONSTANT
+};
+
+enum <short> ValueEncoding
+{
+    VALUE_ENCODING_FLOAT,
+    VALUE_ENCODING_FIXED,
+    VALUE_ENCODING_VARIABLE_64,
+    VALUE_ENCODING_VARIABLE_4096
+};
+
+enum <short> SizeEncoding
+{
+    SIZE_ENCODING_EMBEDDED,
+    SIZE_ENCODING_BYTE,
+    SIZE_ENCODING_SHORT
+};
+
+typedef struct
+{
+    ubyte byte0 <format=hex>;
+    if (byte0 & 0x88)
+    {
+        ubyte byte1 <format=hex>;
+        local ushort value = byte1;
+        value = ((value << 8) | byte0) & 0x7777;
+    }
+    else
+    {
+        local ushort value = byte0;
+    }
+} ChannelFlags <read=Str("0x%X", value), optimize=false>;
+
+typedef struct
+{
+    short raw;
+} FixedPoint <read=Str("%f", raw / 4096.0)>;
+
+typedef struct
+{
+    byte byte0 <format=hex>;
+    if (byte0 >= 0)
+    {
+        local short raw = byte0 * 4;
+    }
+    else
+    {
+        byte byte1 <format=hex>;
+        local short raw = ((-byte0) << 8) | byte1;
+    }
+} VariableLengthFloat64 <read=Str("%f", raw / 64.0), optimize=false>;
+
+typedef struct
+{
+    byte byte0;
+    if (byte0 == 0x80)
+    {
+        byte byte1;
+        byte byte2;
+        local short raw = (byte1 << 8) | byte2;
+    }
+    else
+    {
+        local short raw = byte0 * 0x20;
+    }
+} VariableLengthFloat4096 <read=Str("%f", raw / 4096.0), optimize=false>;
+
+typedef struct
+{
+    ubyte nibble0 : 4;
+    if (nibble0 == 0xF)
+    {
+        ubyte nibble1 : 4;
+        ubyte nibble2 : 4;
+        local ubyte value = (nibble2 << 4) | nibble1;
+    }
+    else
+    {
+        local ubyte value = nibble0;
+    }
+} VariableLengthFrameCount <read=value, optimize=false>;
+
+typedef struct (int numFrames, int& numSegments)
+{
+    local int frame = 1;
+    numSegments = 0;
+    BitfieldDisablePadding();
+    while (frame < numFrames)
+    {
+        VariableLengthFrameCount counts;
+        frame += counts.value;
+        numSegments++;
+    }
+    BitfieldEnablePadding();
+} VariableLengthFrameCounts <optimize=false>;
+
+typedef struct (string name, int& valuesPos)
+{
+    local string _name = name;
+    
+    FSeek(valuesPos);
+    float value;
+    valuesPos = FTell();
+} PoseChannel <name=_name, read=value>;
+
+typedef struct (string name, int& metaPos, int& valuesPos, int numFrames)
+{
+    local string _name = name;
+    
+    FSeek(metaPos);
+    ChannelType channelType : 2;
+    metaPos += 2;
+    
+    switch (channelType)
+    {
+        case CHANNEL_TYPE_BAKED:
+            ValueEncoding valueEncoding;
+            metaPos += 2;
+            
+            FSeek(valuesPos);
+            switch (valueEncoding)
+            {
+                case VALUE_ENCODING_FLOAT:
+                    float values[numFrames];
+                    break;
+                case VALUE_ENCODING_FIXED:
+                    FixedPoint values[numFrames];
+                    if (numFrames & 1)
+                    {
+                        FSkip(2);
+                    }
+                    break;
+            }
+            valuesPos = FTell();
+            break;
+        
+        case CHANNEL_TYPE_FLOAT_CONSTANT:
+            FSeek(valuesPos);
+            float value;
+            valuesPos = FTell();
+            break;
+        
+        case CHANNEL_TYPE_LINEAR:
+            ValueEncoding valueEncoding : 2;
+            SizeEncoding sizeEncoding : 2;
+            
+            switch (sizeEncoding)
+            {
+                case SIZE_ENCODING_EMBEDDED:
+                    ushort valuesSize : 5;
+                    ushort durationsSize : 5;
+                    FSeek(FTell());
+                    break;
+                case SIZE_ENCODING_BYTE:
+                    ubyte durationsSize;
+                    ubyte valuesSize;
+                    break;
+                case SIZE_ENCODING_SHORT:
+                    ushort durationsSize;
+                    ushort valuesSize;
+                    break;
+            }
+            
+            metaPos = FTell();
+            local int numSegments = 0;
+            VariableLengthFrameCounts segmentDurations(numFrames, numSegments);
+            metaPos += (durationsSize + 1) & ~1;
+            
+            FSeek(valuesPos);
+            switch (valueEncoding)
+            {
+                case VALUE_ENCODING_FLOAT:
+                    float valueChanges[numSegments + 1];
+                    break;
+                case VALUE_ENCODING_FIXED:
+                    FixedPoint valueChanges[numSegments + 1];
+                    break;
+                case VALUE_ENCODING_VARIABLE_64:
+                    VariableLengthFloat64 valueChanges[numSegments + 1];
+                    break;
+                case VALUE_ENCODING_VARIABLE_4096:
+                    VariableLengthFloat4096 valueChanges[numSegments + 1];
+                    break;
+            }
+            valuesPos += (valuesSize + 3) & ~3;
+            break;
+            
+        case CHANNEL_TYPE_EMBEDDED_CONSTANT:
+            short value : 14 <read=Str("%f", this / 4096.0)>;
+            break;
+    }
+    FSeek(metaPos);
+} AnimChannel <read=_name>;
+
+typedef struct (int boneId, int& flagsPos, int& metaPos, int& valuesPos, int numFrames)
+{
+    local int _boneId = boneId;
+    
+    FSeek(flagsPos);
+    ChannelFlags flags;
+    flagsPos = FTell();
+    
+    local string channelName;
+    for (local int i = 0; i < 12; i++)
+    {
+        if ((flags.value & (1 << i)) == 0)
+            continue;
+        
+        switch (i / 4)
+        {
+            case 0: channelName = "rotation"; break;
+            case 1: channelName = "position"; break;
+            case 2: channelName = "scale";    break;
+        }
+        switch (i % 4)
+        {
+            case 0: channelName += ".x"; break;
+            case 1: channelName += ".y"; break;
+            case 2: channelName += ".z"; break;
+        }
+        
+        if (numFrames == 1)
+        {
+            FSeek(valuesPos);
+            PoseChannel channel(channelName, valuesPos);
+        }
+        else
+        {
+            FSeek(metaPos);
+            AnimChannel channel(channelName, metaPos, valuesPos, numFrames);
+        }
+    }
+    FSeek(flagsPos);
+} BoneTrack <read=Str("Bone %d", _boneId)>;
+
+typedef struct (int numBones, int numFrames)
+{
+    Ref globalBoneIdsRef;
+    if (CanSeekTo(globalBoneIdsRef))
+    {
+        SeekToRef(globalBoneIdsRef);
+        ushort globalBoneIds[numBones] <style=sSection2Accent>;
+        ReturnFromRef();
+    }
+    Ref flagsRef;
+    Ref metaRef;
+    Ref valuesRef;
+    if (!exists(flagsRef.target) || !exists(metaRef.target) || !exists(valuesRef.target))
+        return;
+    
+    local int returnPos = FTell();
+    
+    local int flagsPos  = startof(flagsRef.target) + 2;
+    local int metaPos   = startof(metaRef.target);
+    local int valuesPos = startof(valuesRef.target) + 4;
+    
+    FSeek(flagsPos);
+    for (local int i = 0; i < numBones; i++)
+    {
+        BoneTrack tracks(globalBoneIds[i], flagsPos, metaPos, valuesPos, numFrames);
+    }
+    
+    FSeek(returnPos);
+} BoneTracks;
+
+typedef struct (int numBlendShapes, int numFrames)
+{
+    Ref globalBlendShapeIdsRef;
+    if (CanSeekTo(globalBlendShapeIdsRef))
+    {
+        SeekToRef(globalBlendShapeIdsRef);
+        ushort globalBlendShapeIds[numBlendShapes] <style=sSection2Accent>;
+        ReturnFromRef();
+    }
+    Ref metaRef;
+    Ref valuesRef;
+    if (!exists(metaRef.target) || !exists(valuesRef.target))
+        return;
+    
+    local int metaPos = startof(metaRef.target);
+    local int valuesPos = startof(valuesRef.target);
+    local string channelName;
+    for (local int i = 0; i < numBlendShapes; i++)
+    {
+        channelName = Str("Blend shape %d", globalBlendShapeIds[i]);
+        metaPos += 4;
+        if (numFrames == 1)
+        {
+            FSeek(valuesPos);
+            PoseChannel channel(channelName, valuesPos);
+        }
+        else
+        {
+            FSeek(metaPos);
+            AnimChannel channel(channelName, metaPos, valuesPos, numFrames);
+        }
+    }
+} BlendShapeChannels;
+
+typedef struct
+{
+    Ref metaRef;
+    Ref valuesRef;
+} ExtraChannels;
+
+typedef struct
+{
+    while (1)
+    {
+        int frames;
+        if (!frames)
+            break;
+    }
+} CameraCutFrames;
+
+typedef struct
+{
+    Vector3 minBounds;
+    Vector3 maxBounds;
+    Vector3 translation;
+    Vector3 rotation;
+    ushort animId;
+    ushort numFrames;
+    ushort timePerFrame;
+    ubyte numBlendShapes;
+    ubyte numBones;
+    ubyte numSections;
+    ubyte numExtraChannels;
+    ubyte useZlib;
+    FSkip(1);
+    int hasRootMotion;
+    int hasSubtractedFrame;
+    FSkip(4);
+    
+    ExtraChannels extraChannels;
+    Ref preciseBoneDataRef;
+    
+    Ref cameraCutFramesRef;
+    if (CanSeekTo(cameraCutFramesRef))
+    {
+        SeekToRef(cameraCutFramesRef);
+        CameraCutFrames cameraCutFrames;
+        ReturnFromRef();
+    }
+    
+    BoneTracks boneTracks(numBones, numFrames);
+    BlendShapeChannels blendShapeChannels(numBlendShapes, numFrames);
+    
+    Ref endOfDataRef;
+} Animation;
+
+RefDefinitions refDefinitions;
+Animation animation <open=true>;

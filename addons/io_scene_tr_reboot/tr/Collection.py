@@ -174,6 +174,14 @@ class Collection(SlotsBase):
         return match.group(1)
 
     @staticmethod
+    def get_game_from_file_path(file_path: str) -> CdcGame | None:
+        match = re.match(r".tr(\d+)", os.path.splitext(file_path)[1])
+        if match is None:
+            return None
+
+        return CdcGame(int(match.group(1)))
+
+    @staticmethod
     def make_resource_file_name(resource: ResourceKey, game: CdcGame) -> str:
         return str(resource.id) + Collection.__resource_type_extensions[resource.type][0].replace("X", str(game))
 

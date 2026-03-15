@@ -10,7 +10,7 @@
 			<Image Source="/Resources/Search.png" Stretch="None" DockPanel.Dock="Left" VerticalAlignment="Center" />
 			<Panel>
 				<TextBox Name="_txtSearch" Margin="0 2" />				
-				<Button Name="_btnClearSearch" Grid.Column="1" Width="22" HorizontalAlignment="Right" Margin="4" Padding="0" Background="Transparent">
+				<Button Name="_btnClearSearch" Width="22" HorizontalAlignment="Right" Margin="4" Padding="0" Background="Transparent">
 					<Button.Styles>
 						<Style Selector="Button">
 							<Setter Property="BorderBrush" Value="Transparent"/>

@@ -100,7 +100,7 @@ There are a few other extensions such as .trXscript, which are however unexplore
 The extractor and manager need no installation and can be run from anywhere. They'll try to autodetect where
 each game is installed and ask you to provide the location if they can't find it.
 
-The Blender addon can be installed as follows. Note that it requires Blender **4.0** or above.
+The Blender addon can be installed as follows. Note that it requires Blender **5.0** or above.
 
 - Click Edit → Preferences in the menu.
 - Select the "Add-ons" tab.

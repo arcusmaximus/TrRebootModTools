@@ -38,6 +38,7 @@ namespace TrRebootTools.HookTool.Logging
 
                 _filter = !string.IsNullOrWhiteSpace(value) ? value : null;
                 Items.Clear();
+                HighlightText = _filter;
                 foreach (IListViewEntry entry in _entries)
                 {
                     AddItemIfMatchingFilter(entry);

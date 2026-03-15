@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.Unicode;
 using TrRebootTools.Shared.Cdc;
 
 namespace TrRebootTools.Shared
@@ -50,11 +52,22 @@ namespace TrRebootTools.Shared
         public void Save(string filePath)
         {
             using Stream stream = File.Create(filePath);
-            JsonSerializer.Serialize(stream, this, MultiplexStreamInfoSerializerContext.Default.MultiplexStreamInfo);
+            JsonSerializer.Serialize(
+                stream,
+                this,
+                new MultiplexStreamInfoSerializerContext(
+                    new JsonSerializerOptions
+                    {
+                        Encoder = JavaScriptEncoder.Create(UnicodeRanges.All),
+                        WriteIndented = true
+                    }
+                ).MultiplexStreamInfo
+            );
         }
     }
 
-    [JsonSourceGenerationOptions(WriteIndented = true)]
     [JsonSerializable(typeof(MultiplexStreamInfo))]
-    internal partial class MultiplexStreamInfoSerializerContext : JsonSerializerContext { }
+    internal partial class MultiplexStreamInfoSerializerContext : JsonSerializerContext
+    {
+    }
 }

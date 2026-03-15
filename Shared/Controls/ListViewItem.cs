@@ -18,6 +18,11 @@ namespace TrRebootTools.Shared.Controls
         protected override void OnDataContextChanged(EventArgs e)
         {
             base.OnDataContextChanged(e);
+            UpdateCells();
+        }
+
+        internal void UpdateCells()
+        {
             if (DataContext is not IListViewEntry entry)
                 return;
 

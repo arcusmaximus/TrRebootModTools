@@ -281,7 +281,7 @@ class ClothExporter:
                 tr_cloth_strip.collisions.append(collision_shape)
 
     def get_world_bounding_box(self, bl_obj: bpy.types.Object) -> _BoundingBox:
-        corners = Enumerable(bl_obj.bound_box).select(lambda c: bl_obj.matrix_world @ Vector(c)).to_list()
+        corners = Enumerable(cast(tuple[tuple[float, ...], ...], bl_obj.bound_box)).select(lambda c: bl_obj.matrix_world @ Vector(c)).to_list()
         min_corner = Vector((
             Enumerable(corners).min(lambda c: c.x),
             Enumerable(corners).min(lambda c: c.y),

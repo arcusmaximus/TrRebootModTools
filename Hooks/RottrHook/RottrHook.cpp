@@ -7,6 +7,7 @@ void TrHook::InitAddresses()
     TrAddr_GameLoopStart            = Game::ImageBase + 0x459310;
     TrAddr_IsGameWindowActive       = Game::ImageBase + 0xCA2DA0;
     TrAddr_RequestFile              = Game::ImageBase + 0x199B50;
+    TrAddr_GetAnimation             = Game::ImageBase + 0x114762;
     TrAddr_ParseMaterial            = Game::ImageBase + 0x344DF7;
     TrAddr_MSFileSystemFile_dtor    = Game::ImageBase + 0x19AB80;
 }

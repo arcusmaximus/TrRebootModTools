@@ -9,6 +9,7 @@ extern "C"
     void* TrAddr_GameLoopStart;
     void* TrAddr_IsGameWindowActive;
     void* TrAddr_RequestFile;
+    void* TrAddr_GetAnimation;
     void* TrAddr_ParseMaterial;
     void* TrAddr_MSFileSystemFile_dtor;
 
@@ -48,6 +49,11 @@ extern "C"
 #endif
     }
 
+    void TrHandler_GetAnimation(AnimLibItem* pAnim)
+    {
+        NotificationChannel::Instance.NotifyPlayingAnimation(pAnim->id, pAnim->pszName);
+    }
+
     void TrHandler_ParseMaterial(int materialId, MaterialData* pData)
     {
         MaterialConstantStore::Instance.Apply(materialId, pData);
@@ -72,6 +78,7 @@ void TrHook::Install()
         DetourAttach(&TrAddr_IsGameWindowActive, TrHook_IsGameWindowActive);
 
     DetourAttach(&TrAddr_RequestFile,           TrHook_RequestFile);
+    DetourAttach(&TrAddr_GetAnimation,          TrHook_GetAnimation);
     DetourAttach(&TrAddr_ParseMaterial,         TrHook_ParseMaterial);
     DetourAttach(&TrAddr_MSFileSystemFile_dtor, TrHook_MSFileSystemFile_dtor);
     InstallGameSpecificHooks();

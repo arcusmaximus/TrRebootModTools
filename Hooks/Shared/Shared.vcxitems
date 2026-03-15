@@ -31,6 +31,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)NotificationChannel.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Shared.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TrHook.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Tr\AnimLibItem.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Tr\ArchiveSet.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Tr\CommonMaterial.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Tr\Game.h" />

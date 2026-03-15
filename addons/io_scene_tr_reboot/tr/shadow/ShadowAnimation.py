@@ -1,9 +1,9 @@
 from array import array
 from ctypes import sizeof
 import math
-from typing import Callable, ClassVar, NamedTuple, Protocol, Sequence, TypeVar, cast
+from typing import Callable, ClassVar, NamedTuple, Sequence, TypeVar, cast
 
-from mathutils import Quaternion, Vector
+from io_scene_tr_reboot.tr.Animation import AnimationBase, BlendShapeAnimationFrame, BoneAnimationFrame, IAnimationFrame
 from io_scene_tr_reboot.tr.ResourceBuilder import ResourceBuilder
 from io_scene_tr_reboot.tr.ResourceReader import ResourceReader
 from io_scene_tr_reboot.tr.ResourceReference import ResourceReference
@@ -12,7 +12,6 @@ from io_scene_tr_reboot.util.BitstreamReader import BitstreamReader
 from io_scene_tr_reboot.util.CStruct import CByte, CFlag, CInt, CLong, CShort, CStruct64, CUShort
 from io_scene_tr_reboot.util.CStructTypeMappings import CVec3
 from io_scene_tr_reboot.util.Enumerable import Enumerable
-from io_scene_tr_reboot.util.SlotsBase import SlotsBase
 
 class _AnimationDataRefs(CStruct64):
     absence_flags_ref: ResourceReference | None
@@ -79,189 +78,52 @@ class _AnimationDataHeader(NamedTuple):
     adjustment_floats: Sequence[float]
     frame_batch_sizes: Sequence[int]
 
-class _IItemAnimationFrame(Protocol):
-    def get_attr_value(self, attr_idx: int) -> Sequence[float] | None: ...
-    def set_attr_value(self, attr_idx: int, value: Sequence[float]) -> None: ...
+class ShadowBoneAnimationFrame(BoneAnimationFrame):
+    rotation_angle_factor = math.pi
+    position_factor = 100.0
 
-    def get_raw_attr_value(self, attr_idx: int) -> Sequence[float] | None: ...
-    def set_raw_attr_value(self, attr_idx: int, value: Sequence[float]) -> None: ...
-
-class BoneAnimationFrame(SlotsBase):
-    rotation: Quaternion | None
-    position: Vector | None
-    scale:    Vector | None
-
-    def __init__(self) -> None:
-        self.rotation = None        # type: ignore
-        self.position = None        # type: ignore
-        self.scale    = None        # type: ignore
-
-    def get_attr_value(self, attr_idx: int) -> Sequence[float] | None:
-        match attr_idx:
-            case 0:
-                if self.rotation is None:
-                    return None
-
-                return cast(Sequence[float], self.rotation)
-
-            case 1:
-                if self.position is None:
-                    return None
-
-                return cast(Sequence[float], self.position)
-
-            case 2:
-                if self.scale is None:
-                    return None
-
-                return cast(Sequence[float], self.scale)
-
-            case _:
-                pass
-
-    def set_attr_value(self, attr_idx: int, value: Sequence[float]) -> None:
-        match attr_idx:
-            case 0:
-                self.rotation = Quaternion(value)
-
-            case 1:
-                self.position = Vector(value)
-
-            case 2:
-                self.scale = Vector(value)
-
-            case _:
-                pass
-
-    def get_raw_attr_value(self, attr_idx: int) -> Sequence[float] | None:
-        match attr_idx:
-            case 0:
-                if self.rotation is None:
-                    return None
-
-                return cast(Sequence[float], self.quat_to_axis_angle(self.rotation))
-
-            case 1:
-                if self.position is None:
-                    return None
-
-                return cast(Sequence[float], self.position / 100)
-
-            case 2:
-                if self.scale is None:
-                    return None
-
-                return cast(Sequence[float], self.scale)
-
-            case _:
-                pass
-
-    def set_raw_attr_value(self, attr_idx: int, value: Sequence[float]) -> None:
-        match attr_idx:
-            case 0:
-                self.rotation = self.axis_angle_to_quat(Vector(value))
-
-            case 1:
-                self.position = Vector(value) * 100
-
-            case 2:
-                self.scale = Vector(value)
-
-            case _:
-                pass
-
-    def axis_angle_to_quat(self, vector: Vector) -> Quaternion:
-        angle = vector.length * math.pi
-        if angle < 0.00000001:
-            return Quaternion()
-
-        w = math.cos(angle / 2)
-        vector.normalize()
-        xyz = vector * math.sin(angle / 2)
-        return Quaternion((w, xyz.x, xyz.y, xyz.z))
-
-    def quat_to_axis_angle(self, quat: Quaternion) -> Vector:
-        if 1 - quat.w < 0.00000001:
-            return Vector((0, 0, 0))
-
-        angle = math.acos(quat.w) * 2
-        return Vector((quat.x, quat.y, quat.z)) * (angle / math.pi / math.sin(angle / 2))
-
-class BlendShapeAnimationFrame(SlotsBase):
-    value: float
-
-    def __init__(self) -> None:
-        self.value = 0
-
-    def get_attr_value(self, attr_idx: int) -> Sequence[float] | None:
-        return [self.value]
-
-    def set_attr_value(self, attr_idx: int, value: Sequence[float]) -> None:
-        self.value = value[0]
-
-    def get_raw_attr_value(self, attr_idx: int) -> Sequence[float] | None:
-        return [self.value]
-
-    def set_raw_attr_value(self, attr_idx: int, value: Sequence[float]) -> None:
-        self.value = value[0]
-
-class ShadowAnimation(SlotsBase):
+class ShadowAnimation(AnimationBase[ShadowBoneAnimationFrame]):
     bone_attr_element_size_mapping:        ClassVar[list[int]] = [0, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 23]
     blend_shape_attr_element_size_mapping: ClassVar[list[int]] = [0, 1, 2, 3, 4, 5, 6, 7, 8,  9,  10, 11, 12, 14, 16, 23]
 
-    id: int
     bone_distances_from_parent: Sequence[float]
-    ms_per_frame: int
-    num_frames: int
-    bone_frames: dict[int, list[BoneAnimationFrame]]
-    blend_shape_frames: dict[int, list[BlendShapeAnimationFrame]]
 
     def __init__(self, id: int) -> None:
-        self.id = id
+        super().__init__(id)
         self.bone_distances_from_parent = []
-        self.ms_per_frame = 100
-        self.num_frames = 0
-        self.bone_frames = {}
-        self.blend_shape_frames = {}
 
     def read(self, reader: ResourceReader) -> None:
         header = reader.read_struct(_AnimationHeader)
         self.ms_per_frame = header.ms_per_frame
         self.num_frames = header.num_frames
 
-        global_bone_ids: Sequence[int] = []
-        if header.global_bone_ids_ref is not None:
-            reader.seek(header.global_bone_ids_ref)
-            global_bone_ids = reader.read_uint16_list(header.num_bones)
-            for global_bone_id in global_bone_ids:
-                self.bone_frames[global_bone_id] = []
-
         if header.bone_distances_from_parents_ref is not None:
             reader.seek(header.bone_distances_from_parents_ref)
             self.bone_distances_from_parent = reader.read_float_list(header.num_bones)
 
-        global_blend_shape_ids: Sequence[int] = []
-        if header.global_blend_shape_ids_ref is not None:
-            reader.seek(header.global_blend_shape_ids_ref)
-            global_blend_shape_ids = reader.read_uint16_list(header.num_blend_shapes)
-            for global_blend_shape_id in global_blend_shape_ids:
-                self.blend_shape_frames[global_blend_shape_id] = []
+        #if header.bone_held_frame_numbers_ref is not None:
+        #    reader.seek(header.bone_held_frame_numbers_ref)
+        #    while True:
+        #        held_frame_num = reader.read_int32()
+        #        if held_frame_num == 0:
+        #            break
 
-        if header.bone_held_frame_numbers_ref is not None:
-            reader.seek(header.bone_held_frame_numbers_ref)
-            while True:
-                held_frame_num = reader.read_int32()
-                if held_frame_num == 0:
-                    break
+        self.read_bone_frames(header, reader)
+        self.read_blend_shape_frames(header, reader)
 
-        self.read_bone_frames(header, global_bone_ids, reader)
-        self.read_blend_shape_frames(header, global_blend_shape_ids, reader)
+    def read_bone_frames(self, header: _AnimationHeader, reader: ResourceReader) -> None:
+        if header.global_bone_ids_ref is None:
+            return
 
-    def read_bone_frames(self, header: _AnimationHeader, global_bone_ids: Sequence[int], reader: ResourceReader) -> None:
-        def fetch_bone_frame(bone_frame_key: _ItemFrameKey) -> BoneAnimationFrame:
-            bone_frames = self.bone_frames[global_bone_ids[bone_frame_key.item_idx]]
+        reader.seek(header.global_bone_ids_ref)
+        global_bone_ids = reader.read_uint16_list(header.num_bones)
+        for global_bone_id in global_bone_ids:
+            self.bone_tracks[global_bone_id] = []
+
+        def fetch_bone_frame(bone_frame_key: _ItemFrameKey) -> ShadowBoneAnimationFrame:
+            bone_frames = self.bone_tracks[global_bone_ids[bone_frame_key.item_idx]]
             if len(bone_frames) <= bone_frame_key.frame_idx:
-                bone_frames.append(BoneAnimationFrame())
+                bone_frames.append(ShadowBoneAnimationFrame())
 
             return bone_frames[bone_frame_key.frame_idx]
 
@@ -276,9 +138,17 @@ class ShadowAnimation(SlotsBase):
             reader
         )
 
-    def read_blend_shape_frames(self, header: _AnimationHeader, global_blend_shape_ids: Sequence[int], reader: ResourceReader) -> None:
+    def read_blend_shape_frames(self, header: _AnimationHeader, reader: ResourceReader) -> None:
+        if header.global_blend_shape_ids_ref is None:
+            return
+
+        reader.seek(header.global_blend_shape_ids_ref)
+        global_blend_shape_ids = reader.read_uint16_list(header.num_blend_shapes)
+        for global_blend_shape_id in global_blend_shape_ids:
+            self.blend_shape_tracks[global_blend_shape_id] = []
+
         def fetch_frame_blend_shape(blend_shape_frame_key: _ItemFrameKey) -> BlendShapeAnimationFrame:
-            blend_shape_frames = self.blend_shape_frames[global_blend_shape_ids[blend_shape_frame_key.item_idx]]
+            blend_shape_frames = self.blend_shape_tracks[global_blend_shape_ids[blend_shape_frame_key.item_idx]]
             if len(blend_shape_frames) <= blend_shape_frame_key.frame_idx:
                 blend_shape_frames.append(BlendShapeAnimationFrame())
 
@@ -303,7 +173,7 @@ class ShadowAnimation(SlotsBase):
         num_attrs_per_item: int,
         num_elements_per_attr: int,
         element_size_mapping: list[int],
-        fetch_item_frame: Callable[[_ItemFrameKey], _IItemAnimationFrame],
+        fetch_item_frame: Callable[[_ItemFrameKey], IAnimationFrame],
         reader: ResourceReader
     ) -> None:
         data_header = self.read_animation_data_header(data_refs, num_frame_batches, num_items, num_attrs_per_item, num_elements_per_attr, reader)
@@ -337,7 +207,7 @@ class ShadowAnimation(SlotsBase):
             for frame_idx in range(frame_batch_idx * 16, min((frame_batch_idx + 1) * 16, self.num_frames)):
                 for item_attr_key, fixed_attr_value in data_header.fixed_attrs.items():
                     item_frame = fetch_item_frame(_ItemFrameKey(item_attr_key.item_idx, frame_idx))
-                    item_frame.set_raw_attr_value(item_attr_key.attr_idx, fixed_attr_value)
+                    item_frame.set_attr_raw(item_attr_key.attr_idx, fixed_attr_value)
 
                 adjustment_floats_idx = 0
                 adjustment_bytes_idx = 0
@@ -362,7 +232,7 @@ class ShadowAnimation(SlotsBase):
                     adjustment_floats_idx += num_elements_per_attr
 
                     item_frame = fetch_item_frame(_ItemFrameKey(item_attr_key.item_idx, frame_idx))
-                    item_frame.set_raw_attr_value(item_attr_key.attr_idx, attr_value)
+                    item_frame.set_attr_raw(item_attr_key.attr_idx, attr_value)
 
     def read_animation_data_header(
         self,
@@ -424,17 +294,17 @@ class ShadowAnimation(SlotsBase):
         header.ms_per_frame = self.ms_per_frame
         header.num_frames = self.num_frames
         header.bone_held_frame_numbers_ref = None
-        header.num_bone_frame_batches        = len(self.bone_frames) > 0        and (self.num_frames + 15) // 16 or 0
-        header.num_blend_shape_frame_batches = len(self.blend_shape_frames) > 0 and (self.num_frames + 15) // 16 or 0
+        header.num_bone_frame_batches        = len(self.bone_tracks) > 0        and (self.num_frames + 15) // 16 or 0
+        header.num_blend_shape_frame_batches = len(self.blend_shape_tracks) > 0 and (self.num_frames + 15) // 16 or 0
         header.base_position = CVec3()
         header.base_rotation = CVec3()
 
-        header.num_bones = len(self.bone_frames)
+        header.num_bones = len(self.bone_tracks)
         header.global_bone_ids_ref = writer.make_internal_ref()
         header.bone_distances_from_parents_ref = writer.make_internal_ref()
         header.bone_data_refs = self.create_animation_data_refs(writer)
 
-        header.num_blend_shapes = len(self.blend_shape_frames)
+        header.num_blend_shapes = len(self.blend_shape_tracks)
         header.global_blend_shape_ids_ref = writer.make_internal_ref()
         header.blend_shape_data_refs = self.create_animation_data_refs(writer)
 
@@ -447,16 +317,16 @@ class ShadowAnimation(SlotsBase):
         writer.write_float_list(self.bone_distances_from_parent)
 
         header.global_bone_ids_ref.offset = writer.position
-        writer.write_uint16_list(list(self.bone_frames.keys()))
+        writer.write_uint16_list(list(self.bone_tracks.keys()))
         writer.align(4)
 
         header.global_blend_shape_ids_ref.offset = writer.position
-        writer.write_uint16_list(list(self.blend_shape_frames.keys()))
+        writer.write_uint16_list(list(self.blend_shape_tracks.keys()))
         writer.align(4)
 
         encoded_element_size = 14
         self.write_animation_data(
-            self.bone_frames,
+            self.bone_tracks,
             3,
             3,
             encoded_element_size,
@@ -465,7 +335,7 @@ class ShadowAnimation(SlotsBase):
             writer
         )
         self.write_animation_data(
-            self.blend_shape_frames,
+            self.blend_shape_tracks,
             1,
             1,
             encoded_element_size,
@@ -487,7 +357,7 @@ class ShadowAnimation(SlotsBase):
         refs.frame_batches_ref      = writer.make_internal_ref()
         return refs
 
-    TAnimationFrame = TypeVar("TAnimationFrame", bound = _IItemAnimationFrame)
+    TAnimationFrame = TypeVar("TAnimationFrame", bound = IAnimationFrame)
 
     def write_animation_data(
         self,
@@ -525,7 +395,7 @@ class ShadowAnimation(SlotsBase):
             for frame_idx in range(frame_batch_idx * 16, min((frame_batch_idx + 1) * 16, self.num_frames)):
                 adjustment_floats_idx = 0
                 for attr_key in data_header.animated_attr_keys:
-                    attr_value = item_frames[item_ids[attr_key.item_idx]][frame_idx].get_raw_attr_value(attr_key.attr_idx)
+                    attr_value = item_frames[item_ids[attr_key.item_idx]][frame_idx].get_attr_raw(attr_key.attr_idx)
                     if attr_value is None:
                         raise Exception()
 
@@ -618,7 +488,7 @@ class ShadowAnimation(SlotsBase):
         for item_idx, global_item_id in enumerate(item_frames.keys()):
             for attr_idx in range(num_attrs_per_item):
                 for item_frame in item_frames[global_item_id]:
-                    attr_value = item_frame.get_raw_attr_value(attr_idx)
+                    attr_value = item_frame.get_attr_raw(attr_idx)
                     if attr_value is None:
                         continue
 

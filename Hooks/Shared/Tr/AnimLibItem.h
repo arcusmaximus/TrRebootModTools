@@ -6,8 +6,7 @@ namespace Tr
     {
         WORD id;
         WORD loadedId;
-        DWORD field_4;
-        QWORD field_8;
+        void* pFxList;
         const char* pszName;
     };
 }

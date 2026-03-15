@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using TrRebootTools.Shared.Util;
 
@@ -29,12 +30,19 @@ namespace TrRebootTools.Shared.Cdc.Rise
                 { (ResourceType.Texture, 0),                        [".dds", ".tr2pcd"] }
             };
 
+        private ResourceCollection? _lastAnimCollection = null;
+        private readonly Dictionary<int, string> _animNames = new();
+
         protected override Dictionary<(ResourceType, ResourceSubType), string[]> Mappings => _mappings;
 
-        protected override string? ReadOriginalFilePathInstance(ArchiveSet archiveSet, ResourceReference resourceRef)
+        protected internal override string? ReadOriginalFilePathInstance(ArchiveSet archiveSet, ResourceCollection collection, ResourceReference resourceRef)
         {
             switch (resourceRef.Type)
             {
+                case ResourceType.Animation:
+                    UpdateAnimationNameCache(archiveSet, collection);
+                    return _animNames.GetValueOrDefault(resourceRef.Id);
+
                 case ResourceType.Material:
                 case ResourceType.Model:
                 case ResourceType.SoundBank:
@@ -52,16 +60,35 @@ namespace TrRebootTools.Shared.Cdc.Rise
             }
         }
 
-        protected override string? ReadOriginalFilePathInstance(Stream stream, ResourceType type)
+        protected internal override string? ReadOriginalFilePathInstance(Stream stream, ResourceType type)
         {
             return type switch
             {
-                ResourceType.Material => ReadMaterialOriginalFilePath(stream),
-                ResourceType.Model => ReadModelOriginalFilePath(stream),
+                ResourceType.Material  => ReadMaterialOriginalFilePath(stream),
+                ResourceType.Model     => ReadModelOriginalFilePath(stream),
                 ResourceType.SoundBank => ReadSoundOriginalFilePath(stream),
-                ResourceType.Texture => ReadTextureOriginalFilePath(stream),
+                ResourceType.Texture   => ReadTextureOriginalFilePath(stream),
                 _ => null,
             };
+        }
+
+        private void UpdateAnimationNameCache(ArchiveSet archiveSet, ResourceCollection collection)
+        {
+            if (collection == _lastAnimCollection)
+                return;
+
+            _animNames.Clear();
+            _lastAnimCollection = collection;
+
+            foreach (ResourceReference libRef in collection.ResourceReferences.Where(r => r.Type == ResourceType.AnimationLib))
+            {
+                MemoryStream stream = archiveSet.LoadResource(libRef);
+                RiseAnimationLibrary lib = new(stream);
+                foreach ((int animId, string animName) in lib.Animations)
+                {
+                    _animNames[animId] = animName;
+                }
+            }
         }
 
         private static string? ReadMaterialOriginalFilePath(Stream stream)

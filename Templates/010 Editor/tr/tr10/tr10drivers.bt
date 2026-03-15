@@ -34,7 +34,7 @@ void AddReaderNodeFields()
     float minNegativeAngle;
     float maxNegativeAngle;
     FSkip(4);
-    Vector4 boneAxis;
+    Vector4 jointAxis;
     Vector4 primaryAxis;
     Matrix attachmentMatrix;
 }
@@ -72,7 +72,17 @@ typedef struct
             AddCurveMapNodeFields();
             break;
     }
-} Node <read=EnumToString(type)>;
+} Node <read=NodeToString(this)>;
+
+string NodeToString(Node& node)
+{
+    string result = EnumToString(node.type);
+    if (node.type == NodeType_PoseReader)
+    {
+        result += Str(" for bone %d", node.globalBoneId);
+    }
+    return result;
+}
 
 typedef struct (int numNodes)
 {

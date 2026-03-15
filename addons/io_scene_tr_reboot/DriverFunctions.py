@@ -128,44 +128,52 @@ class DriverFunctions:
         return DriverFunctions.world_rotation_to_bone_rotation(bl_target_pose_bone, result)
 
     @staticmethod
-    def tr_blendshape_cone_angle(
+    def tr_bs_cone_angle(
+        bone_rest_rotation: tuple[float, ...],
         bone_rotation: tuple[float, ...],
         bone_flipped: int,
+        parent_bone_rest_rotation: tuple[float, ...],
         parent_bone_rotation: tuple[float, ...],
         parent_bone_flipped: int,
-        relative_bone_axis: tuple[float, ...],
+        relative_joint_axis: tuple[float, ...],
         relative_attachment_matrix: tuple[tuple[float, ...], ...],
         cone_angle: float
     ) -> float:
+        bone_rest_quat = Quaternion(bone_rest_rotation)
         bone_quat = Quaternion(bone_rotation)
         if bone_flipped != 0:
+            bone_rest_quat.invert()
             bone_quat.invert()
 
+        parent_bone_rest_quat = Quaternion(parent_bone_rest_rotation)
         parent_bone_quat = Quaternion(parent_bone_rotation)
         if parent_bone_flipped != 0:
+            parent_bone_rest_quat.invert()
             parent_bone_quat.invert()
 
-        bone_matrix = DriverFunctions.convert_blender_rotation_to_tr(bone_quat)
-        parent_bone_matrix = DriverFunctions.convert_blender_rotation_to_tr(parent_bone_quat)
+        bone_matrix = (bone_quat @ bone_rest_quat.inverted()).to_matrix()
+        parent_bone_matrix = (parent_bone_quat @ parent_bone_rest_quat.inverted()).to_matrix()
 
         absolute_attachment_matrix = parent_bone_matrix @ Matrix(relative_attachment_matrix)
 
-        absolute_bone_axis = bone_matrix @ Vector(relative_bone_axis)
-        absolute_bone_axis.normalize()
+        absolute_joint_axis = bone_matrix @ Vector(relative_joint_axis)
+        absolute_joint_axis.normalize()
 
-        attached_bone_axis = absolute_attachment_matrix @ Vector(relative_bone_axis)
-        attached_bone_axis.normalize()
+        attached_joint_axis = absolute_attachment_matrix @ Vector(relative_joint_axis)
+        attached_joint_axis.normalize()
 
-        angle = math.acos(min(max(attached_bone_axis.dot(absolute_bone_axis), 0), 1))
+        angle = math.acos(min(max(attached_joint_axis.dot(absolute_joint_axis), 0), 1))
         return 1 - min(max(angle / cone_angle, 0), 1)
 
     @staticmethod
-    def tr_blendshape_primary_axis(
+    def tr_bs_primary_axis(
+        bone_rest_rotation: tuple[float, ...],
         bone_rotation: tuple[float, ...],
         bone_flipped: int,
+        parent_bone_rest_rotation: tuple[float, ...],
         parent_bone_rotation: tuple[float, ...],
         parent_bone_flipped: int,
-        relative_bone_axis: tuple[float, ...],
+        relative_joint_axis: tuple[float, ...],
         relative_primary_axis: tuple[float, ...],
         relative_attachment_matrix: tuple[tuple[float, ...], ...],
         min_positive_angle: float,
@@ -173,26 +181,30 @@ class DriverFunctions:
         min_negative_angle: float,
         max_negative_angle: float
     ) -> float:
+        bone_rest_quat = Quaternion(bone_rest_rotation)
         bone_quat = Quaternion(bone_rotation)
         if bone_flipped != 0:
+            bone_rest_quat.invert()
             bone_quat.invert()
 
+        parent_bone_rest_quat = Quaternion(parent_bone_rest_rotation)
         parent_bone_quat = Quaternion(parent_bone_rotation)
         if parent_bone_flipped != 0:
+            parent_bone_rest_quat.invert()
             parent_bone_quat.invert()
 
-        bone_matrix = DriverFunctions.convert_blender_rotation_to_tr(bone_quat)
-        parent_bone_matrix = DriverFunctions.convert_blender_rotation_to_tr(parent_bone_quat)
+        bone_matrix = (bone_quat @ bone_rest_quat.inverted()).to_matrix()
+        parent_bone_matrix = (parent_bone_quat @ parent_bone_rest_quat.inverted()).to_matrix()
 
         absolute_attachment_matrix = parent_bone_matrix @ Matrix(relative_attachment_matrix)
 
-        absolute_bone_axis = bone_matrix @ Vector(relative_bone_axis)
-        absolute_bone_axis.normalize()
+        absolute_joint_axis = bone_matrix @ Vector(relative_joint_axis)
+        absolute_joint_axis.normalize()
 
-        attached_bone_axis = absolute_attachment_matrix @ Vector(relative_bone_axis)
-        attached_bone_axis.normalize()
+        attached_joint_axis = absolute_attachment_matrix @ Vector(relative_joint_axis)
+        attached_joint_axis.normalize()
 
-        rotation = absolute_bone_axis.rotation_difference(attached_bone_axis)
+        rotation = absolute_joint_axis.rotation_difference(attached_joint_axis)
 
         attached_primary_axis = absolute_attachment_matrix @ Vector(relative_primary_axis)
         attached_primary_axis.normalize()
@@ -204,7 +216,7 @@ class DriverFunctions:
         angle = math.degrees(math.acos(min(max(attached_primary_axis.dot(rotated_primary_axis), -1), 1)))
 
         crossed_primary_axis = cast(Vector, attached_primary_axis.cross(rotated_primary_axis))
-        if crossed_primary_axis.dot(attached_bone_axis) < 0:
+        if crossed_primary_axis.dot(attached_joint_axis) < 0:
             angle = -angle
 
         if angle > min_positive_angle:
@@ -215,6 +227,18 @@ class DriverFunctions:
             result = 1
 
         return result
+
+    @staticmethod
+    def tr_bs_curvemap(value: float) -> float: #, curve: tuple[float, ...]) -> float:
+        curve = [0, 0.008333332, 0.03333333, 0.075, 0.1333333, 0.2083333, 0.3, 0.4328125, 0.6125, 0.8109375, 1]
+
+        value *= 10.0
+        key_idx = int(value)
+        subkey = value - key_idx
+        if key_idx == 10:
+            return curve[10]
+
+        return curve[key_idx] + subkey * (curve[key_idx + 1] - curve[key_idx])
 
     @staticmethod
     def convert_tr_rotation_to_blender(rotation: Quaternion) -> Quaternion:

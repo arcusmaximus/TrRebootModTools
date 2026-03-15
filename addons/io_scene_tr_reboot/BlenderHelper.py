@@ -1,5 +1,5 @@
 from types import TracebackType
-from typing import Any, Iterable, Literal, NamedTuple, Sequence, cast
+from typing import Any, Iterable, Literal, NamedTuple, cast
 import bpy
 import bmesh
 import math
@@ -238,6 +238,32 @@ class BlenderHelper:
                 bpy.ops.view3d.view_all()
 
     @staticmethod
+    def get_action(bl_owner: bpy.types.Object | bpy.types.Key) -> bpy.types.ActionChannelbag | None:
+        if bl_owner.animation_data is None or bl_owner.animation_data.action is None:
+            return None
+
+        return BlenderHelper.get_or_create_action(bl_owner, bl_owner.animation_data.action.name)
+
+    @staticmethod
+    def get_or_create_action(bl_owner: bpy.types.Object | bpy.types.Key, action_name: str) -> bpy.types.ActionChannelbag:
+        if bl_owner.animation_data is None:
+            bl_owner.animation_data_create()
+            if bl_owner.animation_data is None:
+                raise Exception(f"Failed to create animation data for {bl_owner.name}")
+
+        bl_action = bpy.data.actions.get(action_name) or bpy.data.actions.new(action_name)
+        bl_slot = Enumerable(bl_action.slots).first_or_none(lambda s: s.target_id_type == bl_owner.id_type)
+        if bl_slot is None:
+            bl_slot = bl_action.slots.new(bl_owner.id_type, bl_action.name)
+
+        bl_owner.animation_data.action = bl_action
+        bl_owner.animation_data.action_slot = bl_slot
+
+        bl_layer = bl_action.layers[0] if len(bl_action.layers) > 0 else bl_action.layers.new("Layer")
+        bl_strip = cast(bpy.types.ActionKeyframeStrip, bl_layer.strips[0] if len(bl_layer.strips) > 0 else bl_layer.strips.new())
+        return bl_strip.channelbag(bl_slot, ensure = True)
+
+    @staticmethod
     def make_driver_expr_for_obj_attr(
         bl_driver: bpy.types.Driver,
         bl_obj: bpy.types.Object,
@@ -304,9 +330,15 @@ class BlenderHelper:
         if fpart == 0:
             value = int(value)
         else:
-            value = round(value, 5)
+            value = round(value, 4)
 
-        return str(value)
+        result = str(value)
+        if result.startswith("0."):
+            result = result[1:]
+        elif result.startswith("-0."):
+            result = "-" + result[2:]
+
+        return result
 
 class BlenderEditContext(SlotsBase):
     def __init__(self) -> None:
@@ -381,31 +413,18 @@ class BlenderShowAllBonesContext(SlotsBase):
         self.bl_armature_obj = bl_armature_obj
         self.hidden_bone_set_indices = []
 
-        if cast(tuple[int, ...], bpy.app.version) >= (4, 0, 0):
-            bl_bone_collections = cast(bpy.types.Armature, bl_armature_obj.data).collections
-            for i, bl_bone_collection in enumerate(cast(Iterable[bpy.types.BoneCollection], bl_bone_collections)):
-                if not bl_bone_collection.is_visible:
-                    self.hidden_bone_set_indices.append(i)
+        bl_bone_collections = cast(bpy.types.Armature, bl_armature_obj.data).collections
+        for i, bl_bone_collection in enumerate(bl_bone_collections):
+            if not bl_bone_collection.is_visible:
+                self.hidden_bone_set_indices.append(i)
 
-                bl_bone_collection.is_visible = True
-        else:
-            bl_layers = cast(list[bool], getattr(bl_armature_obj.data, "layers"))
-            for i, layer_visible in enumerate(bl_layers):
-                if not layer_visible:
-                    self.hidden_bone_set_indices.append(i)
-
-                bl_layers[i] = True
+            bl_bone_collection.is_visible = True
 
     def __enter__(self) -> None:
         pass
 
     def __exit__(self, exc_type: type[BaseException] | None, exc_val: BaseException | None, exc_tb: TracebackType | None) -> None:
-        if cast(tuple[int, ...], bpy.app.version) >= (4, 0, 0):
-            bl_armature = cast(bpy.types.Armature, self.bl_armature_obj.data)
-            bl_bone_collections = cast(Sequence[bpy.types.BoneCollection], bl_armature.collections)
-            for i in self.hidden_bone_set_indices:
-                bl_bone_collections[i].is_visible = False
-        else:
-            bl_layers = cast(list[bool], getattr(self.bl_armature_obj.data, "layers"))
-            for i in self.hidden_bone_set_indices:
-                bl_layers[i] = False
+        bl_armature = cast(bpy.types.Armature, self.bl_armature_obj.data)
+        bl_bone_collections = bl_armature.collections
+        for i in self.hidden_bone_set_indices:
+            bl_bone_collections[i].is_visible = False

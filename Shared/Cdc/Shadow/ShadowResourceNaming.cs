@@ -27,5 +27,13 @@ namespace TrRebootTools.Shared.Cdc.Shadow
             };
 
         protected override Dictionary<(ResourceType, ResourceSubType), string[]> Mappings => _mappings;
+
+        protected internal override string? ReadOriginalFilePathInstance(ArchiveSet archiveSet, ResourceCollection collection, ResourceReference resourceRef)
+        {
+            if (resourceRef.Type == ResourceType.Animation)
+                return For(CdcGame.Rise).ReadOriginalFilePathInstance(archiveSet, collection, resourceRef);
+            
+            return base.ReadOriginalFilePathInstance(archiveSet, collection, resourceRef);
+        }
     }
 }

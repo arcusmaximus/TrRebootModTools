@@ -1,7 +1,5 @@
 from typing import TYPE_CHECKING, Annotated, Protocol
 import bpy
-import os
-import re
 from bpy.types import Context
 from io_scene_tr_reboot.BlenderHelper import BlenderHelper
 from io_scene_tr_reboot.BlenderNaming import BlenderNaming
@@ -43,7 +41,7 @@ class _Properties(ImportOperatorProperties, Protocol):
 class ImportObjectOperator(ImportOperatorBase[_Properties]):
     bl_idname = "import_scene.trobjectref"
     bl_menu_item_name = "Tomb Raider Reboot object (.trXobjectref)"
-    filename_ext = ".tr9objectref;*.tr9level;.tr10objectref;.tr10layer;.tr11objectref;.tr11layer"
+    filename_ext = ".tr9objectref;.tr9level;.tr10objectref;.tr10layer;.tr11objectref;.tr11layer"
 
     def invoke(self, context: bpy.types.Context | None, event: bpy.types.Event) -> set[OperatorReturnItems]:
         self.properties.scale_factor = SceneProperties.get_scale_factor()
@@ -69,7 +67,7 @@ class ImportObjectOperator(ImportOperatorBase[_Properties]):
 
         BlenderHelper.switch_to_object_mode()
 
-        game = self.get_game_from_file_path(self.properties.filepath)
+        game = Collection.get_game_from_file_path(self.properties.filepath)
         if game is None:
             return { "CANCELLED" }
 
@@ -210,13 +208,6 @@ class ImportObjectOperator(ImportOperatorBase[_Properties]):
                 continue
 
             bl_global_armature_obj = merger.add(bl_global_armature_obj, bl_armature_obj)
-
-    def get_game_from_file_path(self, file_path: str) -> CdcGame | None:
-        match = re.match(r".tr(\d+)", os.path.splitext(file_path)[1])
-        if match is None:
-            return None
-
-        return CdcGame(int(match.group(1)))
 
     def create_material_importer(self) -> MaterialImporter:
         return MaterialImporter()

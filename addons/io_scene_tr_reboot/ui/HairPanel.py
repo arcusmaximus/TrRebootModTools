@@ -40,7 +40,7 @@ class HairPanel(bpy.types.Panel):
 
         if isinstance(bl_obj.data, bpy.types.Curves):
             return True
-        elif isinstance(bl_obj.data, bpy.types.GreasePencilv3):
+        elif isinstance(bl_obj.data, bpy.types.GreasePencil):
             return False
         else:
             return None

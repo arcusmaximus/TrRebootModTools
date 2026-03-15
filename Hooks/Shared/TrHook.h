@@ -16,12 +16,14 @@ extern "C"
     extern void* TrAddr_GameLoopStart;
     extern void* TrAddr_IsGameWindowActive;
     extern void* TrAddr_RequestFile;
+    extern void* TrAddr_GetAnimation;
     extern void* TrAddr_ParseMaterial;
     extern void* TrAddr_MSFileSystemFile_dtor;
 
     void TrHook_GameLoopStart();
     void TrHook_IsGameWindowActive();
     void TrHook_RequestFile();
+    void TrHook_GetAnimation();
     void TrHook_ParseMaterial();
     void TrHook_MSFileSystemFile_dtor();
 }

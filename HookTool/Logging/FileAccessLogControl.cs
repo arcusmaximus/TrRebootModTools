@@ -73,11 +73,6 @@ namespace TrRebootTools.HookTool.Logging
             events.OpeningFile += HandleOpeningFile;
         }
 
-        protected override void UnsubscribeFromEvents(NotificationChannel events)
-        {
-            events.OpeningFile -= HandleOpeningFile;
-        }
-
         private void HandleOpeningFile(ArchiveFileKey key, string path)
         {
             if (!EnableLogging)

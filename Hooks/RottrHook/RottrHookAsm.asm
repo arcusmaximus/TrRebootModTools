@@ -4,11 +4,13 @@ extern TrAddr_GameLoopStart         : dq
 extern TrAddr_RequestFile           : dq
 extern TrAddr_ParseMaterial         : dq
 extern TrAddr_MSFileSystemFile_dtor : dq
+extern TrAddr_GetAnimation          : dq
 
 extern TrHandler_GameLoopStart          : proc
 extern TrHandler_RequestFile            : proc
 extern TrHandler_ParseMaterial          : proc
 extern TrHandler_MSFileSystemFile_dtor  : proc
+extern TrHandler_GetAnimation           : proc
 
 TrHook_GameLoopStart proc
     sub rsp, 20h
@@ -57,5 +59,17 @@ TrHook_MSFileSystemFile_dtor proc
     pop rcx
     jmp [TrAddr_MSFileSystemFile_dtor]
 TrHook_MSFileSystemFile_dtor endp
+
+TrHook_GetAnimation proc
+    push rcx
+
+    lea rcx, [rax+rdi]
+    sub rsp, 28h
+    call TrHandler_GetAnimation
+    add rsp, 28h
+
+    pop rcx
+    jmp [TrAddr_GetAnimation]
+TrHook_GetAnimation endp
 
 END

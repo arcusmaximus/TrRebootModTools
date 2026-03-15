@@ -3,11 +3,14 @@ from typing import TYPE_CHECKING, Annotated, Protocol
 import bpy
 from io_scene_tr_reboot.BlenderHelper import BlenderHelper
 from io_scene_tr_reboot.BlenderNaming import BlenderNaming
+from io_scene_tr_reboot.exchange.AnimationExporter import AnimationExporter
 from io_scene_tr_reboot.exchange.shadow.ShadowAnimationExporter import ShadowAnimationExporter
 from io_scene_tr_reboot.operator.BlenderOperatorBase import ExportOperatorBase, ExportOperatorProperties
 from io_scene_tr_reboot.operator.OperatorContext import OperatorContext
 from io_scene_tr_reboot.properties.BlenderPropertyGroup import Prop
 from io_scene_tr_reboot.properties.SceneProperties import SceneProperties
+from io_scene_tr_reboot.tr.Collection import Collection
+from io_scene_tr_reboot.tr.Enumerations import CdcGame
 from io_scene_tr_reboot.util.Enumerable import Enumerable
 
 if TYPE_CHECKING:
@@ -18,14 +21,18 @@ else:
 class _Properties(ExportOperatorProperties, Protocol):
     apply_lara_bone_fix_constraints: Annotated[bool, Prop("Apply Lara bone fix constraints", default = True)]
 
-class ExportShadowAnimationOperator(ExportOperatorBase[_Properties]):
-    bl_idname = "export_scene.tr11anim"
-    bl_menu_item_name = "SOTTR animation (.tr11anim)"
-    filename_ext = ".tr11anim"
+class ExportAnimationOperator(ExportOperatorBase[_Properties]):
+    bl_idname = "export_scene.tranim"
+    bl_menu_item_name = "Tomb Raider Reboot animation (.trXanim)"
+    filename_ext = ""
 
     def invoke(self, context: bpy.types.Context | None, event: bpy.types.Event) -> set[OperatorReturnItems]:
         if context is None or context.window_manager is None:
             return { "CANCELLED" }
+
+        game = SceneProperties.get_game()
+        ExportAnimationOperator.filename_ext = f".tr{game}anim"
+        self.properties.filter_glob = "*" + ExportAnimationOperator.filename_ext
 
         with OperatorContext.begin(self):
             bl_armature_obj = self.get_source_armature(context)
@@ -42,7 +49,7 @@ class ExportShadowAnimationOperator(ExportOperatorBase[_Properties]):
                 else:
                     folder_path = ""
 
-                self.properties.filepath = os.path.join(folder_path, str(animation_id) + self.filename_ext)
+                self.properties.filepath = os.path.join(folder_path, str(animation_id) + ExportAnimationOperator.filename_ext)
 
             context.window_manager.fileselect_add(self)
             return { "RUNNING_MODAL" }
@@ -58,8 +65,19 @@ class ExportShadowAnimationOperator(ExportOperatorBase[_Properties]):
             if bl_armature_obj is None:
                 return { "CANCELLED" }
 
-            exporter = ShadowAnimationExporter(SceneProperties.get_scale_factor(), self.properties.apply_lara_bone_fix_constraints)
-            exporter.export_animation(self.properties.filepath, bl_armature_obj)
+            file_path = self.properties.filepath
+            game = Collection.get_game_from_file_path(file_path)
+            if game is None:
+                return { "CANCELLED" }
+
+            exporter: AnimationExporter
+            match game:
+                case CdcGame.SOTTR:
+                    exporter = ShadowAnimationExporter(SceneProperties.get_scale_factor(), self.properties.apply_lara_bone_fix_constraints)
+                case _:
+                    exporter = AnimationExporter(SceneProperties.get_scale_factor(), self.properties.apply_lara_bone_fix_constraints, game)
+
+            exporter.export_animation(file_path, bl_armature_obj)
 
             if not OperatorContext.warnings_logged and not OperatorContext.errors_logged:
                 OperatorContext.log_info("Animation successfully exported.")

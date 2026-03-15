@@ -4,6 +4,7 @@ from types import UnionType
 from typing import Any, Callable, ClassVar, cast
 from mathutils import Matrix, Quaternion, Vector
 from io_scene_tr_reboot.util.Enumerable import Enumerable
+import inspect
 
 class Serializer:
     @staticmethod
@@ -20,13 +21,13 @@ class Serializer:
 
             if field_type == bool:
                 field_value = str(field_value).lower()
-            elif field_type == int or field_type == float or field_type == str or issubclass(field_type, Enum):
+            elif field_type == int or field_type == float or field_type == str or (inspect.isclass(field_type) and issubclass(field_type, Enum)):
                 field_value = str(field_value)
             elif field_type == Vector or \
-                field_type == Quaternion or \
-                field_type == list[int] or \
-                field_type == list[float]:
-                field_value = ", ".join(Enumerable(field_value).select(str))
+                 field_type == Quaternion or \
+                 field_type == list[int] or \
+                 field_type == list[float]:
+                 field_value = ", ".join(Enumerable(field_value).select(str))
             elif field_type == list[Vector] or field_type == list[Quaternion] or field_type == Matrix:
                 field_value = "; ".join(Enumerable(field_value).select(lambda item: ", ".join(Enumerable(item).select(str))))
             else:

@@ -5,32 +5,43 @@
              xmlns:logging="using:TrRebootTools.HookTool.Logging"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="TrRebootTools.HookTool.AccessLogControl">
-    <Grid RowDefinitions="auto,*,60" RowSpacing="2">
-		<StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Spacing="2" Grid.Row="0">
-			<ToggleButton Name="_btnEnableLogging" IsChecked="true" IsCheckedChanged="OnEnableLoggingChanged" ToolTip.Tip="Enable/disable logging">
-				<Image Source="/Resources/EnableLogging.png" Stretch="None"/>
-            </ToggleButton>
-            <Button Click="OnClearLogClick" ToolTip.Tip="Clear log">
-				<Image Source="/Resources/ClearLists.png" Stretch="None"/>
-            </Button>
-            <Button Click="OnCopyClick" Margin="10 0 0 0" ToolTip.Tip="Copy selected entries to clipboard">
-				<Image Source="/Resources/Copy.png" Stretch="None"/>
-            </Button>
-            <Button Click="OnSaveClick" ToolTip.Tip="Save complete log to CSV file">
-				<Image Source="/Resources/Save.png" Stretch="None"/>
-            </Button>
-        </StackPanel>
-        <TextBox Name="_txtFilter" Opacity="0.5" HorizontalAlignment="Right" Width="200" Margin="2" Grid.Row="0"
-                 GotFocus="OnFilterGotFocus" TextChanged="OnFilterChanged" LostFocus="OnFilterLostFocus">
-            Filter
-        </TextBox>
+    <DockPanel VerticalSpacing="2">
+		<Panel DockPanel.Dock="Top">
+		    <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Spacing="2">
+			    <ToggleButton Name="_btnEnableLogging" IsChecked="true" IsCheckedChanged="OnEnableLoggingChanged" ToolTip.Tip="Enable/disable logging">
+				    <Image Source="/Resources/EnableLogging.png" Stretch="None"/>
+                </ToggleButton>
+                <Button Click="OnClearLogClick" ToolTip.Tip="Clear log">
+				    <Image Source="/Resources/ClearLists.png" Stretch="None"/>
+                </Button>
+                <Button Click="OnCopyClick" Margin="10 0 0 0" ToolTip.Tip="Copy selected entries to clipboard">
+				    <Image Source="/Resources/Copy.png" Stretch="None"/>
+                </Button>
+                <Button Click="OnSaveClick" ToolTip.Tip="Save complete log to CSV file">
+				    <Image Source="/Resources/Save.png" Stretch="None"/>
+                </Button>
+            </StackPanel>
 
-        <logging:LogListView Name="_lstLog" SelectionMode="Multiple" Grid.Row="1"
-                             KeyDown="OnLogKeyDown" SelectionChanged="OnLogSelectionChanged" DoubleTapped="OnLogDoubleClick">
-        </logging:LogListView>
+            <TextBox Name="_txtFilter" HorizontalAlignment="Right" Width="200" Margin="2"
+                     GotFocus="OnFilterGotFocus" TextChanged="OnFilterChanged" LostFocus="OnFilterLostFocus">
+            </TextBox>
 
-        <Button Name="_btnExtract" Click="OnExtractClick" IsEnabled="False" Grid.Row="2">
+            <Button Name="_btnClearFilter" Click="OnClearFilterClick" Width="22" HorizontalAlignment="Right" Margin="4" Padding="0" Background="Transparent">
+				<Button.Styles>
+					<Style Selector="Button">
+						<Setter Property="BorderBrush" Value="Transparent"/>
+					</Style>
+				</Button.Styles>
+				&#0215;
+			</Button>
+        </Panel>
+
+        <Button Name="_btnExtract" Click="OnExtractClick" IsEnabled="False" Padding="20" DockPanel.Dock="Bottom">
 			Extract
         </Button>
-    </Grid>
+
+        <logging:LogListView Name="_lstLog" SelectionMode="Multiple"
+                             KeyDown="OnLogKeyDown" SelectionChanged="OnLogSelectionChanged" DoubleTapped="OnLogDoubleClick">
+        </logging:LogListView>
+    </DockPanel>
 </UserControl>

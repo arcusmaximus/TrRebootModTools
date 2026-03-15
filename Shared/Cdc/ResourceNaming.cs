@@ -29,7 +29,7 @@ namespace TrRebootTools.Shared.Cdc
             }
         }
 
-        private static ResourceNaming For(CdcGame game)
+        internal static ResourceNaming For(CdcGame game)
         {
             return Instances[game];
         }
@@ -46,28 +46,28 @@ namespace TrRebootTools.Shared.Cdc
 
         public static string GetExtension(ResourceType type, ResourceSubType subType, CdcGame game)
         {
-            return For(game).GetExtension(type, subType);
+            return For(game).GetExtensionInstance(type, subType);
         }
 
-        public static string GetFileName(ArchiveSet archiveSet, ResourceReference resourceRef, bool useOriginalFilePath = true)
+        public static string GetFileName(ArchiveSet archiveSet, ResourceCollection collection, ResourceReference resourceRef, bool useOriginalFilePath = true)
         {
-            return For(archiveSet.Game).GetFileNameInstance(archiveSet, resourceRef, useOriginalFilePath);
+            return For(archiveSet.Game).GetFileNameInstance(archiveSet, collection, resourceRef, useOriginalFilePath);
         }
 
-        public static string GetFilePath(ArchiveSet archiveSet, ResourceReference resourceRef, bool useOriginalFilePath = true)
+        public static string GetFilePath(ArchiveSet archiveSet, ResourceCollection collection, ResourceReference resourceRef, bool useOriginalFilePath = true)
         {
-            string filePath = For(archiveSet.Game).GetFilePathInstance(archiveSet, resourceRef, useOriginalFilePath);
+            string filePath = For(archiveSet.Game).GetFilePathInstance(archiveSet, collection, resourceRef, useOriginalFilePath);
             if (OperatingSystem.IsLinux())
                 filePath = filePath.Replace("\\", "/");
 
             return filePath;
         }
 
-        public static string? ReadOriginalFilePath(ArchiveSet archiveSet, ResourceReference resourceRef)
+        public static string? ReadOriginalFilePath(ArchiveSet archiveSet, ResourceCollection collection, ResourceReference resourceRef)
         {
             try
             {
-                return For(archiveSet.Game).ReadOriginalFilePathInstance(archiveSet, resourceRef);
+                return For(archiveSet.Game).ReadOriginalFilePathInstance(archiveSet, collection, resourceRef);
             }
             catch
             {
@@ -123,37 +123,37 @@ namespace TrRebootTools.Shared.Cdc
             return true;
         }
 
-        private string GetExtension(ResourceType type, ResourceSubType subType)
+        private string GetExtensionInstance(ResourceType type, ResourceSubType subType)
         {
             return Mappings.GetValueOrDefault((type, subType))?.FirstOrDefault() ??
                    Mappings.GetValueOrDefault((type, (ResourceSubType)0))?.FirstOrDefault() ??
                    ".type" + (int)type;
         }
 
-        private string GetFileNameInstance(ArchiveSet archiveSet, ResourceReference resourceRef, bool useOriginalFilePath)
+        private string GetFileNameInstance(ArchiveSet archiveSet, ResourceCollection collection, ResourceReference resourceRef, bool useOriginalFilePath)
         {
-            string? name = useOriginalFilePath ? Sanitize(ReadOriginalFilePath(archiveSet, resourceRef)) : null;
+            string? name = useOriginalFilePath ? Sanitize(ReadOriginalFilePath(archiveSet, collection, resourceRef)) : null;
             name = name != null ? $"{name}.{resourceRef.Id}" : resourceRef.Id.ToString();
-            string extension = GetExtension(resourceRef.Type, resourceRef.SubType);
+            string extension = GetExtensionInstance(resourceRef.Type, resourceRef.SubType);
             return name + extension;
         }
 
-        private string GetFilePathInstance(ArchiveSet archiveSet, ResourceReference resourceRef, bool useOriginalFilePath)
+        private string GetFilePathInstance(ArchiveSet archiveSet, ResourceCollection collection, ResourceReference resourceRef, bool useOriginalFilePath)
         {
-            string fileName = GetFileNameInstance(archiveSet, resourceRef, useOriginalFilePath);
+            string fileName = GetFileNameInstance(archiveSet, collection, resourceRef, useOriginalFilePath);
             string filePath = $"{resourceRef.Type}\\{fileName}";
             if ((resourceRef.Locale & 0x0FFFFFFF) != 0x0FFFFFFF)
-                filePath += "\\" + CdcGameInfo.Get(Game).LocaleToLanguageCode(resourceRef.Locale) + GetExtension(resourceRef.Type, resourceRef.SubType);
+                filePath += "\\" + CdcGameInfo.Get(Game).LocaleToLanguageCode(resourceRef.Locale) + GetExtensionInstance(resourceRef.Type, resourceRef.SubType);
 
             return filePath;
         }
 
-        protected virtual string? ReadOriginalFilePathInstance(ArchiveSet archiveSet, ResourceReference resourceRef)
+        protected internal virtual string? ReadOriginalFilePathInstance(ArchiveSet archiveSet, ResourceCollection collection, ResourceReference resourceRef)
         {
             return null;
         }
 
-        protected virtual string? ReadOriginalFilePathInstance(Stream stream, ResourceType type)
+        protected internal virtual string? ReadOriginalFilePathInstance(Stream stream, ResourceType type)
         {
             return null;
         }

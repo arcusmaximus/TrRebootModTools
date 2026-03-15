@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Xml;
 using TrRebootTools.Shared.Util;
 
 namespace TrRebootTools.Shared.Cdc
@@ -65,13 +66,10 @@ namespace TrRebootTools.Shared.Cdc
 
             HasAnimation = header.HasAnimation != 0;
             HasSubtitles = header.HasSubtitles != 0;
-            if (HasAnimation && HasSubtitles)
-                throw new NotSupportedException(".mul files containing both animation and subtitles are not supported");
-
             Looping = header.LoopStartFileOffset != 0;
 
             if (header.AudioChannelCount < 0 || header.AudioChannelCount > 12)
-                throw new InvalidDataException();
+                throw new InvalidDataException($".mul file has an invalid number of audio channels ({header.AudioChannelCount})");
 
             AudioChannels = new AudioChannel[header.AudioChannelCount];
             for (int i = 0; i < header.AudioChannelCount; i++)
@@ -84,9 +82,10 @@ namespace TrRebootTools.Shared.Cdc
             }
 
             reader.Seek(0x2000);
+            ReadState state = new(this);
             while (stream.Position < stream.Length)
             {
-                Packet? packet = ReadPacket(reader);
+                Packet? packet = ReadPacket(reader, state);
                 if (packet != null)
                     Packets.Add(packet);
 
@@ -94,7 +93,7 @@ namespace TrRebootTools.Shared.Cdc
             }
         }
 
-        private Packet? ReadPacket(BinaryReader reader)
+        private Packet? ReadPacket(BinaryReader reader, ReadState state)
         {
             PacketType type = (PacketType)reader.ReadInt32();
             int size = reader.ReadInt32();
@@ -107,7 +106,7 @@ namespace TrRebootTools.Shared.Cdc
                 _ => null
             };
             if (packet != null)
-                packet.Read(reader, this);
+                packet.Read(reader, state);
             else
                 reader.Skip(size);
 
@@ -195,7 +194,7 @@ namespace TrRebootTools.Shared.Cdc
 
         public abstract class Packet
         {
-            public abstract void Read(BinaryReader reader, MultiplexStream parent);
+            public abstract void Read(BinaryReader reader, ReadState state);
             public abstract void Write(BinaryWriter writer, MultiplexStream parent);
         }
 
@@ -246,55 +245,128 @@ namespace TrRebootTools.Shared.Cdc
                 return data;
             }
 
-            public override void Read(BinaryReader reader, MultiplexStream parent)
+            public override void Read(BinaryReader reader, ReadState state)
             {
-                int firstInt = reader.ReadInt32();
-                int frameSize;
-                if (firstInt == HeaderMagic)
-                {
-                    int version = reader.ReadInt32();
-                    int headerSize = reader.ReadInt32();
-                    reader.BaseStream.Position -= 0xC;
-                    Header = reader.ReadBytes(headerSize + 8);
-                    frameSize = reader.ReadInt32();
-                }
-                else
-                {
-                    frameSize = firstInt;
-                }
+                if (state.CineChannels == null)
+                    ReadHeader(reader, state);
 
+                int frameSize = reader.ReadInt32();
                 FrameNumber = reader.ReadInt32();
                 if (FrameNumber < 0)
                     return;
 
-                if (parent.HasAnimation)
-                    ChannelValues = reader.ReadBytes(frameSize - 4);
-                else if (parent.HasSubtitles)
-                    ReadSubtitles(reader);
+                ReadChannelValues(reader, state);
+                ReadSubtitles(reader);
             }
 
-            public override void Write(BinaryWriter writer, MultiplexStream parent)
+            private void ReadHeader(BinaryReader reader, ReadState state)
             {
-                if (Header != null)
-                    writer.Write(Header);
+                int startPos = reader.Tell();
 
-                int frameSizePos = writer.Tell();
-                writer.Write(0);
-                writer.Write(FrameNumber);
-                if (parent.HasAnimation)
+                int magic = reader.ReadInt32();
+                if (magic != HeaderMagic)
+                    throw new InvalidDataException("Invalid magic in cine packet");
+
+                state.CineVersion = reader.ReadInt32();
+                int size = reader.ReadInt32();
+                int numFrames = reader.ReadInt32();
+                reader.Skip(0x40);
+                int mainUnitId = reader.ReadInt32();
+
+                int numChannels = 0;
+
+                int numAnchors = reader.ReadInt32();
+                reader.Skip(0xC * numAnchors);
+                numChannels += 9 * numAnchors;
+
+                int numSkeletons = reader.ReadInt32();
+                for (int i = 0; i < numSkeletons; i++)
                 {
-                    if (ChannelValues != null)
-                        writer.Write(ChannelValues);
-                }
-                else
-                {
-                    WriteSubtitles(writer);
+                    int instanceId = reader.ReadInt32();
+                    if (state.CineVersion == 13)
+                    {
+                        int sectionId = reader.ReadInt32();
+                    }
+                    int numBones = reader.ReadInt32();
+                    int firstChannel = reader.ReadInt32();
+                    reader.Skip(0x40 * numBones);
+                    numChannels += 3 + 14 * numBones;
+
+                    int numLights = reader.ReadInt32();
+                    int firstLightChannel = reader.ReadInt32();
+                    reader.Skip(0x18 * numLights);
+                    numChannels += 10 * numLights;
+
+                    int numCustomChanels = reader.ReadInt32();
+                    int firstCustomChannel = reader.ReadInt32();
+                    numChannels += numCustomChanels;
+
+                    if (state.CineVersion == 14)
+                    {
+                        int numBlendShapes = reader.ReadInt32();
+                        int firstBlendShapeChannel = reader.ReadInt32();
+                        numChannels += numBlendShapes;
+                    }
                 }
 
-                writer.Seek(frameSizePos);
-                writer.Write(writer.GetLength() - frameSizePos - 4);
-                writer.SeekToEnd();
-                writer.Align(0x10);
+                int numCameras = reader.ReadInt32();
+                reader.Skip(4 * numCameras);
+                numChannels += 16 * numCameras;
+
+                int triggerUnitId = reader.ReadInt32();
+                int numTriggers = reader.ReadInt32();
+                reader.Skip(8 * numTriggers);
+                numChannels += numTriggers;
+
+                int numSubtitles = reader.ReadInt32();
+
+                reader.Skip(0x1C * numSkeletons);
+
+                if (state.CineVersion == 14)
+                {
+                    reader.Skip(0x1C * numCameras);
+                    if (numCameras > 0)
+                    {
+                        int numCameraCuts = reader.ReadInt32();
+                        reader.Skip(4 * numCameraCuts);
+                    }
+                }
+
+                int endPos = reader.Tell();
+                reader.Seek(startPos);
+                Header = reader.ReadBytes(endPos - startPos);
+
+                state.CineChannels = new CineChannel[numChannels];
+            }
+
+            private void ReadChannelValues(BinaryReader reader, ReadState state)
+            {
+                int channelValuesStartPos = (int)reader.BaseStream.Position;
+                for (int i = 0; i < state.CineChannels!.Length; i++)
+                {
+                    CineChannel channel = state.CineChannels[i];
+                    bool readValue;
+                    if (channel.RemainingFrames == 0)
+                    {
+                        int run = reader.ReadInt32();
+                        channel.RemainingFrames = run & 0x00FFFFFF;
+                        channel.HasPerFrameValue = (run >> 24) != 0;
+                        readValue = true;
+                    }
+                    else
+                    {
+                        readValue = channel.HasPerFrameValue;
+                    }
+                    if (readValue)
+                        reader.ReadSingle();
+
+                    channel.RemainingFrames--;
+                    state.CineChannels[i] = channel;
+                }
+
+                int channelValuesEndPos = reader.Tell();
+                reader.Seek(channelValuesStartPos);
+                ChannelValues = reader.ReadBytes(channelValuesEndPos - channelValuesStartPos);
             }
 
             private void ReadSubtitles(BinaryReader reader)
@@ -327,6 +399,25 @@ namespace TrRebootTools.Shared.Cdc
                     }
                     return Encoding.UTF8.GetString(buffer, 0, length);
                 }
+            }
+
+            public override void Write(BinaryWriter writer, MultiplexStream parent)
+            {
+                if (Header != null)
+                    writer.Write(Header);
+
+                int frameSizePos = writer.Tell();
+                writer.Write(0);
+                writer.Write(FrameNumber);
+                if (ChannelValues != null)
+                    writer.Write(ChannelValues);
+
+                WriteSubtitles(writer);
+
+                writer.Seek(frameSizePos);
+                writer.Write(writer.GetLength() - frameSizePos - 4);
+                writer.SeekToEnd();
+                writer.Align(0x10);
             }
 
             private void WriteSubtitles(BinaryWriter writer)
@@ -366,9 +457,9 @@ namespace TrRebootTools.Shared.Cdc
                 set;
             } = [];
 
-            public override void Read(BinaryReader reader, MultiplexStream parent)
+            public override void Read(BinaryReader reader, ReadState state)
             {
-                ChannelData = new byte[parent.AudioChannels?.Length ?? 0][];
+                ChannelData = new byte[state.Mul.AudioChannels?.Length ?? 0][];
 
                 for (int i = 0; i < ChannelData.Length; i++)
                 {
@@ -392,6 +483,24 @@ namespace TrRebootTools.Shared.Cdc
                     writer.Write(ChannelData[i]);
                 }
             }
+        }
+
+        public class ReadState
+        {
+            public ReadState(MultiplexStream mul)
+            {
+                Mul = mul;
+            }
+
+            public readonly MultiplexStream Mul;
+            public int CineVersion;
+            public CineChannel[]? CineChannels;
+        }
+
+        public struct CineChannel
+        {
+            public int RemainingFrames;
+            public bool HasPerFrameValue;
         }
 
         [StructLayout(LayoutKind.Sequential)]

@@ -43,9 +43,8 @@ namespace TrRebootTools.Shared.Cdc
             int numChunks = reader.ReadInt32();
             reader.ReadInt32();
 
-            int chunkOffset = (int)archivePartStream.Position + 8 * numChunks;
-            if (chunkOffset % 16 != 0)
-                chunkOffset += 16 - chunkOffset % 16;
+            long chunkOffset = archivePartStream.Position + 8 * numChunks;
+            chunkOffset = (chunkOffset + 0xF) & ~0xF;
 
             for (int i = 0; i < numChunks; i++)
             {
@@ -54,8 +53,7 @@ namespace TrRebootTools.Shared.Cdc
                 _chunks.Add(new Chunk(chunkOffset, uncompressedSize, compressedSize));
 
                 chunkOffset += compressedSize;
-                if (chunkOffset % 16 != 0)
-                    chunkOffset += 16 - chunkOffset % 16;
+                chunkOffset = (chunkOffset + 0xF) & ~0xF;
 
                 _length += uncompressedSize;
             }
@@ -136,30 +134,7 @@ namespace TrRebootTools.Shared.Cdc
             }
         }
 
-        private readonly struct Chunk
-        {
-            public Chunk(int offset, int uncompressedSize, int compressedSize)
-            {
-                Offset = offset;
-                UncompressedSize = uncompressedSize;
-                CompressedSize = compressedSize;
-            }
-
-            public int Offset
-            {
-                get;
-            }
-
-            public int UncompressedSize
-            {
-                get;
-            }
-
-            public int CompressedSize
-            {
-                get;
-            }
-        }
+        private readonly record struct Chunk(long Offset, int UncompressedSize, int CompressedSize);
 
         public override long Seek(long offset, SeekOrigin origin)
         {

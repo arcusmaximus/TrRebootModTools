@@ -15,6 +15,8 @@ namespace TrRebootTools.Shared.Cdc
 {
     public abstract class Archive : IDisposable
     {
+        protected const int Magic = 0x53464154;
+
         private const int MaxResourceChunkSize = 0x40000;
 
         private int _numParts = 1;
@@ -45,14 +47,14 @@ namespace TrRebootTools.Shared.Cdc
             archive.SubId = subId;
             archive._maxFiles = maxFiles;
 
-            Stream stream = archive.OpenPart(0, baseFilePath, FileMode.Create, FileAccess.ReadWrite);
+            Stream stream = archive.OpenPart(baseFilePath, 0, FileMode.Create, FileAccess.ReadWrite);
             archive._partStreams = [stream];
 
             BinaryWriter writer = new(stream);
             ArchiveHeader header =
                 new()
                 {
-                    Magic = 0x53464154,
+                    Magic = Magic,
                     Version = archive.HeaderVersion,
                     NumParts = 1,
                     Id = archive.Id
@@ -81,11 +83,11 @@ namespace TrRebootTools.Shared.Cdc
         {
             Archive archive = InstantiateArchive(baseFilePath, metaData, game);
 
-            using Stream stream = archive.OpenPart(0, baseFilePath, FileMode.Open, FileAccess.ReadWrite);
+            using Stream stream = archive.OpenPart(baseFilePath, 0, FileMode.Open, FileAccess.ReadWrite);
             BinaryReader reader = new(stream);
             
             ArchiveHeader header = reader.ReadStruct<ArchiveHeader>();
-            if (header.Magic != 0x53464154)
+            if (header.Magic != Magic)
                 throw new InvalidDataException("Invalid magic in tiger file");
 
             if (header.Version != archive.HeaderVersion)
@@ -102,7 +104,7 @@ namespace TrRebootTools.Shared.Cdc
             else
             {
                 string archiveName = Path.GetFileName(baseFilePath).Replace(".000.tiger", "");
-                archive.SubId = CdcGameInfo.Get(game).Languages.IndexOf(l => archiveName.EndsWith(l.Name)) + 1;
+                archive.SubId = CdcGameInfo.Get(game).Languages.IndexOf(l => archiveName.EndsWith(l.Name, StringComparison.InvariantCultureIgnoreCase)) + 1;
             }
 
             reader.Skip(0x20);
@@ -148,7 +150,7 @@ namespace TrRebootTools.Shared.Cdc
                             for (int i = 0; i < _numParts; i++)
                             {
                                 string partFilePath = GetPartFilePath(i);
-                                _partStreams.Add(OpenPart(i, partFilePath, FileMode.Open, ModName != null ? FileAccess.ReadWrite : FileAccess.Read));
+                                _partStreams.Add(OpenPart(partFilePath, i, FileMode.Open, ModName != null ? FileAccess.ReadWrite : FileAccess.Read));
                             }
                         }
                     }
@@ -157,7 +159,7 @@ namespace TrRebootTools.Shared.Cdc
             }
         }
 
-        internal virtual Stream OpenPart(int partIdx, string filePath, FileMode mode, FileAccess access)
+        internal virtual Stream OpenPart(string filePath, int partIdx, FileMode mode, FileAccess access)
         {
             return File.Open(filePath, mode, access, FileShare.ReadWrite);
         }
@@ -204,8 +206,7 @@ namespace TrRebootTools.Shared.Cdc
             if (filePath == null || Path.GetExtension(filePath) != ".drm")
                 return null;
 
-            Stream stream = PartStreams[fileRef.ArchivePart];
-            stream.Position = fileRef.Offset;
+            using Stream stream = OpenFile(fileRef);
             try
             {
                 return ResourceCollection.Open(fileRef.NameHash, fileRef.Locale, stream, Game);

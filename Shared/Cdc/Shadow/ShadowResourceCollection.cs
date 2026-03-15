@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 
 namespace TrRebootTools.Shared.Cdc.Shadow
 {
-    internal class ShadowResourceCollection : ResourceCollection<ShadowResourceCollection.ResourceLocation, ulong>
+    internal class ShadowResourceCollection : TrResourceCollection<ShadowResourceCollection.ResourceLocation, ulong>
     {
         public ShadowResourceCollection(ulong nameHash, ulong locale, Stream stream)
             : base(nameHash, locale, stream)
@@ -33,7 +33,7 @@ namespace TrRebootTools.Shared.Cdc.Shadow
                 location.DecompressionOffset,
                 identification.RefDefinitionsSize,
                 identification.BodySize
-            );
+            ) { Enabled = identification.Type != (byte)ResourceType.Empty };
         }
 
         protected override ResourceIdentification MakeResourceIdentification(ResourceReference resourceRef)

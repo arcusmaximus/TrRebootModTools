@@ -71,7 +71,7 @@ class CollisionModelImporter(CollisionImporter):
             faces = Enumerable(tr_mesh.faces).select(lambda f: f.indices).to_list()
 
             bl_mesh = bpy.data.meshes.new(name)
-            bl_mesh.from_pydata(vertices, [], faces, False)
+            bl_mesh.from_pydata(vertices, [], faces, False)     # type: ignore
             bl_mesh.update()
 
             for material_id in tr_mesh.material_ids:

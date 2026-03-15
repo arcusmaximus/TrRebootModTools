@@ -56,6 +56,7 @@ namespace Tr
 }
 
 #include "Tr/Game.h"
+#include "Tr/AnimLibItem.h"
 #include "Tr/IFileSystem.h"
 #include "Tr/MSFileSystemFile.h"
 #include "Tr/MultiFileSystem.h"

@@ -1,10 +1,11 @@
 from typing import TYPE_CHECKING
 import bpy
 from io_scene_tr_reboot.BlenderNaming import BlenderNaming
-from io_scene_tr_reboot.exchange.shadow.ShadowAnimationImporter import ShadowAnimationImporter
+from io_scene_tr_reboot.exchange.AnimationImporter import AnimationImporter
 from io_scene_tr_reboot.operator.BlenderOperatorBase import ImportOperatorBase, ImportOperatorProperties
 from io_scene_tr_reboot.operator.OperatorContext import OperatorContext
 from io_scene_tr_reboot.properties.SceneProperties import SceneProperties
+from io_scene_tr_reboot.tr.Collection import Collection
 from io_scene_tr_reboot.util.Enumerable import Enumerable
 
 if TYPE_CHECKING:
@@ -13,9 +14,9 @@ else:
     OperatorReturnItems = str
 
 class ImportShadowAnimationOperator(ImportOperatorBase[ImportOperatorProperties]):
-    bl_idname = "import_scene.tr11anim"
-    bl_menu_item_name = "SOTTR animation (.tr11anim)"
-    filename_ext = ".tr11anim"
+    bl_idname = "import_scene.tranim"
+    bl_menu_item_name = "Tomb Raider Reboot animation (.trXanim)"
+    filename_ext = ".tr9anim;.tr10anim;.tr11anim"
 
     def invoke(self, context: bpy.types.Context | None, event: bpy.types.Event) -> set[OperatorReturnItems]:
         if context is None or context.window_manager is None:
@@ -37,8 +38,13 @@ class ImportShadowAnimationOperator(ImportOperatorBase[ImportOperatorProperties]
             if bl_armature_obj is None:
                 return { "CANCELLED" }
 
-            importer = ShadowAnimationImporter(SceneProperties.get_scale_factor())
-            importer.import_animation(getattr(self.properties, "filepath"), bl_armature_obj)
+            file_path = self.properties.filepath
+            game = Collection.get_game_from_file_path(file_path)
+            if game is None:
+                return { "CANCELLED" }
+
+            importer = AnimationImporter(SceneProperties.get_scale_factor(), game)
+            importer.import_animation(file_path, bl_armature_obj)
             return { "FINISHED" }
 
     def get_target_armature(self, context: bpy.types.Context) -> bpy.types.Object | None:

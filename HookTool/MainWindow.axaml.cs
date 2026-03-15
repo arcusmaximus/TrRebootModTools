@@ -51,9 +51,6 @@ namespace TrRebootTools.HookTool
             _watcher.Renamed += HandleModChanged;
             _watcher.Deleted += HandleModChanged;
             _modReinstallTimer.Elapsed += async (s, e) => await HandleModChangeTimerElapsed();
-
-            if (game != CdcGame.Shadow)
-                _tpAnimationLog.IsVisible = false;
         }
 
         protected override async void OnLoaded(RoutedEventArgs e)

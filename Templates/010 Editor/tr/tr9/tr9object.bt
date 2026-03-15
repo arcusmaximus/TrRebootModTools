@@ -3,6 +3,20 @@
 
 typedef struct
 {
+    short refType;
+    short index;
+} AnimReference;
+
+typedef struct
+{
+    short refType;
+    short index;
+} ModelBoneOrMarkerReference;
+
+#include "tr9playerprop.bt"
+
+typedef struct
+{
     uint dynamic : 1;
     uint cldCamera : 1;
     uint cldCameraBoom : 1;
@@ -91,7 +105,7 @@ typedef struct
     byte bUseOutfitManager;
     FSkip(3);
     float maxRad;
-} ObjectBaseData__ObjectHeader <optimize=false>;
+} ObjectHeader <optimize=false>;
 
 typedef struct
 {
@@ -1213,20 +1227,6 @@ typedef struct
     }
 } RagdollTune <optimize=false>;
 
-typedef union
-{
-    short byUserDefinedIndex;
-    ushort byBoneIndex;
-    ushort byMarkerIndex;
-} ModelBoneOrMarkerReference__ModelBoneOrMarkerRefData;
-
-typedef struct
-{
-    ubyte refType;
-    FSkip(1);
-    ModelBoneOrMarkerReference__ModelBoneOrMarkerRefData refData;
-} ModelBoneOrMarkerReference <optimize=false>;
-
 typedef struct
 {
     unsigned int numClothConfigGroups;
@@ -2181,19 +2181,6 @@ typedef struct
     int queryTargetMarker;
 } ObjectBaseData__GameObjectBaseData <optimize=false>;
 
-typedef union
-{
-    ushort fragment;
-    ushort blend;
-    ushort pattern;
-} AnimReference__AnimReferenceUnion;
-
-typedef struct
-{
-    ushort referenceType;
-    AnimReference__AnimReferenceUnion index;
-} AnimReference <optimize=false>;
-
 typedef struct
 {
     AnimReference tR9ProtoSyncAnimHostAnimRef;
@@ -2211,8 +2198,16 @@ typedef struct
 
 typedef struct
 {
+    ushort version;
+    ushort family;
+    ushort id;
+    ushort type;
+} TuneDataHeader;
+
+typedef struct
+{
     ObjectFlags objectFlags;
-    ObjectBaseData__ObjectHeader header;
+    ObjectHeader header;
     unsigned int numAnimPatterns;
     Ref animPatternsRef;
     if (CanSeekTo(animPatternsRef))
@@ -2309,11 +2304,17 @@ typedef struct
         FaceFxData faceFxData;
         ReturnFromRef();
     }
-    Ref tuneDataPtrRef;
-    if (CanSeekTo(tuneDataPtrRef))
+    Ref tuneDataRef;
+    if (CanSeekTo(tuneDataRef))
     {
-        SeekToRef(tuneDataPtrRef);
-        byte tuneDataPtr;
+        SeekToRef(tuneDataRef);
+        TuneDataHeader tuneDataHeader;
+        switch (tuneDataHeader.family)
+        {
+            case 130:
+                PlayerProp tuneData;
+                break;
+        }
         ReturnFromRef();
     }
     unsigned int scriptTypeID;

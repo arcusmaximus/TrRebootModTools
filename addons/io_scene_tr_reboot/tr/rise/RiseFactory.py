@@ -1,5 +1,6 @@
 from typing import cast
 from mathutils import Vector
+from io_scene_tr_reboot.tr.Animation import Animation, BoneAnimationFrame
 from io_scene_tr_reboot.tr.Bone import IBone
 from io_scene_tr_reboot.tr.BoneConstraint import IBoneConstraint
 from io_scene_tr_reboot.tr.Cloth import Cloth
@@ -14,6 +15,7 @@ from io_scene_tr_reboot.tr.Mesh import IMesh
 from io_scene_tr_reboot.tr.MeshPart import IMeshPart
 from io_scene_tr_reboot.tr.Model import IModel
 from io_scene_tr_reboot.tr.Skeleton import ISkeleton
+from io_scene_tr_reboot.tr.rise.RiseAnimation import RiseAnimation, RiseBoneAnimationFrame
 from io_scene_tr_reboot.tr.rise.RiseBone import RiseBone
 from io_scene_tr_reboot.tr.rise.RiseCloth import RiseCloth
 from io_scene_tr_reboot.tr.rise.RiseCollection import RiseCollection
@@ -75,3 +77,9 @@ class RiseFactory(IFactory):
 
     def create_hair(self, model_id: int | None, hair_data_id: int) -> Hair:
         return RiseHair(hair_data_id)
+
+    def create_animation(self, anim_id: int) -> Animation:
+        return RiseAnimation(anim_id)
+
+    def create_animation_bone_frame(self) -> BoneAnimationFrame:
+        return RiseBoneAnimationFrame()

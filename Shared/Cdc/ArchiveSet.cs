@@ -18,7 +18,7 @@ namespace TrRebootTools.Shared.Cdc
         public const string OriginalGameArchivePrefix = "bigfile._orig.";
 
         private readonly object _lock = new();
-        private readonly Dictionary<(int, int), Archive> _archives = new();
+        private readonly Dictionary<(int Id, int SubId), Archive> _archives = new();
         private readonly List<Archive> _duplicateArchives = [];
         private readonly Dictionary<ArchiveFileKey, ArchiveFileReference> _files = new();
 
@@ -55,8 +55,8 @@ namespace TrRebootTools.Shared.Cdc
                 if (!ShouldLoad(archiveFilePath, includeGame, includeMods))
                     continue;
 
-                using Stream stream = Archive.InstantiateArchive(archiveFilePath, null, Game).OpenPart(0, archiveFilePath, FileMode.Open, FileAccess.Read);
-                using BinaryReader reader = new BinaryReader(stream);
+                using Stream stream = Archive.InstantiateArchive(archiveFilePath, null, Game).OpenPart(archiveFilePath, 0, FileMode.Open, FileAccess.Read);
+                using BinaryReader reader = new(stream);
                 var header = reader.ReadStruct<Archive.ArchiveHeader>();
                 ArchiveMetaData? metaData = metaDatas?.GetValueOrDefault(header.Id);
                 if (metaData != null || !SupportsMetaData)
@@ -438,6 +438,20 @@ namespace TrRebootTools.Shared.Cdc
         public Stream OpenResource(ResourceReference resourceRef)
         {
             return _archives[(resourceRef.ArchiveId, resourceRef.ArchiveSubId)].OpenResource(resourceRef);
+        }
+
+        public MemoryStream LoadResource(ResourceReference resourceRef)
+        {
+            using Stream readStream = OpenResource(resourceRef);
+            MemoryStream memStream = new();
+            readStream.CopyTo(memStream);
+            memStream.Position = 0;
+            return memStream;
+        }
+
+        public Stream? TryOpenResource(ResourceReference resourceRef)
+        {
+            return _archives.GetValueOrDefault((resourceRef.ArchiveId, resourceRef.ArchiveSubId))?.OpenResource(resourceRef);
         }
 
         public virtual List<Archive> GetSortedArchives()

@@ -6,8 +6,8 @@
     <AssemblyName>TrRebootTools.Shared</AssemblyName>
     <RootNamespace>TrRebootTools.Shared</RootNamespace>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
-    <AssemblyVersion>1.9.2</AssemblyVersion>
-    <FileVersion>1.9.2</FileVersion>
+    <AssemblyVersion>1.10.0</AssemblyVersion>
+    <FileVersion>1.10.0</FileVersion>
     <BaseOutputPath>..\Build\</BaseOutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AssemblyOriginatorKeyFile>..\dummykey.snk</AssemblyOriginatorKeyFile>
@@ -43,9 +43,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="11.3.11" />
-    <PackageReference Include="Avalonia.Desktop" Version="11.3.11" />
-    <PackageReference Include="Avalonia.Themes.Simple" Version="11.3.11" />
+    <PackageReference Include="Avalonia" Version="11.3.12" />
+    <PackageReference Include="Avalonia.Desktop" Version="11.3.12" />
+    <PackageReference Include="Avalonia.Themes.Simple" Version="11.3.12" />
     <PackageReference Include="MessageBox.Avalonia" Version="3.3.1.1" />
   </ItemGroup>
 

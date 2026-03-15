@@ -8,6 +8,7 @@ extern "C"
 
     void TrHandler_GameLoopStart();
     void TrHandler_RequestFile(const TigerArchiveFileEntry* pEntry, const char* pszPath);
+    void TrHandler_GetAnimation(AnimLibItem* pAnim);
     void TrHandler_ParseMaterial(int materialId, MaterialData* pData);
     void TrHandler_MSFileSystemFile_dtor(MSFileSystemFile* pFile);
 
@@ -39,6 +40,21 @@ extern "C"
             call TrHandler_RequestFile
             add esp, 8
             jmp [TrAddr_RequestFile]
+        }
+    }
+
+    void __declspec(naked) TrHook_GetAnimation()
+    {
+        __asm
+        {
+            push eax
+            
+            push eax
+            call TrHandler_GetAnimation
+            add esp, 4
+
+            pop eax
+            jmp [TrAddr_GetAnimation]
         }
     }
 
@@ -87,6 +103,7 @@ void TrHook::InitAddresses()
 {
     TrAddr_GameLoopStart            = Game::ImageBase + 0x227D60;
     TrAddr_RequestFile              = Game::ImageBase + 0x137C25;
+    TrAddr_GetAnimation             = Game::ImageBase + 0x2F37AD;
     TrAddr_ParseMaterial            = Game::ImageBase + 0x28C76A;
     TrAddr_MSFileSystemFile_dtor    = Game::ImageBase + 0x138350;
 

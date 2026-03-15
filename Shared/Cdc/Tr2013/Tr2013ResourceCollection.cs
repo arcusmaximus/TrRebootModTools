@@ -1,9 +1,10 @@
 ﻿using System.IO;
+using System.Resources;
 using System.Runtime.InteropServices;
 
 namespace TrRebootTools.Shared.Cdc.Tr2013
 {
-    internal class Tr2013ResourceCollection : ResourceCollection<Tr2013ResourceCollection.ResourceLocation, uint>
+    internal class Tr2013ResourceCollection : TrResourceCollection<Tr2013ResourceCollection.ResourceLocation, uint>
     {
         private const int Patch3ArchiveId = 69;
 
@@ -36,7 +37,7 @@ namespace TrRebootTools.Shared.Cdc.Tr2013
                 location.DecompressionOffset,
                 identification.RefDefinitionsSize,
                 identification.BodySize
-            );
+            ) { Enabled = identification.Type != (byte)ResourceType.Empty };
         }
 
         protected override ResourceIdentification MakeResourceIdentification(ResourceReference resourceRef)

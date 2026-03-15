@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using TrRebootTools.Shared.Util;
 
@@ -26,12 +27,19 @@ namespace TrRebootTools.Shared.Cdc.Tr2013
                 { (ResourceType.Texture, 0),                    [".dds", ".pcd9"] }
             };
 
+        private ResourceCollection? _lastAnimCollection;
+        private readonly Dictionary<int, string> _animNames = new();
+
         protected override Dictionary<(ResourceType, ResourceSubType), string[]> Mappings => _mappings;
 
-        protected override string? ReadOriginalFilePathInstance(ArchiveSet archiveSet, ResourceReference resourceRef)
+        protected internal override string? ReadOriginalFilePathInstance(ArchiveSet archiveSet, ResourceCollection collection, ResourceReference resourceRef)
         {
             switch (resourceRef.Type)
             {
+                case ResourceType.Animation:
+                    UpdateAnimationNameCache(archiveSet, collection);
+                    return _animNames.GetValueOrDefault(resourceRef.Id);
+
                 case ResourceType.SoundBank:
                 {
                     if (archiveSet.GetArchive(resourceRef.ArchiveId, resourceRef.ArchiveSubId) == null)
@@ -46,7 +54,37 @@ namespace TrRebootTools.Shared.Cdc.Tr2013
             }
         }
 
-        protected override string? ReadOriginalFilePathInstance(Stream stream, ResourceType type)
+        private void UpdateAnimationNameCache(ArchiveSet archiveSet, ResourceCollection collection)
+        {
+            if (collection == _lastAnimCollection)
+                return;
+
+            _animNames.Clear();
+            _lastAnimCollection = collection;
+
+            ResourceReference? objectRefResource = collection.ResourceReferences.FirstOrDefault(r => r.Type == ResourceType.GlobalContentReference);
+            if (objectRefResource == null)
+                return;
+
+            MemoryStream objectRefStream = archiveSet.LoadResource(objectRefResource);
+            ResourceRefDefinitions objectRefRefs = ResourceRefDefinitions.Create(objectRefResource, objectRefStream, CdcGame.Tr2013);
+            ResourceKey? objectKey = objectRefRefs.GetExternalRefTarget(objectRefRefs.Size);
+            if (objectKey == null)
+                return;
+
+            ResourceReference? objectResource = collection.GetResourceReference(objectKey.Value);
+            if (objectResource == null)
+                return;
+
+            MemoryStream objectStream = archiveSet.LoadResource(objectResource);
+            Tr2013Object obj = new(objectStream);
+            foreach ((int animId, string animName) in obj.Animations)
+            {
+                _animNames[animId] = animName;
+            }
+        }
+
+        protected internal override string? ReadOriginalFilePathInstance(Stream stream, ResourceType type)
         {
             return type switch
             {

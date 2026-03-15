@@ -1,6 +1,8 @@
-﻿namespace TrRebootTools.Shared.Cdc
+﻿using System;
+
+namespace TrRebootTools.Shared.Cdc
 {
-    public struct ResourceKey
+    public struct ResourceKey : IEquatable<ResourceKey>
     {
         public ResourceKey(ResourceType type, int id)
         {
@@ -40,7 +42,12 @@
 
         public override readonly bool Equals(object? obj)
         {
-            return obj is ResourceKey other && other.Type == Type && other.Id == Id && other.Locale == Locale;
+            return obj is ResourceKey other && Equals(other);
+        }
+
+        public readonly bool Equals(ResourceKey other)
+        {
+            return other.Type == Type && other.Id == Id && other.Locale == Locale;
         }
 
         public override readonly int GetHashCode()

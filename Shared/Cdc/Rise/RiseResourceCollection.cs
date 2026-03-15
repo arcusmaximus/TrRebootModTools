@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 
 namespace TrRebootTools.Shared.Cdc.Rise
 {
-    internal class RiseResourceCollection : ResourceCollection<RiseResourceCollection.ResourceLocation, uint>
+    internal class RiseResourceCollection : TrResourceCollection<RiseResourceCollection.ResourceLocation, uint>
     {
         public RiseResourceCollection(ulong nameHash, ulong locale, Stream stream)
             : base(nameHash, locale, stream)
@@ -33,7 +33,7 @@ namespace TrRebootTools.Shared.Cdc.Rise
                 location.DecompressionOffset,
                 identification.RefDefinitionsSize,
                 identification.BodySize
-            );
+            ) { Enabled = identification.Type != (byte)ResourceType.Empty };
         }
 
         protected override ResourceIdentification MakeResourceIdentification(ResourceReference resourceRef)

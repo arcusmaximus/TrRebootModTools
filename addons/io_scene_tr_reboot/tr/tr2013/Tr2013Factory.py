@@ -1,5 +1,6 @@
 from typing import cast
 from mathutils import Vector
+from io_scene_tr_reboot.tr.Animation import Animation, BoneAnimationFrame
 from io_scene_tr_reboot.tr.Bone import IBone
 from io_scene_tr_reboot.tr.BoneConstraint import IBoneConstraint
 from io_scene_tr_reboot.tr.Cloth import Cloth
@@ -13,6 +14,7 @@ from io_scene_tr_reboot.tr.Mesh import IMesh
 from io_scene_tr_reboot.tr.MeshPart import IMeshPart
 from io_scene_tr_reboot.tr.Model import IModel
 from io_scene_tr_reboot.tr.Skeleton import ISkeleton
+from io_scene_tr_reboot.tr.tr2013.Tr2013Animation import Tr2013Animation, Tr2013BoneAnimationFrame
 from io_scene_tr_reboot.tr.tr2013.Tr2013Bone import Tr2013Bone
 from io_scene_tr_reboot.tr.tr2013.Tr2013Cloth import Tr2013Cloth
 from io_scene_tr_reboot.tr.tr2013.Tr2013Collection import Tr2013Collection
@@ -71,3 +73,9 @@ class Tr2013Factory(IFactory):
             raise Exception()
 
         return Tr2013Hair(model_id, hair_data_id)
+
+    def create_animation(self, anim_id: int) -> Animation:
+        return Tr2013Animation(anim_id)
+
+    def create_animation_bone_frame(self) -> BoneAnimationFrame:
+        return Tr2013BoneAnimationFrame()

@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Runtime.InteropServices;
 using TrRebootTools.Shared.Util;
 
@@ -16,29 +17,30 @@ namespace TrRebootTools.Shared.Cdc.Avengers
         protected override bool SupportsSubId => false;
         protected override bool SupportsLanguageList => true;
 
-        internal override Stream OpenPart(int partIdx, string filePath, FileMode mode, FileAccess access)
+        internal override Stream OpenPart(string filePath, int partIdx, FileMode mode, FileAccess access)
         {
-            Stream stream = base.OpenPart(partIdx, filePath, mode, access);
-            if (Id <= 11)
-                stream = new AvengersArchiveStream(Id, partIdx, stream);
+            Stream stream = base.OpenPart(filePath, partIdx, mode, access);
+            if (stream.Length < 4)
+                return stream;
 
-            return stream;
+            Span<byte> magic = stackalloc byte[4];
+            stream.Read(magic);
+            stream.Position = 0;
+            if (BitConverter.ToInt32(magic) == Magic)
+                return stream;
+            
+            return new AvengersEncryptedArchiveStream(partIdx, filePath, stream);
         }
 
         protected override ArchiveFileReference ReadFileReference(BinaryReader reader)
         {
             var entry = reader.ReadStruct<ArchiveFileEntry>();
-            int subId = entry.ArchivePart & 0x3F;
-            if (subId == 0x3F)
-                subId = 0;
-
-            int part = entry.ArchivePart >> 6;
             return new ArchiveFileReference(
                 entry.NameHash,
                 entry.Locale,
                 entry.ArchiveId,
-                subId,
-                part,
+                entry.ArchiveSubId,
+                entry.ArchivePart,
                 entry.Offset,
                 entry.UncompressedSize
             );
@@ -46,14 +48,14 @@ namespace TrRebootTools.Shared.Cdc.Avengers
 
         protected override void WriteFileReference(BinaryWriter writer, ArchiveFileReference fileRef)
         {
-            int subId = fileRef.ArchiveSubId == 0 ? 0x3F : fileRef.ArchiveSubId;
             ArchiveFileEntry entry =
                 new()
                 {
                     NameHash = fileRef.NameHash,
                     Locale = (uint)fileRef.Locale,
-                    ArchiveId = (short)fileRef.ArchiveId,
-                    ArchivePart = (short)((fileRef.ArchivePart << 6) | fileRef.ArchiveSubId),
+                    ArchiveId = (ushort)fileRef.ArchiveId,
+                    ArchiveSubId = fileRef.ArchiveSubId,
+                    ArchivePart = fileRef.ArchivePart,
                     Offset = fileRef.Offset,
                     UncompressedSize = fileRef.Length
                 };
@@ -67,8 +69,30 @@ namespace TrRebootTools.Shared.Cdc.Avengers
             public uint Locale;
             public uint UncompressedSize;
             public uint Offset;
-            public short ArchiveId;
-            public short ArchivePart;
+            public ushort ArchiveId;
+            public ushort ArchiveSubIdAndPart;
+
+            public int ArchiveSubId
+            {
+                get
+                {
+                    int subId = ArchiveSubIdAndPart & 0x3F;
+                    return subId == 0x3F ? 0 : subId;
+                }
+                set
+                {
+                    if (value == 0)
+                        value = 0x3F;
+
+                    ArchiveSubIdAndPart = (ushort)((ArchiveSubIdAndPart & ~0x3F) | value);
+                }
+            }
+
+            public int ArchivePart
+            {
+                get => ArchiveSubIdAndPart >> 6;
+                set => ArchiveSubIdAndPart = (ushort)((ArchiveSubIdAndPart & 0x3F) | (value << 6));
+            }
         }
     }
 }

@@ -54,7 +54,7 @@ class ClothImporter(SlotsBase):
             vertex_positions = Enumerable(tr_cloth_strip.masses).select(lambda m: m.position * self.scale_factor).to_list()
             edge_vertex_indices = Enumerable(tr_cloth_strip.springs).select(lambda s: (s.mass_1_idx, s.mass_2_idx)).to_list()
             bl_mesh = bpy.data.meshes.new(name)
-            bl_mesh.from_pydata(vertex_positions, edge_vertex_indices, [])
+            bl_mesh.from_pydata(vertex_positions, edge_vertex_indices, [])      # type: ignore
 
         bl_obj = BlenderHelper.create_object(bl_mesh)
         bl_obj.show_in_front = True

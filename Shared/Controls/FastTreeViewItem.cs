@@ -1,10 +1,8 @@
 ﻿using Avalonia.Controls;
-using Avalonia.Controls.Documents;
 using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using TrRebootTools.Shared.Util;
 
@@ -125,52 +123,7 @@ namespace TrRebootTools.Shared.Controls
 
         private void UpdateTextBlock()
         {
-            if (Node == null)
-            {
-                _textBlock.Text = null;
-                _textBlock.Inlines = null;
-                return;
-            }
-
-            List<Range>? highlightRanges = null;
-            if (!string.IsNullOrEmpty(_highlightText))
-            {
-                int index = -_highlightText.Length;
-                while ((index = Node.Name.IndexOf(_highlightText, index + _highlightText.Length, StringComparison.InvariantCultureIgnoreCase)) >= 0)
-                {
-                    (highlightRanges ??= []).Add(new Range(index, index + _highlightText.Length));
-                }
-            }
-            
-            if (highlightRanges == null)
-            {
-                _textBlock.Text = Node.Name;
-                _textBlock.Inlines = null;
-                return;
-            }
-
-            _textBlock.Text = null;
-            _textBlock.Inlines = null;
-            Index regularRangeStart = 0;
-            foreach (Range highlightRange in highlightRanges)
-            {
-                AddTextBlockRun(regularRangeStart .. highlightRange.Start, false);
-                AddTextBlockRun(highlightRange, true);
-                regularRangeStart = highlightRange.End;
-            }
-            AddTextBlockRun(regularRangeStart.., false);
-        }
-
-        private void AddTextBlockRun(Range range, bool highlight)
-        {
-            if (Node == null || range.Start.Equals(range.End))
-                return;
-
-            Run run = new(Node.Name[range]);
-            if (highlight)
-                run.Classes.Add("highlight");
-
-            (_textBlock.Inlines ??= []).Add(run);
+            TextBlockHelper.SetTextWithHighlights(_textBlock, Node?.Name, _highlightText);
         }
     }
 }

@@ -16,9 +16,9 @@ def get_cloth_bone_bounceback(self: bpy.types.Property) -> float:
     if not isinstance(bl_armature, bpy.types.Armature) or bl_context.mode != "POSE":
         return 0
 
-    bl_pose_bones = Enumerable(bl_context.selected_pose_bones)
+    bl_pose_bones = Enumerable(bl_context.selected_pose_bones or [])
     bl_pose_bone = bl_pose_bones.first_or_none(lambda b: b == bl_context.active_pose_bone) or bl_pose_bones.first_or_none()
-    if not bl_pose_bone:
+    if bl_pose_bone is None:
         return 0
 
     return BoneProperties.get_instance(bl_pose_bone.bone).cloth.bounceback_factor
@@ -32,7 +32,7 @@ def set_cloth_bone_bounceback(self: bpy.types.Property, value: float) -> None:
     if not isinstance(bl_armature, bpy.types.Armature) or bl_context.mode != "POSE":
         return
 
-    for bl_pose_bone in bl_context.selected_pose_bones:
+    for bl_pose_bone in (bl_context.selected_pose_bones or []):
         bone_id_set = BlenderNaming.try_parse_bone_name(bl_pose_bone.name)
         if bone_id_set is not None and bone_id_set.global_id is None:
             BoneProperties.get_instance(bl_pose_bone.bone).cloth.bounceback_factor = value

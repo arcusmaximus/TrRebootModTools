@@ -6,6 +6,8 @@ using System.Threading;
 using TrRebootTools.Shared.Cdc;
 using TrRebootTools.Shared;
 using System.Text.Json;
+using System.Text.Encodings.Web;
+using System.Text.Unicode;
 
 namespace TrRebootTools.Extractor
 {
@@ -72,7 +74,7 @@ namespace TrRebootTools.Extractor
                     if ((resourceRef.Locale & localeMask) != localeMask)
                         continue;
 
-                    string filePath = Path.Combine(folderPath, ResourceNaming.GetFilePath(_archiveSet, resourceRef));
+                    string filePath = Path.Combine(folderPath, ResourceNaming.GetFilePath(_archiveSet, collection, resourceRef));
                     Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
                     ExtractResource(filePath, resourceRef, ref numExtractedResources, numTotalResources, progress, cancellationToken);
                 }
@@ -87,29 +89,30 @@ namespace TrRebootTools.Extractor
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            using (Stream resourceStream = _archiveSet.OpenResource(resourceRef))
-            using (Stream fileStream = File.Create(filePath))
-            {
-                switch (resourceRef.Type)
-                {
-                    case ResourceType.Texture:
-                        CdcTexture texture = CdcTexture.Read(resourceStream);
-                        texture.WriteAsDds(fileStream);
-                        break;
-                    
-                    case ResourceType.SoundBank when CdcGameInfo.Get(_archiveSet.Game).UsesWwise:
-                        byte[] header = new byte[8];
-                        resourceStream.Read(header, 0, 8);
-                        int length = BitConverter.ToInt32(header, 4);
-                        byte[] data = new byte[length];
-                        resourceStream.Read(data, 0, length);
-                        fileStream.Write(data, 0, length);
-                        break;
+            using Stream? resourceStream = _archiveSet.TryOpenResource(resourceRef);
+            if (resourceStream == null)
+                return;
 
-                    default:
-                        resourceStream.CopyTo(fileStream);
-                        break;
-                }
+            using Stream fileStream = File.Create(filePath);
+            switch (resourceRef.Type)
+            {
+                case ResourceType.Texture:
+                    CdcTexture texture = CdcTexture.Read(resourceStream);
+                    texture.WriteAsDds(fileStream);
+                    break;
+                    
+                case ResourceType.SoundBank when CdcGameInfo.Get(_archiveSet.Game).UsesWwise:
+                    byte[] header = new byte[8];
+                    resourceStream.Read(header, 0, 8);
+                    int length = BitConverter.ToInt32(header, 4);
+                    byte[] data = new byte[length];
+                    resourceStream.Read(data, 0, length);
+                    fileStream.Write(data, 0, length);
+                    break;
+                
+                default:
+                    resourceStream.CopyTo(fileStream);
+                    break;
             }
 
             numExtractedResources++;
@@ -233,7 +236,14 @@ namespace TrRebootTools.Extractor
         private void ExtractLocalsBin(Stream archiveFileStream, Stream extractedFileStream)
         {
             LocalsBin locals = LocalsBin.Open(archiveFileStream, _archiveSet.Game);
-            using Utf8JsonWriter jsonWriter = new(extractedFileStream, new() { Indented = true });
+            using Utf8JsonWriter jsonWriter = new(
+                extractedFileStream,
+                new()
+                {
+                    Indented = true,
+                    Encoder = JavaScriptEncoder.Create(UnicodeRanges.All)
+                }
+            );
             jsonWriter.WriteStartObject();
             foreach ((string key, string value) in locals.Strings.OrderBy(p => p.Key, Comparer<string>.Create(CompareLocalsBinKeys)))
             {

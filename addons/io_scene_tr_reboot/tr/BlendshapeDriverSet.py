@@ -19,7 +19,7 @@ class BlendShapeDriverBone(CStruct64):
     min_negative_angle: CFloat
     max_negative_angle: CFloat
     padding0: CInt
-    bone_axis: Vector
+    joint_axis: Vector
     primary_axis: Vector
     attachment_matrix: Matrix
 

@@ -3,7 +3,7 @@ using System.IO;
 
 namespace TrRebootTools.Shared.Cdc.Avengers
 {
-    internal class AvengersArchiveStream : Stream
+    internal class AvengersEncryptedArchiveStream : Stream
     {
         private static readonly byte[] InitialKeyOffsetCalcTable =
         [
@@ -95,12 +95,12 @@ namespace TrRebootTools.Shared.Cdc.Avengers
         private long _blockPos = -1;
         private readonly byte[] _block = new byte[0x800];
 
-        public AvengersArchiveStream(int archiveId, int archivePartIdx, Stream inner)
+        public AvengersEncryptedArchiveStream(int archivePartIdx, string filePath, Stream inner)
         {
             _archivePartIdx = archivePartIdx;
             _inner = inner;
 
-            if (archiveId == 10)
+            if (Path.GetFileName(filePath).StartsWith("bigfile.update1."))
             {
                 _key = Update1Key;
                 _scrambleKey = true;

@@ -13,6 +13,7 @@
         Unknown = 0,
         Empty = 1,
         Animation = 2,
+        SpeedTree = 3,
         BlendShapeDriver = 4,
         Texture = 5,
         SoundBank = 6,
@@ -22,9 +23,12 @@
         Material = 10,
         GlobalContentReference = 11,
         Model = 12,
-        CollisionModel = 13,
+        CollisionModel = 13,        // "Enlighten" in Avengers
         ObjectReference = 14,
         AnimationLib = 15,
+        Biome = 16,
+        LocalString = 17,
+
         Max
     }
 

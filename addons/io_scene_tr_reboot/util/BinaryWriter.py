@@ -37,7 +37,7 @@ class BinaryWriter(SlotsBase):
         self.stream.write(value)
 
     def write_byte(self, value: int) -> None:
-        self.write_bytes(pack("<b", value))
+        self.write_bytes(pack("<B", value))
 
     def write_int16(self, value: int) -> None:
         self.write_bytes(pack("<h", value))

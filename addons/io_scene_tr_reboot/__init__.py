@@ -2,8 +2,8 @@ bl_info = {
     "name": "TR Reboot mesh support",
     "description": "Import/export files for the Tomb Raider Reboot games",
     "author": "arc_",
-    "blender": (4, 0, 0),
-    "version": (1, 9, 2),
+    "blender": (5, 0, 0),
+    "version": (1, 10, 0),
     "location": "File > Import-Export",
     "support": "COMMUNITY",
     "category": "Import-Export"
@@ -19,7 +19,7 @@ TrCStructTypeMappings.register()
 
 from io_scene_tr_reboot.DriverFunctions import DriverFunctions
 from io_scene_tr_reboot.operator.BrowseBlendShapeNormalsSourceFileOperator import BrowseBlendShapeNormalsSourceFileOperator
-from io_scene_tr_reboot.operator.ExportAnimationOperator import ExportShadowAnimationOperator
+from io_scene_tr_reboot.operator.ExportAnimationOperator import ExportAnimationOperator
 from io_scene_tr_reboot.operator.ExportModelOperator import ExportModelOperator
 from io_scene_tr_reboot.operator.ImportAnimationOperator import ImportShadowAnimationOperator
 from io_scene_tr_reboot.operator.ImportObjectOperator import ImportObjectOperator
@@ -55,7 +55,7 @@ menu_operators: list[ITrMenuOperator] = [
     ImportObjectOperator,
     ExportModelOperator,
     ImportShadowAnimationOperator,
-    ExportShadowAnimationOperator
+    ExportAnimationOperator
 ]
 
 other_classes: list[type] = [
