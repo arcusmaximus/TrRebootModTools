@@ -31,7 +31,7 @@ class SkeletonImporter(SlotsBase):
         self.scale_factor = scale_factor
         self.bl_target_collection = bl_target_collection
 
-    def import_from_collection(self, tr_collection: Collection) -> dict[ResourceKey, bpy.types.Object]:
+    def import_from_collection(self, tr_collection: Collection, import_constraints: bool) -> dict[ResourceKey, bpy.types.Object]:
         bl_armature_objs: dict[ResourceKey, bpy.types.Object] = {}
         model_skeleton_resources = Enumerable(tr_collection.get_model_instances()).select(lambda i: i.skeleton_resource).of_type(ResourceKey)
         hair_skeleton_resources  = Enumerable(tr_collection.get_hair_resources()).select(lambda s: s.skeleton_resource).of_type(ResourceKey)
@@ -52,7 +52,8 @@ class SkeletonImporter(SlotsBase):
                 bone_transforms = self.calc_bone_transforms(tr_skeleton)
                 self.create_bones(bl_armature_obj, tr_skeleton, bone_transforms)
                 self.assign_counterparts(bl_armature_obj, tr_skeleton)
-                self.create_constraints(bl_armature_obj, tr_skeleton, bone_transforms)
+                if import_constraints:
+                    self.create_constraints(bl_armature_obj, tr_skeleton, bone_transforms)
             else:
                 bl_armature_obj = BlenderHelper.create_object(bl_armature)
 

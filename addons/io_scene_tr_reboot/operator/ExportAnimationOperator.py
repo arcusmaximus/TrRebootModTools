@@ -54,6 +54,13 @@ class ExportAnimationOperator(ExportOperatorBase[_Properties]):
             context.window_manager.fileselect_add(self)
             return { "RUNNING_MODAL" }
 
+    def draw(self, context: bpy.types.Context) -> None:
+        if self.layout is None:
+            return
+
+        if SceneProperties.get_game() == CdcGame.SOTTR:
+            self.layout.prop(self.properties, "apply_lara_bone_fix_constraints")
+
     def execute(self, context: bpy.types.Context | None) -> set[OperatorReturnItems]:
         if context is None:
             return { "CANCELLED" }

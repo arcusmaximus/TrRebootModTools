@@ -139,6 +139,20 @@ The import filechooser has the following options on the right hand side:
   meshes, regardless of whether they were LOD meshes when you imported them. This means you should delete any LOD meshes
   before exporting.
 
+- **Import drivers**
+
+  Whether to create Blender drivers for the outfit's corrective shape keys (ROTTR) or twist bones (SOTTR). When enabled,
+  bending Lara's arm in Blender will automatically flex her biceps in the same way as ingame, for example.
+
+  The driver expressions are import only: don't try to modify them, because those changes won't be included when exporting
+  a modded outfit. You can, however, customize the driven shape keys or link vertices to twist bones to take advantage of
+  the vanilla drivers in your own outfits.
+
+- **Import referenced objects**
+
+  Whether to also import other objects referenced by the selected object. This is typically used for level importing;
+  see below.
+
 - **Split meshes into parts**
 
   By default, the addon creates a Blender mesh per TR mesh in the model, where each TR mesh consists of one or more parts

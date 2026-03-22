@@ -37,15 +37,14 @@ class AnimationImporter(AnimationExchanger):
         bpy.context.scene.render.fps = 2500
         bpy.context.scene.render.fps_base = tr_animation.ms_per_frame
 
-        self.import_bone_animation(bl_armature_obj, tr_animation)
+        self.import_bone_animation(bl_armature_obj, tr_animation, rest_matrices)
         for bl_mesh_obj in Enumerable(bl_armature_obj.children).where(lambda o: isinstance(o.data, bpy.types.Mesh)):
             self.import_blend_shape_animation(bl_mesh_obj, tr_animation)
 
-    def import_bone_animation(self, bl_armature_obj: bpy.types.Object, tr_animation: Animation) -> None:
+    def import_bone_animation(self, bl_armature_obj: bpy.types.Object, tr_animation: Animation, rest_matrices: dict[int, Matrix]) -> None:
         BlenderHelper.reset_pose(bl_armature_obj)
 
         bl_fcurves: dict[_ItemAttrKey, list[bpy.types.FCurve]] = self.create_bone_fcurves(bl_armature_obj, tr_animation)
-        rest_matrices: dict[int, Matrix] = self.get_armature_space_rest_matrices(bl_armature_obj)
         rest_rotations: dict[int, Quaternion] = Enumerable(rest_matrices.items()).to_dict(lambda p: p[0], lambda p: p[1].to_quaternion())
 
         for global_bone_id, bone_frames in tr_animation.bone_tracks.items():

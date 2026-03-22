@@ -42,10 +42,13 @@ class ModelImporter(SlotsBase):
         self,
         tr_collection: Collection,
         bl_collection_obj: bpy.types.Object,
-        bl_armature_objs: dict[ResourceKey, bpy.types.Object]
+        bl_armature_objs: dict[ResourceKey, bpy.types.Object],
+        import_shape_key_drivers: bool
     ) -> list[bpy.types.Object]:
         bl_mesh_objs = self.import_model_instances(tr_collection, bl_collection_obj, bl_armature_objs)
-        self.import_shape_key_drivers(tr_collection, bl_mesh_objs)
+        if import_shape_key_drivers:
+            self.import_shape_key_drivers(tr_collection, bl_mesh_objs)
+
         self.store_collection_files(tr_collection)
         return bl_mesh_objs
 

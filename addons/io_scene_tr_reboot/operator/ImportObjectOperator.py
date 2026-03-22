@@ -32,6 +32,7 @@ else:
 
 class _Properties(ImportOperatorProperties, Protocol):
     import_lods:                    Annotated[bool, Prop("Import LODs")]
+    import_drivers:                 Annotated[bool, Prop("Import drivers", default = True)]
     import_referenced_objects:      Annotated[bool, Prop("Import referenced objects")]
     split_into_parts:               Annotated[bool, Prop("Split meshes into parts")]
     merge_with_existing_skeletons:  Annotated[bool, Prop("(SOTTR) Merge with existing skeletons", default = True)]
@@ -52,6 +53,7 @@ class ImportObjectOperator(ImportOperatorBase[_Properties]):
             return
 
         self.layout.prop(self.properties, "import_lods")
+        self.layout.prop(self.properties, "import_drivers")
         self.layout.prop(self.properties, "import_referenced_objects")
         self.layout.prop(self.properties, "split_into_parts")
         if not self.properties.import_referenced_objects:
@@ -147,7 +149,7 @@ class ImportObjectOperator(ImportOperatorBase[_Properties]):
         material_importer.import_from_collection(tr_collection)
 
         skeleton_importer = self.create_skeleton_importer(scale_factor, bl_target_collection, game)
-        bl_armature_objs = skeleton_importer.import_from_collection(tr_collection)
+        bl_armature_objs = skeleton_importer.import_from_collection(tr_collection, self.properties.import_drivers)
 
         bl_collection_obj: bpy.types.Object
         if len(bl_armature_objs) == 1:
@@ -166,7 +168,7 @@ class ImportObjectOperator(ImportOperatorBase[_Properties]):
             bl_target_collection,
             game
         )
-        model_importer.import_from_collection(tr_collection, bl_collection_obj, bl_armature_objs)
+        model_importer.import_from_collection(tr_collection, bl_collection_obj, bl_armature_objs, self.properties.import_drivers)
 
         collision_model_importer = self.create_collision_model_importer(scale_factor, bl_target_collection, game)
         collision_model_importer.import_from_collection(tr_collection, bl_collection_obj)
