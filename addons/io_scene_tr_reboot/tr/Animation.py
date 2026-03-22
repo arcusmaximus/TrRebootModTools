@@ -1,10 +1,14 @@
 from abc import abstractmethod
 import math
-from typing import TYPE_CHECKING, ClassVar, Generic, Protocol, Sequence, TypeVar, cast
+from typing import TYPE_CHECKING, ClassVar, NamedTuple, Protocol, Sequence, cast
 from io_scene_tr_reboot.tr.ResourceBuilder import ResourceBuilder
 from io_scene_tr_reboot.tr.ResourceReader import ResourceReader
 from io_scene_tr_reboot.util.SlotsBase import SlotsBase
-from mathutils import Quaternion, Vector
+from mathutils import Matrix, Quaternion, Vector
+
+class AnimationBoneInfo(NamedTuple):
+    rest_matrix: Matrix
+    parent_global_id: int | None
 
 class IAnimationFrame(Protocol):
     def get_attr(self, attr_idx: int) -> Sequence[float] | None: ...
@@ -21,10 +25,14 @@ class BoneAnimationFrame(SlotsBase, IAnimationFrame if TYPE_CHECKING else object
     position: Vector | None
     scale:    Vector | None
 
-    def __init__(self) -> None:
+    position_offset: Vector
+
+    def __init__(self, position_offset: Vector) -> None:
         self.rotation = None        # type: ignore
         self.position = None        # type: ignore
         self.scale    = None        # type: ignore
+
+        self.position_offset = position_offset
 
     def get_attr(self, attr_idx: int) -> Sequence[float] | None:
         match attr_idx:
@@ -49,7 +57,7 @@ class BoneAnimationFrame(SlotsBase, IAnimationFrame if TYPE_CHECKING else object
                 if self.position is None:
                     return None
 
-                return cast(Sequence[float], self.position / self.position_factor)
+                return cast(Sequence[float], self.position / self.position_factor - self.position_offset)
 
             case 2:
                 return cast(Sequence[float] | None, self.scale)
@@ -77,7 +85,7 @@ class BoneAnimationFrame(SlotsBase, IAnimationFrame if TYPE_CHECKING else object
                 self.rotation = Vector(value)       # type: ignore
 
             case 1:
-                self.position = Vector(value) * self.position_factor
+                self.position = (Vector(value) + self.position_offset) * self.position_factor
 
             case 2:
                 self.scale = Vector(value)
@@ -95,9 +103,9 @@ class BoneAnimationFrame(SlotsBase, IAnimationFrame if TYPE_CHECKING else object
 
             case 1:
                 if self.position is None:
-                    self.position = Vector((0, 0, 0))
+                    self.position = Vector()
 
-                self.position[elem_idx] = value * self.position_factor
+                self.position[elem_idx] = (value + self.position_offset[elem_idx]) * self.position_factor
 
             case 2:
                 if self.scale is None:
@@ -160,22 +168,21 @@ class Animation:
     num_frames: int
     bone_tracks: dict[int, list[BoneAnimationFrame]]
     blend_shape_tracks: dict[int, list[BlendShapeAnimationFrame]]
+    bone_infos: dict[int, AnimationBoneInfo]
 
-    def __init__(self, id: int) -> None:
+    def __init__(self, id: int, bone_infos: dict[int, AnimationBoneInfo]) -> None:
         self.id = id
         self.ms_per_frame = 100
         self.num_frames = 0
         self.bone_tracks = {}
         self.blend_shape_tracks = {}
+        self.bone_infos = bone_infos
+
+    @abstractmethod
+    def create_bone_frame(self, global_bone_id: int) -> BoneAnimationFrame: ...
 
     @abstractmethod
     def read(self, reader: ResourceReader) -> None: ...
 
     @abstractmethod
     def write(self, writer: ResourceBuilder) -> None: ...
-
-TBoneFrame = TypeVar("TBoneFrame", bound = BoneAnimationFrame)
-
-class AnimationBase(Animation, Generic[TBoneFrame]):
-    bone_tracks: dict[int, list[TBoneFrame]]                    # type: ignore
-    blend_shape_tracks: dict[int, list[BlendShapeAnimationFrame]]

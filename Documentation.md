@@ -13,7 +13,8 @@ This toolset allows modding the games from the Tomb Raider Reboot trilogy. The f
 | Hair                                       | ✓                  | ✓                       | ✓                        |
 | Sound                                      | ✓                  | ✓                       | ✓                         |
 | Level geometry importing                   | ~                  | ✓                       | ✓                         |
-| Animations                                 |                    |                         | ✓                         |
+| Ingame animations                          | ✓                  | ✓                       | ✓                         |
+| Cutscene animations                        |                    |                          | ✓                         |
 
 <small>\* For Tomb Raider (2013), the Definitive Edition that can only be bought on the Xbox store is **not** supported.
 Only the GOTY edition from e.g. Steam or the EGS is.</small>
@@ -88,6 +89,10 @@ The file extensions are as follows:
   The root resource of certain special .drm files containing lists of game content,
   such as collectibles or outfit traits. Just like .trXobjectref, this resource type contains nothing more than a reference
   to a .trXdtp resource with the actual data.
+
+- **.trXanim**
+
+  Animations for ingame actions and — for SOTTR — cutscenes.
 
 - **.trXdtp**
 
@@ -359,26 +364,27 @@ all other modifiers so they don't affect the export result.
 
 ## Animation modding
 
-Apart from models, the Blender addon also supports importing and exporting SOTTR animations (.tr11anim files).
-You can animate bone positions/rotations/scales and blendshape values.
+Apart from models, the Blender addon also supports importing and exporting animations (.trXanim files).
+You can animate bone positions, rotations, and scales, as well as blendshape values.
+Note that in TR2013 and ROTTR, *cutscene* animations are stored in .mul files and currently can't be modded.
 
-To find an animation to modify, you can use a binary template to browse the .tr11animlib files in e.g. tr11_lara.drm —
-these files map animation names to IDs, where the IDs correspond to the names of the .tr11anim files.
-You can also check the appendix at the end of this page to find the IDs of the photo mode poses.
+The animations are extracted with their descriptive names. Notably for SOTTR, the photo mode poses are stored in
+tr11_lara.drm and named "body_photomode_*.tr11anim" and "face_photomode_*.tr11anim".
+You can also use the hook tool (described further below) to log animations being played in a live game session.
 
 Once you've found an animation you'd like to edit or replace, you'll want to do the following:
 
-- Import tr11_lara.tr11objectref from tr11_lara.drm and delete the dummy mesh, keeping just the skeleton.
+- For SOTTR: import tr11_lara.tr11objectref from tr11_lara.drm and delete the dummy mesh, keeping just the skeleton.
 - Import the head, torso, and leg models of some outfit.
 - Hide the bone collections "Cloth bones" and "Twist bones" to reduce clutter.
-- Import the .tr11anim file (File → Import → SOTTR animation).
+- Import the .trXanim file (File → Import → Tomb Raider Reboot animation).
 - Edit the animation. While imported animations have a keyframe on every frame, this is not required for
   custom animations.
-- Export the animation to a .tr11anim file (File → Export → SOTTR animation). As with models, there's no
-  need to overwrite an existing file.
+- Export the animation to a .trXanim file (File → Export → Tomb Raider Reboot animation).
+  As with models, there's no need to overwrite an existing file.
 
-The addon supports bone constraints. In fact, it automatically creates constraints on a few (hidden by default)
-bones of the tr11_lara skeleton, as this is necessary for the animation to play correctly ingame.
+The addon supports bone constraints. In fact, for SOTTR, it automatically creates constraints on a few
+(hidden by default) bones of the tr11_lara skeleton, as this is necessary for the animation to play correctly ingame.
 
 The animation's frame count is determined by the Blender scene's end frame.
 Its speed is in turn determined by the Blender scene's *FPS Base* (see Output tab → Format panel;
@@ -386,7 +392,7 @@ you'll need to set the *Frame Rate* to *Custom* to see the Base). Note that the 
 the opposite way as the FPS: a higher Base will result in each frame taking more time and the
 animation thus being slower overall, not faster.
 
-If you mod a cutscene animation (from a DRM that starts with "pcap" for "performance capture"),
+If you mod an SOTTR cutscene animation (from a DRM that starts with "pcap" for "performance capture"),
 the character may jitter around ingame. If this happens, try including an export of the character's
 unmodified skeleton (for Lara, this is the one from tr11_lara.drm).
 
@@ -762,7 +768,7 @@ sound or voice line).
 
 ### Animation logging
 
-For SOTTR, the tool also logs every animation that the game plays.
+The tool also logs every animation that the game plays (except for cutscene animations in TR2013 and ROTTR).
 
 ### Live mod reloading
 
@@ -942,46 +948,3 @@ The .drm files containing the outfit icons (for the outfit selection menu at cam
 can be found in the following folder:
 
 pcx64-w\design\image resources\campsite\outfits
-
-
-## Appendix 2: SOTTR Photo Mode
-
-The .tr11anim files listed below can be found in tr11_lara.drm.
-
-### Face
-
-| Ingame name | .tr11anim ID |
-| ----------- | ------------ |
-| Neutral | 30901 |
-| Smiling | 30900 |
-| Happy | 30899 |
-| Sly | 30898 |
-| Sad | 30897 |
-| Surprised | 30896 |
-| Disgusted | 30895 |
-| Angry | 30894 |
-| Wonderment | 30893 |
-| Displeased | 30892 |
-| Smug | 33016 |
-| Annoyed | 33018 |
-| Innocent | 33017 |
-
-### Body
-
-| Ingame name | .tr11anim ID |
-| ----------- | ------------ |
-| Celebrating | 33015 |
-| Exulting | 33014 |
-| Victorious | 33013 |
-| Flexing | 33006 |
-| Framing High | 33005 |
-| Framing Eye Level | 32998 |
-| Thumbs Up | 33003 |
-| Scouting | 33012 |
-| Sneaking | 33001 |
-| Kneeling | 32999 |
-| Folded | 33011 |
-| Balancing Left | 33004 |
-| Balancing Right | 33007 |
-| Predatory | 32997 |
-| Successful | 33010 |

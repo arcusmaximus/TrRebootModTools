@@ -1,7 +1,7 @@
 from ctypes import sizeof
 from enum import IntEnum
 from typing import TYPE_CHECKING, Sequence, cast
-from io_scene_tr_reboot.tr.Animation import BlendShapeAnimationFrame
+from io_scene_tr_reboot.tr.Animation import BlendShapeAnimationFrame, BoneAnimationFrame
 from io_scene_tr_reboot.tr.Enumerations import CdcGame, ResourceType
 from io_scene_tr_reboot.tr.ResourceBuilder import ResourceBuilder
 from io_scene_tr_reboot.tr.ResourceKey import ResourceKey
@@ -85,6 +85,9 @@ class RiseBoneAnimationFrame(Tr2013BoneAnimationFrame):
     pass
 
 class RiseAnimation(Tr2013Animation):
+    def create_bone_frame(self, global_bone_id: int) -> BoneAnimationFrame:
+        return RiseBoneAnimationFrame(self.get_bone_position_offset(global_bone_id))
+
     def read_header(self, reader: ResourceReader) -> IAnimationHeader:
         return reader.read_struct(_AnimationHeader)
 

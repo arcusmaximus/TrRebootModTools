@@ -1,6 +1,6 @@
 from asyncio import Protocol
 from typing import ClassVar
-from io_scene_tr_reboot.tr.Animation import Animation, BoneAnimationFrame
+from io_scene_tr_reboot.tr.Animation import Animation, AnimationBoneInfo
 from io_scene_tr_reboot.tr.Bone import IBone
 from io_scene_tr_reboot.tr.BoneConstraint import IBoneConstraint
 from io_scene_tr_reboot.tr.Cloth import Cloth
@@ -45,6 +45,4 @@ class IFactory(Protocol):
 
     def create_hair(self, model_id: int | None, hair_data_id: int) -> Hair: ...
 
-    def create_animation(self, anim_id: int) -> Animation: ...
-
-    def create_animation_bone_frame(self) -> BoneAnimationFrame: ...
+    def create_animation(self, anim_id: int, bone_infos: dict[int, AnimationBoneInfo]) -> Animation: ...

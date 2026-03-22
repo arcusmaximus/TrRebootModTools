@@ -5,35 +5,28 @@ import re
 from mathutils import Matrix, Quaternion
 from io_scene_tr_reboot.BlenderHelper import BlenderHelper
 from io_scene_tr_reboot.BlenderNaming import BlenderNaming
+from io_scene_tr_reboot.exchange.AnimationExchanger import AnimationExchanger
 from io_scene_tr_reboot.operator.OperatorContext import OperatorContext
 from io_scene_tr_reboot.tr.Animation import Animation, BlendShapeAnimationFrame, BoneAnimationFrame
 from io_scene_tr_reboot.tr.Collection import Collection
 from io_scene_tr_reboot.tr.Enumerations import CdcGame, ResourceType
-from io_scene_tr_reboot.tr.Factories import Factories
-from io_scene_tr_reboot.tr.IFactory import IFactory
 from io_scene_tr_reboot.tr.ResourceBuilder import ResourceBuilder
 from io_scene_tr_reboot.tr.ResourceKey import ResourceKey
 from io_scene_tr_reboot.util.DictionaryExtensions import DictionaryExtensions
 from io_scene_tr_reboot.util.Enumerable import Enumerable
 from io_scene_tr_reboot.util.IoHelper import IoHelper
-from io_scene_tr_reboot.util.SlotsBase import SlotsBase
 
 class AnimationBoneConstraintParams(NamedTuple):
     tracking_bone_id: int
     target_bone_id: int
     opposite_direction: bool
 
-class AnimationExporter(SlotsBase):
-    scale_factor: float
+class AnimationExporter(AnimationExchanger):
     apply_lara_bone_fix_constraints: bool
-    game: CdcGame
-    factory: IFactory
 
     def __init__(self, scale_factor: float, apply_lara_bone_fix_constraints: bool, game: CdcGame) -> None:
-        self.scale_factor = scale_factor
+        super().__init__(scale_factor, game)
         self.apply_lara_bone_fix_constraints = apply_lara_bone_fix_constraints
-        self.game = game
-        self.factory = Factories.get(game)
 
     def export_animation(self, file_path: str, bl_armature_obj: bpy.types.Object) -> None:
         if bpy.context.scene is None:
@@ -45,8 +38,10 @@ class AnimationExporter(SlotsBase):
         if resource_key is None:
             raise Exception("Invalid target filename")
 
-        tr_animation = self.factory.create_animation(resource_key.id)
-        tr_animation.num_frames = bpy.context.scene.frame_end
+        rest_matrices = self.get_armature_space_rest_matrices(bl_armature_obj)
+        bone_infos = self.get_bone_infos(bl_armature_obj, rest_matrices)
+        tr_animation = self.factory.create_animation(resource_key.id, bone_infos)
+        tr_animation.num_frames = 1 + bpy.context.scene.frame_end
         tr_animation.ms_per_frame = int(bpy.context.scene.render.fps_base)
 
         self.export_armature_animation(tr_animation, bl_armature_obj)
@@ -76,13 +71,13 @@ class AnimationExporter(SlotsBase):
                 if bl_attr_fcurves is not None:
                     self.export_bone_animation(tr_animation, bl_bone, global_bone_id, bl_attr_fcurves)
 
-    def export_bone_animation(self, animation: Animation, bl_bone: bpy.types.EditBone, global_bone_id: int, bl_attr_fcurves: dict[int, list[bpy.types.FCurve | None]]) -> None:
+    def export_bone_animation(self, tr_animation: Animation, bl_bone: bpy.types.EditBone, global_bone_id: int, bl_attr_fcurves: dict[int, list[bpy.types.FCurve | None]]) -> None:
         bone_frames: list[BoneAnimationFrame] = []
         rest_matrix = bl_bone.matrix
         rest_rotation = rest_matrix.to_quaternion()
 
-        for frame_idx in range(animation.num_frames):
-            bone_frame = self.factory.create_animation_bone_frame()
+        for frame_idx in range(tr_animation.num_frames):
+            bone_frame = tr_animation.create_bone_frame(global_bone_id)
             for attr_idx, bl_elem_fcurves in bl_attr_fcurves.items():
                 attr_value = attr_idx == 0 and [1.0, 0.0, 0.0, 0.0] or [0.0, 0.0, 0.0]
                 for elem_idx, bl_elem_fcurve in enumerate(bl_elem_fcurves):
@@ -103,7 +98,7 @@ class AnimationExporter(SlotsBase):
 
             bone_frames.append(bone_frame)
 
-        animation.bone_tracks[global_bone_id] = bone_frames
+        tr_animation.bone_tracks[global_bone_id] = bone_frames
 
     def collect_bone_fcurves(self, bl_armature_obj: bpy.types.Object) -> dict[int, dict[int, list[bpy.types.FCurve | None]]]:
         bl_bone_fcurves: dict[int, dict[int, list[bpy.types.FCurve | None]]] = {}

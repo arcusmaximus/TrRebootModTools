@@ -1,9 +1,10 @@
 from array import array
 from ctypes import sizeof
 import math
+from mathutils import Vector
 from typing import Callable, ClassVar, NamedTuple, Sequence, TypeVar, cast
 
-from io_scene_tr_reboot.tr.Animation import AnimationBase, BlendShapeAnimationFrame, BoneAnimationFrame, IAnimationFrame
+from io_scene_tr_reboot.tr.Animation import Animation, BlendShapeAnimationFrame, BoneAnimationFrame, IAnimationFrame
 from io_scene_tr_reboot.tr.ResourceBuilder import ResourceBuilder
 from io_scene_tr_reboot.tr.ResourceReader import ResourceReader
 from io_scene_tr_reboot.tr.ResourceReference import ResourceReference
@@ -82,15 +83,21 @@ class ShadowBoneAnimationFrame(BoneAnimationFrame):
     rotation_angle_factor = math.pi
     position_factor = 100.0
 
-class ShadowAnimation(AnimationBase[ShadowBoneAnimationFrame]):
+    def __init__(self) -> None:
+        super().__init__(Vector())
+
+class ShadowAnimation(Animation):
     bone_attr_element_size_mapping:        ClassVar[list[int]] = [0, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 23]
     blend_shape_attr_element_size_mapping: ClassVar[list[int]] = [0, 1, 2, 3, 4, 5, 6, 7, 8,  9,  10, 11, 12, 14, 16, 23]
 
     bone_distances_from_parent: Sequence[float]
 
     def __init__(self, id: int) -> None:
-        super().__init__(id)
+        super().__init__(id, {})
         self.bone_distances_from_parent = []
+
+    def create_bone_frame(self, global_bone_id: int) -> BoneAnimationFrame:
+        return ShadowBoneAnimationFrame()
 
     def read(self, reader: ResourceReader) -> None:
         header = reader.read_struct(_AnimationHeader)
@@ -120,10 +127,11 @@ class ShadowAnimation(AnimationBase[ShadowBoneAnimationFrame]):
         for global_bone_id in global_bone_ids:
             self.bone_tracks[global_bone_id] = []
 
-        def fetch_bone_frame(bone_frame_key: _ItemFrameKey) -> ShadowBoneAnimationFrame:
-            bone_frames = self.bone_tracks[global_bone_ids[bone_frame_key.item_idx]]
+        def fetch_bone_frame(bone_frame_key: _ItemFrameKey) -> BoneAnimationFrame:
+            global_bone_id = global_bone_ids[bone_frame_key.item_idx]
+            bone_frames = self.bone_tracks[global_bone_id]
             if len(bone_frames) <= bone_frame_key.frame_idx:
-                bone_frames.append(ShadowBoneAnimationFrame())
+                bone_frames.append(self.create_bone_frame(global_bone_id))
 
             return bone_frames[bone_frame_key.frame_idx]
 

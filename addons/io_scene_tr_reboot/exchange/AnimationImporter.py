@@ -3,30 +3,18 @@ import bpy
 from mathutils import Matrix, Quaternion
 from io_scene_tr_reboot.BlenderHelper import BlenderHelper
 from io_scene_tr_reboot.BlenderNaming import BlenderNaming
+from io_scene_tr_reboot.exchange.AnimationExchanger import AnimationExchanger
 from io_scene_tr_reboot.tr.Animation import Animation
-from io_scene_tr_reboot.tr.Enumerations import CdcGame
 from io_scene_tr_reboot.tr.Collection import Collection
-from io_scene_tr_reboot.tr.Factories import Factories
-from io_scene_tr_reboot.tr.IFactory import IFactory
 from io_scene_tr_reboot.tr.ResourceReader import ResourceReader
 from io_scene_tr_reboot.util.Enumerable import Enumerable
 from io_scene_tr_reboot.util.IoHelper import IoHelper
-from io_scene_tr_reboot.util.SlotsBase import SlotsBase
 
 class _ItemAttrKey(NamedTuple):
     global_item_id: int
     attr_idx: int
 
-class AnimationImporter(SlotsBase):
-    scale_factor: float
-    game: CdcGame
-    factory: IFactory
-
-    def __init__(self, scale_factor: float, game: CdcGame) -> None:
-        self.scale_factor = scale_factor
-        self.game = game
-        self.factory = Factories.get(game)
-
+class AnimationImporter(AnimationExchanger):
     def import_animation(self, file_path: str, bl_armature_obj: bpy.types.Object) -> None:
         if bpy.context.scene is None:
             return
@@ -39,11 +27,13 @@ class AnimationImporter(SlotsBase):
         with IoHelper.open_read(file_path) as file:
             data = file.read()
 
-        tr_animation = self.factory.create_animation(resource_key.id)
+        rest_matrices = self.get_armature_space_rest_matrices(bl_armature_obj)
+        bone_infos = self.get_bone_infos(bl_armature_obj, rest_matrices)
+        tr_animation = self.factory.create_animation(resource_key.id, bone_infos)
         tr_animation.read(ResourceReader(resource_key, data, True, self.game))
 
         bpy.context.scene.frame_start = 0
-        bpy.context.scene.frame_end = tr_animation.num_frames
+        bpy.context.scene.frame_end = tr_animation.num_frames - 1
         bpy.context.scene.render.fps = 2500
         bpy.context.scene.render.fps_base = tr_animation.ms_per_frame
 
@@ -105,18 +95,6 @@ class AnimationImporter(SlotsBase):
                     bl_element_fcurves.append(bl_action.fcurves.new(f'pose.bones["{bl_bone.name}"].{attr_name}', index = element_idx, group_name = bl_bone.name))
 
         return bl_attr_fcurves
-
-    def get_armature_space_rest_matrices(self, bl_armature_obj: bpy.types.Object) -> dict[int, Matrix]:
-        matrices: dict[int, Matrix] = {}
-        with BlenderHelper.enter_edit_mode(bl_armature_obj):
-            for bl_bone in cast(bpy.types.Armature, bl_armature_obj.data).edit_bones:
-                global_bone_id = BlenderNaming.try_get_bone_global_id(bl_bone.name)
-                if global_bone_id is None:
-                    continue
-
-                matrices[global_bone_id] = bl_bone.matrix
-
-        return matrices
 
     def import_blend_shape_animation(self, bl_mesh_obj: bpy.types.Object, tr_animation: Animation) -> None:
         bl_mesh = cast(bpy.types.Mesh, bl_mesh_obj.data)

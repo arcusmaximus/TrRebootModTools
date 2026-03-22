@@ -1,6 +1,6 @@
 from typing import cast
 from mathutils import Vector
-from io_scene_tr_reboot.tr.Animation import Animation, BoneAnimationFrame
+from io_scene_tr_reboot.tr.Animation import Animation, AnimationBoneInfo
 from io_scene_tr_reboot.tr.Bone import IBone
 from io_scene_tr_reboot.tr.BoneConstraint import IBoneConstraint
 from io_scene_tr_reboot.tr.Cloth import Cloth
@@ -15,7 +15,7 @@ from io_scene_tr_reboot.tr.Mesh import IMesh
 from io_scene_tr_reboot.tr.MeshPart import IMeshPart
 from io_scene_tr_reboot.tr.Model import IModel
 from io_scene_tr_reboot.tr.Skeleton import ISkeleton
-from io_scene_tr_reboot.tr.shadow.ShadowAnimation import ShadowAnimation, ShadowBoneAnimationFrame
+from io_scene_tr_reboot.tr.shadow.ShadowAnimation import ShadowAnimation
 from io_scene_tr_reboot.tr.shadow.ShadowBone import ShadowBone
 from io_scene_tr_reboot.tr.shadow.ShadowBoneConstraint import ShadowBoneConstraint
 from io_scene_tr_reboot.tr.shadow.ShadowCloth import ShadowCloth
@@ -76,8 +76,5 @@ class ShadowFactory(IFactory):
     def create_hair(self, model_id: int | None, hair_data_id: int) -> Hair:
         return ShadowHair(hair_data_id)
 
-    def create_animation(self, anim_id: int) -> Animation:
+    def create_animation(self, anim_id: int, bone_infos: dict[int, AnimationBoneInfo]) -> Animation:
         return ShadowAnimation(anim_id)
-
-    def create_animation_bone_frame(self) -> BoneAnimationFrame:
-        return ShadowBoneAnimationFrame()

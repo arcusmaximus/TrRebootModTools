@@ -6,57 +6,37 @@ typedef struct
     float weight;
     unsigned int start;
     unsigned int end;
-} BoneSet__BoneWeightRange <optimize=false>;
+} WeightedRange;
 
 typedef struct
 {
-    float weight;
-    unsigned int start;
-    unsigned int end;
-} BoneSet__BlendShapeWeightRange <optimize=false>;
-
-typedef struct
-{
-    Ref boneSetDebugNameRef;
-    if (CanSeekTo(boneSetDebugNameRef))
+    Ref nameRef;
+    if (CanSeekTo(nameRef))
     {
-        SeekToRef(boneSetDebugNameRef);
-        string boneSetDebugName;
+        SeekToRef(nameRef);
+        string name;
         ReturnFromRef();
     }
     ushort type;
     FSkip(2);
-    unsigned int numRanges;
-    Ref rangeListRef;
-    if (CanSeekTo(rangeListRef))
+    unsigned int numBoneRanges;
+    Ref boneRangesRef;
+    if (CanSeekTo(boneRangesRef))
     {
-        SeekToRef(rangeListRef);
-        BoneSet__BoneWeightRange rangeList[numRanges];
+        SeekToRef(boneRangesRef);
+        WeightedRange boneRanges[numBoneRanges];
         ReturnFromRef();
     }
     unsigned int numBlendshapeRanges;
     FSkip(4);
-    Ref blendshapeRangeListRef;
-    if (CanSeekTo(blendshapeRangeListRef))
+    Ref blendshapeRangesRef;
+    if (CanSeekTo(blendshapeRangesRef))
     {
-        SeekToRef(blendshapeRangeListRef);
-        BoneSet__BlendShapeWeightRange blendshapeRangeList[numBlendshapeRanges];
+        SeekToRef(blendshapeRangesRef);
+        WeightedRange blendshapeRanges[numBlendshapeRanges];
         ReturnFromRef();
     }
-} BoneSet <optimize=false, read=boneSetDebugName>;
-
-typedef struct
-{
-    unsigned int numBoneSets;
-    FSkip(4);
-    Ref boneSetListRef;
-    if (CanSeekTo(boneSetListRef))
-    {
-        SeekToRef(boneSetListRef);
-        BoneSet boneSetList[numBoneSets];
-        ReturnFromRef();
-    }
-} BoneSet_struct <optimize=false>;
+} BoneSet <optimize=false, read=name>;
 
 typedef struct
 {
@@ -172,7 +152,17 @@ typedef struct
     unsigned int numAnimations;
     FSkip(4);
     Ref animationsRef;
-    BoneSet_struct boneSets;
+    
+    unsigned int numBoneSets;
+    FSkip(4);
+    Ref boneSetsRef;
+    if (CanSeekTo(boneSetsRef))
+    {
+        SeekToRef(boneSetsRef);
+        BoneSet boneSets[numBoneSets];
+        ReturnFromRef();
+    }
+    
     byte startEnabled;
     FSkip(3);
     unsigned int hasAnimGraph;
@@ -183,6 +173,7 @@ typedef struct
         AnimGraphRootRef animGraph;
         ReturnFromRef();
     }
+    
     unsigned int numHostedAnimGraphs;
     FSkip(4);
     Ref hostedAnimGraphsRef;
@@ -192,6 +183,7 @@ typedef struct
         AnimGraphRootRef hostedAnimGraphs[numHostedAnimGraphs];
         ReturnFromRef();
     }
+    
     unsigned int numHostedOverrideInterps;
     FSkip(4);
     Ref hostedOverrideInterpsRef;
@@ -201,6 +193,7 @@ typedef struct
         AnimTransitionDataBase hostedOverrideInterps[numHostedOverrideInterps];
         ReturnFromRef();
     }
+    
     Ref animGraphListRef;
     if (CanSeekTo(animGraphListRef))
     {
@@ -208,6 +201,7 @@ typedef struct
         AnimGraphRootRef animGraphList;
         ReturnFromRef();
     }
+    
     Ref hostedAnimGraphListRef;
     if (CanSeekTo(hostedAnimGraphListRef))
     {
@@ -215,6 +209,7 @@ typedef struct
         AnimGraphRootRef hostedAnimGraphList[numHostedAnimGraphs];
         ReturnFromRef();
     }
+    
     Ref hostedAnimOverrideInterpListRef;
     if (CanSeekTo(hostedAnimOverrideInterpListRef))
     {
@@ -222,6 +217,7 @@ typedef struct
         AnimTransitionDataBase hostedAnimOverrideInterpList[numHostedOverrideInterps];
         ReturnFromRef();
     }
+    
     Ref hostedAnimGraphUserListRef;
     unsigned int hostedAnimGraphUserListCount;
     if (CanSeekTo(hostedAnimGraphUserListRef))
@@ -230,6 +226,7 @@ typedef struct
         HostedAnimGraphUser hostedAnimGraphUserList[hostedAnimGraphUserListCount];
         ReturnFromRef();
     }
+    
     AnimGraphLODInfo lodInfo;
     FSkip(4);
     Ref debugNameRef;

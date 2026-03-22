@@ -1,0 +1,1108 @@
+#define TR_VERSION 10
+#include "../trcommon.bt"
+#include "lists/tr10enums.bt"
+#include "lists/tr10symbols.bt"
+
+struct AnimNodeGraph;
+struct AnimStateGraph;
+
+typedef struct
+{
+    Ref valueRef;
+    if (CanSeekTo(valueRef))
+    {
+        SeekToRef(valueRef);
+        string value;
+        ReturnFromRef();
+    }
+} StringRef <optimize=false, read=value>;
+
+void ReadAimJointNode()
+{
+    unsigned int boneAimIndex;
+    unsigned int boneSightIndex;
+    byte orient;
+    FSkip(1);
+    short rampOnFrames;
+    short rampOffFrames;
+}
+
+void ReadAnimDrivenRagdollNode()
+{
+    byte deactivateRagdoll;
+    byte applyTerminalAnimation;
+    FSkip(2);
+    float flattenForce;
+    float limitRampUp;
+    float driveRampUp;
+    float initialFrictionMultiplier;
+    float frictionMultiplierRampTime;
+}
+
+void ReadAnimTargetNode()
+{
+    byte applyOutsideMotion;
+    byte calcOutsideMotion;
+    byte blendWithOriginalAnim;
+    byte useNewOriginalAnimBlend;
+}
+
+void ReadAnimTargetOneAxisNode()
+{
+    byte applyOutsideMotion;
+    FSkip(3);
+    float minSpeed;
+}
+
+void ReadApplyRotationNode()
+{
+    float rot[3];
+    ushort boneIndex;
+    byte debugThisNode;
+}
+
+void ReadApplyTranslationNode()
+{
+    float trans[3];
+    ushort boneIndex;
+    byte debugThisNode;
+}
+
+void ReadAutoHostedNode()
+{
+    ubyte hostedGraph;
+    byte handleGraphChanges;
+}
+
+typedef struct
+{
+    byte enabled;
+    char routeToInput;
+    ubyte numChecks;
+    FSkip(5);
+    Ref checksRef;
+    if (CanSeekTo(checksRef))
+    {
+        SeekToRef(checksRef);
+        char checks[numChecks];
+        ReturnFromRef();
+    }
+} BlendNodeLodChecks <optimize=false>;
+
+void ReadBlendNode()
+{
+    int blendType;
+    byte loopMode;
+    FSkip(3);
+    float playspeed;
+    byte syncInputs;
+    FSkip(3);
+    unsigned int syncGroup;
+    BlendNodeLodChecks lodChecks;
+    byte wrapQuatLogs;
+    ubyte ignoreForHeavy[1];
+}
+
+void ReadBoneSetNode()
+{
+    ubyte boneSet;
+}
+
+void ReadBoneSpringNode()
+{
+    ubyte boneSpringIndex;
+    FSkip(3);
+    float offsetScale;
+}
+
+void ReadBoneTransformNode()
+{
+    ushort boneIndex;
+    FSkip(2);
+    int worldOrObjectTransform;
+}
+
+void ReadCameraVsBoneYawOffsetNode()
+{
+    ushort bone;
+}
+
+void ReadFaceFxNode()
+{
+    float rampFrames;
+}
+
+void ReadFlagLogicNode()
+{
+    int type;
+    FSkip(4);
+    Ref debugDescriptionRef;
+    if (CanSeekTo(debugDescriptionRef))
+    {
+        SeekToRef(debugDescriptionRef);
+        string debugDescription;
+        ReturnFromRef();
+    }
+}
+
+void ReadFragmentNode()
+{
+    short animIdxInLibrary;
+    byte loopMode;
+    FSkip(1);
+    float playspeed;
+    Ref loopTriggersRef;
+    Ref endTriggersRef;
+    unsigned int loopTriggerCount;
+    if (CanSeekTo(loopTriggersRef))
+    {
+        SeekToRef(loopTriggersRef);
+        event loopTriggers[loopTriggerCount];
+        ReturnFromRef();
+    }
+    unsigned int endTriggerCount;
+    if (CanSeekTo(endTriggersRef))
+    {
+        SeekToRef(endTriggersRef);
+        event endTriggers[endTriggerCount];
+        ReturnFromRef();
+    }
+    char playFXMode;
+    char triggerTransitionMode;
+    FSkip(2);
+    unsigned int syncGroup;
+}
+
+void ReadHeadTrackingNode()
+{
+    unsigned int boneIndex;
+    byte drawDebug;
+    FSkip(3);
+    float orientYaw;
+    float orientPitch;
+    float orientRoll;
+    float horizontalRange;
+    float verticalRange;
+    float contribWeight;
+    float maxPitchDegreesPerSec;
+    float maxYawDegreesPerSec;
+    float proportionDeltaPerFrame;
+    float initialLookDir[3];
+    float initialUpDir[3];
+    byte targetIsDirection;
+}
+
+typedef struct
+{
+    StringRef name;
+    unsigned int hash;
+} AnimGraphHostedMovesetType <optimize=false, read=name.value>;
+
+typedef union
+{
+    byte numValues;
+    byte currentWeapon;
+    byte currentWeaponOverlay;
+    byte currentWeaponDBNDOverlay;
+    byte currentInteractObject;
+    byte currentMovingInteractObject;
+    byte currentOverlayHost;
+    byte currentInteractiveSequenceHost;
+    byte currentSeizeTarget;
+    byte currentMeleeTarget;
+    byte lastMeleeContact;
+    byte currentAdvertiseHost;
+    byte currentNavigationHelperHost;
+    byte currentCoverPointHost;
+    byte currentWayPointHost;
+    byte currentPortableHost;
+    byte currentMeleeAttackerWeaponHost;
+    byte ascenderGraph;
+    byte coverTouchOverlay;
+    byte playerGHOSTGraph;
+    byte notAnActualHostInstanceUseOnlyForCineBlendOutInterpOverride;
+    byte currentWeaponOrPortable;
+    AnimGraphHostedMovesetType customMovesetHost;
+    byte gearGrapple;
+    byte dialogueOverlay;
+    byte currentWeaponTreeHost;
+    byte none;
+} HostedAnimGraphsExtraParams;
+
+void ReadHostedNode()
+{
+    char hostedGraph;
+    FSkip(7);
+    HostedAnimGraphsExtraParams hostedGraphExtraParams;
+    byte handleGraphChanges;
+}
+
+void ReadHostedOverlayNode()
+{
+    char hostedGraph;
+    FSkip(3);
+    float interp;
+    ubyte curve[20];
+}
+
+void ReadMirrorNode()
+{
+    int interpFrameCount;
+}
+
+enum <int> ModifierNodeType
+{
+    ModifierNodeType_Timing,
+    ModifierNodeType_TimingFrames,
+    ModifierNodeType_RootTranslation
+};
+
+enum <int> ModifierNodeRootTranslationSubType
+{
+    ModifierNodeRootTranslationSubType_Absolute
+};
+
+void ReadModifierNode()
+{
+    ModifierNodeType modifierNodeType;
+    switch (modifierNodeType)
+    {
+        case ModifierNodeType_Timing:
+        case ModifierNodeType_TimingFrames:
+            int subType;
+            byte overwriteSyncParams;
+            byte dontModifyDuration;
+            byte loopMode;
+            FSkip(1);
+            float playspeed;
+            break;
+        
+        case ModifierNodeType_RootTranslation:
+            ModifierNodeRootTranslationSubType subType;
+            break;
+    }
+}
+
+typedef struct
+{
+    byte enabled;
+    ubyte numChecks;
+    FSkip(6);
+    Ref checksRef;
+    if (CanSeekTo(checksRef))
+    {
+        SeekToRef(checksRef);
+        char checks[numChecks];
+        ReturnFromRef();
+    }
+} OverlayPoseNodeLodChecks <optimize=false>;
+
+void ReadOverlayPoseNode()
+{
+    int overlayPoseType;
+    OverlayPoseNodeLodChecks lodChecks;
+    byte wrapQuatLogs;
+}
+
+void ReadPreviousPoseNode()
+{
+    byte rememberPoseAtNodeActiviation;
+}
+
+void ReadRagdollDataNode()
+{
+    ubyte ragdoll;
+}
+
+void ReadRagdollNode()
+{
+    byte deactivateRagdoll;
+    byte applyTerminalPose;
+    FSkip(2);
+    float limitRampUp;
+    float initialFrictionMultiplier;
+    float frictionMultiplierRampTime;
+}
+
+void ReadScalarCombineNode()
+{
+    int type;
+    FSkip(4);
+    StringRef debugDescription;
+    float defaultA;
+    float defaultB;
+}
+
+void ScalarCurveNode()
+{
+    float curve[100];
+    float xMin;
+    float xMax;
+    float yMin;
+    float yMax;
+    StringRef debugDescription;
+}
+
+void ReadScalarGeneratorNode()
+{
+    float curve[20];
+    int playMode;
+    float start;
+    float end;
+    int time;
+    byte continuousUpdate;
+}
+
+void ReadScalarToVectorNode()
+{
+    float vec[3];
+}
+
+void ReadSimpleIKNode()
+{
+    byte drawDebug;
+    FSkip(3);
+    unsigned int startIndex;
+    unsigned int midIndex;
+    unsigned int endIndex;
+    ubyte endEffectorIndexType;
+    FSkip(1);
+    short endEffectorIndex;
+}
+
+void ReadSyncNode()
+{
+    unsigned int syncTo;
+}
+
+void ReadSyncToCineNode()
+{
+    byte manuallySpecifySyncOffset;
+    FSkip(3);
+    int syncOffsetFrames;
+}
+
+void ReadVectorHeadingNode()
+{
+    float angleOffset;
+}
+
+void ReadVectorSubtractNode()
+{
+    float defaultA[3];
+    float defaultB[3];
+}
+
+void ReadWindNode()
+{
+    byte relativeToInstance;
+}
+
+void ReadNodeProperties(string type)
+{
+    switch (type)
+    {        
+        case "AimJoint":
+            ReadAimJointNode();
+            break;
+        case "AnimDrivenRagdoll":
+            ReadAnimDrivenRagdollNode();
+            break;
+        case "AnimTarget":
+            ReadAnimTargetNode();
+            break;
+        case "AnimTargetOneAxis":
+            ReadAnimTargetOneAxisNode();
+            break;
+        case "ApplyRotation":
+            ReadApplyRotationNode();
+            break;
+        case "ApplyTranslation":
+            ReadApplyTranslationNode();
+            break;
+        case "AutoHosted":
+            ReadAutoHostedNode();
+            break;
+        case "Blend":
+            ReadBlendNode();
+            break;
+        case "BoneSet":
+            ReadBoneSetNode();
+            break;
+        case "BoneSpring":
+            ReadBoneSpringNode();
+            break;
+        case "bonetransform":
+            ReadBoneTransformNode();
+            break;
+        case "FaceFxNode":
+            ReadFaceFxNode();
+            break;
+        case "FlagLogic":
+            ReadFlagLogicNode();
+            break;
+        case "Fragment":
+            ReadFragmentNode();
+            break;
+        case "HeadTracking":
+            ReadHeadTrackingNode();
+            break;
+        case "Hosted":
+            ReadHostedNode();
+            break;
+        case "HostedOverlay":
+            ReadHostedOverlayNode();
+            break;
+        case "Mirror":
+            ReadMirrorNode();
+            break;
+        case "Modifier":
+            ReadModifierNode();
+            break;
+        case "OverlayPose":
+            ReadOverlayPoseNode();
+            break;
+        case "PreviousPose":
+            ReadPreviousPoseNode();
+            break;
+        case "RagdollData":
+            ReadRagdollDataNode();
+            break;
+        case "Ragdoll":
+            ReadRagdollNode();
+            break;
+        case "ScalarCombine":
+            ReadScalarCombineNode();
+            break;
+        case "ScalarCurve":
+            ScalarCurveNode();
+            break;
+        case "ScalarGenerator":
+            ReadScalarGeneratorNode();
+            break;
+        case "ScalarToVector":
+            ReadScalarToVectorNode();
+            break;
+        case "SimpleIK":
+            ReadSimpleIKNode();
+            break;
+        case "Sync":
+            ReadSyncNode();
+            break;
+        case "SyncToCine":
+            ReadSyncToCineNode();
+            break;
+        case "VectorHeading":
+            ReadVectorHeadingNode();
+            break;
+        case "VectorSubtract":
+            ReadVectorSubtractNode();
+            break;
+        case "Wind":
+            ReadWindNode();
+            break;
+    }
+}
+
+enum <byte> AnimGraphNodeType
+{
+    AnimGraphNodeType_AnimNode,
+    AnimGraphNodeType_EmbeddedNodeGraph,
+    AnimGraphNodeType_EmbeddedStateGraph,
+    AnimGraphNodeType_CustomNode
+};
+
+typedef struct
+{
+    StringRef name;
+    AnimGraphNodeType type;
+    FSkip(7);
+    local int endPos = FTell() + 0x18;
+    switch (type)
+    {
+        case AnimGraphNodeType_AnimNode:
+            uint nodeTypeHash <format=hex>;
+            FSkip(4);
+            StringRef nodeTypeName;
+            Ref propertiesRef;
+            if (CanSeekTo(propertiesRef))
+            {
+                SeekToRef(propertiesRef);
+                ReadNodeProperties(nodeTypeName.value);
+                ReturnFromRef();
+            }
+            break;
+        
+        case AnimGraphNodeType_EmbeddedNodeGraph:
+            Ref nodeGraphRef;
+            if (CanSeekTo(nodeGraphRef))
+            {
+                SeekToRef(nodeGraphRef);
+                AnimNodeGraph graph;
+                ReturnFromRef();
+            }
+            break;
+        
+        case AnimGraphNodeType_EmbeddedStateGraph:
+            Ref stateGraphRef;
+            if (CanSeekTo(stateGraphRef))
+            {
+                SeekToRef(stateGraphRef);
+                AnimStateGraph stateGraph;
+                ReturnFromRef();
+            }
+            break;
+        
+        case AnimGraphNodeType_CustomNode:
+            int callback;
+            FSkip(4);
+            Ref inputSocketTypesRef;      // char*
+            Ref outputSocketTypesRef;
+            break;
+    }
+    FSeek(endPos);
+    StringRef dtpArrayIndex;
+} AnimGraphNode <optimize=false, read=name.value>;
+
+typedef struct
+{
+    ushort id;
+} Symbol <read=GetSymbolName(id)>;
+
+typedef struct
+{
+    Symbol srcSocketId;
+    Symbol dstSocketId;
+    short dstSocketIndex;
+    short srcSocketIndex;
+    ubyte srcNode;
+    ubyte dstNode;
+} AnimGraphEdge <read=Str(
+    "%s.%s -> %s.%s",
+    srcNode == 0xFF ? "[Inputs]"  : parentof(this).nodes[srcNode].name.value,
+    GetSymbolName(srcSocketId.id),
+    dstNode == 0xFF ? "[Outputs]" : parentof(this).nodes[dstNode].name.value,
+    GetSymbolName(dstSocketId.id)
+)>;
+
+enum <byte> AnimGraphDataType
+{
+    AnimGraphDataType_Pose,
+    AnimGraphDataType_Scalar,
+    AnimGraphDataType_Vector3,
+    AnimGraphDataType_Matrix,
+    AnimGraphDataType_BoneSet,
+    AnimGraphDataType_RagdollData,
+    AnimGraphDataType_IKData,
+    AnimGraphDataType_Flag,
+    AnimGraphDataType_Quat,
+    AnimGraphDataType_IKTarget
+};
+
+typedef struct
+{
+    StringRef name;
+    Symbol socketId;
+    Symbol rtValue;
+    FSkip(4);
+    local int typePos = FTell() + 0x10;
+    local AnimGraphDataType _type = ReadByte(typePos);
+    switch (_type)
+    {
+        case AnimGraphDataType_Pose:
+            Ref defaultValueRef;
+            break;
+        case AnimGraphDataType_Scalar:
+            float defaultValue;
+            break;
+        case AnimGraphDataType_Vector3:
+            Vector3 defaultValue;
+            break;
+        case AnimGraphDataType_Matrix:
+            Ref defaultValueRef;
+            if (CanSeekTo(matrixRef))
+            {
+                SeekToRef(defaultValueRef);
+                Matrix matrix;
+                ReturnFromRef();
+            }
+            break;
+        case AnimGraphDataType_BoneSet:
+            ubyte defaultValue;
+            break;
+        case AnimGraphDataType_RagdollData:
+            Ref defaultValueRef;
+            break;
+        case AnimGraphDataType_IKData:
+            Ref defaultValueRef;
+            break;
+        case AnimGraphDataType_Flag:
+            byte defaultValue;
+            break;
+        case AnimGraphDataType_Quat:
+            Quaternion defaultValue;
+            break;
+        case AnimGraphDataType_IKTarget:
+            Ref defaultValueRef;
+            break;
+    }
+    FSeek(typePos);
+    AnimGraphDataType type;
+    byte source;
+    FSkip(6);
+} GraphIOSocket <optimize=false, read=name.value>;
+
+typedef struct
+{
+    ubyte numNodes;
+    ubyte numEdges;
+    ubyte numInputs;
+    ubyte numOutputs;
+    FSkip(4);
+    Ref nodesRef;
+    if (CanSeekTo(nodesRef))
+    {
+        SeekToRef(nodesRef);
+        AnimGraphNode nodes[numNodes];
+        ReturnFromRef();
+    }
+    Ref edgesRef;
+    if (CanSeekTo(edgesRef))
+    {
+        SeekToRef(edgesRef);
+        AnimGraphEdge edges[numEdges];
+        ReturnFromRef();
+    }
+    Ref inputsRef;
+    if (CanSeekTo(inputsRef))
+    {
+        SeekToRef(inputsRef);
+        GraphIOSocket inputs[numInputs];
+        ReturnFromRef();
+    }
+    Ref outputsRef;
+    if (CanSeekTo(outputsRef))
+    {
+        SeekToRef(outputsRef);
+        GraphIOSocket outputs[numOutputs];
+        ReturnFromRef();
+    }
+} AnimNodeGraph <optimize=false>;
+
+typedef struct
+{
+    float low;
+    float high;
+    ushort rtVal;
+    byte makeInt;
+} TransientStateTypeRandItem;
+
+typedef struct
+{
+    ubyte randItemCount;
+    FSkip(7);
+    Ref randItemsRef;
+    if (CanSeekTo(randItemsRef))
+    {
+        SeekToRef(randItemsRef);
+        TransientStateTypeRandItem randItems[randItemCount];
+        ReturnFromRef();
+    }
+} TransientStateType <optimize=false>;
+
+typedef struct
+{
+    event event_;
+    FSkip(4);
+    Ref messageRef;
+    if (CanSeekTo(messageRef))
+    {
+        SeekToRef(messageRef);
+        string message;
+        ReturnFromRef();
+    }
+    byte sendToHost;
+    FSkip(7);
+} StateDoneEvent <optimize=false>;
+
+typedef struct
+{
+    int id;
+    int scAgentId;
+    ubyte translationSource;
+    ubyte rotationSource;
+    char hostedAnimGraphID;
+    FSkip(5);
+    HostedAnimGraphsExtraParams hostedAnimGraphTypeExtraParams;
+    FSkip(4);
+    Ref debugTextRef;
+    if (CanSeekTo(debugTextRef))
+    {
+        SeekToRef(debugTextRef);
+        string debugText;
+        ReturnFromRef();
+    }
+} StateUserData <optimize=false, read=debugText>;
+
+typedef struct
+{
+    Symbol rTFlag;
+    char operation;
+} RTFlagOperation <optimize=false>;
+
+enum <byte> AnimGraphType
+{
+    AnimGraphType_Nodes,
+    AnimGraphType_States,
+    AnimGraphType_TransientState
+};
+
+typedef struct
+{
+    StringRef name;
+    StringRef dtpArrayIndex;
+    Ref graphRef;
+    Ref doneEventsListRef;
+    StateUserData userData;
+    AnimGraphType graphType;
+    FSkip(7);
+    if (CanSeekTo(graphRef))
+    {
+        SeekToRef(graphRef);
+        switch (graphType)
+        {
+            case AnimGraphType_Nodes:
+                AnimNodeGraph nodeGraph;
+                break;
+            case AnimGraphType_States:
+                AnimStateGraph stateGraph;
+                break;
+            case AnimGraphType_TransientState:
+                TransientStateType transientState;
+                break;
+        }
+        ReturnFromRef();
+    }
+    Ref rtFlagOperationsEnterRef;
+    Ref rtFlagOperationsExitRef;
+    byte bSendStateDoneMessage;
+    byte bSendStateDoneMessageOnExit;
+    ubyte doneEventsCount;
+    if (CanSeekTo(doneEventsListRef))
+    {
+        SeekToRef(doneEventsListRef);
+        StateDoneEvent doneEventsList[doneEventsCount];
+        ReturnFromRef();
+    }
+    byte bUsePrevStateSnapshot;
+    byte assertOnEarlyExitAndNotDone;
+    FSkip(3);
+    unsigned int animCompleteID <format=hex>;
+    ubyte numRTFlagOperationsEnter;
+    if (CanSeekTo(rtFlagOperationsEnterRef))
+    {
+        SeekToRef(rtFlagOperationsEnterRef);
+        RTFlagOperation rtFlagOperationsEnter[numRTFlagOperationsEnter];
+        ReturnFromRef();
+    }
+    ubyte numRTFlagOperationsExit;
+    if (CanSeekTo(rtFlagOperationsExitRef))
+    {
+        SeekToRef(rtFlagOperationsExitRef);
+        RTFlagOperation rtFlagOperationsExit[numRTFlagOperationsExit];
+        ReturnFromRef();
+    }
+    FSkip(2);
+} State <optimize=false, read=name.value>;
+
+typedef struct
+{
+    ubyte values[20];
+} InterpCurve;
+
+enum <byte> TransitionConditionType
+{
+    TransitionConditionType_time,
+    TransitionConditionType_frame,
+    TransitionConditionType_percent,
+    TransitionConditionType_rtvalScalar,
+    TransitionConditionType_rtvalFlag,
+    TransitionConditionType_rtvalSymbol,
+    TransitionConditionType_PlayerTraitListIndex,
+    TransitionConditionType_AmmoType,
+    TransitionConditionType_DamageType,
+    TransitionConditionType_HitReactType,
+    TransitionConditionType_syncFrame,
+    TransitionConditionType_syncPercent,
+    TransitionConditionType_randTime,
+    TransitionConditionType_randFrame,
+    TransitionConditionType_randPercent,
+    TransitionConditionType_syncRandFrame,
+    TransitionConditionType_syncRandPercent,
+    TransitionConditionType_Network,
+    TransitionConditionType_IKChainStatus,
+    TransitionConditionType_NetData,
+    TransitionConditionType_MeleeMoveActiveID,
+    TransitionConditionType_HasCustomMovesetHost,
+    TransitionConditionType_AnimGraphGoal,
+    TransitionConditionType_TimeSinceGoalChange,
+    TransitionConditionType_StateControlCondition,
+    TransitionConditionType_InstancePersistentFlag,
+    TransitionConditionType_InstancePersistentScalar,
+    TransitionConditionType_GlobalPersistentFlag,
+    TransitionConditionType_GlobalPersistentScalar
+};
+
+typedef struct
+{
+    local int typePos = FTell() + 0x38;
+    local TransitionConditionType _type = ReadByte(typePos);
+    switch (_type)
+    {
+        case TransitionConditionType_time:
+        case TransitionConditionType_frame:
+        case TransitionConditionType_percent:
+            float rhs;
+            ubyte cmp;
+            break;
+        case TransitionConditionType_rtvalScalar:
+            ushort lhs;
+            FSkip(2);
+            float rhs;
+            ubyte cmp;
+            char source;
+            break;
+        case TransitionConditionType_rtvalFlag:
+            ushort lhs;
+            char source;
+            break;
+        case TransitionConditionType_rtvalSymbol:
+            ushort lhs;
+            ushort rhs;
+            char source;
+            break;
+        case TransitionConditionType_PlayerTraitListIndex:
+            ushort lhs;
+            char source;
+            break;
+        case TransitionConditionType_AmmoType:
+            unsigned int lhs;
+            char source;
+            break;
+        case TransitionConditionType_DamageType:
+            int lhs;
+            char source;
+            break;
+        case TransitionConditionType_HitReactType:
+            int lhs;
+            char source;
+            break;
+        case TransitionConditionType_syncFrame:
+        case TransitionConditionType_syncPercent:
+            unsigned int sync;
+            float rhs;
+            ubyte cmp;
+            break;
+        case TransitionConditionType_randTime:
+        case TransitionConditionType_randFrame:
+        case TransitionConditionType_randPercent:
+            float lower;
+            float upper;
+            ubyte cmp;
+            break;
+        case TransitionConditionType_syncRandFrame:
+        case TransitionConditionType_syncRandPercent:
+            unsigned int sync;
+            float lower;
+            float upper;
+            ubyte cmp;
+            break;
+        case TransitionConditionType_Network:
+            char lhs;
+            char source;
+            break;
+        case TransitionConditionType_IKChainStatus:
+            StringRef name;
+            uint hash;
+            int rhs;
+            break;
+        case TransitionConditionType_NetData:
+            // dtp::NetDataCondition*
+            break;
+        case TransitionConditionType_MeleeMoveActiveID:
+            StringRef name;
+            unsigned int lhs;
+            break;
+        case TransitionConditionType_HasCustomMovesetHost:
+            AnimGraphHostedMovesetType lhs;
+            break;
+        case TransitionConditionType_AnimGraphGoal:
+            // dtp::RTValGoalCondition
+            break;
+        case TransitionConditionType_TimeSinceGoalChange:
+            int lhs;
+            ubyte cmp;
+            FSkip(3);
+            float rhs;
+            char source;
+            break;
+        case TransitionConditionType_StateControlCondition:
+            // dtp::SCConditionDataWithAgent
+            break;
+        case TransitionConditionType_InstancePersistentFlag:
+            ushort name;
+            FSkip(2);
+            int type;
+            break;
+        case TransitionConditionType_InstancePersistentScalar:
+            ushort name;
+            FSkip(2);
+            int type;
+            float rhs;
+            ubyte cmp;
+            break;
+        case TransitionConditionType_GlobalPersistentFlag:
+        case TransitionConditionType_GlobalPersistentScalar:
+            ushort name;
+            FSkip(2);
+            int defaultValueType;
+            StringRef comment;
+            if (defaultValueType == 2)
+            {
+                float defaultValue;
+            }
+            else
+            {
+                int defaultValue;
+            }
+            
+            if (_type == TransitionConditionType_GlobalPersistentScalar)
+            {
+                float rhs;
+                ubyte cmp;
+            }
+            break;
+    }
+    FSeek(typePos);
+    TransitionConditionType type;
+    byte knot;
+    FSkip(6);
+} TransitionCondition <optimize=false>;
+
+typedef struct
+{
+    Ref conditionsRef;
+    ubyte numConditions;
+    if (CanSeekTo(conditionsRef))
+    {
+        SeekToRef(conditionsRef);
+        TransitionCondition conditions[numConditions];
+        ReturnFromRef();
+    }
+    byte enabled;
+} TransitionConditionGroup <optimize=false>;
+
+typedef struct
+{
+    event event_;
+    FSkip(4);
+    Ref messageRef;
+    if (CanSeekTo(messageRef))
+    {
+        SeekToRef(messageRef);
+        string message;
+        ReturnFromRef();
+    }
+    byte sendToHost;
+} PostTransitionEvent <optimize=false>;
+
+typedef struct
+{
+    int id;
+    int scAgentID;
+    StringRef debugText;
+} AnimStateTransitionUserData <optimize=false, read=debugText.value>;
+
+typedef struct
+{
+    float interp;
+    InterpCurve curve;
+    float startTime;
+    byte snapshotFrom;
+    byte snapshotTo;
+    char rootMotionMode;
+    byte enabled;
+    event trigger;
+    char triggerSource;
+    FSkip(3);
+    Ref conditionGroupsRef;
+    Ref rtFlagOperationsRef;
+    if (CanSeekTo(rtFlagOperationsRef))
+    {
+        SeekToRef(rtFlagOperationsRef);
+        RTFlagOperation rtFlagOperations;
+        ReturnFromRef();
+    }
+    Ref postTransitionEventsRef;
+    ubyte numPostTransitionEvents;
+    if (CanSeekTo(postTransitionEventsRef))
+    {
+        SeekToRef(postTransitionEventsRef);
+        PostTransitionEvent postTransitionEvents[numPostTransitionEvents];
+        ReturnFromRef();
+    }
+    byte postTransitionEventsEnabled;
+    FSkip(6);
+    AnimStateTransitionUserData userData;
+    ubyte srcNode;
+    ubyte destNode;
+    ubyte numConditionGroups;
+    if (CanSeekTo(conditionGroupsRef))
+    {
+        SeekToRef(conditionGroupsRef);
+        TransitionConditionGroup conditionGroups[numConditionGroups];
+        ReturnFromRef();
+    }
+    ubyte numRTFlagOperations;
+    ubyte transitionPriority;
+    byte syncStartTime : 1;
+    byte syncStartLoop : 1;
+    byte defaultTransition : 1;
+    byte correctSnapWhileInterpBehavior : 1;
+    byte _padding21 : 4;
+    byte showPassFailDebug;
+    FSkip(1);
+} Transition <optimize=false, read=userData.debugText.value>;
+
+typedef struct
+{
+    Ref statesRef;
+    Ref transitionsRef;
+    ubyte numStates;
+    if (CanSeekTo(statesRef))
+    {
+        SeekToRef(statesRef);
+        State states[numStates];
+        ReturnFromRef();
+    }
+    ubyte numTransitions;
+    if (CanSeekTo(transitionsRef))
+    {
+        SeekToRef(transitionsRef);
+        Transition transitions[numTransitions];
+        ReturnFromRef();
+    }
+    ubyte defaultState;
+    byte useStale;
+} AnimStateGraph <optimize=false>;
+
+RefDefinitions refDefinitions;
+int animLibraryId;
+FSkip(4);
+Ref stateGraphRef;
+if (CanSeekTo(stateGraphRef))
+{
+    SeekToRef(stateGraphRef);
+    AnimStateGraph stateGraph <open=true>;
+    ReturnFromRef();
+}

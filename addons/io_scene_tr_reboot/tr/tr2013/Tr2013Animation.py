@@ -1,8 +1,9 @@
 from array import array
 from ctypes import sizeof
 from enum import IntEnum
+from mathutils import Vector
 from typing import TYPE_CHECKING, NamedTuple, Protocol, Sequence, cast
-from io_scene_tr_reboot.tr.Animation import AnimationBase, BoneAnimationFrame, IAnimationFrame
+from io_scene_tr_reboot.tr.Animation import Animation, BoneAnimationFrame, IAnimationFrame
 from io_scene_tr_reboot.tr.Enumerations import CdcGame, ResourceType
 from io_scene_tr_reboot.tr.ResourceBuilder import ResourceBuilder
 from io_scene_tr_reboot.tr.ResourceKey import ResourceKey
@@ -97,7 +98,20 @@ class Tr2013BoneAnimationFrame(BoneAnimationFrame):
     rotation_angle_factor = 1.0
     position_factor = 1.0
 
-class Tr2013Animation(AnimationBase[Tr2013BoneAnimationFrame]):
+class Tr2013Animation(Animation):
+    def create_bone_frame(self, global_bone_id: int) -> BoneAnimationFrame:
+        return Tr2013BoneAnimationFrame(self.get_bone_position_offset(global_bone_id))
+
+    def get_bone_position_offset(self, global_bone_id: int) -> Vector:
+        bone_info = self.bone_infos.get(global_bone_id)
+        if bone_info is None or bone_info.parent_global_id is None:
+            return Vector()
+        else:
+            # Unlike Blender (and SOTTR), whose animations store bone positions relative to the bone's own rest position,
+            # TR2013 (and ROTTR) store values relative to the *parent* bone's position,
+            # so we need to subtract the rest position difference to compensate
+            return self.bone_infos[bone_info.parent_global_id].rest_matrix.translation - bone_info.rest_matrix.translation
+
     def read(self, reader: ResourceReader) -> None:
         header = self.read_header(reader)
         self.ms_per_frame = header.ms_per_frame
@@ -134,13 +148,13 @@ class Tr2013Animation(AnimationBase[Tr2013BoneAnimationFrame]):
         reader.seek(header.global_bone_ids_ref)
         global_bone_ids = reader.read_uint16_list(header.num_bones)
         for global_bone_id in global_bone_ids:
-            self.bone_tracks[global_bone_id] = self.read_bone_track(flag_reader, meta_reader, value_reader)
+            self.bone_tracks[global_bone_id] = self.read_bone_track(global_bone_id, flag_reader, meta_reader, value_reader)
 
-    def read_bone_track(self, flag_reader: ResourceReader, meta_reader: ResourceReader, value_reader: ResourceReader) -> list[Tr2013BoneAnimationFrame]:
+    def read_bone_track(self, global_bone_id: int, flag_reader: ResourceReader, meta_reader: ResourceReader, value_reader: ResourceReader) -> list[BoneAnimationFrame]:
         flags = self.read_bone_track_flags(flag_reader)
-        track = cast(list[Tr2013BoneAnimationFrame], [None] * self.num_frames)
+        track = cast(list[BoneAnimationFrame], [None] * self.num_frames)
         for i in range(self.num_frames):
-            track[i] = Tr2013BoneAnimationFrame()
+            track[i] = self.create_bone_frame(global_bone_id)
 
         for attr_idx in range(3):
             for elem_idx in range(4):
@@ -221,7 +235,7 @@ class Tr2013Animation(AnimationBase[Tr2013BoneAnimationFrame]):
         return values
 
     def read_linear_channel(self, channel_header: int, meta_reader: ResourceReader, value_reader: ResourceReader) -> Sequence[float]:
-        channel_info = self.read_linear_channel_info(channel_header, meta_reader)
+        channel_info         = self.read_linear_channel_info(channel_header, meta_reader)
         segment_durations    = self.read_linear_channel_segment_durations(meta_reader, channel_info)
         segment_start_values = self.read_linear_channel_segment_values(value_reader, channel_info, len(segment_durations))
 
@@ -385,7 +399,7 @@ class Tr2013Animation(AnimationBase[Tr2013BoneAnimationFrame]):
         writer.write_int32(0)
         writer.write_builder(value_writer)
 
-    def write_bone_track(self, track: list[Tr2013BoneAnimationFrame], flags_writer: ResourceBuilder, meta_writer: ResourceBuilder, value_writer: ResourceBuilder) -> None:
+    def write_bone_track(self, track: list[BoneAnimationFrame], flags_writer: ResourceBuilder, meta_writer: ResourceBuilder, value_writer: ResourceBuilder) -> None:
         flags = 0
         if track[0].rotation is not None:
             flags |= 0x007
