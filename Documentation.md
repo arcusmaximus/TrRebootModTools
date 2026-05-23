@@ -442,7 +442,7 @@ whatever way you want.
 > .trXdtp to your mod to get things working. You can identify this file using the first number in the
 > mesh names in Blender.
 
-The addon adds a custom "Tomb Raider Cloth" tab to Blender's sidebar (which you can open by pressing `N`).
+The addon adds a custom "Tomb Raider" tab to Blender's sidebar (which you can open by pressing `N`).
 This tab lets you perform various cloth-related operations:
 
 * **Bones**
@@ -460,7 +460,7 @@ This tab lets you perform various cloth-related operations:
 
   * **Unpin** (Pose mode)
 
-    Unpins the selected bones, marking them in grey. Unpinned bones (masses) are free to flutter around.
+    Unpins the selected bones, marking them in blue. Unpinned bones (masses) are free to flutter around.
 
   * **Bounceback strength** (Pose mode)
 
