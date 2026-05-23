@@ -438,9 +438,9 @@ whatever way you want.
 
 > [!TIP]
 > If there's only an empty cloth strip with ID 1111, that means the outfit doesn't have any physics.
-> You can still add physics in this case, but may have to include the object .tr11dtp file in your mod
-> to get things working. You can identify the object file by opening the .tr11objectref file
-> with the corresponding binary template.
+> You can still add physics in this case, but you need to manually add a copy of the outfit's object
+> .trXdtp to your mod to get things working. You can identify this file using the first number in the
+> mesh names in Blender.
 
 The addon adds a custom "Tomb Raider Cloth" tab to Blender's sidebar (which you can open by pressing `N`).
 This tab lets you perform various cloth-related operations:
