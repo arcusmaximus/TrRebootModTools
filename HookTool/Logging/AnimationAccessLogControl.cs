@@ -115,7 +115,7 @@ namespace TrRebootTools.HookTool.Logging
             {
                 progress.Begin("Extracting...");
 
-                Dictionary<ArchiveFileReference, ResourceCollection?> collections = new();
+                Dictionary<ArchiveFileDescriptor, ResourceCollection?> collections = new();
                 int numExtracted = 0;
                 foreach (AnimationLogEntry anim in anims)
                 {
@@ -126,10 +126,10 @@ namespace TrRebootTools.HookTool.Logging
                     if (collection == null)
                         continue;
 
-                    ResourceReference resourceRef = collection.ResourceReferences[anim.Resource.ResourceIndex];
+                    ResourceDescriptor resource = collection.Resources[anim.Resource.ResourceIndex];
 
-                    string filePath = Path.Combine(baseFolderPath, anim.Name + "." + ResourceNaming.GetFileName(ArchiveSet, collection, resourceRef, false));
-                    using Stream resourceStream = ArchiveSet.OpenResource(resourceRef);
+                    string filePath = Path.Combine(baseFolderPath, anim.Name + "." + ResourceNaming.GetFileName(ArchiveSet, collection, resource, false));
+                    using Stream resourceStream = ArchiveSet.OpenResource(resource);
                     using Stream fileStream = File.Create(filePath);
                     resourceStream.CopyTo(fileStream);
 

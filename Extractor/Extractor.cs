@@ -20,31 +20,31 @@ namespace TrRebootTools.Extractor
             _archiveSet = archiveSet;
         }
 
-        public void Extract(string folderPath, ICollection<ArchiveFileReference> fileRefs, ITaskProgress progress, CancellationToken cancellationToken)
+        public void Extract(string folderPath, ICollection<ArchiveFileDescriptor> files, ITaskProgress progress, CancellationToken cancellationToken)
         {
             if (OperatingSystem.IsWindows())
                 folderPath = @"\\?\" + Path.GetFullPath(folderPath);
 
-            progress = new MultiStepTaskProgress(progress, fileRefs.Count);
-            foreach (var fileRefsOfName in fileRefs.GroupBy(f => f.NameHash))
+            progress = new MultiStepTaskProgress(progress, files.Count);
+            foreach (var filesOfName in files.GroupBy(f => f.NameHash))
             {
-                foreach (ArchiveFileReference fileRef in fileRefsOfName)
+                foreach (ArchiveFileDescriptor file in filesOfName)
                 {
-                    string filePath = GetFilePath(folderPath, fileRef, fileRefsOfName.Count() > 1);
-                    ResourceCollection? collection = Path.GetExtension(filePath) == ".drm" ? _archiveSet.GetResourceCollection(fileRef) : null;
+                    string filePath = GetFilePath(folderPath, file, filesOfName.Count() > 1);
+                    ResourceCollection? collection = Path.GetExtension(filePath) == ".drm" ? _archiveSet.GetResourceCollection(file) : null;
                     if (collection != null)
                         ExtractResourceCollection(filePath, collection, progress, cancellationToken);
                     else
-                        ExtractFile(filePath, fileRef, progress);
+                        ExtractFile(filePath, file, progress);
                 }
             }
         }
 
-        private string GetFilePath(string baseFolderPath, ArchiveFileReference fileRef, bool forceLocaleFolder)
+        private string GetFilePath(string baseFolderPath, ArchiveFileDescriptor file, bool forceLocaleFolder)
         {
-            string fileName = CdcHash.Lookup(fileRef.NameHash, _archiveSet.Game, true) ?? fileRef.NameHash.ToString("X016");
-            if (forceLocaleFolder || (fileRef.Locale & 0xFFFFFFF) != 0xFFFFFFF)
-                fileName += Path.DirectorySeparatorChar + CdcGameInfo.Get(_archiveSet.Game).LocaleToLanguageCode(fileRef.Locale) + Path.GetExtension(fileName);
+            string fileName = CdcHash.Lookup(file.NameHash, _archiveSet.Game, true) ?? file.NameHash.ToString("X016");
+            if (forceLocaleFolder || (file.Locale & 0xFFFFFFF) != 0xFFFFFFF)
+                fileName += Path.DirectorySeparatorChar + CdcGameInfo.Get(_archiveSet.Game).LocaleToLanguageCode(file.Locale) + Path.GetExtension(fileName);
             
             return Path.Combine(baseFolderPath, fileName);
         }
@@ -57,26 +57,26 @@ namespace TrRebootTools.Extractor
 
                 Directory.CreateDirectory(folderPath);
 
-                GetResourceReferencesRecursive(collection, out Dictionary<string, ResourceReference> refResources, out HashSet<ResourceReference> otherResources);
+                GetResourceDescriptorsRecursive(collection, out Dictionary<string, ResourceDescriptor> refResources, out HashSet<ResourceDescriptor> otherResources);
                 int numExtractedResources = 0;
                 int numTotalResources = refResources.Count + otherResources.Count;
 
-                foreach ((string collectionName, ResourceReference resourceRef) in refResources)
+                foreach ((string collectionName, ResourceDescriptor resource) in refResources)
                 {
-                    string fileName = collectionName + ResourceNaming.GetExtension(resourceRef.Type, resourceRef.SubType, _archiveSet.Game);
+                    string fileName = collectionName + ResourceNaming.GetExtension(resource.Type, resource.SubType, _archiveSet.Game);
                     string filePath = Path.Combine(folderPath, fileName);
-                    ExtractResource(filePath, resourceRef, ref numExtractedResources, numTotalResources, progress, cancellationToken);
+                    ExtractResource(filePath, resource, ref numExtractedResources, numTotalResources, progress, cancellationToken);
                 }
 
                 ulong localeMask = CdcGameInfo.Get(collection.Game).LocalePlatformMask;
-                foreach (ResourceReference resourceRef in otherResources)
+                foreach (ResourceDescriptor resource in otherResources)
                 {
-                    if ((resourceRef.Locale & localeMask) != localeMask)
+                    if ((resource.Locale & localeMask) != localeMask)
                         continue;
 
-                    string filePath = Path.Combine(folderPath, ResourceNaming.GetFilePath(_archiveSet, collection, resourceRef));
+                    string filePath = Path.Combine(folderPath, ResourceNaming.GetFilePath(_archiveSet, collection, resource));
                     Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
-                    ExtractResource(filePath, resourceRef, ref numExtractedResources, numTotalResources, progress, cancellationToken);
+                    ExtractResource(filePath, resource, ref numExtractedResources, numTotalResources, progress, cancellationToken);
                 }
             }
             finally
@@ -85,16 +85,16 @@ namespace TrRebootTools.Extractor
             }
         }
 
-        private void ExtractResource(string filePath, ResourceReference resourceRef, ref int numExtractedResources, int numTotalResources, ITaskProgress progress, CancellationToken cancellationToken)
+        private void ExtractResource(string filePath, ResourceDescriptor resource, ref int numExtractedResources, int numTotalResources, ITaskProgress progress, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            using Stream? resourceStream = _archiveSet.TryOpenResource(resourceRef);
+            using Stream? resourceStream = _archiveSet.TryOpenResource(resource);
             if (resourceStream == null)
                 return;
 
             using Stream fileStream = File.Create(filePath);
-            switch (resourceRef.Type)
+            switch (resource.Type)
             {
                 case ResourceType.Texture:
                     CdcTexture texture = CdcTexture.Read(resourceStream);
@@ -119,7 +119,7 @@ namespace TrRebootTools.Extractor
             progress.Report((float)numExtractedResources / numTotalResources);
         }
 
-        private void GetResourceReferencesRecursive(ResourceCollection collection, out Dictionary<string, ResourceReference> refResources, out HashSet<ResourceReference> otherResources)
+        private void GetResourceDescriptorsRecursive(ResourceCollection collection, out Dictionary<string, ResourceDescriptor> refResources, out HashSet<ResourceDescriptor> otherResources)
         {
             refResources = new();
             otherResources = new();
@@ -136,10 +136,10 @@ namespace TrRebootTools.Extractor
                 string collectionName = Path.GetFileNameWithoutExtension(collectionPath);
 
                 bool isStreamLayer = collectionPath.Contains(Path.DirectorySeparatorChar + "streamlayers" + Path.DirectorySeparatorChar);
-                ResourceReference? mainResourceRef = collection.MainResourceReference;
-                foreach (ResourceReference resource in collection.ResourceReferences)
+                ResourceDescriptor? mainResource = collection.MainResource;
+                foreach (ResourceDescriptor resource in collection.Resources)
                 {
-                    if (resource == mainResourceRef)
+                    if (resource == mainResource)
                     {
                         ResourceSubType? subType = null;
                         if (resource.Type == ResourceType.Dtp)
@@ -152,7 +152,7 @@ namespace TrRebootTools.Extractor
 
                         if (subType != null)
                         {
-                            refResources[collectionName] = new ResourceReference(
+                            refResources[collectionName] = new ResourceDescriptor(
                                 ResourceType.Dtp,
                                 subType.Value,
                                 resource.Id,
@@ -191,13 +191,13 @@ namespace TrRebootTools.Extractor
             }
         }
 
-        private void ExtractFile(string filePath, ArchiveFileReference fileRef, ITaskProgress progress)
+        private void ExtractFile(string filePath, ArchiveFileDescriptor file, ITaskProgress progress)
         {
             try
             {
                 progress.Begin($"Extracting {Path.GetFileName(filePath)}...");
 
-                using Stream archiveFileStream = _archiveSet.OpenFile(fileRef);
+                using Stream archiveFileStream = _archiveSet.OpenFile(file);
 
                 string folderPath = Path.GetDirectoryName(filePath)!;
                 Directory.CreateDirectory(folderPath);

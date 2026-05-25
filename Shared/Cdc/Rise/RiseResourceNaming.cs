@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Text;
+using TrRebootTools.Shared.Serialization;
 using TrRebootTools.Shared.Util;
 
 namespace TrRebootTools.Shared.Cdc.Rise
@@ -35,24 +36,24 @@ namespace TrRebootTools.Shared.Cdc.Rise
 
         protected override Dictionary<(ResourceType, ResourceSubType), string[]> Mappings => _mappings;
 
-        protected internal override string? ReadOriginalFilePathInstance(ArchiveSet archiveSet, ResourceCollection collection, ResourceReference resourceRef)
+        protected internal override string? ReadOriginalFilePathInstance(ArchiveSet archiveSet, ResourceCollection collection, ResourceDescriptor resource)
         {
-            switch (resourceRef.Type)
+            if (archiveSet.GetArchive(resource.ArchiveId, resource.ArchiveSubId) == null)
+                return null;
+
+            switch (resource.Type)
             {
                 case ResourceType.Animation:
                     UpdateAnimationNameCache(archiveSet, collection);
-                    return _animNames.GetValueOrDefault(resourceRef.Id);
+                    return _animNames.GetValueOrDefault(resource.Id);
 
                 case ResourceType.Material:
                 case ResourceType.Model:
                 case ResourceType.SoundBank:
                 case ResourceType.Texture:
                 {
-                    if (archiveSet.GetArchive(resourceRef.ArchiveId, resourceRef.ArchiveSubId) == null)
-                        return null;
-
-                    using Stream stream = archiveSet.OpenResource(resourceRef);
-                    return ReadOriginalFilePathInstance(stream, resourceRef.Type);
+                    using Stream stream = archiveSet.OpenResource(resource);
+                    return ReadOriginalFilePathInstance(stream, resource.Type);
                 }
 
                 default:
@@ -80,7 +81,7 @@ namespace TrRebootTools.Shared.Cdc.Rise
             _animNames.Clear();
             _lastAnimCollection = collection;
 
-            foreach (ResourceReference libRef in collection.ResourceReferences.Where(r => r.Type == ResourceType.AnimationLib))
+            foreach (ResourceDescriptor libRef in collection.Resources.Where(r => r.Type == ResourceType.AnimationLib))
             {
                 MemoryStream stream = archiveSet.LoadResource(libRef);
                 RiseAnimationLibrary lib = new(stream);
@@ -93,38 +94,30 @@ namespace TrRebootTools.Shared.Cdc.Rise
 
         private static string? ReadMaterialOriginalFilePath(Stream stream)
         {
-            MemoryStream memStream = new();
-            stream.CopyTo(memStream);
-            memStream.Position = 0;
-
-            ResourceRefDefinitions refDefs = ResourceRefDefinitions.Create(null, memStream, CdcGame.Rise);
-            int? namePos = refDefs.GetInternalRefTarget(refDefs.Size + 0x48);
-            if (namePos == null)
+            ResourceReader reader = ResourceReader.Create(stream, CdcGame.Rise);
+            reader.Seek(0x48);
+            ResourceRef? nameRef = reader.ReadRef();
+            if (nameRef == null)
                 return null;
 
-            memStream.Position = namePos.Value;
-            return new BinaryReader(memStream).ReadZeroTerminatedString();
+            reader.Seek(nameRef);
+            return reader.ReadString();
         }
 
         private static string? ReadModelOriginalFilePath(Stream stream)
         {
-            MemoryStream memStream = new();
-            stream.CopyTo(memStream);
-            memStream.Position = 0;
-
-            ResourceRefDefinitions refDefs = ResourceRefDefinitions.Create(null, memStream, CdcGame.Rise);
-            int? modelDataPos = refDefs.GetInternalRefTarget(refDefs.Size);
-            if (modelDataPos == null)
+            ResourceReader reader = ResourceReader.Create(stream, CdcGame.Rise);
+            ResourceRef? modelDataRef = reader.ReadRef();
+            if (modelDataRef == null)
                 return null;
 
-            BinaryReader reader = new BinaryReader(memStream);
-            memStream.Position = modelDataPos.Value + 0xC0;
-            int namePos = reader.ReadInt32();
-            if (namePos <= 0)
+            reader.Seek(modelDataRef + 0xC0);
+            int nameOffset = reader.ReadInt32();
+            if (nameOffset <= 0)
                 return null;
 
-            memStream.Position = modelDataPos.Value + namePos;
-            return reader.ReadZeroTerminatedString();
+            reader.Seek(modelDataRef + nameOffset);
+            return reader.ReadString();
         }
 
         private static string? ReadSoundOriginalFilePath(Stream stream)

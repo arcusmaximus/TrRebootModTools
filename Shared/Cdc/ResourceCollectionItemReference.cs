@@ -2,5 +2,5 @@
 
 namespace TrRebootTools.Shared.Cdc
 {
-    public record ResourceCollectionItemReference(ArchiveFileReference CollectionReference, int ResourceIndex);
+    public record ResourceCollectionItemReference(ArchiveFileDescriptor CollectionReference, int ResourceIndex);
 }

@@ -2,12 +2,12 @@ from ctypes import sizeof
 from typing import TYPE_CHECKING, cast
 from io_scene_tr_reboot.tr.ResourceBuilder import ResourceBuilder
 from io_scene_tr_reboot.tr.ResourceReader import ResourceReader
-from io_scene_tr_reboot.tr.rise.RiseHair import HairAssetBoundingBox, HairAssetCollisionData, HairAssetMasterStrands, HairAssetMasterVertices, HairAssetRange, HairAssetSlaveStrands, HairAssetSlaveVertices, IHairAsset, IHairAssetRenderingData, RiseHair
+from io_scene_tr_reboot.tr.rise.RiseHair import HairStrandReference, HairAssetBoundingBox, HairAssetCollisionData, HairAssetMasterStrands, HairAssetMasterVertices, HairAssetRange, HairAssetSlaveStrands, HairAssetSlaveVertices, IHairAsset, IHairAssetRenderingData, RiseHair
 from io_scene_tr_reboot.util.CStruct import CFloat, CInt, CStruct64, CUInt
 from io_scene_tr_reboot.util.CStructTypeMappings import CVec3
 
 class HairAssetRenderingData(CStruct64, IHairAssetRenderingData if TYPE_CHECKING else object):
-    slave_strip_indices: HairAssetRange
+    index_buffer: HairAssetRange
     offset_direction: HairAssetRange
 
 assert(sizeof(HairAssetRenderingData) == 0x10)
@@ -51,8 +51,8 @@ class ShadowHair(RiseHair):
     def create_rendering_data(self) -> IHairAssetRenderingData:
         return HairAssetRenderingData()
 
-    def append_rendering_data(self, writer: ResourceBuilder, asset: IHairAsset) -> None:
-        super().append_rendering_data(writer, asset)
+    def append_rendering_data(self, writer: ResourceBuilder, asset: IHairAsset, slave_strands: list[HairStrandReference]) -> None:
+        super().append_rendering_data(writer, asset, slave_strands)
 
         rendering_data = cast(HairAssetRenderingData, asset.rendering_data)
         rendering_data.offset_direction = self.append_float_array(writer, [2, -1, 1])

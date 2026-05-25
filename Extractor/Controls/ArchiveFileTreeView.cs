@@ -8,7 +8,7 @@ using TrRebootTools.Shared.Util;
 
 namespace TrRebootTools.Extractor.Controls
 {
-    internal class ArchiveFileTreeView : FileTreeView<ArchiveFileReference>
+    internal class ArchiveFileTreeView : FileTreeView<ArchiveFileDescriptor>
     {
         private static readonly Dictionary<string, Bitmap> ExtensionImages =
             new()
@@ -32,7 +32,7 @@ namespace TrRebootTools.Extractor.Controls
         {
             FileTreeNode rootNode = new("", FileTreeNodeType.Folder);
             CdcGameInfo gameInfo = CdcGameInfo.Get(archiveSet.Game);
-            foreach (ArchiveFileReference file in archiveSet.Files)
+            foreach (ArchiveFileDescriptor file in archiveSet.Files)
             {
                 string? name = CdcHash.Lookup(file.NameHash, archiveSet.Game);
                 if (name == null)

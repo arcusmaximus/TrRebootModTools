@@ -20,7 +20,7 @@ namespace TrRebootTools.Shared.Cdc
         private readonly object _lock = new();
         private readonly Dictionary<(int Id, int SubId), Archive> _archives = new();
         private readonly List<Archive> _duplicateArchives = [];
-        private readonly Dictionary<ArchiveFileKey, ArchiveFileReference> _files = new();
+        private readonly Dictionary<ArchiveFileKey, ArchiveFileDescriptor> _files = new();
 
         public static ArchiveSet Open(string folderPath, bool includeGame, bool includeMods, CdcGame game)
         {
@@ -65,7 +65,7 @@ namespace TrRebootTools.Shared.Cdc
 
             foreach (Archive archive in GetSortedArchives())
             {
-                foreach (ArchiveFileReference file in archive.Files)
+                foreach (ArchiveFileDescriptor file in archive.Files)
                 {
                     _files[file] = file;
                 }
@@ -90,7 +90,7 @@ namespace TrRebootTools.Shared.Cdc
             return _archives.GetValueOrDefault((id, subId));
         }
 
-        public IReadOnlyCollection<ArchiveFileReference> Files => _files.Values;
+        public IReadOnlyCollection<ArchiveFileDescriptor> Files => _files.Values;
 
         private void EnsureFlattenedModArchiveBackup()
         {
@@ -207,7 +207,7 @@ namespace TrRebootTools.Shared.Cdc
             lock (_lock)
             {
                 _archives.Add((archive.Id, archive.SubId), archive);
-                UpdateResourceReferences(gameResourceUsageCache, progress, cancellationToken);
+                UpdateResourceDescriptors(gameResourceUsageCache, progress, cancellationToken);
             }
         }
 
@@ -233,7 +233,7 @@ namespace TrRebootTools.Shared.Cdc
                         archive.MetaData.Enabled = true;
                     }
 
-                    UpdateResourceReferences(gameResourceUsageCache, progress, cancellationToken);
+                    UpdateResourceDescriptors(gameResourceUsageCache, progress, cancellationToken);
                 }
                 finally
                 {
@@ -273,7 +273,7 @@ namespace TrRebootTools.Shared.Cdc
                         archive.MetaData.Enabled = false;
                     }
 
-                    UpdateResourceReferences(gameResourceUsageCache, progress, cancellationToken);
+                    UpdateResourceDescriptors(gameResourceUsageCache, progress, cancellationToken);
                 }
                 finally
                 {
@@ -304,7 +304,7 @@ namespace TrRebootTools.Shared.Cdc
             }
         }
 
-        private void UpdateResourceReferences(ResourceUsageCache gameResourceUsageCache, ITaskProgress? progress, CancellationToken cancellationToken)
+        private void UpdateResourceDescriptors(ResourceUsageCache gameResourceUsageCache, ITaskProgress? progress, CancellationToken cancellationToken)
         {
             List<Archive> sortedArchives = GetSortedArchives();
             int firstModArchiveIdx = sortedArchives.IndexOf(a => a.ModName != null);
@@ -314,7 +314,7 @@ namespace TrRebootTools.Shared.Cdc
             _files.Clear();
             foreach (Archive archive in sortedArchives.Take(firstModArchiveIdx))
             {
-                foreach (ArchiveFileReference file in archive.Files)
+                foreach (ArchiveFileDescriptor file in archive.Files)
                 {
                     _files[file] = file;
                 }
@@ -330,10 +330,10 @@ namespace TrRebootTools.Shared.Cdc
 
             int numUpdatedFiles = 0;
             HashSet<int> archiveIds = sortedArchives.Select(a => a.Id).ToHashSet();
-            Dictionary<ResourceKey, ResourceReference> modResourceRefs = new();
+            Dictionary<ResourceKey, ResourceDescriptor> modResources = new();
             foreach (Archive archive in sortedArchives.Skip(firstModArchiveIdx))
             {
-                foreach (ArchiveFileReference file in archive.Files)
+                foreach (ArchiveFileDescriptor file in archive.Files)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
@@ -348,30 +348,30 @@ namespace TrRebootTools.Shared.Cdc
                     }
 
                     bool changesMade = false;
-                    for (int resourceIdx = 0; resourceIdx < collection.ResourceReferences.Count; resourceIdx++)
+                    for (int resourceIdx = 0; resourceIdx < collection.Resources.Count; resourceIdx++)
                     {
-                        ResourceReference resourceRef = collection.ResourceReferences[resourceIdx];
-                        if (resourceRef.ArchiveId == archive.Id && resourceRef.ArchiveSubId == archive.SubId)
+                        ResourceDescriptor resource = collection.Resources[resourceIdx];
+                        if (resource.ArchiveId == archive.Id && resource.ArchiveSubId == archive.SubId)
                         {
-                            resourceUsageCache.AddResourceReference(this, collection, resourceIdx);
-                            modResourceRefs[resourceRef] = resourceRef;
+                            resourceUsageCache.AddResource(this, collection, resourceIdx);
+                            modResources[resource] = resource;
                         }
-                        else if (modResourceRefs.TryGetValue(resourceRef, out ResourceReference? modResourceRef) &&
-                                 (resourceRef.ArchiveId != modResourceRef.ArchiveId || resourceRef.ArchiveSubId != modResourceRef.ArchiveSubId))
+                        else if (modResources.TryGetValue(resource, out ResourceDescriptor? modResource) &&
+                                 (resource.ArchiveId != modResource.ArchiveId || resource.ArchiveSubId != modResource.ArchiveSubId))
                         {
-                            collection.UpdateResourceReference(resourceIdx, modResourceRef);
+                            collection.Set(resourceIdx, modResource);
                             changesMade = true;
                         }
-                        else if (!archiveIds.Contains(resourceRef.ArchiveId))
+                        else if (!archiveIds.Contains(resource.ArchiveId))
                         {
-                            ResourceReference? gameResourceRef = resourceUsageCache.GetResourceReference(this, resourceRef);
-                            if (gameResourceRef == null)
+                            ResourceDescriptor? gameResource = resourceUsageCache.GetResourceDescriptor(this, resource);
+                            if (gameResource == null)
                             {
-                                gameResourceRef = new ResourceReference(
-                                    resourceRef.Type,
-                                    resourceRef.SubType,
-                                    resourceRef.Id,
-                                    resourceRef.Locale,
+                                gameResource = new ResourceDescriptor(
+                                    resource.Type,
+                                    resource.SubType,
+                                    resource.Id,
+                                    resource.Locale,
                                     sortedArchives[0].Id,
                                     sortedArchives[0].SubId,
                                     0,
@@ -382,7 +382,7 @@ namespace TrRebootTools.Shared.Cdc
                                     0
                                 ) { Enabled = false };
                             }
-                            collection.UpdateResourceReference(resourceIdx, gameResourceRef);
+                            collection.Set(resourceIdx, gameResource);
                             changesMade = true;
                         }
                     }
@@ -398,60 +398,72 @@ namespace TrRebootTools.Shared.Cdc
             }
         }
 
-        public ArchiveFileReference? GetFileReference(ArchiveFileKey fileId)
+        public ArchiveFileDescriptor? GetFile(ArchiveFileKey fileId)
         {
-            return GetFileReference(fileId.NameHash, fileId.Locale);
+            return GetFile(fileId.NameHash, fileId.Locale);
         }
 
-        public ArchiveFileReference? GetFileReference(ulong nameHash, ulong locale = 0xFFFFFFFFFFFFFFFF)
+        public ArchiveFileDescriptor? GetFile(ulong nameHash, ulong locale = 0xFFFFFFFFFFFFFFFF)
         {
             return _files.GetValueOrDefault(new ArchiveFileKey(nameHash, locale));
         }
 
-        public ArchiveFileReference? GetFileReference(string name, ulong locale = 0xFFFFFFFFFFFFFFFF)
+        public ArchiveFileDescriptor? GetFile(string name, ulong locale = 0xFFFFFFFFFFFFFFFF)
         {
-            return GetFileReference(CdcHash.Calculate(name, Game), locale);
+            return GetFile(CdcHash.Calculate(name, Game), locale);
         }
 
-        public ResourceCollection? GetResourceCollection(ArchiveFileReference file)
+        public ResourceCollection? GetResourceCollection(ArchiveFileDescriptor file)
         {
             return _archives[(file.ArchiveId, file.ArchiveSubId)].GetResourceCollection(file);
         }
 
         public ResourceCollection? GetResourceCollection(ulong nameHash, ulong locale = 0xFFFFFFFFFFFFFFFF)
         {
-            ArchiveFileReference? fileRef = GetFileReference(nameHash, locale);
-            return fileRef != null ? GetResourceCollection(fileRef) : null;
+            ArchiveFileDescriptor? file = GetFile(nameHash, locale);
+            return file != null ? GetResourceCollection(file) : null;
         }
 
         public ResourceCollection? GetResourceCollection(string name, ulong locale = 0xFFFFFFFFFFFFFFFF)
         {
-            ArchiveFileReference? fileRef = GetFileReference(name, locale);
-            return fileRef != null ? GetResourceCollection(fileRef) : null;
+            ArchiveFileDescriptor? file = GetFile(name, locale);
+            return file != null ? GetResourceCollection(file) : null;
         }
 
-        public Stream OpenFile(ArchiveFileReference fileRef)
+        public Stream OpenFile(ArchiveFileDescriptor file)
         {
-            return _archives[(fileRef.ArchiveId, fileRef.ArchiveSubId)].OpenFile(fileRef);
+            return _archives[(file.ArchiveId, file.ArchiveSubId)].OpenFile(file);
         }
 
-        public Stream OpenResource(ResourceReference resourceRef)
+        public Stream OpenResource(ResourceDescriptor resource)
         {
-            return _archives[(resourceRef.ArchiveId, resourceRef.ArchiveSubId)].OpenResource(resourceRef);
+            return _archives[(resource.ArchiveId, resource.ArchiveSubId)].OpenResource(resource);
         }
 
-        public MemoryStream LoadResource(ResourceReference resourceRef)
+        public Stream? TryOpenResource(ResourceDescriptor resource)
         {
-            using Stream readStream = OpenResource(resourceRef);
+            return _archives.GetValueOrDefault((resource.ArchiveId, resource.ArchiveSubId))?.OpenResource(resource);
+        }
+
+        public MemoryStream LoadResource(ResourceDescriptor resource)
+        {
+            MemoryStream? stream = TryLoadResource(resource);
+            if (stream == null)
+                throw new FileNotFoundException();
+
+            return stream;
+        }
+
+        public MemoryStream? TryLoadResource(ResourceDescriptor resource)
+        {
+            using Stream? readStream = TryOpenResource(resource);
+            if (readStream == null)
+                return null;
+
             MemoryStream memStream = new();
             readStream.CopyTo(memStream);
             memStream.Position = 0;
             return memStream;
-        }
-
-        public Stream? TryOpenResource(ResourceReference resourceRef)
-        {
-            return _archives.GetValueOrDefault((resourceRef.ArchiveId, resourceRef.ArchiveSubId))?.OpenResource(resourceRef);
         }
 
         public virtual List<Archive> GetSortedArchives()

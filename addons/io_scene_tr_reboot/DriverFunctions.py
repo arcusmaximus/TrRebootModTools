@@ -141,15 +141,15 @@ class DriverFunctions:
     ) -> float:
         bone_rest_quat = Quaternion(bone_rest_rotation)
         bone_quat = Quaternion(bone_rotation)
-        if bone_flipped != 0:
-            bone_rest_quat.invert()
-            bone_quat.invert()
+        #if bone_flipped != 0:
+        #    bone_rest_quat.invert()
+        #    bone_quat.invert()
 
         parent_bone_rest_quat = Quaternion(parent_bone_rest_rotation)
         parent_bone_quat = Quaternion(parent_bone_rotation)
-        if parent_bone_flipped != 0:
-            parent_bone_rest_quat.invert()
-            parent_bone_quat.invert()
+        #if parent_bone_flipped != 0:
+        #    parent_bone_rest_quat.invert()
+        #    parent_bone_quat.invert()
 
         bone_matrix = (bone_quat @ bone_rest_quat.inverted()).to_matrix()
         parent_bone_matrix = (parent_bone_quat @ parent_bone_rest_quat.inverted()).to_matrix()
@@ -183,15 +183,15 @@ class DriverFunctions:
     ) -> float:
         bone_rest_quat = Quaternion(bone_rest_rotation)
         bone_quat = Quaternion(bone_rotation)
-        if bone_flipped != 0:
-            bone_rest_quat.invert()
-            bone_quat.invert()
+        #if bone_flipped != 0:
+        #    bone_rest_quat.invert()
+        #    bone_quat.invert()
 
         parent_bone_rest_quat = Quaternion(parent_bone_rest_rotation)
         parent_bone_quat = Quaternion(parent_bone_rotation)
-        if parent_bone_flipped != 0:
-            parent_bone_rest_quat.invert()
-            parent_bone_quat.invert()
+        #if parent_bone_flipped != 0:
+        #    parent_bone_rest_quat.invert()
+        #    parent_bone_quat.invert()
 
         bone_matrix = (bone_quat @ bone_rest_quat.inverted()).to_matrix()
         parent_bone_matrix = (parent_bone_quat @ parent_bone_rest_quat.inverted()).to_matrix()

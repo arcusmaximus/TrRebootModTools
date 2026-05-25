@@ -193,7 +193,7 @@ namespace TrRebootTools.ModManager.Mod
 
             using Stream stream = File.OpenRead(collectionFilePath);
             ResourceCollection collection = ResourceCollection.Open(0, 0, stream, game);
-            resourceKey = collection.ResourceReferences[int.Parse(match.Groups[1].Value) - 1];
+            resourceKey = collection.Resources[int.Parse(match.Groups[1].Value) - 1];
             return true;
         }
 
@@ -210,8 +210,8 @@ namespace TrRebootTools.ModManager.Mod
                 if (!int.TryParse(Path.GetFileNameWithoutExtension(wemFilePath), out int soundId))
                     continue;
 
-                ArchiveFileReference? fileRef = archiveSet.GetFileReference(wemFileKey);
-                if (fileRef == null)
+                ArchiveFileDescriptor? file = archiveSet.GetFile(wemFileKey);
+                if (file == null)
                     throw new Exception($"{Path.GetFileName(wemFilePath)} in the mod was not found in the game's original files; incorrect subfolder?");
 
                 foreach (WwiseSoundBankItemReference soundUsage in resourceUsageCache.GetWwiseSoundUsages(soundId))
@@ -226,18 +226,18 @@ namespace TrRebootTools.ModManager.Mod
                     WwiseSoundBank? bank = virtualSoundBanks.GetValueOrDefault(bankResourceKey);
                     if (bank == null)
                     {
-                        ResourceReference? bankResourceRef = resourceUsageCache.GetResourceReference(archiveSet, bankResourceKey);
-                        if (bankResourceRef == null)
+                        ResourceDescriptor? bankResource = resourceUsageCache.GetResourceDescriptor(archiveSet, bankResourceKey);
+                        if (bankResource == null)
                             continue;
 
-                        using (Stream stream = archiveSet.OpenResource(bankResourceRef))
+                        using (Stream stream = archiveSet.OpenResource(bankResource))
                         {
                             bank = new WwiseSoundBank(stream);
                         }
                         virtualSoundBanks.Add(bankResourceKey, bank);
                     }
 
-                    if (bank.EmbeddedSounds.GetValueOrDefault(soundId).Count == fileRef.Length)
+                    if (bank.EmbeddedSounds.GetValueOrDefault(soundId).Count == file.Length)
                     {
                         using (Stream stream = OpenFile(files, wemFileKey, archiveSet)!)
                         {
@@ -291,12 +291,12 @@ namespace TrRebootTools.ModManager.Mod
 
         private static Stream GetPatchedLocalsBin(Stream jsonStream, ArchiveFileKey fileKey, ArchiveSet archiveSet)
         {
-            ArchiveFileReference? fileRef = archiveSet.GetFileReference(fileKey);
-            if (fileRef == null)
+            ArchiveFileDescriptor? file = archiveSet.GetFile(fileKey);
+            if (file == null)
                 throw new Exception($"File {fileKey} not found for locals.bin");
 
             LocalsBin locals;
-            using (Stream origStream = archiveSet.OpenFile(fileRef))
+            using (Stream origStream = archiveSet.OpenFile(file))
             {
                 locals = LocalsBin.Open(origStream, archiveSet.Game);
             }
@@ -335,12 +335,12 @@ namespace TrRebootTools.ModManager.Mod
             if (modSound.Chunks.OfType<WwiseSound.CueChunk>().Any())
                 return modSoundFileStream;
 
-            ArchiveFileReference? fileRef = archiveSet.GetFileReference(fileKey);
-            if (fileRef == null)
+            ArchiveFileDescriptor? file = archiveSet.GetFile(fileKey);
+            if (file == null)
                 return modSoundFileStream;
 
             WwiseSound origSound;
-            using (Stream origSoundStream = archiveSet.OpenFile(fileRef))
+            using (Stream origSoundStream = archiveSet.OpenFile(file))
             {
                 origSound = new WwiseSound(origSoundStream, "Vanilla " + Path.GetFileName(modSoundFilePath));
             }
@@ -373,11 +373,11 @@ namespace TrRebootTools.ModManager.Mod
 
         private static Stream GetIps32PatchedStream(Stream ipsStream, ArchiveFileKey fileKey, ArchiveSet archiveSet)
         {
-            ArchiveFileReference? fileRef = archiveSet.GetFileReference(fileKey);
-            if (fileRef == null)
+            ArchiveFileDescriptor? file = archiveSet.GetFile(fileKey);
+            if (file == null)
                 throw new Exception($"File {fileKey} not found for IPS32 patching");
 
-            using Stream fileStream = archiveSet.OpenFile(fileRef);
+            using Stream fileStream = archiveSet.OpenFile(file);
             byte[] data = new byte[fileStream.Length];
             fileStream.Read(data, 0, data.Length);
 
@@ -466,11 +466,11 @@ namespace TrRebootTools.ModManager.Mod
 
         private static uint GetOriginalTextureFormat(ResourceKey resourceKey, ArchiveSet archiveSet, ResourceUsageCache resourceUsageCache)
         {
-            ResourceReference? resourceRef = resourceUsageCache.GetResourceReference(archiveSet, resourceKey);
-            if (resourceRef == null)
+            ResourceDescriptor? resource = resourceUsageCache.GetResourceDescriptor(archiveSet, resourceKey);
+            if (resource == null)
                 return 0;
 
-            using Stream origTextureStream = archiveSet.OpenResource(resourceRef);
+            using Stream origTextureStream = archiveSet.OpenResource(resource);
             BinaryReader reader = new BinaryReader(origTextureStream);
             CdcTexture.CdcTextureHeader header = reader.ReadStruct<CdcTexture.CdcTextureHeader>();
             return header.Format;

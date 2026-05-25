@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace TrRebootTools.Shared.Util
@@ -111,24 +111,19 @@ namespace TrRebootTools.Shared.Util
             }
         }
 
-        public static unsafe T ReadStruct<T>(this BinaryReader reader)
+        public static T ReadStruct<T>(this BinaryReader reader)
             where T : unmanaged
         {
-            reader.BaseStream.Read(TempBuffer, 0, Unsafe.SizeOf<T>());
-            fixed (byte* pBuffer = TempBuffer)
-            {
-                return Unsafe.Read<T>(pBuffer);
-            }
+            Span<T> buffer = stackalloc T[1];
+            reader.BaseStream.Read(MemoryMarshal.AsBytes(buffer));
+            return buffer[0];
         }
 
-        public static unsafe void WriteStruct<T>(this BinaryWriter writer, T data)
+        public static void WriteStruct<T>(this BinaryWriter writer, in T data)
             where T : unmanaged
         {
-            fixed (byte* pBuffer = TempBuffer)
-            {
-                Unsafe.Write(pBuffer, data);
-            }
-            writer.BaseStream.Write(TempBuffer, 0, Unsafe.SizeOf<T>());
+            ReadOnlySpan<T> buffer = [data];
+            writer.BaseStream.Write(MemoryMarshal.AsBytes(buffer));
         }
 
         public static void CopySegmentTo(this Stream from, long offset, long length, Stream to)

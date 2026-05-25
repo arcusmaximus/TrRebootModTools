@@ -1,6 +1,8 @@
-﻿namespace TrRebootTools.Shared.Util
+﻿using TrRebootTools.Shared.Serialization;
+
+namespace TrRebootTools.Shared.Util
 {
-    public class Vec4
+    public partial class Vec4 : IResourceStruct
     {
         public Vec4()
         {
@@ -14,10 +16,10 @@
             W = w;
         }
 
-        public float X { get; set; }
-        public float Y { get; set; }
-        public float Z { get; set; }
-        public float W { get; set; }
+        public float X;
+        public float Y;
+        public float Z;
+        public float W;
 
         public override string ToString()
         {

@@ -21,10 +21,10 @@ namespace TrRebootTools.Shared.Cdc.Tr2013
 
         protected override int DependencyLocaleSize => 0;
 
-        protected override ResourceReference MakeResourceReference(ResourceIdentification identification, ResourceLocation location)
+        protected override ResourceDescriptor MakeResourceDescriptor(ResourceIdentification identification, ResourceLocation location)
         {
             ResourceKey resourceKey = AdjustResourceKeyAfterRead(location.ArchiveId, new ResourceKey((ResourceType)location.Type, location.Id));
-            return new ResourceReference(
+            return new ResourceDescriptor(
                 resourceKey.Type,
                 (ResourceSubType)identification.SubType,
                 resourceKey.Id,
@@ -40,33 +40,33 @@ namespace TrRebootTools.Shared.Cdc.Tr2013
             ) { Enabled = identification.Type != (byte)ResourceType.Empty };
         }
 
-        protected override ResourceIdentification MakeResourceIdentification(ResourceReference resourceRef)
+        protected override ResourceIdentification MakeResourceIdentification(ResourceDescriptor resourceDesc)
         {
-            ResourceKey resourceKey = AdjustResourceKeyBeforeWrite(resourceRef.ArchiveId, resourceRef);
+            ResourceKey resourceKey = AdjustResourceKeyBeforeWrite(resourceDesc.ArchiveId, resourceDesc);
             return new ResourceIdentification
             {
-                Type = (byte)resourceRef.Type,
-                SubType = (int)resourceRef.SubType,
+                Type = (byte)resourceDesc.Type,
+                SubType = (int)resourceDesc.SubType,
                 Id = resourceKey.Id,
-                Locale = (uint)resourceRef.Locale
+                Locale = (uint)resourceDesc.Locale
             };
         }
 
-        protected override ResourceLocation MakeResourceLocation(ResourceReference resourceRef)
+        protected override ResourceLocation MakeResourceLocation(ResourceDescriptor resourceDesc)
         {
-            ResourceKey resourceKey = AdjustResourceKeyBeforeWrite(resourceRef.ArchiveId, resourceRef);
+            ResourceKey resourceKey = AdjustResourceKeyBeforeWrite(resourceDesc.ArchiveId, resourceDesc);
             return new ResourceLocation
             {
-                Type = (int)resourceRef.Type,
+                Type = (int)resourceDesc.Type,
                 Id = resourceKey.Id
             };
         }
 
-        protected override void UpdateResourceLocation(ref ResourceLocation location, ResourceReference resourceRef)
+        protected override void UpdateResourceLocation(ref ResourceLocation location, ResourceDescriptor resourceDesc)
         {
-            location.PackedOffset = (resourceRef.Offset | ((uint)resourceRef.ArchiveId << 4) | (uint)resourceRef.ArchivePart);
-            location.SizeInArchive = resourceRef.Length;
-            location.DecompressionOffset = resourceRef.DecompressionOffset;
+            location.PackedOffset = (resourceDesc.Offset | ((uint)resourceDesc.ArchiveId << 4) | (uint)resourceDesc.ArchivePart);
+            location.SizeInArchive = resourceDesc.Length;
+            location.DecompressionOffset = resourceDesc.DecompressionOffset;
         }
 
         public static ResourceKey AdjustResourceKeyAfterRead(int archiveId, ResourceKey resourceKey)

@@ -31,9 +31,9 @@ namespace TrRebootTools.Shared.Cdc.Avengers
             );
         }
 
-        protected override ResourceReference MakeResourceReference(ResourceIdentification identification, ResourceLocation location)
+        protected override ResourceDescriptor MakeResourceDescriptor(ResourceIdentification identification, ResourceLocation location)
         {
-            return new ResourceReference(
+            return new ResourceDescriptor(
                 (ResourceType)location.Type,
                 (ResourceSubType)identification.SubType,
                 location.Id,
@@ -49,51 +49,51 @@ namespace TrRebootTools.Shared.Cdc.Avengers
             ) { Enabled = identification.Type != (byte)ResourceType.Empty };
         }
 
-        protected override ResourceIdentification MakeResourceIdentification(ResourceReference resourceRef)
+        protected override ResourceIdentification MakeResourceIdentification(ResourceDescriptor resource)
         {
             return new ResourceIdentification
             {
-                Type = (byte)resourceRef.Type,
-                SubType = (int)resourceRef.SubType,
-                Id = resourceRef.Id,
-                Locale = (uint)resourceRef.Locale
+                Type = (byte)resource.Type,
+                SubType = (int)resource.SubType,
+                Id = resource.Id,
+                Locale = (uint)resource.Locale
             };
         }
 
-        protected override void UpdateResourceIdentification(ref ResourceIdentification identification, ResourceReference resourceRef)
+        protected override void UpdateResourceIdentification(ref ResourceIdentification identification, ResourceDescriptor resource)
         {
-            if (resourceRef.RefDefinitionsSize != null)
+            if (resource.RefDefinitionsSize != null)
             {
-                identification.RefDefinitionsSize = resourceRef.RefDefinitionsSize.Value;
-                identification.BodySize = resourceRef.BodySize;
+                identification.RefDefinitionsSize = resource.RefDefinitionsSize.Value;
+                identification.BodySize = resource.BodySize;
             }
             else
             {
-                identification.BodySize = resourceRef.BodySize - identification.RefDefinitionsSize;
+                identification.BodySize = resource.BodySize - identification.RefDefinitionsSize;
             }
-            if (resourceRef.Enabled)
-                identification.Type = (byte)(resourceRef.Type < ResourceType.Max ? resourceRef.Type : ResourceType.CollisionModel);
+            if (resource.Enabled)
+                identification.Type = (byte)(resource.Type < ResourceType.Max ? resource.Type : ResourceType.CollisionModel);
             else
                 identification.Type = (byte)ResourceType.Empty;
         }
 
-        protected override ResourceLocation MakeResourceLocation(ResourceReference resourceRef)
+        protected override ResourceLocation MakeResourceLocation(ResourceDescriptor resource)
         {
             return new ResourceLocation
             {
-                Type = (int)resourceRef.Type,
-                Id = resourceRef.Id
+                Type = (int)resource.Type,
+                Id = resource.Id
             };
         }
 
-        protected override void UpdateResourceLocation(ref ResourceLocation location, ResourceReference resourceRef)
+        protected override void UpdateResourceLocation(ref ResourceLocation location, ResourceDescriptor resource)
         {
-            location.ArchiveId = (ushort)resourceRef.ArchiveId;
-            location.ArchiveSubId = resourceRef.ArchiveSubId;
-            location.ArchivePart = resourceRef.ArchivePart;
-            location.OffsetInArchive = resourceRef.Offset;
-            location.SizeInArchive = resourceRef.Length;
-            location.DecompressionOffset = resourceRef.DecompressionOffset;
+            location.ArchiveId = (ushort)resource.ArchiveId;
+            location.ArchiveSubId = resource.ArchiveSubId;
+            location.ArchivePart = resource.ArchivePart;
+            location.OffsetInArchive = resource.Offset;
+            location.SizeInArchive = resource.Length;
+            location.DecompressionOffset = resource.DecompressionOffset;
         }
 
         protected override int DependencyLocaleSize => 0;

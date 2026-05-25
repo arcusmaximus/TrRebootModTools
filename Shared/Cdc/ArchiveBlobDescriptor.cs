@@ -1,8 +1,8 @@
 ﻿namespace TrRebootTools.Shared.Cdc
 {
-    public class ArchiveBlobReference
+    public class ArchiveBlobDescriptor
     {
-        public ArchiveBlobReference(int archiveId, int archiveSubId, int archivePart, uint offset, uint length)
+        public ArchiveBlobDescriptor(int archiveId, int archiveSubId, int archivePart, uint offset, uint length)
         {
             ArchiveId = archiveId;
             ArchiveSubId = archiveSubId;
@@ -36,7 +36,7 @@
             get;
         }
 
-        protected bool Equals(ArchiveBlobReference other)
+        protected bool Equals(ArchiveBlobDescriptor other)
         {
             return ArchiveId == other.ArchiveId &&
                    ArchiveSubId == other.ArchiveSubId &&
@@ -47,7 +47,7 @@
 
         public override bool Equals(object? obj)
         {
-            return obj is ArchiveBlobReference other && Equals(other);
+            return obj is ArchiveBlobDescriptor other && Equals(other);
         }
 
         public override int GetHashCode()

@@ -49,25 +49,25 @@ namespace TrRebootTools.Shared.Cdc
             return For(game).GetExtensionInstance(type, subType);
         }
 
-        public static string GetFileName(ArchiveSet archiveSet, ResourceCollection collection, ResourceReference resourceRef, bool useOriginalFilePath = true)
+        public static string GetFileName(ArchiveSet archiveSet, ResourceCollection collection, ResourceDescriptor resource, bool useOriginalFilePath = true)
         {
-            return For(archiveSet.Game).GetFileNameInstance(archiveSet, collection, resourceRef, useOriginalFilePath);
+            return For(archiveSet.Game).GetFileNameInstance(archiveSet, collection, resource, useOriginalFilePath);
         }
 
-        public static string GetFilePath(ArchiveSet archiveSet, ResourceCollection collection, ResourceReference resourceRef, bool useOriginalFilePath = true)
+        public static string GetFilePath(ArchiveSet archiveSet, ResourceCollection collection, ResourceDescriptor resource, bool useOriginalFilePath = true)
         {
-            string filePath = For(archiveSet.Game).GetFilePathInstance(archiveSet, collection, resourceRef, useOriginalFilePath);
+            string filePath = For(archiveSet.Game).GetFilePathInstance(archiveSet, collection, resource, useOriginalFilePath);
             if (OperatingSystem.IsLinux())
                 filePath = filePath.Replace("\\", "/");
 
             return filePath;
         }
 
-        public static string? ReadOriginalFilePath(ArchiveSet archiveSet, ResourceCollection collection, ResourceReference resourceRef)
+        public static string? ReadOriginalFilePath(ArchiveSet archiveSet, ResourceCollection collection, ResourceDescriptor resource)
         {
             try
             {
-                return For(archiveSet.Game).ReadOriginalFilePathInstance(archiveSet, collection, resourceRef);
+                return For(archiveSet.Game).ReadOriginalFilePathInstance(archiveSet, collection, resource);
             }
             catch
             {
@@ -130,25 +130,25 @@ namespace TrRebootTools.Shared.Cdc
                    ".type" + (int)type;
         }
 
-        private string GetFileNameInstance(ArchiveSet archiveSet, ResourceCollection collection, ResourceReference resourceRef, bool useOriginalFilePath)
+        private string GetFileNameInstance(ArchiveSet archiveSet, ResourceCollection collection, ResourceDescriptor resource, bool useOriginalFilePath)
         {
-            string? name = useOriginalFilePath ? Sanitize(ReadOriginalFilePath(archiveSet, collection, resourceRef)) : null;
-            name = name != null ? $"{name}.{resourceRef.Id}" : resourceRef.Id.ToString();
-            string extension = GetExtensionInstance(resourceRef.Type, resourceRef.SubType);
+            string? name = useOriginalFilePath ? Sanitize(ReadOriginalFilePath(archiveSet, collection, resource)) : null;
+            name = name != null ? $"{name}.{resource.Id}" : resource.Id.ToString();
+            string extension = GetExtensionInstance(resource.Type, resource.SubType);
             return name + extension;
         }
 
-        private string GetFilePathInstance(ArchiveSet archiveSet, ResourceCollection collection, ResourceReference resourceRef, bool useOriginalFilePath)
+        private string GetFilePathInstance(ArchiveSet archiveSet, ResourceCollection collection, ResourceDescriptor resource, bool useOriginalFilePath)
         {
-            string fileName = GetFileNameInstance(archiveSet, collection, resourceRef, useOriginalFilePath);
-            string filePath = $"{resourceRef.Type}\\{fileName}";
-            if ((resourceRef.Locale & 0x0FFFFFFF) != 0x0FFFFFFF)
-                filePath += "\\" + CdcGameInfo.Get(Game).LocaleToLanguageCode(resourceRef.Locale) + GetExtensionInstance(resourceRef.Type, resourceRef.SubType);
+            string fileName = GetFileNameInstance(archiveSet, collection, resource, useOriginalFilePath);
+            string filePath = $"{resource.Type}\\{fileName}";
+            if ((resource.Locale & 0x0FFFFFFF) != 0x0FFFFFFF)
+                filePath += "\\" + CdcGameInfo.Get(Game).LocaleToLanguageCode(resource.Locale) + GetExtensionInstance(resource.Type, resource.SubType);
 
             return filePath;
         }
 
-        protected internal virtual string? ReadOriginalFilePathInstance(ArchiveSet archiveSet, ResourceCollection collection, ResourceReference resourceRef)
+        protected internal virtual string? ReadOriginalFilePathInstance(ArchiveSet archiveSet, ResourceCollection collection, ResourceDescriptor resource)
         {
             return null;
         }

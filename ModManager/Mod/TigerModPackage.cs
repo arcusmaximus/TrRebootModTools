@@ -8,8 +8,8 @@ namespace TrRebootTools.ModManager.Mod
     internal class TigerModPackage : ModPackage
     {
         private readonly Dictionary<int, Archive> _archivesBySubId;
-        private readonly Dictionary<ArchiveFileKey, ArchiveFileReference> _files = new();
-        private readonly Dictionary<ResourceKey, ResourceReference> _resources = new();
+        private readonly Dictionary<ArchiveFileKey, ArchiveFileDescriptor> _files = new();
+        private readonly Dictionary<ResourceKey, ResourceDescriptor> _resources = new();
 
         public TigerModPackage(string nfoFilePath, List<string> archiveFilePaths, CdcGame game)
             : this(LoadArchives(nfoFilePath, archiveFilePaths, game), game)
@@ -30,26 +30,26 @@ namespace TrRebootTools.ModManager.Mod
             ulong localePlatformMask = CdcGameInfo.Get(game).LocalePlatformMask;
             foreach (Archive archive in _archivesBySubId.Values)
             {
-                foreach (ArchiveFileReference fileRef in archive.Files)
+                foreach (ArchiveFileDescriptor file in archive.Files)
                 {
-                    if (fileRef.ArchiveId != archive.Id)
+                    if (file.ArchiveId != archive.Id)
                         continue;
 
-                    string? filePath = CdcHash.Lookup(fileRef.NameHash, game);
+                    string? filePath = CdcHash.Lookup(file.NameHash, game);
                     if (filePath == null || !filePath.EndsWith(".drm"))
                     {
-                        _files[fileRef] = fileRef;
+                        _files[file] = file;
                         continue;
                     }
 
-                    ResourceCollection? collection = archive.GetResourceCollection(fileRef);
+                    ResourceCollection? collection = archive.GetResourceCollection(file);
                     if (collection == null)
                         continue;
 
-                    foreach (ResourceReference resourceRef in collection.ResourceReferences)
+                    foreach (ResourceDescriptor resource in collection.Resources)
                     {
-                        if (resourceRef.ArchiveId == archive.Id && (resourceRef.Locale & localePlatformMask) == localePlatformMask)
-                            _resources[resourceRef] = resourceRef;
+                        if (resource.ArchiveId == archive.Id && (resource.Locale & localePlatformMask) == localePlatformMask)
+                            _resources[resource] = resource;
                     }
                 }
             }
@@ -64,16 +64,16 @@ namespace TrRebootTools.ModManager.Mod
 
         public override Stream? OpenFile(ArchiveFileKey fileKey)
         {
-            ArchiveFileReference? fileRef = _files.GetValueOrDefault(fileKey);
-            return fileRef != null ? _archivesBySubId[fileRef.ArchiveSubId].OpenFile(fileRef) : null;
+            ArchiveFileDescriptor? file = _files.GetValueOrDefault(fileKey);
+            return file != null ? _archivesBySubId[file.ArchiveSubId].OpenFile(file) : null;
         }
 
         public override IEnumerable<ResourceKey> Resources => _resources.Keys;
 
         public override Stream? OpenResource(ResourceKey resourceKey)
         {
-            ResourceReference? resourceRef = _resources.GetValueOrDefault(resourceKey);
-            return resourceRef != null ? _archivesBySubId[resourceRef.ArchiveSubId].OpenResource(_resources[resourceKey]) : null;
+            ResourceDescriptor? resource = _resources.GetValueOrDefault(resourceKey);
+            return resource != null ? _archivesBySubId[resource.ArchiveSubId].OpenResource(_resources[resourceKey]) : null;
         }
 
         public override string ToString()

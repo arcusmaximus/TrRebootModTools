@@ -32,7 +32,7 @@ else:
 
 class _Properties(ImportOperatorProperties, Protocol):
     import_lods:                    Annotated[bool, Prop("Import LODs")]
-    import_drivers:                 Annotated[bool, Prop("Import drivers", default = True)]
+    import_drivers:                 Annotated[bool, Prop("Import drivers")]
     import_referenced_objects:      Annotated[bool, Prop("Import referenced objects")]
     split_into_parts:               Annotated[bool, Prop("Split meshes into parts")]
     merge_with_existing_skeletons:  Annotated[bool, Prop("(SOTTR) Merge with existing skeletons", default = True)]

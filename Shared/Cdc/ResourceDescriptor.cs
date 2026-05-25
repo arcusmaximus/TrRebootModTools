@@ -1,8 +1,8 @@
 ﻿namespace TrRebootTools.Shared.Cdc
 {
-    public class ResourceReference : ArchiveBlobReference
+    public class ResourceDescriptor : ArchiveBlobDescriptor
     {
-        public ResourceReference(
+        public ResourceDescriptor(
             ResourceType type,
             ResourceSubType subType,
             int resourceId,
@@ -72,9 +72,9 @@
             return $"{(ResourceKey)this} -> Archive {ArchiveId}:{ArchiveSubId}:{ArchivePart}, Offset {Offset:X}, OffsetInBatch {DecompressionOffset:X}";
         }
 
-        public static implicit operator ResourceKey(ResourceReference resourceRef)
+        public static implicit operator ResourceKey(ResourceDescriptor resource)
         {
-            return new ResourceKey(resourceRef.Type, resourceRef.SubType, resourceRef.Id, resourceRef.Locale);
+            return new ResourceKey(resource.Type, resource.SubType, resource.Id, resource.Locale);
         }
     }
 }

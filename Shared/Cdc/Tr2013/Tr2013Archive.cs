@@ -17,10 +17,10 @@ namespace TrRebootTools.Shared.Cdc.Tr2013
         protected override bool SupportsLanguageList => false;
         protected override int ContentAlignment => 0x800;
 
-        protected override ArchiveFileReference ReadFileReference(BinaryReader reader)
+        protected override ArchiveFileDescriptor ReadFileDescriptor(BinaryReader reader)
         {
             var entry = reader.ReadStruct<ArchiveFileEntry>();
-            return new ArchiveFileReference(
+            return new ArchiveFileDescriptor(
                 entry.NameHash,
                 0xFFFFFFFF00000000 | entry.Locale,
                 entry.ArchiveId,
@@ -31,15 +31,15 @@ namespace TrRebootTools.Shared.Cdc.Tr2013
             );
         }
 
-        protected override void WriteFileReference(BinaryWriter writer, ArchiveFileReference fileRef)
+        protected override void WriteFileDescriptor(BinaryWriter writer, ArchiveFileDescriptor file)
         {
             var entry =
                 new ArchiveFileEntry
                 {
-                    NameHash = (uint)fileRef.NameHash,
-                    Locale = (uint)fileRef.Locale,
-                    Size = fileRef.Length,
-                    PackedOffset = fileRef.Offset | ((uint)fileRef.ArchiveId << 4) | (uint)fileRef.ArchivePart
+                    NameHash = (uint)file.NameHash,
+                    Locale = (uint)file.Locale,
+                    Size = file.Length,
+                    PackedOffset = file.Offset | ((uint)file.ArchiveId << 4) | (uint)file.ArchivePart
                 };
             writer.WriteStruct(entry);
         }

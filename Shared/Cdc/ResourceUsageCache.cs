@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Security.AccessControl;
 using System.Threading;
 using TrRebootTools.Shared.Util;
 
@@ -54,56 +52,56 @@ namespace TrRebootTools.Shared.Cdc
             AddFiles(archive.Files, archiveSet, null, CancellationToken.None);
         }
 
-        private void AddFiles(IEnumerable<ArchiveFileReference> files, ArchiveSet archiveSet, ITaskProgress? progress, CancellationToken cancellationToken)
+        private void AddFiles(IEnumerable<ArchiveFileDescriptor> files, ArchiveSet archiveSet, ITaskProgress? progress, CancellationToken cancellationToken)
         {
-            List<ArchiveFileReference> collectionRefs = files.Where(f => CdcHash.Lookup(f.NameHash, archiveSet.Game)?.EndsWith(".drm") ?? false).ToList();
+            List<ArchiveFileDescriptor> collectionFiles = files.Where(f => CdcHash.Lookup(f.NameHash, archiveSet.Game)?.EndsWith(".drm") ?? false).ToList();
             int collectionIdx = 0;
-            foreach (ArchiveFileReference collectionRef in collectionRefs)
+            foreach (ArchiveFileDescriptor collectionFile in collectionFiles)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                ResourceCollection? collection = archiveSet.GetResourceCollection(collectionRef);
+                ResourceCollection? collection = archiveSet.GetResourceCollection(collectionFile);
                 if (collection != null)
                     AddResourceCollection(archiveSet, collection);
 
                 collectionIdx++;
-                progress?.Report((float)collectionIdx / collectionRefs.Count);
+                progress?.Report((float)collectionIdx / collectionFiles.Count);
             }
         }
 
         public void AddResourceCollection(ArchiveSet archiveSet, ResourceCollection collection)
         {
             ArchiveFileKey fileKey = new ArchiveFileKey(collection.NameHash, collection.Locale);
-            foreach (ResourceReference resourceRef in collection.ResourceReferences)
+            foreach (ResourceDescriptor resource in collection.Resources)
             {
-                _resourceUsages.GetValueOrDefault(resourceRef)?.Remove(fileKey);
+                _resourceUsages.GetValueOrDefault(resource)?.Remove(fileKey);
             }
 
             ulong localePlatformMask = CdcGameInfo.Get(collection.Game).LocalePlatformMask;
             bool parseWwiseSoundBanks = CdcGameInfo.Get(collection.Game).UsesWwise;
-            for (int i = 0; i < collection.ResourceReferences.Count; i++)
+            for (int i = 0; i < collection.Resources.Count; i++)
             {
-                ResourceReference resourceRef = collection.ResourceReferences[i];
-                if ((resourceRef.Locale & localePlatformMask) != localePlatformMask)
+                ResourceDescriptor resource = collection.Resources[i];
+                if ((resource.Locale & localePlatformMask) != localePlatformMask)
                     continue;
 
-                AddResourceReference(archiveSet, collection, i);
-                if (resourceRef.Type == ResourceType.SoundBank && parseWwiseSoundBanks)
-                    AddWwiseSoundBank(archiveSet, resourceRef);
+                AddResource(archiveSet, collection, i);
+                if (resource.Type == ResourceType.SoundBank && parseWwiseSoundBanks)
+                    AddWwiseSoundBank(archiveSet, resource);
             }
         }
 
-        public void AddResourceReference(ArchiveSet archiveSet, ResourceCollection collection, int resourceIdx)
+        public void AddResource(ArchiveSet archiveSet, ResourceCollection collection, int resourceIdx)
         {
-            ResourceReference resourceRef = collection.ResourceReferences[resourceIdx];
-            if (!_resourceUsages.ContainsKey(resourceRef))
+            ResourceDescriptor resource = collection.Resources[resourceIdx];
+            if (!_resourceUsages.ContainsKey(resource))
             {
-                string? originalFilePath = ResourceNaming.ReadOriginalFilePath(archiveSet, collection, resourceRef);
+                string? originalFilePath = ResourceNaming.ReadOriginalFilePath(archiveSet, collection, resource);
                 if (originalFilePath != null)
-                    _resourceKeysByOriginalFilePath[originalFilePath] = resourceRef;
+                    _resourceKeysByOriginalFilePath[originalFilePath] = resource;
             }
 
-            Dictionary<ArchiveFileKey, int> usages = _resourceUsages.GetOrAdd(resourceRef, () => []);
+            Dictionary<ArchiveFileKey, int> usages = _resourceUsages.GetOrAdd(resource, () => []);
 
             ArchiveFileKey collectionKey = new(collection.NameHash, collection.Locale);
             if (collection.Locale == 0xFFFFFFFFFFFFFFFF)
@@ -124,18 +122,18 @@ namespace TrRebootTools.Shared.Cdc
 
             usages[collectionKey] = resourceIdx;
 
-            if (resourceRef.Locale != 0xFFFFFFFFFFFFFFFF)
+            if (resource.Locale != 0xFFFFFFFFFFFFFFFF)
             {
-                List<ulong> locales = _resourceLocales.GetOrAdd((resourceRef.Type, resourceRef.Id), () => []);
-                if (!locales.Contains(resourceRef.Locale))
-                    locales.Add(resourceRef.Locale);
+                List<ulong> locales = _resourceLocales.GetOrAdd((resource.Type, resource.Id), () => []);
+                if (!locales.Contains(resource.Locale))
+                    locales.Add(resource.Locale);
             }
         }
 
-        private void AddWwiseSoundBank(ArchiveSet archiveSet, ResourceReference resourceRef)
+        private void AddWwiseSoundBank(ArchiveSet archiveSet, ResourceDescriptor resource)
         {
             WwiseSoundBank bank;
-            using (Stream stream = archiveSet.OpenResource(resourceRef))
+            using (Stream stream = archiveSet.OpenResource(resource))
             {
                 bank = new WwiseSoundBank(stream);
             }
@@ -144,14 +142,14 @@ namespace TrRebootTools.Shared.Cdc
             foreach (int soundId in bank.EmbeddedSounds.Keys)
             {
                 _wwiseSoundUsages.GetOrAdd(soundId, () => [])
-                                 .Add(new WwiseSoundBankItemReference(resourceRef.Id, resourceRef.Locale, WwiseSoundBankItemReferenceType.DataIndex, index++));
+                                 .Add(new WwiseSoundBankItemReference(resource.Id, resource.Locale, WwiseSoundBankItemReferenceType.DataIndex, index++));
             }
 
             index = 0;
             foreach (int soundId in bank.ReferencedSoundIds)
             {
                 _wwiseSoundUsages.GetOrAdd(soundId, () => [])
-                                 .Add(new WwiseSoundBankItemReference(resourceRef.Id, resourceRef.Locale, WwiseSoundBankItemReferenceType.Event, index++));
+                                 .Add(new WwiseSoundBankItemReference(resource.Id, resource.Locale, WwiseSoundBankItemReferenceType.Event, index++));
             }
         }
 
@@ -206,21 +204,21 @@ namespace TrRebootTools.Shared.Cdc
             {
                 foreach ((ArchiveFileKey collectionKey, int resourceIdx) in usages)
                 {
-                    ArchiveFileReference? collectionRef = archiveSet.GetFileReference(collectionKey.NameHash, collectionKey.Locale);
-                    if (collectionRef != null)
-                        yield return new ResourceCollectionItemReference(collectionRef, resourceIdx);
+                    ArchiveFileDescriptor? collectionFile = archiveSet.GetFile(collectionKey.NameHash, collectionKey.Locale);
+                    if (collectionFile != null)
+                        yield return new ResourceCollectionItemReference(collectionFile, resourceIdx);
                 }
             }
         }
 
-        public ResourceReference? GetResourceReference(ArchiveSet archiveSet, ResourceKey resourceKey)
+        public ResourceDescriptor? GetResourceDescriptor(ArchiveSet archiveSet, ResourceKey resourceKey)
         {
             ResourceCollectionItemReference? collectionItem = GetResourceUsages(archiveSet, resourceKey).FirstOrDefault();
             if (collectionItem == null)
                 return null;
 
             ResourceCollection? collection = archiveSet.GetResourceCollection(collectionItem.CollectionReference);
-            return collection?.ResourceReferences[collectionItem.ResourceIndex];
+            return collection?.Resources[collectionItem.ResourceIndex];
         }
 
         public IEnumerable<int> WwiseSoundIds => _wwiseSoundUsages.Keys;

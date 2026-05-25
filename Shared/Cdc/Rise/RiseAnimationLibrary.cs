@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using TrRebootTools.Shared.Util;
+using TrRebootTools.Shared.Serialization;
 
 namespace TrRebootTools.Shared.Cdc.Rise
 {
@@ -9,27 +8,27 @@ namespace TrRebootTools.Shared.Cdc.Rise
     {
         public RiseAnimationLibrary(Stream stream)
         {
-            ResourceRefDefinitions refs = ResourceRefDefinitions.Create(null, stream, CdcGame.Rise);
-            BinaryReader reader = new(stream);
-            reader.Seek(refs.Size + 0x10);
+            ResourceReader reader = ResourceReader.Create(stream, CdcGame.Rise);
+            reader.Seek(0x10);
             int numAnims = reader.ReadInt32();
             reader.Skip(4);
-            int? animsPos = refs.GetInternalRefTarget(reader.Tell());
-            if (animsPos == null)
+            ResourceRef? animsRef = reader.ReadRef();
+            if (animsRef == null)
                 return;
 
+            reader.Seek(animsRef);
             for (int i = 0; i < numAnims; i++)
             {
-                reader.Seek(animsPos.Value + i * 0x18);
                 int id = reader.ReadUInt16();
                 reader.Skip(0xE);
-                int? namePos = refs.GetInternalRefTarget(reader.Tell());
-                if (namePos == null)
+                ResourceRef? nameRef = reader.ReadRef();
+                if (nameRef == null)
                     continue;
-                
-                reader.Seek(namePos.Value);
-                string name = reader.ReadZeroTerminatedString();
-                Animations[id] = name;
+
+                using (reader.Seek(nameRef))
+                {
+                    Animations[id] = reader.ReadString();
+                }
             }
         }
 

@@ -21,8 +21,8 @@ namespace TrRebootTools.Shared.Cdc
 
         private int _numParts = 1;
         private List<Stream>? _partStreams;
-        private readonly List<ArchiveFileReference> _fileRefs = [];
-        private long _nextFileRefPos;
+        private readonly List<ArchiveFileDescriptor> _files = [];
+        private long _nextFileDescPos;
         private int _maxFiles;
         private bool _hasWrittenResources;
 
@@ -36,8 +36,8 @@ namespace TrRebootTools.Shared.Cdc
         protected abstract int HeaderVersion { get; }
         protected abstract bool SupportsSubId { get; }
         protected abstract bool SupportsLanguageList { get; }
-        protected abstract ArchiveFileReference ReadFileReference(BinaryReader reader);
-        protected abstract void WriteFileReference(BinaryWriter writer, ArchiveFileReference fileRef);
+        protected abstract ArchiveFileDescriptor ReadFileDescriptor(BinaryReader reader);
+        protected abstract void WriteFileDescriptor(BinaryWriter writer, ArchiveFileDescriptor file);
         protected virtual int ContentAlignment => 0x10;
 
         public static Archive Create(string baseFilePath, int id, int subId, ArchiveMetaData? metaData, int maxFiles, CdcGame game)
@@ -69,11 +69,11 @@ namespace TrRebootTools.Shared.Cdc
             Encoding.ASCII.GetBytes(platformStr, 0, platformStr.Length, platformBytes, 0);
             writer.Write(platformBytes);
 
-            archive._nextFileRefPos = stream.Position;
-            ArchiveFileReference fileRef = new ArchiveFileReference(0, 0, 0, 0, 0, 0, 0);
+            archive._nextFileDescPos = stream.Position;
+            ArchiveFileDescriptor file = new ArchiveFileDescriptor(0, 0, 0, 0, 0, 0, 0);
             for (int i = 0; i < maxFiles; i++)
             {
-                archive.WriteFileReference(writer, fileRef);
+                archive.WriteFileDescriptor(writer, file);
             }
 
             return archive;
@@ -118,7 +118,7 @@ namespace TrRebootTools.Shared.Cdc
 
             for (int i = 0; i < header.NumFiles; i++)
             {
-                archive._fileRefs.Add(archive.ReadFileReference(reader));
+                archive._files.Add(archive.ReadFileDescriptor(reader));
             }
 
             return archive;
@@ -195,21 +195,21 @@ namespace TrRebootTools.Shared.Cdc
             }
         }
 
-        public IReadOnlyCollection<ArchiveFileReference> Files => _fileRefs;
+        public IReadOnlyCollection<ArchiveFileDescriptor> Files => _files;
 
-        public ResourceCollection? GetResourceCollection(ArchiveFileReference fileRef)
+        public ResourceCollection? GetResourceCollection(ArchiveFileDescriptor file)
         {
-            if (fileRef.ArchiveId != Id || fileRef.ArchiveSubId != SubId)
-                throw new ArgumentException("File reference does not match archive", nameof(fileRef));
+            if (file.ArchiveId != Id || file.ArchiveSubId != SubId)
+                throw new ArgumentException("File reference does not match archive", nameof(file));
 
-            string? filePath = CdcHash.Lookup(fileRef.NameHash, Game, true);
+            string? filePath = CdcHash.Lookup(file.NameHash, Game, true);
             if (filePath == null || Path.GetExtension(filePath) != ".drm")
                 return null;
 
-            using Stream stream = OpenFile(fileRef);
+            using Stream stream = OpenFile(file);
             try
             {
-                return ResourceCollection.Open(fileRef.NameHash, fileRef.Locale, stream, Game);
+                return ResourceCollection.Open(file.NameHash, file.Locale, stream, Game);
             }
             catch
             {
@@ -217,48 +217,48 @@ namespace TrRebootTools.Shared.Cdc
             }
         }
 
-        public Stream OpenFile(ArchiveFileReference fileRef)
+        public Stream OpenFile(ArchiveFileDescriptor file)
         {
-            if (fileRef.ArchiveId != Id || fileRef.ArchiveSubId != SubId)
-                throw new ArgumentException("File reference does not match archive", nameof(fileRef));
+            if (file.ArchiveId != Id || file.ArchiveSubId != SubId)
+                throw new ArgumentException("File reference does not match archive", nameof(file));
 
-            Stream partStream = PartStreams[fileRef.ArchivePart];
-            if (ArchiveDecompressionStream.IsCompressed(partStream, fileRef))
-                return new ArchiveDecompressionStream(partStream, fileRef, true);
+            Stream partStream = PartStreams[file.ArchivePart];
+            if (ArchiveDecompressionStream.IsCompressed(partStream, file))
+                return new ArchiveDecompressionStream(partStream, file, true);
             else
-                return new WindowedStream(partStream, fileRef.Offset, fileRef.Length);
+                return new WindowedStream(partStream, file.Offset, file.Length);
         }
 
-        public Stream OpenResource(ResourceReference resourceRef)
+        public Stream OpenResource(ResourceDescriptor resource)
         {
-            if (resourceRef.ArchiveId != Id || resourceRef.ArchiveSubId != SubId)
-                throw new ArgumentException("Resource reference does not match archive", nameof(resourceRef));
+            if (resource.ArchiveId != Id || resource.ArchiveSubId != SubId)
+                throw new ArgumentException("Resource reference does not match archive", nameof(resource));
 
-            Stream stream = PartStreams[resourceRef.ArchivePart];
-            if (resourceRef.RefDefinitionsSize + resourceRef.BodySize == resourceRef.Length)
-                return new WindowedStream(stream, resourceRef.Offset, resourceRef.Length);
+            Stream stream = PartStreams[resource.ArchivePart];
+            if (resource.RefDefinitionsSize + resource.BodySize == resource.Length)
+                return new WindowedStream(stream, resource.Offset, resource.Length);
 
-            return new ArchiveDecompressionStream(stream, resourceRef, true);
+            return new ArchiveDecompressionStream(stream, resource, true);
         }
 
-        public ArchiveFileReference AddFile(ArchiveFileKey identifier, byte[] data)
-        {
-            return AddFile(identifier.NameHash, identifier.Locale, data);
-        }
-
-        public ArchiveFileReference AddFile(ArchiveFileKey identifier, ArraySegment<byte> data)
+        public ArchiveFileDescriptor AddFile(ArchiveFileKey identifier, byte[] data)
         {
             return AddFile(identifier.NameHash, identifier.Locale, data);
         }
 
-        public ArchiveFileReference AddFile(ulong nameHash, ulong locale, byte[] data)
+        public ArchiveFileDescriptor AddFile(ArchiveFileKey identifier, ArraySegment<byte> data)
+        {
+            return AddFile(identifier.NameHash, identifier.Locale, data);
+        }
+
+        public ArchiveFileDescriptor AddFile(ulong nameHash, ulong locale, byte[] data)
         {
             return AddFile(nameHash, locale, new ArraySegment<byte>(data));
         }
 
-        public ArchiveFileReference AddFile(ulong nameHash, ulong locale, ArraySegment<byte> data)
+        public ArchiveFileDescriptor AddFile(ulong nameHash, ulong locale, ArraySegment<byte> data)
         {
-            if (_fileRefs.Count == _maxFiles)
+            if (_files.Count == _maxFiles)
                 throw new InvalidOperationException("Can't add any further files");
 
             if (data.Array == null)
@@ -275,25 +275,25 @@ namespace TrRebootTools.Shared.Cdc
             Stream indexStream = PartStreams[0];
             BinaryWriter indexWriter = new BinaryWriter(indexStream);
 
-            ArchiveFileReference fileRef = new(nameHash, locale, Id, SubId, 0, offset, (uint)data.Count);
-            indexStream.Position = _nextFileRefPos;
-            WriteFileReference(indexWriter, fileRef);
-            _nextFileRefPos = indexStream.Position;
+            ArchiveFileDescriptor file = new(nameHash, locale, Id, SubId, 0, offset, (uint)data.Count);
+            indexStream.Position = _nextFileDescPos;
+            WriteFileDescriptor(indexWriter, file);
+            _nextFileDescPos = indexStream.Position;
 
-            _fileRefs.Add(fileRef);
+            _files.Add(file);
             indexStream.Position = 0xC;
-            indexWriter.Write(_fileRefs.Count);
+            indexWriter.Write(_files.Count);
 
-            return fileRef;
+            return file;
         }
 
-        public ArchiveBlobReference AddResource(Stream contentStream)
+        public ArchiveBlobDescriptor AddResource(Stream contentStream)
         {
             int archivePart = PartStreams.Count - 1;
             Stream partStream = PartStreams[archivePart];
             partStream.Position = partStream.Length;
 
-            BinaryWriter writer = new BinaryWriter(partStream);
+            BinaryWriter writer = new(partStream);
 
             uint resourceOffset = ((uint)partStream.Position + (uint)ContentAlignment - 1) & ~((uint)ContentAlignment - 1);
 
@@ -316,7 +316,7 @@ namespace TrRebootTools.Shared.Cdc
             writer.Align(0x10);
             _hasWrittenResources = true;
 
-            return new ArchiveBlobReference(Id, SubId, archivePart, resourceOffset, resourceLength);
+            return new ArchiveBlobDescriptor(Id, SubId, archivePart, resourceOffset, resourceLength);
         }
 
         private void WriteResource(Stream contentStream, BinaryWriter writer)
@@ -324,8 +324,8 @@ namespace TrRebootTools.Shared.Cdc
             if (contentStream is ArchiveDecompressionStream resourceStream)
             {
                 Stream archivePartStream = resourceStream.ArchivePartStream;
-                ArchiveBlobReference resourceRef = resourceStream.BlobRef;
-                archivePartStream.CopySegmentTo(resourceRef.Offset, resourceRef.Length, writer.BaseStream);
+                ArchiveBlobDescriptor resourceBlob = resourceStream.BlobDescriptor;
+                archivePartStream.CopySegmentTo(resourceBlob.Offset, resourceBlob.Length, writer.BaseStream);
                 return;
             }
 
@@ -349,32 +349,45 @@ namespace TrRebootTools.Shared.Cdc
             writer.Align(0x10);
 
             long remainingSize = contentStream.Length;
-            byte[] uncompressedChunkData = new byte[MaxResourceChunkSize];
+            byte[] uncompressedChunkBuffer = new byte[MaxResourceChunkSize];
             for (int i = 0; i < numChunks; i++)
             {
-                int uncompressedChunkSize = (int)Math.Min(remainingSize, MaxResourceChunkSize);
-                contentStream.Read(uncompressedChunkData, 0, uncompressedChunkSize);
-
-                int chunkOffset = (int)partStream.Position;
-                writer.Write((byte)0x78);
-                writer.Write((byte)0x9C);
-                using (DeflateStream compressor = new DeflateStream(partStream, CompressionMode.Compress, true))
-                {
-                    compressor.Write(uncompressedChunkData, 0, uncompressedChunkSize);
-                }
-                writer.Write(0);
-                int compressedChunkSize = (int)partStream.Position - chunkOffset;
-
-                partStream.Position = chunkSizesOffset;
-                writer.Write(uncompressedChunkSize << 8 | 0x02);
-                writer.Write(compressedChunkSize);
-                chunkSizesOffset += 8;
-
-                partStream.Position = partStream.Length;
-                writer.Align(0x10);
-
-                remainingSize -= uncompressedChunkSize;
+                Span<byte> uncompressedChunkData = uncompressedChunkBuffer[0..Math.Min((int)remainingSize, MaxResourceChunkSize)];
+                contentStream.Read(uncompressedChunkData);
+                WriteResourceChunk(partStream, writer, uncompressedChunkData, ref chunkSizesOffset);
+                remainingSize -= uncompressedChunkData.Length;
             }
+        }
+
+        private void WriteResourceChunk(Stream partStream, BinaryWriter writer, Span<byte> uncompressedData, ref int chunkSizesPos)
+        {
+            int chunkPos = (int)partStream.Position;
+            writer.Write((byte)0x78);
+            writer.Write((byte)0x9C);
+            using (DeflateStream compressor = new(partStream, CompressionMode.Compress, true))
+            {
+                compressor.Write(uncompressedData);
+            }
+            writer.Write(0);
+            int compressedSize = (int)partStream.Position - chunkPos;
+            byte compressionType = 0x02;
+
+            if (compressedSize > MaxResourceChunkSize)
+            {
+                partStream.Position = chunkPos;
+                partStream.Write(uncompressedData);
+                partStream.SetLength(partStream.Position);
+                compressedSize = uncompressedData.Length;
+                compressionType = 0x01;
+            }
+
+            partStream.Position = chunkSizesPos;
+            writer.Write(uncompressedData.Length << 8 | compressionType);
+            writer.Write(compressedSize);
+            chunkSizesPos += 8;
+
+            partStream.Position = partStream.Length;
+            writer.Align(0x10);
         }
 
         public string GetPartFilePath(int part)

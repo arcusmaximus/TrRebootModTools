@@ -1,0 +1,126 @@
+#define TR_VERSION 10
+#include "../../trcommon.bt"
+#include "../lists/tr10enums.bt"
+#include "../lists/tr10inputactions.bt"
+
+enum <int> MoveType
+{
+    MoveType_Permission,
+    MoveType_PermissionSCInputAction,
+    MoveType_Float,
+    MoveType_FloatWithUseFlag
+};
+
+void ReadMoveValue(MoveType type)
+{
+    local int endPos = FTell() + 8;
+    switch (type)
+    {
+        case MoveType_Permission:
+            int permission;
+            break;
+        case MoveType_PermissionSCInputAction:
+            int permission;
+            INPUTACTION inputAction;
+            break;
+        case MoveType_Float:
+            float value;
+            break;
+        case MoveType_FloatWithUseFlag:
+            float value;
+            byte useFlag;
+            break;
+    }
+    FSeek(endPos);
+}
+
+typedef struct
+{
+    movesetprofile_movetype nameHash;
+    FSkip(4);
+    Ref enumNameRef;
+    if (CanSeekTo(enumNameRef))
+    {
+        SeekToRef(enumNameRef);
+        string enumName;
+        ReturnFromRef();
+    }
+    MoveType type;
+    short runtimeModifiedByIndex;
+    FSkip(2);
+    ReadMoveValue(type);
+} Move <optimize=false, read=SubStr(EnumToString(nameHash), 24)>;
+
+typedef struct
+{
+    ushort trait;
+    FSkip(2);
+    int not;
+} PlayerTraitListIndexComparison <optimize=true>;
+
+typedef struct
+{
+    unsigned int moveIndex;
+    ReadMoveValue(parentof(parentof(this)).moves[moveIndex].type);
+    FSkip(4);
+    Ref traitRequirementRef;
+    if (CanSeekTo(traitRequirementRef))
+    {
+        SeekToRef(traitRequirementRef);
+        PlayerTraitListIndexComparison traitRequirement;
+        ReturnFromRef();
+    }
+} MoveModifier <optimize=false, read=SubStr(EnumToString(parentof(parentof(this)).moves[moveIndex].nameHash), 24)>;
+
+typedef struct
+{
+    unsigned int numMoveModifiers;
+    FSkip(4);
+    Ref moveModifiersRef;
+    if (CanSeekTo(moveModifiersRef))
+    {
+        SeekToRef(moveModifiersRef);
+        MoveModifier moveModifiers[numMoveModifiers];
+        ReturnFromRef();
+    }
+    Ref debugNameRef;
+    if (CanSeekTo(debugNameRef))
+    {
+        SeekToRef(debugNameRef);
+        string debugName;
+        ReturnFromRef();
+    }
+} MovesetProfile <optimize=false, read=debugName>;
+
+typedef struct
+{
+    unsigned int numProfiles;
+    FSkip(4);
+    Ref profilesRef;
+    ubyte lightSnowMovesetProfile;
+    ubyte deepSnowMovesetProfile;
+    FSkip(2);
+    float lightRainIntensity;
+    float heavyRainIntensity;
+    ubyte lightRainMovesetProfile;
+    ubyte heavyRainMovesetProfile;
+    FSkip(2);
+    unsigned int numMoves;
+    FSkip(4);
+    Ref movesRef;
+    if (CanSeekTo(movesRef))
+    {
+        SeekToRef(movesRef);
+        Move moves[numMoves];
+        ReturnFromRef();
+    }
+    if (CanSeekTo(profilesRef))
+    {
+        SeekToRef(profilesRef);
+        MovesetProfile profiles[numProfiles];
+        ReturnFromRef();
+    }
+} MovesetProfileComponent <optimize=false>;
+
+RefDefinitions refDefinitions;
+MovesetProfileComponent root <open=true>;

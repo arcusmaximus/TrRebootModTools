@@ -32,10 +32,10 @@ namespace TrRebootTools.Shared.Cdc.Avengers
             return new AvengersEncryptedArchiveStream(partIdx, filePath, stream);
         }
 
-        protected override ArchiveFileReference ReadFileReference(BinaryReader reader)
+        protected override ArchiveFileDescriptor ReadFileDescriptor(BinaryReader reader)
         {
             var entry = reader.ReadStruct<ArchiveFileEntry>();
-            return new ArchiveFileReference(
+            return new ArchiveFileDescriptor(
                 entry.NameHash,
                 entry.Locale,
                 entry.ArchiveId,
@@ -46,18 +46,18 @@ namespace TrRebootTools.Shared.Cdc.Avengers
             );
         }
 
-        protected override void WriteFileReference(BinaryWriter writer, ArchiveFileReference fileRef)
+        protected override void WriteFileDescriptor(BinaryWriter writer, ArchiveFileDescriptor file)
         {
             ArchiveFileEntry entry =
                 new()
                 {
-                    NameHash = fileRef.NameHash,
-                    Locale = (uint)fileRef.Locale,
-                    ArchiveId = (ushort)fileRef.ArchiveId,
-                    ArchiveSubId = fileRef.ArchiveSubId,
-                    ArchivePart = fileRef.ArchivePart,
-                    Offset = fileRef.Offset,
-                    UncompressedSize = fileRef.Length
+                    NameHash = file.NameHash,
+                    Locale = (uint)file.Locale,
+                    ArchiveId = (ushort)file.ArchiveId,
+                    ArchiveSubId = file.ArchiveSubId,
+                    ArchivePart = file.ArchivePart,
+                    Offset = file.Offset,
+                    UncompressedSize = file.Length
                 };
             writer.WriteStruct(entry);
         }

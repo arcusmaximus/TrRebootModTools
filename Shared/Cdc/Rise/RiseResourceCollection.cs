@@ -18,9 +18,9 @@ namespace TrRebootTools.Shared.Cdc.Rise
 
         protected override int DependencyLocaleSize => 4;
 
-        protected override ResourceReference MakeResourceReference(ResourceIdentification identification, ResourceLocation location)
+        protected override ResourceDescriptor MakeResourceDescriptor(ResourceIdentification identification, ResourceLocation location)
         {
-            return new ResourceReference(
+            return new ResourceDescriptor(
                 (ResourceType)location.Type,
                 (ResourceSubType)identification.SubType,
                 location.Id,
@@ -36,33 +36,33 @@ namespace TrRebootTools.Shared.Cdc.Rise
             ) { Enabled = identification.Type != (byte)ResourceType.Empty };
         }
 
-        protected override ResourceIdentification MakeResourceIdentification(ResourceReference resourceRef)
+        protected override ResourceIdentification MakeResourceIdentification(ResourceDescriptor resourceDesc)
         {
             return new ResourceIdentification
             {
-                Type = (byte)resourceRef.Type,
-                SubType = (int)resourceRef.SubType,
-                Id = resourceRef.Id,
-                Locale = (uint)resourceRef.Locale
+                Type = (byte)resourceDesc.Type,
+                SubType = (int)resourceDesc.SubType,
+                Id = resourceDesc.Id,
+                Locale = (uint)resourceDesc.Locale
             };
         }
 
-        protected override ResourceLocation MakeResourceLocation(ResourceReference resourceRef)
+        protected override ResourceLocation MakeResourceLocation(ResourceDescriptor resourceDesc)
         {
             return new ResourceLocation
             {
-                Type = (int)resourceRef.Type,
-                Id = resourceRef.Id
+                Type = (int)resourceDesc.Type,
+                Id = resourceDesc.Id
             };
         }
 
-        protected override void UpdateResourceLocation(ref ResourceLocation location, ResourceReference resourceRef)
+        protected override void UpdateResourceLocation(ref ResourceLocation location, ResourceDescriptor resourceDesc)
         {
-            location.ArchiveId = (byte)resourceRef.ArchiveId;
-            location.ArchivePart = (short)resourceRef.ArchivePart;
-            location.OffsetInArchive = resourceRef.Offset;
-            location.SizeInArchive = resourceRef.Length;
-            location.DecompressionOffset = resourceRef.DecompressionOffset;
+            location.ArchiveId = (byte)resourceDesc.ArchiveId;
+            location.ArchivePart = (short)resourceDesc.ArchivePart;
+            location.OffsetInArchive = resourceDesc.Offset;
+            location.SizeInArchive = resourceDesc.Length;
+            location.DecompressionOffset = resourceDesc.DecompressionOffset;
         }
 
         [StructLayout(LayoutKind.Sequential)]

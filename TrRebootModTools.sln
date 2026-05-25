@@ -28,6 +28,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BinaryTemplateGenerator", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HookTool", "HookTool\HookTool.csproj", "{F537B409-5754-4C8A-A189-02786C90338B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shared.SourceGenerator", "Shared.SourceGenerator\Shared.SourceGenerator.csproj", "{5526FEA1-62A5-42B5-AEF4-7973D8461A0B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ActionGraphEditor", "ActionGraphEditor\ActionGraphEditor.csproj", "{84209481-FE7A-124C-A337-D398ADD33699}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -78,6 +82,14 @@ Global
 		{F537B409-5754-4C8A-A189-02786C90338B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F537B409-5754-4C8A-A189-02786C90338B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F537B409-5754-4C8A-A189-02786C90338B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5526FEA1-62A5-42B5-AEF4-7973D8461A0B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5526FEA1-62A5-42B5-AEF4-7973D8461A0B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5526FEA1-62A5-42B5-AEF4-7973D8461A0B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5526FEA1-62A5-42B5-AEF4-7973D8461A0B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{84209481-FE7A-124C-A337-D398ADD33699}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{84209481-FE7A-124C-A337-D398ADD33699}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{84209481-FE7A-124C-A337-D398ADD33699}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{84209481-FE7A-124C-A337-D398ADD33699}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

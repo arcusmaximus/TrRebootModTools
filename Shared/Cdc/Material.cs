@@ -4,6 +4,7 @@ using System.IO;
 using TrRebootTools.Shared.Cdc.Rise;
 using TrRebootTools.Shared.Cdc.Shadow;
 using TrRebootTools.Shared.Cdc.Tr2013;
+using TrRebootTools.Shared.Serialization;
 using TrRebootTools.Shared.Util;
 
 namespace TrRebootTools.Shared.Cdc
@@ -21,26 +22,30 @@ namespace TrRebootTools.Shared.Cdc
             };
         }
 
-        private readonly byte[] _data;
+        private readonly ResourceReader _reader;
+        private readonly ArraySegment<byte> _data;
 
         protected Material(int id, Stream stream, CdcGame game)
         {
             Id = id;
-            _data = new byte[(int)stream.Length];
-            stream.Read(_data, 0, _data.Length);
+            if (stream is not MemoryStream memStream || !memStream.TryGetBuffer(out _data))
+            {
+                _data = new byte[stream.Length];
+                stream.Read(_data);
+                memStream = new(_data.Array!, _data.Offset, _data.Count, true, true);
+            }
 
-            MemoryStream memStream = new(_data);
-            ResourceRefDefinitions refs = ResourceRefDefinitions.Create(null, memStream, game);
-            int pointerSize = CdcGameInfo.Get(game).PointerSize;
-
+            _reader = ResourceReader.Create(memStream, game);
+            _reader.Seek(PassRefsOffset);
+            ResourceRef?[] passRefs = _reader.ReadRefArray(NumPasses);
             for (int passIdx = 0; passIdx < NumPasses; passIdx++)
             {
-                int? passPos = refs.GetInternalRefTarget(refs.Size + PassRefsOffset + passIdx * pointerSize);
-                if (passPos == null)
+                ResourceRef? passRef = passRefs[passIdx];
+                if (passRef == null)
                     continue;
 
-                (int psConstantsPos, Vec4[] psConstants) = ReadConstants(refs, passPos.Value, PsConstantsCountOffset, PsConstantsRefOffset);
-                (int vsConstantsPos, Vec4[] vsConstants) = ReadConstants(refs, passPos.Value, VsConstantsCountOffset, VsConstantsRefOffset);
+                (int psConstantsPos, Vec4[] psConstants) = ReadConstants(passRef, PsConstantsCountOffset, PsConstantsRefOffset);
+                (int vsConstantsPos, Vec4[] vsConstants) = ReadConstants(passRef, VsConstantsCountOffset, VsConstantsRefOffset);
                 Passes.Add(
                     new Pass
                     {
@@ -54,27 +59,24 @@ namespace TrRebootTools.Shared.Cdc
             }
         }
 
-        private (int, Vec4[]) ReadConstants(ResourceRefDefinitions refs, int passPos, int constantsCountOffset, int constantsRefOffset)
+        private (int, Vec4[]) ReadConstants(ResourceRef passRef, int constantsCountOffset, int constantsRefOffset)
         {
-            int numConstants = BitConverter.ToInt32(_data, passPos + constantsCountOffset);
-            Vec4[] constants = new Vec4[numConstants];
+            _reader.Seek(passRef + constantsCountOffset);
+            int numConstants = _reader.ReadInt32();
 
-            int? constantsPos = refs.GetInternalRefTarget(passPos + constantsRefOffset);
-            if (constantsPos == null)
+            _reader.Seek(passRef + constantsRefOffset);
+            ResourceRef? constantsRef = _reader.ReadRef();
+            if (constantsRef == null)
                 return (0, []);
 
-            int constantPos = constantsPos.Value;
+            _reader.Seek(constantsRef);
+            int constantsPos = _reader.Position;
+            Vec4[] constants = new Vec4[numConstants];
             for (int i = 0; i < numConstants; i++)
             {
-                constants[i] = new Vec4(
-                    BitConverter.ToSingle(_data, constantPos + 0x0),
-                    BitConverter.ToSingle(_data, constantPos + 0x4),
-                    BitConverter.ToSingle(_data, constantPos + 0x8),
-                    BitConverter.ToSingle(_data, constantPos + 0xC)
-                );
-                constantPos += 0x10;
+                constants[i] = _reader.ReadStruct<Vec4>();
             }
-            return (constantsPos.Value, constants);
+            return (constantsPos, constants);
         }
 
         public int Id { get; private set; }
@@ -97,22 +99,18 @@ namespace TrRebootTools.Shared.Cdc
                 WriteConstants(pass.PsConstantsPos, pass.PsConstants);
                 WriteConstants(pass.VsConstantsPos, pass.VsConstants);
             }
-            stream.Write(_data, 0, _data.Length);
+            stream.Write(_data);
         }
 
-        private unsafe void WriteConstants(int pos, Vec4[] constants)
+        private void WriteConstants(int pos, Vec4[] constants)
         {
-            fixed (byte* pData = _data)
+            for (int i = 0; i < constants.Length; i++)
             {
-                float* pConstant = (float*)(pData + pos);
-                for (int i = 0; i < constants.Length; i++)
-                {
-                    pConstant[0] = constants[i].X;
-                    pConstant[1] = constants[i].Y;
-                    pConstant[2] = constants[i].Z;
-                    pConstant[3] = constants[i].W;
-                    pConstant += 4;
-                }
+                BitConverter.TryWriteBytes(_data.AsSpan(pos + 0x0, 4), constants[i].X);
+                BitConverter.TryWriteBytes(_data.AsSpan(pos + 0x4, 4), constants[i].Y);
+                BitConverter.TryWriteBytes(_data.AsSpan(pos + 0x8, 4), constants[i].Z);
+                BitConverter.TryWriteBytes(_data.AsSpan(pos + 0xC, 4), constants[i].W);
+                pos += 0x10;
             }
         }
 

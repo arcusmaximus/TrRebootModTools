@@ -16,10 +16,10 @@ namespace TrRebootTools.Shared.Cdc.Shadow
         protected override bool SupportsSubId => true;
         protected override bool SupportsLanguageList => false;
 
-        protected override ArchiveFileReference ReadFileReference(BinaryReader reader)
+        protected override ArchiveFileDescriptor ReadFileDescriptor(BinaryReader reader)
         {
             var entry = reader.ReadStruct<ArchiveFileEntry>();
-            return new ArchiveFileReference(
+            return new ArchiveFileDescriptor(
                 entry.NameHash,
                 entry.Locale,
                 entry.ArchiveId,
@@ -30,18 +30,18 @@ namespace TrRebootTools.Shared.Cdc.Shadow
             );
         }
 
-        protected override void WriteFileReference(BinaryWriter writer, ArchiveFileReference fileRef)
+        protected override void WriteFileDescriptor(BinaryWriter writer, ArchiveFileDescriptor file)
         {
             ArchiveFileEntry entry =
                 new()
                 {
-                    NameHash = fileRef.NameHash,
-                    Locale = fileRef.Locale,
-                    ArchiveId = (byte)fileRef.ArchiveId,
-                    ArchiveSubId = (byte)fileRef.ArchiveSubId,
-                    ArchivePart = (short)fileRef.ArchivePart,
-                    Offset = fileRef.Offset,
-                    UncompressedSize = fileRef.Length
+                    NameHash = file.NameHash,
+                    Locale = file.Locale,
+                    ArchiveId = (byte)file.ArchiveId,
+                    ArchiveSubId = (byte)file.ArchiveSubId,
+                    ArchivePart = (short)file.ArchivePart,
+                    Offset = file.Offset,
+                    UncompressedSize = file.Length
                 };
             writer.WriteStruct(entry);
         }

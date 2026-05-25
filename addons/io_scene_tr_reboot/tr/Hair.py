@@ -43,6 +43,9 @@ class Hair:
     @abstractmethod
     def supports_strand_thickness(self) -> bool: ...
 
+    @property
+    def expected_points_per_strand(self) -> int | None: ...
+
     @abstractmethod
     def read(self, reader: ResourceReader) -> None: ...
 

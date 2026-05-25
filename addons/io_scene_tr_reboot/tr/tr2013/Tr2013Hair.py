@@ -23,6 +23,10 @@ class Tr2013Hair(Hair):
     def supports_strand_thickness(self) -> bool:
         return True
 
+    @property
+    def expected_points_per_strand(self) -> int | None:
+        return 16
+
     def read(self, reader: ResourceReader) -> None:
         model = Tr2013Model(self.model_id or 0, self.hair_data_id)
         model.read(reader)

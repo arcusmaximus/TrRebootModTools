@@ -60,8 +60,8 @@ class HairExporter:
                 raise Exception(f"{bl_obj.name} is not a hair curve object.")
 
             bl_modifier: bpy.types.NodesModifier | None = None
-            if Enumerable(bl_data_eval.curves).any(lambda c: c.points_length != 16):
-                bl_modifier = self.add_curve_resample_modifier(bl_obj)
+            if tr_hair.expected_points_per_strand is not None and Enumerable(bl_data_eval.curves).any(lambda c: c.points_length != tr_hair.expected_points_per_strand):
+                bl_modifier = self.add_curve_resample_modifier(bl_obj, tr_hair.expected_points_per_strand)
                 bl_obj_eval = bl_obj.evaluated_get(bpy.context.evaluated_depsgraph_get())
                 bl_data_eval = cast(bpy.types.Curves, bl_obj_eval.data)
 
@@ -135,14 +135,15 @@ class HairExporter:
 
     def get_strand_point_counts(self, bl_strand_group_data: bpy.types.Curves) -> list[int]:
         point_counts = [0] * len(bl_strand_group_data.curve_offset_data)
-        bl_strand_group_data.curve_offset_data.foreach_get("value", point_counts)
-        for i in range(len(point_counts) - 1):
-            point_counts[i] = point_counts[i + 1] - point_counts[i]
+        if len(point_counts) > 1:
+            bl_strand_group_data.curve_offset_data.foreach_get("value", point_counts)
+            for i in range(len(point_counts) - 1):
+                point_counts[i] = point_counts[i + 1] - point_counts[i]
 
         point_counts.pop()
         return point_counts
 
-    def add_curve_resample_modifier(self, bl_obj: bpy.types.Object) -> bpy.types.NodesModifier:
+    def add_curve_resample_modifier(self, bl_obj: bpy.types.Object, points_per_strand: int) -> bpy.types.NodesModifier:
         bl_node_group = cast(bpy.types.GeometryNodeTree, bpy.data.node_groups.new("__resample", "GeometryNodeTree"))
         bl_node_group.is_modifier = True
 
@@ -157,7 +158,7 @@ class HairExporter:
         bl_output_node   = bl_node_group.nodes.new("NodeGroupOutput")
 
         bl_node_group.links.new(bl_input_node.outputs[0], bl_resample_node.inputs[0])
-        cast(bpy.types.NodeSocketInt, bl_resample_node.inputs[2]).default_value = 16
+        cast(bpy.types.NodeSocketInt, bl_resample_node.inputs[3]).default_value = points_per_strand
         bl_node_group.links.new(bl_resample_node.outputs[0], bl_output_node.inputs[0])
 
         bl_modifier = cast(bpy.types.NodesModifier, bl_obj.modifiers.new("Copy attribute", "NODES"))

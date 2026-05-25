@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using TrRebootTools.ModManager.Util;
 using TrRebootTools.Shared;
 using TrRebootTools.Shared.Cdc;
+using TrRebootTools.Shared.Serialization;
 using TrRebootTools.Shared.Util;
 
 namespace TrRebootTools.ModManager.Mod
@@ -210,8 +211,8 @@ namespace TrRebootTools.ModManager.Mod
                               .ToList()
                     );
 
-                Dictionary<ArchiveFileKey, HashSet<ResourceKey>> resourceRefsToAdd = GetResourceRefsToAdd(modPackage, modVariation, modResourceKeys, resourceUsageCache);
-                AddResourceReferencesToCollections(modResourceCollections, modResourceCollectionItems, resourceRefsToAdd, resourceUsageCache);
+                Dictionary<ArchiveFileKey, HashSet<ResourceKey>> resourcesToAdd = GetResourcesToAdd(modPackage, modVariation, modResourceKeys, resourceUsageCache);
+                AddResourcesToCollections(modResourceCollections, modResourceCollectionItems, resourcesToAdd, resourceUsageCache);
 
                 IEnumerable<ArchiveFileKey> fileKeys = modResourceCollections.Keys.Concat(modPackage.Files).Concat(modVariation?.Files ?? []);
                 Dictionary<ulong, int> fileCountsByLocale = fileKeys.GroupBy(f => f.Locale).ToDictionary(g => g.Key, g => g.Count());
@@ -276,13 +277,13 @@ namespace TrRebootTools.ModManager.Mod
             }
         }
 
-        private Dictionary<ArchiveFileKey, HashSet<ResourceKey>> GetResourceRefsToAdd(
+        private Dictionary<ArchiveFileKey, HashSet<ResourceKey>> GetResourcesToAdd(
             ModPackage modPackage,
             ModVariation? modVariation,
             ResourceKeyLookup modResourceKeys,
             ResourceUsageCache fullResourceUsageCache)
         {
-            Dictionary<ArchiveFileKey, HashSet<ResourceKey>> resourceRefsToAdd = new();
+            Dictionary<ArchiveFileKey, HashSet<ResourceKey>> resourcesToAdd = new();
             foreach (ResourceKey modResourceKey in modResourceKeys)
             {
                 HashSet<ResourceKey> externalResourceKeys = new();
@@ -292,10 +293,10 @@ namespace TrRebootTools.ModManager.Mod
 
                 foreach (ResourceCollectionItemReference modResourceUsage in fullResourceUsageCache.GetResourceUsages(_archiveSet, modResourceKey))
                 {
-                    resourceRefsToAdd.GetOrAdd(modResourceUsage.CollectionReference, () => []).UnionWith(externalResourceKeys);
+                    resourcesToAdd.GetOrAdd(modResourceUsage.CollectionReference, () => []).UnionWith(externalResourceKeys);
                 }
             }
-            return resourceRefsToAdd;
+            return resourcesToAdd;
         }
 
         private void CollectExternalResourceKeys(
@@ -309,8 +310,8 @@ namespace TrRebootTools.ModManager.Mod
             if (!MightHaveRefDefinitions(resourceKey))
                 return;
 
-            ResourceReference? resourceRef = fullResourceUsageCache.GetResourceReference(_archiveSet, resourceKey);
-            if (resourceRef != null && resourceRef.RefDefinitionsSize == 0)
+            ResourceDescriptor? resource = fullResourceUsageCache.GetResourceDescriptor(_archiveSet, resourceKey);
+            if (resource != null && resource.RefDefinitionsSize == 0)
                 return;
 
             List<ResourceKey> externalResourceKeys;
@@ -319,8 +320,8 @@ namespace TrRebootTools.ModManager.Mod
             {
                 if (modResourceKeys.Contains(resourceKey))
                     resourceStream = modVariation?.OpenResource(resourceKey) ?? modPackage.OpenResource(resourceKey)!;
-                else if (resourceRef != null)
-                    resourceStream = _archiveSet.OpenResource(resourceRef);
+                else if (resource != null)
+                    resourceStream = _archiveSet.OpenResource(resource);
                 else
                     return;
 
@@ -333,11 +334,11 @@ namespace TrRebootTools.ModManager.Mod
                     resourceStream = memResourceStream;
                 }
 
-                externalResourceKeys = ResourceRefDefinitions.Create(resourceRef, resourceStream, _archiveSet.Game)
-                                                             .ExternalRefs
-                                                             .SelectMany(r => GetLocaleSpecificResourceKeys(r.ResourceKey, modResourceKeys, fullResourceUsageCache))
-                                                             .Select(r => GetResourceKeyWithAddedSubType(r, modResourceKeys))
-                                                             .ToList();
+                externalResourceKeys = ResourceReader.Create(resource, resourceStream, _archiveSet.Game)
+                                                     .ExternalRefs
+                                                     .SelectMany(r => GetLocaleSpecificResourceKeys(r.ExternalResource!.Value, modResourceKeys, fullResourceUsageCache))
+                                                     .Select(r => GetResourceKeyWithAddedSubType(r, modResourceKeys))
+                                                     .ToList();
             }
             finally
             {
@@ -395,13 +396,13 @@ namespace TrRebootTools.ModManager.Mod
             return resourceKey;
         }
 
-        private void AddResourceReferencesToCollections(
+        private void AddResourcesToCollections(
             Dictionary<ArchiveFileKey, ResourceCollection> modResourceCollections,
             Dictionary<ResourceKey, List<ResourceCollectionItem>> modResourceCollectionItems,
-            Dictionary<ArchiveFileKey, HashSet<ResourceKey>> resourceRefsToAdd,
+            Dictionary<ArchiveFileKey, HashSet<ResourceKey>> resourcesToAdd,
             ResourceUsageCache resourceUsageCache)
         {
-            foreach ((ArchiveFileKey collectionKey, ICollection<ResourceKey> resourcesForCollection) in resourceRefsToAdd)
+            foreach ((ArchiveFileKey collectionKey, ICollection<ResourceKey> resourcesForCollection) in resourcesToAdd)
             {
                 ResourceCollection? modCollection = modResourceCollections.GetValueOrDefault(collectionKey);
                 if (modCollection == null)
@@ -418,7 +419,7 @@ namespace TrRebootTools.ModManager.Mod
                     {
                         ResourceCollection? sourceCollection = _archiveSet.GetResourceCollection(existingUsage.CollectionReference);
                         if (sourceCollection != null)
-                            modCollectionResourceIdx = modCollection.AddResourceReference(sourceCollection, existingUsage.ResourceIndex);
+                            modCollectionResourceIdx = modCollection.Add(sourceCollection, existingUsage.ResourceIndex);
                     }
                     modResourceCollectionItems.GetOrAdd(resourceKey, () => []).Add(new ResourceCollectionItem(modCollection, modCollectionResourceIdx));
                 }
@@ -451,23 +452,23 @@ namespace TrRebootTools.ModManager.Mod
                     uint? refDefinitionsSize = null;
                     if (MightHaveRefDefinitions(modResourceKey))
                     {
-                        ResourceReference? existingResourceRef = collectionItems[0].ResourceIndex >= 0 ? collectionItems[0].Collection.ResourceReferences[collectionItems[0].ResourceIndex] : null;
-                        if (existingResourceRef == null || existingResourceRef.RefDefinitionsSize > 0)
+                        ResourceDescriptor? existingResource = collectionItems[0].ResourceIndex >= 0 ? collectionItems[0].Collection.Resources[collectionItems[0].ResourceIndex] : null;
+                        if (existingResource == null || existingResource.RefDefinitionsSize > 0)
                             refDefinitionsSize = (uint)GetResourceRefDefinitionsSize(modPackage, modVariation, modResourceKey);
                     }
 
-                    ArchiveBlobReference newResource = archive.AddResource(modResourceStream);
-                    ResourceReference newResourceRef =
-                        new ResourceReference(
+                    ArchiveBlobDescriptor newResourceBlob = archive.AddResource(modResourceStream);
+                    ResourceDescriptor newResourceDesc =
+                        new ResourceDescriptor(
                             modResourceKey.Type,
                             modResourceKey.SubType,
                             modResourceKey.Id,
                             modResourceKey.Locale,
-                            newResource.ArchiveId,
-                            newResource.ArchiveSubId,
-                            newResource.ArchivePart,
-                            newResource.Offset,
-                            newResource.Length,
+                            newResourceBlob.ArchiveId,
+                            newResourceBlob.ArchiveSubId,
+                            newResourceBlob.ArchivePart,
+                            newResourceBlob.Offset,
+                            newResourceBlob.Length,
                             decompressionOffset,
                             refDefinitionsSize,
                             (uint)modResourceStream.Length - (refDefinitionsSize ?? 0)
@@ -475,9 +476,9 @@ namespace TrRebootTools.ModManager.Mod
                     foreach (ResourceCollectionItem collectionItem in collectionItems)
                     {
                         if (collectionItem.ResourceIndex < 0)
-                            collectionItem.Collection.AddResourceReference(newResourceRef);
+                            collectionItem.Collection.Add(newResourceDesc);
                         else
-                            collectionItem.Collection.UpdateResourceReference(collectionItem.ResourceIndex, newResourceRef);
+                            collectionItem.Collection.Set(collectionItem.ResourceIndex, newResourceDesc);
                     }
 
                     decompressionOffset += (uint)modResourceStream.Length;
@@ -493,7 +494,8 @@ namespace TrRebootTools.ModManager.Mod
         private int GetResourceRefDefinitionsSize(ModPackage modPackage, ModVariation? modVariation, ResourceKey resourceKey)
         {
             using Stream stream = modVariation?.OpenResource(resourceKey) ?? modPackage.OpenResource(resourceKey)!;
-            return ResourceRefDefinitions.ReadHeaderAndGetSize(stream, _archiveSet.Game);
+            ResourceReader reader = ResourceReader.Create(stream, _archiveSet.Game);
+            return reader.RefDefinitionsSize;
         }
 
         private static void AddFilesToArchives(Dictionary<ulong, Archive> archives, ModPackage modPackage, ModVariation? modVariation, IEnumerable<ResourceCollection> resourceCollections)

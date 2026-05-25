@@ -1,4 +1,6 @@
-﻿using System.Reflection;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 
 namespace TrRebootTools.BinaryTemplateGenerator
@@ -7,7 +9,10 @@ namespace TrRebootTools.BinaryTemplateGenerator
     {
         public static void Main(string[] args)
         {
-            if (!TryParseArgs(args, out string structName, out int trVersion))
+            //ExtractActionGraphNodeArgs();
+            //return;
+
+            if (!TryParseArgs(args, out string? structName, out CdcGame game))
             {
                 string assemblyName = Assembly.GetEntryAssembly()!.GetName().Name!;
                 Console.WriteLine($"Usage: {assemblyName} <structure name> <TR version 9/10/11>");
@@ -15,14 +20,14 @@ namespace TrRebootTools.BinaryTemplateGenerator
                 return;
             }
 
-            string headerFilePath = Path.Combine(AppContext.BaseDirectory, $"TR{trVersion}.h");
+            string headerFilePath = Path.Combine(AppContext.BaseDirectory, $"TR{(int)game}.h");
             if (!File.Exists(headerFilePath))
             {
                 Console.WriteLine($"Header file missing (expected at {headerFilePath}).");
                 return;
             }
 
-            string templateFilePath = $"tr{trVersion}{Regex.Replace(structName, @"^(\w+::)+", "").ToLower()}.bt";
+            string templateFilePath = $"tr{(int)game}{Regex.Replace(structName, @"^(\w+::)+", "").ToLower()}.bt";
 
             try
             {
@@ -30,14 +35,14 @@ namespace TrRebootTools.BinaryTemplateGenerator
                 TypeLibrary lib;
                 using (StreamReader reader = new(headerFilePath))
                 {
-                    lib = new HeaderReader(reader, trVersion == 9 ? 4 : 8).Read();
+                    lib = new HeaderReader(reader, game == CdcGame.Tr2013 ? 4 : 8).Read();
                 }
 
                 Console.WriteLine("Writing binary template...");
                 lib.CalculateAlignmentsAndSizes(structName);
-                using (StreamWriter writer = new StreamWriter(templateFilePath))
+                using (StreamWriter writer = new(templateFilePath))
                 {
-                    new BinaryTemplateWriter(lib, writer).WriteRootType(structName, trVersion);
+                    new BinaryTemplateWriter(lib, writer, game).WriteRootType(lib.Types[structName]);
                 }
             }
             catch (Exception ex)
@@ -46,35 +51,50 @@ namespace TrRebootTools.BinaryTemplateGenerator
             }
         }
 
-        private static bool TryParseArgs(string[] args, out string structName, out int trVersion)
+        private static bool TryParseArgs(string[] args, [NotNullWhen(true)] out string? structName, out CdcGame game)
         {
             structName = null;
-            trVersion = 0;
+            game = 0;
 
             if (args.Length != 2)
                 return false;
 
             structName = args[0];
-            return int.TryParse(args[1], out trVersion) && trVersion >= 9 && trVersion <= 11;
+            if (!int.TryParse(args[1], out int trVersion))
+                return false;
+
+            game = (CdcGame)trVersion;
+            if (!Enum.IsDefined(game))
+                return false;
+
+            return true;
         }
 
         private static void ExtractActionGraphNodeArgs()
         {
             TypeLibrary lib;
-            using (StreamReader reader = new StreamReader(@"D:\Projects\TrRebootModTools\Build\Release\TR11.h"))
+            using (StreamReader reader = new(@"D:\Projects\TrRebootModTools\Build\Release\TR11.h"))
             {
                 lib = new HeaderReader(reader, 8).Read();
             }
 
-            var extractor = new ActionGraphNodeExtractor(lib);
-            using (StreamWriter writer = new StreamWriter(@"D:\Projects\TrRebootModTools\Templates\tr11actiongraph-dispatch.bt"))
+            JsonDocument slotsDoc;
+            using (Stream slotsStream = File.OpenRead(@"D:\Projects\TrRebootModTools\_notes\action graph node slots.json"))
+            {
+                slotsDoc = JsonDocument.Parse(slotsStream);
+            }
+            
+            var extractor = new ActionGraphNodeExtractor(lib, slotsDoc, CdcGame.Shadow);
+            /*
+            using (StreamWriter writer = new(@"D:\Projects\TrRebootModTools\Templates\tr11actiongraph-dispatch.bt"))
             {
                 extractor.WriteCaseStatements(writer);
             }
-            using (StreamWriter writer = new StreamWriter(@"D:\Projects\TrRebootModTools\Templates\tr11actiongraph-nodes.bt"))
-            {
-                extractor.WriteArgTypes(writer);
-            }
+            */
+            StringWriter factory = new();
+            extractor.WriteCSharpFactory(factory);
+
+            extractor.WriteCSharpNodeTypes(@"D:\Projects\TrRebootModTools\ActionGraphEditor\Shadow\Nodes");
         }
     }
 }

@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Text;
+using TrRebootTools.Shared.Serialization;
 using TrRebootTools.Shared.Util;
 
 namespace TrRebootTools.Shared.Cdc.Tr2013
@@ -32,21 +33,21 @@ namespace TrRebootTools.Shared.Cdc.Tr2013
 
         protected override Dictionary<(ResourceType, ResourceSubType), string[]> Mappings => _mappings;
 
-        protected internal override string? ReadOriginalFilePathInstance(ArchiveSet archiveSet, ResourceCollection collection, ResourceReference resourceRef)
+        protected internal override string? ReadOriginalFilePathInstance(ArchiveSet archiveSet, ResourceCollection collection, ResourceDescriptor resource)
         {
-            switch (resourceRef.Type)
+            switch (resource.Type)
             {
                 case ResourceType.Animation:
                     UpdateAnimationNameCache(archiveSet, collection);
-                    return _animNames.GetValueOrDefault(resourceRef.Id);
+                    return _animNames.GetValueOrDefault(resource.Id);
 
                 case ResourceType.SoundBank:
                 {
-                    if (archiveSet.GetArchive(resourceRef.ArchiveId, resourceRef.ArchiveSubId) == null)
+                    if (archiveSet.GetArchive(resource.ArchiveId, resource.ArchiveSubId) == null)
                         return null;
 
-                    using Stream stream = archiveSet.OpenResource(resourceRef);
-                    return ReadOriginalFilePathInstance(stream, resourceRef.Type);
+                    using Stream stream = archiveSet.OpenResource(resource);
+                    return ReadOriginalFilePathInstance(stream, resource.Type);
                 }
 
                 default:
@@ -62,21 +63,21 @@ namespace TrRebootTools.Shared.Cdc.Tr2013
             _animNames.Clear();
             _lastAnimCollection = collection;
 
-            ResourceReference? objectRefResource = collection.ResourceReferences.FirstOrDefault(r => r.Type == ResourceType.GlobalContentReference);
+            ResourceDescriptor? objectRefResource = collection.Resources.FirstOrDefault(r => r.Type == ResourceType.GlobalContentReference);
             if (objectRefResource == null)
                 return;
 
-            MemoryStream objectRefStream = archiveSet.LoadResource(objectRefResource);
-            ResourceRefDefinitions objectRefRefs = ResourceRefDefinitions.Create(objectRefResource, objectRefStream, CdcGame.Tr2013);
-            ResourceKey? objectKey = objectRefRefs.GetExternalRefTarget(objectRefRefs.Size);
-            if (objectKey == null)
+            Stream objectRefStream = archiveSet.OpenResource(objectRefResource);
+            ResourceReader objectRefReader = ResourceReader.Create(objectRefResource, objectRefStream, CdcGame.Tr2013);
+            ResourceRef? objectRef = objectRefReader.ReadRef();
+            if (objectRef?.ExternalResource == null)
                 return;
 
-            ResourceReference? objectResource = collection.GetResourceReference(objectKey.Value);
+            ResourceDescriptor? objectResource = collection.Get(objectRef.ExternalResource.Value);
             if (objectResource == null)
                 return;
 
-            MemoryStream objectStream = archiveSet.LoadResource(objectResource);
+            Stream objectStream = archiveSet.OpenResource(objectResource);
             Tr2013Object obj = new(objectStream);
             foreach ((int animId, string animName) in obj.Animations)
             {

@@ -108,13 +108,11 @@
                     foreach (CField field in structure.Fields)
                     {
                         CalculateAlignmentsAndSizes(field, visitedTypes);
-                        if (alignment == 0)
-                            alignment = field.Alignment;
-
+                        alignment = Math.Max(field.Alignment, alignment);
                         size = SeekForward(size, field.Alignment, field.Size);
                     }
                     structure.Alignment = alignment;
-                    structure.Size = size;
+                    structure.Size = SeekForward(size, alignment, 0);
                     break;
 
                 case CUnion union:

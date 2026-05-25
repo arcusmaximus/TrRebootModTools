@@ -19,7 +19,7 @@ namespace TrRebootTools.Shared.Cdc
         private Stream? _currentChunkStream;
         private int _remainingChunkSize;
 
-        public static bool IsCompressed(Stream archivePartStream, ArchiveBlobReference blobRef)
+        public static bool IsCompressed(Stream archivePartStream, ArchiveBlobDescriptor blobRef)
         {
             archivePartStream.Position = blobRef.Offset;
             Span<byte> magic = stackalloc byte[4];
@@ -27,13 +27,13 @@ namespace TrRebootTools.Shared.Cdc
             return BitConverter.ToInt32(magic) == Magic;
         }
 
-        public ArchiveDecompressionStream(Stream archivePartStream, ArchiveBlobReference blobRef, bool leaveOpen)
+        public ArchiveDecompressionStream(Stream archivePartStream, ArchiveBlobDescriptor blobDesc, bool leaveOpen)
         {
             ArchivePartStream = archivePartStream;
-            BlobRef = blobRef;
+            BlobDescriptor = blobDesc;
             _leaveOpen = leaveOpen;
 
-            ArchivePartStream.Position = blobRef.Offset;
+            ArchivePartStream.Position = blobDesc.Offset;
             BinaryReader reader = new(archivePartStream);
             int magic = reader.ReadInt32();
             if (magic != Magic)
@@ -66,7 +66,7 @@ namespace TrRebootTools.Shared.Cdc
             get;
         }
 
-        public ArchiveBlobReference BlobRef
+        public ArchiveBlobDescriptor BlobDescriptor
         {
             get;
         }

@@ -36,19 +36,19 @@ namespace TrRebootTools.Shared.Cdc
             );
         }
 
-        protected override void UpdateResourceIdentification(ref ResourceIdentification identification, ResourceReference resourceRef)
+        protected override void UpdateResourceIdentification(ref ResourceIdentification identification, ResourceDescriptor resourceDesc)
         {
-            if (resourceRef.RefDefinitionsSize != null)
+            if (resourceDesc.RefDefinitionsSize != null)
             {
-                identification.RefDefinitionsSize = resourceRef.RefDefinitionsSize.Value;
-                identification.BodySize = resourceRef.BodySize;
+                identification.RefDefinitionsSize = resourceDesc.RefDefinitionsSize.Value;
+                identification.BodySize = resourceDesc.BodySize;
             }
             else
             {
-                identification.BodySize = resourceRef.BodySize - identification.RefDefinitionsSize;
+                identification.BodySize = resourceDesc.BodySize - identification.RefDefinitionsSize;
             }
-            if (resourceRef.Enabled)
-                identification.Type = (byte)(resourceRef.Type < ResourceType.Max ? resourceRef.Type : ResourceType.CollisionModel);
+            if (resourceDesc.Enabled)
+                identification.Type = (byte)(resourceDesc.Type < ResourceType.Max ? resourceDesc.Type : ResourceType.CollisionModel);
             else
                 identification.Type = (byte)ResourceType.Empty;
         }

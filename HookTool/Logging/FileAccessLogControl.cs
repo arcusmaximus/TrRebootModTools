@@ -111,13 +111,13 @@ namespace TrRebootTools.HookTool.Logging
 
         protected override async Task ExtractAsync(string folderPath, ITaskProgress progress, CancellationToken cancellationToken)
         {
-            List<ArchiveFileReference> fileRefs = _lstLog.Selection.SelectedItems.Cast<FileLogEntry>()
-                                                                                 .Select(e => ArchiveSet.GetFileReference(e.Key))
-                                                                                 .Where(f => f != null)
-                                                                                 .ToList()!;
+            List<ArchiveFileDescriptor> files = _lstLog.Selection.SelectedItems.Cast<FileLogEntry>()
+                                                                               .Select(e => ArchiveSet.GetFile(e.Key))
+                                                                               .Where(f => f != null)
+                                                                               .ToList()!;
 
             var extractor = new Extractor.Extractor(ArchiveSet);
-            await Task.Run(() => extractor.Extract(folderPath, fileRefs, progress, cancellationToken));
+            await Task.Run(() => extractor.Extract(folderPath, files, progress, cancellationToken));
         }
     }
 }

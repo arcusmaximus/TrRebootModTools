@@ -45,23 +45,23 @@ namespace TrRebootTools.Shared.Cdc
             get;
         }
 
-        public abstract ResourceReference? MainResourceReference
+        public abstract ResourceDescriptor? MainResource
         {
             get;
         }
 
-        public abstract IReadOnlyList<ResourceReference> ResourceReferences { get; }
+        public abstract IReadOnlyList<ResourceDescriptor> Resources { get; }
 
         public abstract bool Contains(ResourceKey resourceKey);
 
-        public ResourceReference? GetResourceReference(ResourceKey resourceKey)
+        public ResourceDescriptor? Get(ResourceKey resourceKey)
         {
-            return ResourceReferences.FirstOrDefault(r => resourceKey.Equals(r));
+            return Resources.FirstOrDefault(r => resourceKey.Equals(r));
         }
 
-        public abstract int AddResourceReference(ResourceCollection otherCollection, int otherResourceId);
-        public abstract int AddResourceReference(ResourceReference resourceRef);
-        public abstract void UpdateResourceReference(int resourceIdx, ResourceReference resourceRef);
+        public abstract int Add(ResourceCollection otherCollection, int otherResourceId);
+        public abstract int Add(ResourceDescriptor resource);
+        public abstract void Set(int index, ResourceDescriptor resource);
 
         public abstract IEnumerable<ResourceCollectionDependency> Dependencies { get; }
 
@@ -81,7 +81,7 @@ namespace TrRebootTools.Shared.Cdc
         private readonly List<ResourceCollectionDependency> _includes;
         private readonly List<TResourceLocation> _resourceLocations = [];
 
-        private List<ResourceReference>? _resourceReferences;
+        private List<ResourceDescriptor>? _resourceDescriptors;
         private HashSet<ResourceKey>? _resourceKeyLookup;
 
         protected ResourceCollection(ulong nameHash, ulong locale, Stream stream)
@@ -112,27 +112,27 @@ namespace TrRebootTools.Shared.Cdc
 
         protected abstract int HeaderLocaleSize { get; }
 
-        public override ResourceReference? MainResourceReference
+        public override ResourceDescriptor? MainResource
         {
-            get => _header.MainResourceIndex >= 0 ? ResourceReferences[_header.MainResourceIndex] : null;
+            get => _header.MainResourceIndex >= 0 ? Resources[_header.MainResourceIndex] : null;
         }
 
-        public override IReadOnlyList<ResourceReference> ResourceReferences
+        public override IReadOnlyList<ResourceDescriptor> Resources
         {
             get
             {
-                if (_resourceReferences == null)
+                if (_resourceDescriptors == null)
                 {
-                    _resourceReferences = [];
+                    _resourceDescriptors = [];
                     for (int i = 0; i < _resourceIdentifications.Count; i++)
                     {
                         var identification = _resourceIdentifications[i];
                         var location = _resourceLocations[i];
-                        ResourceReference resourceRef = MakeResourceReference(identification, location);
-                        _resourceReferences.Add(resourceRef);
+                        ResourceDescriptor resourceDesc = MakeResourceDescriptor(identification, location);
+                        _resourceDescriptors.Add(resourceDesc);
                     }
                 }
-                return _resourceReferences;
+                return _resourceDescriptors;
             }
         }
 
@@ -142,7 +142,7 @@ namespace TrRebootTools.Shared.Cdc
             return _resourceKeyLookup.Contains(resourceKey);
         }
 
-        public override int AddResourceReference(ResourceCollection otherCollection, int otherResourceId)
+        public override int Add(ResourceCollection otherCollection, int otherResourceId)
         {
             var otherSpecificCollection = (ResourceCollection<THeader, TResourceIdentification, TResourceLocation, TLocale>)otherCollection;
             int resourceIdx = _resourceIdentifications.Count;
@@ -150,35 +150,35 @@ namespace TrRebootTools.Shared.Cdc
             var location = otherSpecificCollection._resourceLocations[otherResourceId];
             _resourceIdentifications.Add(identification);
             _resourceLocations.Add(location);
-            _resourceReferences = null;
+            _resourceDescriptors = null;
             _resourceKeyLookup?.Add(ToResourceKey(identification));
             return resourceIdx;
         }
 
-        public override int AddResourceReference(ResourceReference resourceRef)
+        public override int Add(ResourceDescriptor resourceDesc)
         {
             int resourceIdx = _resourceIdentifications.Count;
-            _resourceIdentifications.Add(MakeResourceIdentification(resourceRef));
-            _resourceLocations.Add(MakeResourceLocation(resourceRef));
-            _resourceReferences?.Add(resourceRef);
-            _resourceKeyLookup?.Add(resourceRef);
+            _resourceIdentifications.Add(MakeResourceIdentification(resourceDesc));
+            _resourceLocations.Add(MakeResourceLocation(resourceDesc));
+            _resourceDescriptors?.Add(resourceDesc);
+            _resourceKeyLookup?.Add(resourceDesc);
 
-            UpdateResourceReference(resourceIdx, resourceRef);
+            Set(resourceIdx, resourceDesc);
             return resourceIdx;
         }
 
-        public override void UpdateResourceReference(int resourceIdx, ResourceReference resourceRef)
+        public override void Set(int index, ResourceDescriptor resourceDesc)
         {
-            TResourceIdentification identification = _resourceIdentifications[resourceIdx];
-            UpdateResourceIdentification(ref identification, resourceRef);
-            _resourceIdentifications[resourceIdx] = identification;
+            TResourceIdentification identification = _resourceIdentifications[index];
+            UpdateResourceIdentification(ref identification, resourceDesc);
+            _resourceIdentifications[index] = identification;
 
-            TResourceLocation location = _resourceLocations[resourceIdx];
-            UpdateResourceLocation(ref location, resourceRef);
-            _resourceLocations[resourceIdx] = location;
+            TResourceLocation location = _resourceLocations[index];
+            UpdateResourceLocation(ref location, resourceDesc);
+            _resourceLocations[index] = location;
 
-            if (_resourceReferences != null)
-                _resourceReferences[resourceIdx] = resourceRef;
+            if (_resourceDescriptors != null)
+                _resourceDescriptors[index] = resourceDesc;
         }
 
         public override IEnumerable<ResourceCollectionDependency> Dependencies
@@ -199,7 +199,7 @@ namespace TrRebootTools.Shared.Cdc
 
         public override void Write(Stream stream)
         {
-            BinaryWriter writer = new BinaryWriter(stream);
+            BinaryWriter writer = new(stream);
 
             _header.NumResources = _resourceIdentifications.Count;
             _header.DependenciesLength = _dependencies.Sum(d => DependencyLocaleSize + d.FilePath.Length + 1);
@@ -223,13 +223,13 @@ namespace TrRebootTools.Shared.Cdc
         }
 
         protected abstract ResourceKey ToResourceKey(TResourceIdentification identification);
-        protected abstract ResourceReference MakeResourceReference(TResourceIdentification identification, TResourceLocation location);
+        protected abstract ResourceDescriptor MakeResourceDescriptor(TResourceIdentification identification, TResourceLocation location);
 
-        protected abstract TResourceIdentification MakeResourceIdentification(ResourceReference resourceRef);
-        protected abstract void UpdateResourceIdentification(ref TResourceIdentification identification, ResourceReference resourceRef);
+        protected abstract TResourceIdentification MakeResourceIdentification(ResourceDescriptor resourceDesc);
+        protected abstract void UpdateResourceIdentification(ref TResourceIdentification identification, ResourceDescriptor resourceDesc);
 
-        protected abstract TResourceLocation MakeResourceLocation(ResourceReference resourceRef);
-        protected abstract void UpdateResourceLocation(ref TResourceLocation location, ResourceReference resourceRef);
+        protected abstract TResourceLocation MakeResourceLocation(ResourceDescriptor resourceDesc);
+        protected abstract void UpdateResourceLocation(ref TResourceLocation location, ResourceDescriptor resourceDesc);
 
         protected abstract int DependencyLocaleSize { get; }
 

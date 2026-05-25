@@ -2,8 +2,9 @@ from array import array
 import ctypes
 from ctypes import sizeof
 import random
+import math
 from mathutils import Matrix, Vector
-from typing import TYPE_CHECKING, Callable, Iterator, Literal, NamedTuple, Protocol, Sequence, TypeVar, cast, overload
+from typing import TYPE_CHECKING, Callable, Literal, NamedTuple, Protocol, Sequence, TypeVar, cast, overload
 from io_scene_tr_reboot.tr.Hair import Hair, HairPart, HairPoint, HairPointWeight
 from io_scene_tr_reboot.tr.ResourceBuilder import ResourceBuilder
 from io_scene_tr_reboot.tr.ResourceReader import ResourceReader
@@ -89,10 +90,10 @@ class HairAssetSlaveVertices(CStruct64):
 assert(sizeof(HairAssetSlaveVertices) == 0x20)
 
 class IHairAssetRenderingData(Protocol):
-    slave_strip_indices: HairAssetRange
+    index_buffer: HairAssetRange
 
 class HairAssetRenderingData(CStruct64, IHairAssetRenderingData if TYPE_CHECKING else object):
-    slave_strip_indices: HairAssetRange
+    index_buffer: HairAssetRange
 
 assert(sizeof(HairAssetRenderingData) == 8)
 
@@ -163,7 +164,7 @@ class _HairStrandDescriptor(NamedTuple):
     first_vertex_idx: int
     num_vertices: int
 
-class _HairStrandReference(NamedTuple):
+class HairStrandReference(NamedTuple):
     part_idx: int
     strand_idx_in_part: int
     first_vertex_idx_in_part: int
@@ -186,6 +187,10 @@ class RiseHair(Hair):
     @property
     def supports_strand_thickness(self) -> bool:
         return False
+
+    @property
+    def expected_points_per_strand(self) -> int | None:
+        return None
 
     def read(self, reader: ResourceReader) -> None:
         wrapper = reader.read_struct(HairAssetWrapper)
@@ -279,8 +284,10 @@ class RiseHair(Hair):
         self.append_part_names(writer, asset)
         master_strands  = self.append_master_strands(writer, asset)
         master_vertices = self.append_master_vertices(writer, asset, bone_ids)
-        self.append_slave_strands_and_vertices(writer, asset, master_strands, master_vertices)
-        self.append_rendering_data(writer, asset)
+
+        slave_strands = self.get_slave_strand_output_order()
+        self.append_slave_strands_and_vertices(writer, asset, master_strands, master_vertices, slave_strands)
+        self.append_rendering_data(writer, asset, slave_strands)
         self.append_collision_data(writer, asset)
 
         writer.position = writer.size
@@ -484,7 +491,8 @@ class RiseHair(Hair):
         writer: ResourceBuilder,
         asset: IHairAsset,
         master_strands: list[_HairStrandDescriptor],
-        master_vertices: list[_HairMasterVertexDescriptor]
+        master_vertices: list[_HairMasterVertexDescriptor],
+        slave_strands: list[HairStrandReference]
     ) -> None:
         skinning_calculator = _SlaveStrandSkinningCalculator(self, master_strands, master_vertices)
 
@@ -500,14 +508,14 @@ class RiseHair(Hair):
 
         output_strand_idx = 0
         output_vertex_idx = 0
-        for source_strand in self.get_slave_strand_output_order():
-            part = self.parts[source_strand.part_idx]
-            num_strand_vertices = part.slave_strands.strand_point_counts[source_strand.strand_idx_in_part]
+        for slave_strand in slave_strands:
+            part = self.parts[slave_strand.part_idx]
+            num_strand_vertices = part.slave_strands.strand_point_counts[slave_strand.strand_idx_in_part]
 
-            strand_descriptor = _HairStrandDescriptor(source_strand.part_idx, output_vertex_idx, num_strand_vertices)
-            strand_base_position = part.slave_strands.points[source_strand.first_vertex_idx_in_part].position
-            strand_packing_scale = self.calc_slave_strand_packing_scale(part, source_strand.first_vertex_idx_in_part, num_strand_vertices)
-            strand_skinning_calc = skinning_calculator.calculate(source_strand)
+            strand_descriptor = _HairStrandDescriptor(slave_strand.part_idx, output_vertex_idx, num_strand_vertices)
+            strand_base_position = part.slave_strands.points[slave_strand.first_vertex_idx_in_part].position
+            strand_packing_scale = self.calc_slave_strand_packing_scale(part, slave_strand.first_vertex_idx_in_part, num_strand_vertices)
+            strand_skinning_calc = skinning_calculator.calculate(slave_strand)
 
             strand_descriptors[output_strand_idx] = self.pack_strand_descriptor(strand_descriptor)
 
@@ -524,8 +532,9 @@ class RiseHair(Hair):
 
             prev_vertex_pos = strand_base_position
             for vertex_idx_in_strand in range(num_strand_vertices):
-                position = part.slave_strands.points[source_strand.first_vertex_idx_in_part + vertex_idx_in_strand].position
-                vertex_positions[output_vertex_idx] = self.pack_slave_vertex_position(position, prev_vertex_pos, strand_packing_scale)
+                position = part.slave_strands.points[slave_strand.first_vertex_idx_in_part + vertex_idx_in_strand].position
+                vertex_positions[output_vertex_idx]  = self.pack_slave_vertex_position(position, prev_vertex_pos, strand_packing_scale)
+                vertex_tex_coords[output_vertex_idx] = self.pack_slave_vertex_uv(self.calc_slave_vertex_uv(asset, position))
                 vertex_strand_indices[(output_vertex_idx & ~1) + (1 - (output_vertex_idx & 1))] = output_strand_idx
 
                 vertex_skinning_calc = strand_skinning_calc.vertices[vertex_idx_in_strand]
@@ -552,23 +561,24 @@ class RiseHair(Hair):
         asset.slave_vertices.tex_coords           = self.append_uint32_array(writer, vertex_tex_coords)
         asset.slave_vertices.slave_strand_indices = self.append_uint16_array(writer, vertex_strand_indices)
 
-    def append_rendering_data(self, writer: ResourceBuilder, asset: IHairAsset) -> None:
-        slave_strip_indices = array("I", [0]) * (asset.num_slave_vertices * 2 + asset.num_slave_strands)
+    def append_rendering_data(self, writer: ResourceBuilder, asset: IHairAsset, slave_strands: list[HairStrandReference]) -> None:
+        index_buffer = array("I", [0]) * (asset.num_slave_vertices * 2 + asset.num_slave_strands)
 
-        target_idx = 0
-        idx_to_write = 0
-        for part in self.parts:
-            for num_strand_vertices in part.slave_strands.strand_point_counts:
-                for _ in range(num_strand_vertices * 2):
-                    slave_strip_indices[target_idx] = idx_to_write
-                    target_idx += 1
-                    idx_to_write += 1
+        index_idx = 0
+        vertex_idx = 0
+        for slave_strand in slave_strands:
+            part = self.parts[slave_strand.part_idx]
+            num_strand_vertices = part.slave_strands.strand_point_counts[slave_strand.strand_idx_in_part]
+            for _ in range(num_strand_vertices * 2):    # Two render vertices per strand vertex
+                index_buffer[index_idx] = vertex_idx
+                index_idx += 1
+                vertex_idx += 1
 
-                slave_strip_indices[target_idx] = 0xFFFFFFFF
-                target_idx += 1
+            index_buffer[index_idx] = 0xFFFFFFFF        # End of triangle strip
+            index_idx += 1
 
         asset.rendering_data = self.create_rendering_data()
-        asset.rendering_data.slave_strip_indices = self.append_uint32_array(writer, slave_strip_indices)
+        asset.rendering_data.index_buffer = self.append_uint32_array(writer, index_buffer)
 
     def create_rendering_data(self) -> IHairAssetRenderingData:
         return HairAssetRenderingData()
@@ -615,28 +625,45 @@ class RiseHair(Hair):
             offset = part.slave_strands.points[vertex_idx_in_part + 1].position - part.slave_strands.points[vertex_idx_in_part].position
             max_coord_difference = max(abs(offset.x), abs(offset.y), abs(offset.z), max_coord_difference)
 
+        max_coord_difference = max(max_coord_difference, 0.0001)
         return max_coord_difference / 0x1FF
 
-    def get_slave_strand_output_order(self) -> Iterator[_HairStrandReference]:
+    def calc_slave_vertex_uv(self, asset: IHairAsset, position: Vector) -> tuple[float, float]:
+        bounding_box_center: Vector = (asset.bind_pose_aabb.min.to_vector() + asset.bind_pose_aabb.max.to_vector()) / 2
+        sphere_vector: Vector = position - bounding_box_center
+
+        radius = sphere_vector.length
+        phi = math.atan2(sphere_vector.y, sphere_vector.x)
+        theta = math.atan2(sphere_vector.z, math.sqrt(sphere_vector.x**2 + sphere_vector.y**2))
+
+        u_offset = int(radius / 0.1) * 0.1
+        u, _ = math.modf((math.pi + phi) / (math.pi * 2) + u_offset)
+        v = (math.pi / 2 + theta) / math.pi
+        return (u, v)
+
+    def get_slave_strand_output_order(self) -> list[HairStrandReference]:
         # The game only renders the first X% of slave strands depending on distance,
         # so we need to make sure that at any percentage, the trimmed list has a good spatial distribution
-        lookup = SpatialIndex[_HairStrandReference](0.8, True)
+        lookup = SpatialIndex[HairStrandReference](0.8, True)
         for part_idx, part in enumerate(self.parts):
             first_vertex_idx_in_part = 0
             for strand_idx_in_part, num_strand_vertices in enumerate(part.slave_strands.strand_point_counts):
-                strand_ref = _HairStrandReference(part_idx, strand_idx_in_part, first_vertex_idx_in_part, num_strand_vertices)
+                strand_ref = HairStrandReference(part_idx, strand_idx_in_part, first_vertex_idx_in_part, num_strand_vertices)
                 lookup.add(part.slave_strands.points[first_vertex_idx_in_part + num_strand_vertices // 2].position, strand_ref)
                 first_vertex_idx_in_part += num_strand_vertices
 
         sorted_cells = Enumerable(lookup.grid.items()).order_by(lambda p: p[0]).select(lambda p: p[1]).to_list()
         if len(sorted_cells) == 0:
-            return
+            return []
 
         max_strands_per_cell = Enumerable(sorted_cells).max(lambda strands_of_cell: len(strands_of_cell))
+        slave_strand_refs: list[HairStrandReference] = []
         for strand_idx_in_cell in range(max_strands_per_cell):
             for strands_of_cell in sorted_cells:
                 if strand_idx_in_cell < len(strands_of_cell):
-                    yield strands_of_cell[strand_idx_in_cell].item
+                    slave_strand_refs.append(strands_of_cell[strand_idx_in_cell].item)
+
+        return slave_strand_refs
 
     def read_uint16_array(self, reader: ResourceReader, range: HairAssetRange) -> Sequence[int]:
         return self.read_array(reader, CUShort, range, reader.read_uint16_list)
@@ -746,10 +773,18 @@ class RiseHair(Hair):
     def pack_strand_descriptor(self, descriptor: _HairStrandDescriptor) -> int:
         packed_descriptor = descriptor.group_idx
 
-        packed_descriptor <<= 5
+        vertex_count_bits = 5
+        if descriptor.num_vertices - 1 >= (1 << vertex_count_bits):
+            raise Exception(f"Strands can't have more than {1 << vertex_count_bits} vertices")
+
+        packed_descriptor <<= vertex_count_bits
         packed_descriptor |= descriptor.num_vertices - 1
 
-        packed_descriptor <<= 22
+        first_vertex_idx_bits = 22
+        if descriptor.first_vertex_idx >= (1 << first_vertex_idx_bits):
+            raise Exception(f"A strand starts at vertex {descriptor.first_vertex_idx}, which exceeds the maximum of {1 << first_vertex_idx_bits}")
+
+        packed_descriptor <<= first_vertex_idx_bits
         packed_descriptor |= descriptor.first_vertex_idx
         return packed_descriptor
 
@@ -762,6 +797,9 @@ class RiseHair(Hair):
         return _HairMasterVertexDescriptor(strand_idx, index_in_strand)
 
     def pack_master_vertex_descriptor(self, descriptor: _HairMasterVertexDescriptor) -> int:
+        if descriptor.strand_idx > 0xFFFF:
+            raise Exception(f"The hair exceeds the guide strand limit of {0xFFFF}")
+
         return (descriptor.strand_idx << 16) | descriptor.index_in_strand
 
     def pack_slave_strand_skinning_weight(self, weight: float) -> int:
@@ -819,6 +857,11 @@ class RiseHair(Hair):
 
         return packed_position
 
+    def pack_slave_vertex_uv(self, uv: tuple[float, float]) -> int:
+        u = int(uv[0] * 0xFFFF)
+        v = int(uv[1] * 0xFFFF)
+        return (u << 16) | v
+
     def pack_slave_vertex_skinning(self, master_vertex_indices_in_strand: tuple[int, int], weight: float) -> int:
         skinning = master_vertex_indices_in_strand[1]
 
@@ -864,11 +907,11 @@ class _SlaveStrandSkinningCalculator:
                 master_vertex_lookup.add(master_vertex.position, master_vertices[master_vertex_idx])
                 master_vertex_idx += 1
 
-    def calculate(self, slave_strand: _HairStrandReference) -> _SlaveStrandSkinningResult:
+    def calculate(self, slave_strand: HairStrandReference) -> _SlaveStrandSkinningResult:
         master_strand_indices, slave_vertex_search_states = self.choose_master_strands(slave_strand)
         return self.calc_skinning_using_master_strands(slave_strand, master_strand_indices, slave_vertex_search_states)
 
-    def choose_master_strands(self, slave_strand: _HairStrandReference) -> tuple[tuple[int, int], list[SpatialIndex.SearchState[_HairMasterVertexDescriptor]]]:
+    def choose_master_strands(self, slave_strand: HairStrandReference) -> tuple[tuple[int, int], list[SpatialIndex.SearchState[_HairMasterVertexDescriptor]]]:
         search_states: list[SpatialIndex.SearchState[_HairMasterVertexDescriptor]] = []
         master_strand_votes: tuple[dict[int, int], dict[int, int]] = ({}, {})
 
@@ -922,7 +965,7 @@ class _SlaveStrandSkinningCalculator:
 
     def calc_skinning_using_master_strands(
         self,
-        slave_strand: _HairStrandReference,
+        slave_strand: HairStrandReference,
         master_strand_indices: tuple[int, int],
         slave_vertex_search_states: list[SpatialIndex.SearchState[_HairMasterVertexDescriptor]]
     ) -> _SlaveStrandSkinningResult:
