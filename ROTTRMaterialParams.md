@@ -64,7 +64,8 @@ This list will get updated from time to time.
                 psConstants[8] = x.TilingDetailRefrectanceX y.TilingDetailRefrectanceY z.? w.?
                 psConstants[10] = x.? y.? z.TilingMapGreenX w.TilingMapGreenY (detail normal map, GREEN colored part of detail mask texture ID 10374)
                 psConstants[13] = x.TilingMapRedX y.TilingMapRedY z.? w.? (detail normal map, RED colored part of detail mask texture ID 10374)
-                psConstants[19] = x.Detailintensity y.? z.? w.?
+                psConstants[18] = x.SpecularSpreadIntensity y.? z.? w.?
+                psConstants[19] = x.DetailIntensity y.? z.? w.?
                 psConstants[22] = x.? y.? z.NormalIntensity w.?
         
 ----------------------------------------------------------------------------------------
